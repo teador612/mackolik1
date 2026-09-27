@@ -109,15 +109,15 @@ async function fetchMatches(week) {
     for (const row of day.m ?? []) {
       const matchStatus = Number(row[5] ?? 0);
 console.log(
-  JSON.stringify({
-    code: row[0],
-    home: row[1],
-    away: row[3],
-    status: row[5],
-    row8: row[8],
-    row9: row[9],
-    row11: row[11],
-    row12: row[12]
+JSON.stringify({
+code: row[0],
+home: row[1],
+away: row[3],
+status: row[5],
+all: row
+})
+);
+
   })
 );
       matches.push({
