@@ -23,8 +23,12 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
-function stringOrNull(value) {
-  return value === '' || value === null || value === undefined ? null : String(value);
+// Oynanmamış (status === 0) veya varsayılan "0" olarak gelen skorları null yapar
+function parseScoreValue(value, status) {
+  if (status === 0 || value === '' || value === null || value === undefined) return null;
+  const strValue = String(value).trim();
+  if (status === 0 && strValue === '0') return null;
+  return strValue;
 }
 
 async function getCurrentWeek() {
@@ -40,6 +44,8 @@ async function fetchMatches(week) {
   const matches = [];
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
+      const matchStatus = row[5] ?? 0;
+
       matches.push({
         code: String(row[0]),
         week,
@@ -49,9 +55,15 @@ async function fetchMatches(week) {
         home: row[1] || '',
         away: row[3] || '',
         mbs: numberOrNull(row[13]),
-        status: row[5] ?? 0,
-        score: { home: stringOrNull(row[8]), away: stringOrNull(row[9]) },
-        halfTimeScore: { home: stringOrNull(row[11]), away: stringOrNull(row[12]) },
+        status: matchStatus,
+        score: { 
+          home: parseScoreValue(row[8], matchStatus), 
+          away: parseScoreValue(row[9], matchStatus) 
+        },
+        halfTimeScore: { 
+          home: parseScoreValue(row[11], matchStatus), 
+          away: parseScoreValue(row[12], matchStatus) 
+        },
         openingOdds: {
           ms1: numberOrNull(row[16]), msX: numberOrNull(row[17]), ms2: numberOrNull(row[18]),
           cs1X: numberOrNull(row[19]), cs12: numberOrNull(row[20]), csX2: numberOrNull(row[21]),
