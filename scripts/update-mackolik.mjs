@@ -120,15 +120,16 @@ async function fetchMatches(week) {
         mbs: numberOrNull(row[13]),
         status: matchStatus,
 
-        score: {
-          home: parseScoreValue(row[8], matchStatus),
-          away: parseScoreValue(row[9], matchStatus)
-        },
+   score: {
+home: parseScoreValue(row[11], matchStatus),
+away: parseScoreValue(row[12], matchStatus)
+},
 
-        halfTimeScore: {
-          home: parseScoreValue(row[11], matchStatus),
-          away: parseScoreValue(row[12], matchStatus)
-        },
+halfTimeScore: {
+home: parseScoreValue(row[8], matchStatus),
+away: parseScoreValue(row[9], matchStatus)
+},
+
 
         openingOdds: {
           ms1: numberOrNull(row[16]),
