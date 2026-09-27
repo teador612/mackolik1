@@ -3,9 +3,7 @@ name: Mackolik skor güncelleme
 on:
   workflow_dispatch:
   schedule:
-    # GitHub Actions UTC kullanır.
-    # Her 15 dakikada bir çalışır.
-     - cron: '7,22,37,52 * * * *'
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: write
@@ -41,6 +39,6 @@ jobs:
           if git diff --cached --quiet; then
             echo "Yeni değişiklik yok."
           else
-            git commit -m "Güncel Mackolik skorları"
+            git commit -m "Güncel Mackolik skorları [skip ci]"
             git push
           fi
