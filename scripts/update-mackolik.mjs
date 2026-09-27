@@ -108,17 +108,8 @@ async function fetchMatches(week) {
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
       const matchStatus = Number(row[5] ?? 0);
-console.log(
-JSON.stringify({
-code: row[0],
-home: row[1],
-away: row[3],
-status: row[5],
-all: row
 
 
-  })
-);
       matches.push({
         code: String(row[0]),
         week: week,
