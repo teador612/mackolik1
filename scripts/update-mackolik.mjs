@@ -37,22 +37,25 @@ function numberOrNull(value) {
 }
 
 /**
- * Skor değerini güvenli şekilde işler.
+ * Skor değerini işler.
  *
- * Önemli:
- * - status = 0 -> maç oynanmamış, skor null
- * - status != 0 -> API'den gelen gerçek skor korunur
- * - Gerçek 0-0 maçı kesinlikle null yapılmaz.
+ * status === 0:
+ *     Maç henüz oynanmamış kabul edilir.
+ *     API'den 0-0 gelse bile skor null olarak kaydedilir.
+ *
+ * status !== 0:
+ *     API'den gelen skor korunur.
+ *     Böylece gerçek 0-0 maçları kaybolmaz.
  */
 function parseScoreValue(value, status) {
   const normalizedStatus = Number(status);
 
-  // Maç henüz oynanmamışsa skor gösterme.
+  // Oynanmamış maç
   if (normalizedStatus === 0) {
     return null;
   }
 
-  // Skor değeri gerçekten yoksa null.
+  // Skor yok
   if (value === '' || value === null || value === undefined) {
     return null;
   }
@@ -80,7 +83,9 @@ async function getCurrentWeek() {
   const match = html.match(/currentWeek\s*=\s*"(\d+)"/);
 
   if (!match) {
-    throw new Error('Mackolik güncel bülten haftası bulunamadı.');
+    throw new Error(
+      'Mackolik güncel bülten haftası bulunamadı.'
+    );
   }
 
   return Number(match[1]);
@@ -113,8 +118,15 @@ async function fetchMatches(week) {
 
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
-
-      // Mackolik status değerini kesin olarak number'a çevir.
+      /*
+       * Mackolik status değerini number'a çeviriyoruz.
+       *
+       * Böylece:
+       * 0
+       * "0"
+       *
+       * ikisi de aynı şekilde değerlendirilir.
+       */
       const matchStatus = Number(row[5] ?? 0);
 
       const match = {
@@ -134,13 +146,25 @@ async function fetchMatches(week) {
         status: matchStatus,
 
         score: {
-          home: parseScoreValue(row[8], matchStatus),
-          away: parseScoreValue(row[9], matchStatus)
+          home: parseScoreValue(
+            row[8],
+            matchStatus
+          ),
+          away: parseScoreValue(
+            row[9],
+            matchStatus
+          )
         },
 
         halfTimeScore: {
-          home: parseScoreValue(row[11], matchStatus),
-          away: parseScoreValue(row[12], matchStatus)
+          home: parseScoreValue(
+            row[11],
+            matchStatus
+          ),
+          away: parseScoreValue(
+            row[12],
+            matchStatus
+          )
         },
 
         openingOdds: {
@@ -206,7 +230,7 @@ try {
     await fs.readFile(DATA_PATH, 'utf8')
   );
 } catch {
-  // İlk çalıştırmada dosya olmayabilir.
+  // data/matches.json henüz yoksa ilk çalışma olarak devam edilir.
 }
 
 const week = await getCurrentWeek();
@@ -224,7 +248,9 @@ let changed = false;
 const matches = fetched.map(current => {
   const old = previousByCode.get(current.code);
 
-  // Yeni maç
+  /*
+   * Yeni maç
+   */
   if (!old) {
     changed = true;
 
@@ -234,8 +260,8 @@ const matches = fetched.map(current => {
     };
   }
 
-  /**
-   * Açılış oranlarını eski veriden koruyoruz.
+  /*
+   * Açılış oranlarını eski veriden koru.
    */
   const merged = {
     ...current,
@@ -246,9 +272,9 @@ const matches = fetched.map(current => {
       old.openingRecordedAt ?? 'previous-record'
   };
 
-  /**
-   * Skor, ilk yarı skoru veya maç durumu değiştiyse
-   * veri dosyasını yeniden yaz.
+  /*
+   * Skor, ilk yarı skoru veya status değiştiyse
+   * data/matches.json yeniden yazılacak.
    */
   if (
     !sameJson(old.score, current.score) ||
@@ -273,7 +299,9 @@ const next = {
 if (changed || !previous.matches?.length) {
   await fs.mkdir(
     path.dirname(DATA_PATH),
-    { recursive: true }
+    {
+      recursive: true
+    }
   );
 
   await fs.writeFile(
