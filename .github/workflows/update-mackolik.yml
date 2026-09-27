@@ -13,21 +13,13 @@ jobs:
   update:
     runs-on: ubuntu-latest
     steps:
-     - name: Depoyu al
-
+      - name: Depoyu al
         uses: actions/checkout@v4
 
-
-
       - name: Node.js kur
-
         uses: actions/setup-node@v4
-
         with:
-
-          node-version: 20 
-
-
+          node-version: 20
 
       - name: Skorları ve yeni maçları güncelle
         run: node scripts/update-mackolik.mjs
