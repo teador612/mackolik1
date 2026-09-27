@@ -4,7 +4,7 @@ import path from 'node:path';
 import vm from 'node:vm';
 
 const SITE = 'https://arsiv.mackolik.com';
-const PAGE = `${SITE}/Genis-Iddaa-Programi`;
+const PAGE = SITE + '/Genis-Iddaa-Programi';
 const DATA_PATH = path.resolve('data/matches.json');
 
 const OPENING_ODDS = [
