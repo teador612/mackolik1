@@ -6,22 +6,8 @@ const SITE = 'https://arsiv.mackolik.com';
 const PAGE = SITE + '/Genis-Iddaa-Programi';
 const DATA_PATH = path.resolve('data/matches.json');
 
-const OPENING_ODDS = [
-  'ms1', 'msX', 'ms2',
-  'iy1', 'iyX', 'iy2',
-  'cs1X', 'cs12', 'csX2',
-  'au25Alt', 'au25Ust',
-  'kgVar', 'kgYok',
-  'iy15Alt', 'iy15Ust',
-  'au15Alt', 'au15Ust',
-  'au35Alt', 'au35Ust',
-  'gol01', 'gol23', 'gol46', 'gol7',
-  'handicap', 'handicap1', 'handicapX', 'handicap2'
-];
-
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
-
   return vm.runInNewContext(
     '(' + cleanText + ')',
     Object.create(null)
@@ -38,26 +24,11 @@ function numberOrNull(value) {
     return null;
   }
 
-  const number = Number(
-    String(value).replace(',', '.')
-  );
+  const number = Number(String(value).replace(',', '.'));
 
-  return Number.isFinite(number)
-    ? number
-    : null;
+  return Number.isFinite(number) ? number : null;
 }
 
-/*
- * Skor kontrolü.
- *
- * status = 0:
- *     Maç oynanmamış kabul edilir.
- *     API 0-0 gönderse bile null kaydedilir.
- *
- * status != 0:
- *     API'den gelen skor korunur.
- *     Böylece gerçek 0-0 maçları korunur.
- */
 function parseScoreValue(value, status) {
   const normalizedStatus = Number(status);
 
@@ -73,13 +44,13 @@ function parseScoreValue(value, status) {
     return null;
   }
 
-  const strValue = String(value).trim();
+  const result = String(value).trim();
 
-  if (strValue === '') {
+  if (result === '') {
     return null;
   }
 
-  return strValue;
+  return result;
 }
 
 async function getCurrentWeek() {
@@ -141,39 +112,22 @@ async function fetchMatches(week) {
       matches.push({
         code: String(row[0]),
         week: week,
-
         date: row[7] || day.d,
         time: row[6] || null,
-
         league: row[26] || '',
-
         home: row[1] || '',
         away: row[3] || '',
-
         mbs: numberOrNull(row[13]),
-
         status: matchStatus,
 
         score: {
-          home: parseScoreValue(
-            row[8],
-            matchStatus
-          ),
-          away: parseScoreValue(
-            row[9],
-            matchStatus
-          )
+          home: parseScoreValue(row[8], matchStatus),
+          away: parseScoreValue(row[9], matchStatus)
         },
 
         halfTimeScore: {
-          home: parseScoreValue(
-            row[11],
-            matchStatus
-          ),
-          away: parseScoreValue(
-            row[12],
-            matchStatus
-          )
+          home: parseScoreValue(row[11], matchStatus),
+          away: parseScoreValue(row[12], matchStatus)
         },
 
         openingOdds: {
@@ -262,42 +216,31 @@ const previousByCode = new Map(
 let changed = false;
 
 const matches = fetched.map(function(current) {
-  const old = previousByCode.get(
-    current.code
-  );
+  const old = previousByCode.get(current.code);
 
   if (!old) {
     changed = true;
 
     return {
       ...current,
-      openingRecordedAt:
-        new Date().toISOString()
+      openingRecordedAt: new Date().toISOString()
     };
   }
 
   const merged = {
     ...current,
-
-    openingOdds:
-      old.openingOdds ?? current.openingOdds,
-
+    openingOdds: old.openingOdds ?? current.openingOdds,
     openingRecordedAt:
-      old.openingRecordedAt ??
-      'previous-record'
+      old.openingRecordedAt ?? 'previous-record'
   };
 
   if (
-    !sameJson(
-      old.score,
-      current.score
-    ) ||
+    !sameJson(old.score, current.score) ||
     !sameJson(
       old.halfTimeScore,
       current.halfTimeScore
     ) ||
-    Number(old.status) !==
-      Number(current.status)
+    Number(old.status) !== Number(current.status)
   ) {
     changed = true;
   }
@@ -308,11 +251,9 @@ const matches = fetched.map(function(current) {
 const next = {
   source: PAGE,
   week: week,
-
   updatedAt: changed
     ? new Date().toISOString()
     : previous.updatedAt,
-
   matches: matches
 };
 
@@ -329,11 +270,7 @@ if (
   );
 
   const output =
-    JSON.stringify(
-      next,
-      null,
-      2
-    ) + '\n';
+    JSON.stringify(next, null, 2) + '\n';
 
   await fs.writeFile(
     DATA_PATH,
@@ -354,4 +291,3 @@ console.log(
     2
   )
 );
-```
