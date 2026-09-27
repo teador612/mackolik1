@@ -115,8 +115,7 @@ home: row[1],
 away: row[3],
 status: row[5],
 all: row
-})
-);
+
 
   })
 );
