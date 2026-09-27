@@ -39,7 +39,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "Yeni değişiklik yok."
           else
-            git commit -m "Güncel Mackolik skorları [skip ci]"
+            git commit -m "Güncel Mackolik skorları"
             git push
           fi
 # cron reset
