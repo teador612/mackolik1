@@ -1,4 +1,3 @@
-```js
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
@@ -8,15 +7,23 @@ const PAGE = SITE + '/Genis-Iddaa-Programi';
 const DATA_PATH = path.resolve('data/matches.json');
 
 const OPENING_ODDS = [
-  'ms1', 'msX', 'ms2', 'iy1', 'iyX', 'iy2', 'cs1X', 'cs12', 'csX2',
-  'au25Alt', 'au25Ust', 'kgVar', 'kgYok', 'iy15Alt', 'iy15Ust',
-  'au15Alt', 'au15Ust', 'au35Alt', 'au35Ust', 'gol01', 'gol23', 'gol46', 'gol7',
+  'ms1', 'msX', 'ms2',
+  'iy1', 'iyX', 'iy2',
+  'cs1X', 'cs12', 'csX2',
+  'au25Alt', 'au25Ust',
+  'kgVar', 'kgYok',
+  'iy15Alt', 'iy15Ust',
+  'au15Alt', 'au15Ust',
+  'au35Alt', 'au35Ust',
+  'gol01', 'gol23', 'gol46', 'gol7',
   'handicap', 'handicap1', 'handicapX', 'handicap2'
 ];
 
 function parseJsLiteral(text) {
+  const cleanText = text.replace(/^\uFEFF/, '');
+
   return vm.runInNewContext(
-    `(${text.replace(/^\uFEFF/, '')})`,
+    '(' + cleanText + ')',
     Object.create(null)
   );
 }
@@ -31,32 +38,38 @@ function numberOrNull(value) {
     return null;
   }
 
-  const number = Number(String(value).replace(',', '.'));
+  const number = Number(
+    String(value).replace(',', '.')
+  );
 
-  return Number.isFinite(number) ? number : null;
+  return Number.isFinite(number)
+    ? number
+    : null;
 }
 
-/**
- * Skor değerini işler.
+/*
+ * Skor kontrolü.
  *
- * status === 0:
- *     Maç henüz oynanmamış kabul edilir.
- *     API'den 0-0 gelse bile skor null olarak kaydedilir.
+ * status = 0:
+ *     Maç oynanmamış kabul edilir.
+ *     API 0-0 gönderse bile null kaydedilir.
  *
- * status !== 0:
+ * status != 0:
  *     API'den gelen skor korunur.
- *     Böylece gerçek 0-0 maçları kaybolmaz.
+ *     Böylece gerçek 0-0 maçları korunur.
  */
 function parseScoreValue(value, status) {
   const normalizedStatus = Number(status);
 
-  // Oynanmamış maç
   if (normalizedStatus === 0) {
     return null;
   }
 
-  // Skor yok
-  if (value === '' || value === null || value === undefined) {
+  if (
+    value === '' ||
+    value === null ||
+    value === undefined
+  ) {
     return null;
   }
 
@@ -74,17 +87,20 @@ async function getCurrentWeek() {
 
   if (!response.ok) {
     throw new Error(
-      `Mackolik sayfası alınamadı: HTTP ${response.status}`
+      'Mackolik sayfasi alinamadi. HTTP ' +
+      response.status
     );
   }
 
   const html = await response.text();
 
-  const match = html.match(/currentWeek\s*=\s*"(\d+)"/);
+  const match = html.match(
+    /currentWeek\s*=\s*"(\d+)"/
+  );
 
   if (!match) {
     throw new Error(
-      'Mackolik güncel bülten haftası bulunamadı.'
+      'Mackolik guncel bulten haftasi bulunamadi.'
     );
   }
 
@@ -93,21 +109,23 @@ async function getCurrentWeek() {
 
 async function fetchMatches(week) {
   const url =
-    `${SITE}/AjaxHandlers/ProgramDataHandler.ashx` +
-    `?type=6` +
-    `&sortValue=DATE` +
-    `&day=-1` +
-    `&sort=-1` +
-    `&sortDir=-1` +
-    `&groupId=-1` +
-    `&np=0` +
-    `&sport=1`;
+    SITE +
+    '/AjaxHandlers/ProgramDataHandler.ashx' +
+    '?type=6' +
+    '&sortValue=DATE' +
+    '&day=-1' +
+    '&sort=-1' +
+    '&sortDir=-1' +
+    '&groupId=-1' +
+    '&np=0' +
+    '&sport=1';
 
   const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(
-      `Mackolik maç verisi alınamadı: HTTP ${response.status}`
+      'Mackolik mac verisi alinamadi. HTTP ' +
+      response.status
     );
   }
 
@@ -118,20 +136,11 @@ async function fetchMatches(week) {
 
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
-      /*
-       * Mackolik status değerini number'a çeviriyoruz.
-       *
-       * Böylece:
-       * 0
-       * "0"
-       *
-       * ikisi de aynı şekilde değerlendirilir.
-       */
       const matchStatus = Number(row[5] ?? 0);
 
-      const match = {
+      matches.push({
         code: String(row[0]),
-        week,
+        week: week,
 
         date: row[7] || day.d,
         time: row[6] || null,
@@ -206,9 +215,7 @@ async function fetchMatches(week) {
           iyX: numberOrNull(row[34]),
           iy2: numberOrNull(row[35])
         }
-      };
-
-      matches.push(match);
+      });
     }
   }
 
@@ -226,60 +233,71 @@ let previous = {
 };
 
 try {
-  previous = JSON.parse(
-    await fs.readFile(DATA_PATH, 'utf8')
+  const previousText = await fs.readFile(
+    DATA_PATH,
+    'utf8'
   );
+
+  previous = JSON.parse(previousText);
 } catch {
-  // data/matches.json henüz yoksa ilk çalışma olarak devam edilir.
+  previous = {
+    week: null,
+    updatedAt: null,
+    matches: []
+  };
 }
 
 const week = await getCurrentWeek();
 const fetched = await fetchMatches(week);
 
 const previousByCode = new Map(
-  (previous.matches ?? []).map(match => [
-    String(match.code),
-    match
-  ])
+  (previous.matches ?? []).map(function(match) {
+    return [
+      String(match.code),
+      match
+    ];
+  })
 );
 
 let changed = false;
 
-const matches = fetched.map(current => {
-  const old = previousByCode.get(current.code);
+const matches = fetched.map(function(current) {
+  const old = previousByCode.get(
+    current.code
+  );
 
-  /*
-   * Yeni maç
-   */
   if (!old) {
     changed = true;
 
     return {
       ...current,
-      openingRecordedAt: new Date().toISOString()
+      openingRecordedAt:
+        new Date().toISOString()
     };
   }
 
-  /*
-   * Açılış oranlarını eski veriden koru.
-   */
   const merged = {
     ...current,
 
-    openingOdds: old.openingOdds,
+    openingOdds:
+      old.openingOdds ?? current.openingOdds,
 
     openingRecordedAt:
-      old.openingRecordedAt ?? 'previous-record'
+      old.openingRecordedAt ??
+      'previous-record'
   };
 
-  /*
-   * Skor, ilk yarı skoru veya status değiştiyse
-   * data/matches.json yeniden yazılacak.
-   */
   if (
-    !sameJson(old.score, current.score) ||
-    !sameJson(old.halfTimeScore, current.halfTimeScore) ||
-    Number(old.status) !== Number(current.status)
+    !sameJson(
+      old.score,
+      current.score
+    ) ||
+    !sameJson(
+      old.halfTimeScore,
+      current.halfTimeScore
+    ) ||
+    Number(old.status) !==
+      Number(current.status)
   ) {
     changed = true;
   }
@@ -289,14 +307,20 @@ const matches = fetched.map(current => {
 
 const next = {
   source: PAGE,
-  week,
+  week: week,
+
   updatedAt: changed
     ? new Date().toISOString()
     : previous.updatedAt,
-  matches
+
+  matches: matches
 };
 
-if (changed || !previous.matches?.length) {
+if (
+  changed ||
+  !previous.matches ||
+  previous.matches.length === 0
+) {
   await fs.mkdir(
     path.dirname(DATA_PATH),
     {
@@ -304,9 +328,16 @@ if (changed || !previous.matches?.length) {
     }
   );
 
+  const output =
+    JSON.stringify(
+      next,
+      null,
+      2
+    ) + '\n';
+
   await fs.writeFile(
     DATA_PATH,
-    `${JSON.stringify(next, null, 2)}\n`,
+    output,
     'utf8'
   );
 }
@@ -314,9 +345,9 @@ if (changed || !previous.matches?.length) {
 console.log(
   JSON.stringify(
     {
-      week,
+      week: week,
       fetched: fetched.length,
-      changed,
+      changed: changed,
       dataPath: DATA_PATH
     },
     null,
