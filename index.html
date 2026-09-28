@@ -3,18 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mackolik Canlı & Oran Analiz Portalı</title>
+  <title>Mackolik Canlı Skor & Oran Analiz Portalı</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <div class="container">
     <header>
-      <h1>Mackolik Analiz & Canlı Skor Portalı</h1>
-      <p>15 Dakikada Bir Güncellenen Canlı Bülten ve Kombinasyon Analizi</p>
+      <h1>Mackolik Canlı Skor & Oran Analiz Portalı</h1>
+      <p>15 Dakikada Bir Yenilenen Günün Maçları, Skorlar ve Oran Kombinasyon Filtresi</p>
     </header>
 
-    <!-- Durum Barı ve Son Güncelleme Süresi -->
+    <!-- Durum Bilgi Çubuğu -->
     <section class="card status-section">
       <div class="status-info">
         <span class="status-title">Veri Durumu:</span>
@@ -22,21 +22,21 @@
       </div>
       <div class="status-info">
         <span class="status-title">Son Güncelleme:</span>
-        <strong id="last-update-time">-</strong>
+        <strong id="last-update-time">--:--</strong>
       </div>
       <div class="status-info">
-        <span class="status-title">Oturumdaki Maç:</span>
+        <span class="status-title">Toplam Maç:</span>
         <strong id="total-matches-count">0</strong>
       </div>
     </section>
 
-    <!-- Menü Sekmeleri (Günün Maçları / Oran Analizi) -->
+    <!-- Ana Menü Sekmeleri -->
     <div class="nav-tabs">
       <button id="btn-gunun-maclari" class="tab-btn active" onclick="sekmeDegistir('gunun-maclari')">⚽ Günün Maçları & Canlı Skorlar</button>
       <button id="btn-oran-analizi" class="tab-btn" onclick="sekmeDegistir('oran-analizi')">📊 Oran Kombinasyon Analizi</button>
     </div>
 
-    <!-- SEKME 1: GÜNÜN MAÇLARI VE CANLI SKORLAR -->
+    <!-- 1. MENÜ: GÜNÜN MAÇLARI VE CANLI/BİTMİŞ SKORLAR -->
     <section id="tab-gunun-maclari" class="tab-content card">
       <h2>Günün Bülteni & Canlı Sonuçlar</h2>
       <div class="table-responsive">
@@ -48,7 +48,7 @@
               <th>Karşılaşma</th>
               <th>Durum</th>
               <th>Skor (İY / MS)</th>
-              <th>Oranlar (1-X-2)</th>
+              <th>Oranlar (1 - X - 2)</th>
             </tr>
           </thead>
           <tbody id="gunun-maclari-body">
@@ -58,9 +58,9 @@
       </div>
     </section>
 
-    <!-- SEKME 2: ORAN KOMBİNASYON ANALİZİ (VİDEODAKİ SİSTEM) -->
+    <!-- 2. MENÜ: VİDEODAKİ ORAN KOMBİNASYON ANALİZİ -->
     <section id="tab-oran-analizi" class="tab-content card" style="display: none;">
-      <h2>Dinamik Oran Filtreleri</h2>
+      <h2>Dinamik Oran Kombinasyon Filtresi</h2>
       <div class="filter-grid">
         <div class="filter-item">
           <label for="f-ms1">MS 1 Oranı</label>
@@ -84,7 +84,7 @@
         </div>
       </div>
 
-      <!-- İstatistik Paneli -->
+      <!-- İstatistik Başarı Yüzdeleri -->
       <div class="stats-grid">
         <div class="stat-card">
           <span class="stat-title">Eşleşen Maç</span>
@@ -112,13 +112,13 @@
         </div>
       </div>
 
-      <!-- Geçmiş Eşleşen Maçlar Tablosu -->
+      <!-- Filtreye Uyan Maç Listesi -->
       <div class="table-responsive" style="margin-top: 20px;">
         <h3>Eşleşen Geçmiş Maçlar</h3>
         <table>
           <thead>
             <tr>
-              <th>Tarih</th>
+              <th>Tarih / Saat</th>
               <th>Lig</th>
               <th>Karşılaşma</th>
               <th>Oranlar (1 - X - 2 | 2.5U)</th>
@@ -126,7 +126,7 @@
             </tr>
           </thead>
           <tbody id="analiz-body">
-            <tr><td colspan="5" class="empty-state">Filtre seçin...</td></tr>
+            <tr><td colspan="5" class="empty-state">Filtre seçimi yapın...</td></tr>
           </tbody>
         </table>
       </div>
