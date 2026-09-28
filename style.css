@@ -1,41 +1,21 @@
-/* Sekme Butonları */
-.nav-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.tab-btn {
-  background: #1e293b;
-  color: #94a3b8;
-  border: 1px solid #334155;
-  padding: 12px 20px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.tab-btn.active, .tab-btn:hover {
-  background: #0284c7;
-  color: #ffffff;
-  border-color: #0284c7;
-}
-
-/* Durum Rozetleri */
-.status-tag {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.tag-normal { background: #334155; color: #94a3b8; }
-.tag-live { background: #dc2626; color: #ffffff; animation: blink 1.5s infinite; }
-.tag-ended { background: #16a34a; color: #ffffff; }
-
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
-}
+:root { color-scheme: light; font-family: Arial, sans-serif; color: #172033; background: #f4f7fb; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.container { max-width: 1600px; margin: 0 auto; padding: 28px 18px 48px; }
+header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 22px; }
+.eyebrow { color: #2b6cb0; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
+h1 { margin: 0; font-size: 30px; }
+.muted, .updated { color: #667085; font-size: 14px; }
+.updated { white-space: nowrap; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px; background: white; border: 1px solid #dbe3ee; border-radius: 10px; margin-bottom: 14px; }
+input, select { border: 1px solid #c7d2e0; border-radius: 7px; padding: 9px 11px; background: #fff; color: inherit; }
+input[type="search"] { min-width: 260px; }
+.checkbox { display: flex; align-items: center; gap: 7px; padding: 0 4px; font-size: 14px; }
+.message { color: #667085; font-size: 14px; margin: 12px 2px; }
+.table-wrap { overflow: auto; background: white; border: 1px solid #dbe3ee; border-radius: 10px; }
+table { width: 100%; min-width: 1250px; border-collapse: collapse; font-size: 13px; }
+th { position: sticky; top: 0; background: #1f4e78; color: white; text-align: left; padding: 10px 9px; white-space: nowrap; }
+td { padding: 9px; border-bottom: 1px solid #edf1f6; white-space: nowrap; }
+tbody tr:hover { background: #f5f9ff; }
+.score { font-weight: 700; color: #1f4e78; }
+@media (max-width: 700px) { header { display: block; } .updated { margin-top: 10px; } input[type="search"] { min-width: 0; width: 100%; } }

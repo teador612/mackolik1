@@ -1,138 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Mackolik Canlı Skor & Oran Analiz Portalı</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İddaa Bülteni</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div class="container">
+  <main class="container">
     <header>
-      <h1>Mackolik Canlı Skor & Oran Analiz Portalı</h1>
-      <p>15 Dakikada Bir Yenilenen Günün Maçları, Skorlar ve Oran Kombinasyon Filtresi</p>
+      <div>
+        <p class="eyebrow">Mackolik arşiv verisi</p>
+        <h1>İddaa Bülteni</h1>
+        <p class="muted">Açılış oranları sabittir. Skorlar GitHub Actions ile periyodik güncellenir.</p>
+      </div>
+      <div id="updatedAt" class="updated">Veri yükleniyor…</div>
     </header>
 
-    <!-- Durum Bilgi Çubuğu -->
-    <section class="card status-section">
-      <div class="status-info">
-        <span class="status-title">Veri Durumu:</span>
-        <span id="data-status" class="status-badge">Veriler Yükleniyor...</span>
-      </div>
-      <div class="status-info">
-        <span class="status-title">Son Güncelleme:</span>
-        <strong id="last-update-time">--:--</strong>
-      </div>
-      <div class="status-info">
-        <span class="status-title">Toplam Maç:</span>
-        <strong id="total-matches-count">0</strong>
-      </div>
+    <section class="controls" aria-label="Filtreler">
+      <input id="search" type="search" placeholder="Takım veya maç kodu ara">
+      <select id="dateFilter"><option value="">Tüm tarihler</option></select>
+      <select id="leagueFilter"><option value="">Tüm ligler</option></select>
+      <label class="checkbox"><input id="unplayedOnly" type="checkbox"> Oynanmamışlar</label>
     </section>
 
-    <!-- Ana Menü Sekmeleri -->
-    <div class="nav-tabs">
-      <button id="btn-gunun-maclari" class="tab-btn active" onclick="sekmeDegistir('gunun-maclari')">⚽ Günün Maçları & Canlı Skorlar</button>
-      <button id="btn-oran-analizi" class="tab-btn" onclick="sekmeDegistir('oran-analizi')">📊 Oran Kombinasyon Analizi</button>
+    <div id="message" class="message">Veri yükleniyor…</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tarih</th><th>Saat</th><th>Lig</th><th>Kod</th><th>Ev sahibi</th><th>Misafir</th>
+            <th>İY</th><th>Skor</th><th>MS 1</th><th>MS X</th><th>MS 2</th><th>KG Var</th><th>KG Yok</th><th>Alt 2,5</th><th>Üst 2,5</th>
+          </tr>
+        </thead>
+        <tbody id="matches"></tbody>
+      </table>
     </div>
-
-    <!-- 1. MENÜ: GÜNÜN MAÇLARI VE CANLI/BİTMİŞ SKORLAR -->
-    <section id="tab-gunun-maclari" class="tab-content card">
-      <h2>Günün Bülteni & Canlı Sonuçlar</h2>
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Saat</th>
-              <th>Lig</th>
-              <th>Karşılaşma</th>
-              <th>Durum</th>
-              <th>Skor (İY / MS)</th>
-              <th>Oranlar (1 - X - 2)</th>
-            </tr>
-          </thead>
-          <tbody id="gunun-maclari-body">
-            <tr><td colspan="6" class="empty-state">Günün maçları yükleniyor...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- 2. MENÜ: VİDEODAKİ ORAN KOMBİNASYON ANALİZİ -->
-    <section id="tab-oran-analizi" class="tab-content card" style="display: none;">
-      <h2>Dinamik Oran Kombinasyon Filtresi</h2>
-      <div class="filter-grid">
-        <div class="filter-item">
-          <label for="f-ms1">MS 1 Oranı</label>
-          <select id="f-ms1"><option value="">Tümü</option></select>
-        </div>
-        <div class="filter-item">
-          <label for="f-ms0">MS X Oranı</label>
-          <select id="f-ms0"><option value="">Tümü</option></select>
-        </div>
-        <div class="filter-item">
-          <label for="f-ms2">MS 2 Oranı</label>
-          <select id="f-ms2"><option value="">Tümü</option></select>
-        </div>
-        <div class="filter-item">
-          <label for="f-ust">2.5 Üst Oranı</label>
-          <select id="f-ust"><option value="">Tümü</option></select>
-        </div>
-        <div class="filter-item">
-          <label for="f-kg">KG Var Oranı</label>
-          <select id="f-kg"><option value="">Tümü</option></select>
-        </div>
-      </div>
-
-      <!-- İstatistik Başarı Yüzdeleri -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <span class="stat-title">Eşleşen Maç</span>
-          <span id="st-count" class="stat-value">0</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">MS 1</span>
-          <span id="st-ms1" class="stat-value">%0</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">MS X</span>
-          <span id="st-ms0" class="stat-value">%0</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-title">MS 2</span>
-          <span id="st-ms2" class="stat-value">%0</span>
-        </div>
-        <div class="stat-card highlight-green">
-          <span class="stat-title">2.5 Üst</span>
-          <span id="st-ust" class="stat-value">%0</span>
-        </div>
-        <div class="stat-card highlight-green">
-          <span class="stat-title">KG Var</span>
-          <span id="st-kg" class="stat-value">%0</span>
-        </div>
-      </div>
-
-      <!-- Filtreye Uyan Maç Listesi -->
-      <div class="table-responsive" style="margin-top: 20px;">
-        <h3>Eşleşen Geçmiş Maçlar</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Tarih / Saat</th>
-              <th>Lig</th>
-              <th>Karşılaşma</th>
-              <th>Oranlar (1 - X - 2 | 2.5U)</th>
-              <th>Skor (İY / MS)</th>
-            </tr>
-          </thead>
-          <tbody id="analiz-body">
-            <tr><td colspan="5" class="empty-state">Filtre seçimi yapın...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </div>
-
-  <script src="app.js"></script>
+  </main>
+  <script src="app.js" type="module"></script>
 </body>
 </html>
