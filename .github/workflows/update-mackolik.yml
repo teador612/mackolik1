@@ -4,7 +4,12 @@ on:
   workflow_dispatch:
   schedule:
     # Her 15 dakikada bir çalışır
-    - cron: '*/60 * * * *'
+    - cron: '*/15 * * * *'
+
+on:
+  repository_dispatch:
+    types: [run-script]
+  workflow_dispatch:
 
 permissions:
   contents: write
