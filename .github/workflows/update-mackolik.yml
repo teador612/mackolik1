@@ -1,15 +1,11 @@
-name: Mackolik skor güncelleme ve Yayınlama
-
-on:
-  workflow_dispatch:
-  schedule:
-    # Her 15 dakikada bir çalışır
-    - cron: '*/15 * * * *'
+name: Mackolik skor güncelleme
 
 on:
   repository_dispatch:
     types: [run-script]
   workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: write
