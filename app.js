@@ -1,30 +1,21 @@
-const DATA_PATHS = [
-  './data/maclar.json',
-  './data/bulten.json',
-  './outputs/maclar.json',
-  './outputs/bulten.json'
-];
-
 let macVerileri = [];
-const AUTO_REFRESH_MS = 15 * 60 * 1000; // 15 Dakika (milisaniye cinsinden)
+const REFRESH_MS = 15 * 60 * 1000; // 15 Dakikada Bir Otomatik Yenileme
 
 document.addEventListener('DOMContentLoaded', () => {
   initEventListeners();
-  otomatikVeriYukle();
-  
-  // 15 dakikada bir verileri otomatik yenile
-  setInterval(() => {
-    otomatikVeriYukle();
-  }, AUTO_REFRESH_MS);
+  verileriYukle();
+
+  // 15 Dakikada Bir Otomatik Veri Yenile
+  setInterval(verileriYukle, REFRESH_MS);
 });
 
 function initEventListeners() {
   ['f-ms1', 'f-ms0', 'f-ms2', 'f-ust', 'f-kg'].forEach(id => {
-    document.getElementById(id).addEventListener('change', analizEt);
+    const select = document.getElementById(id);
+    if (select) select.addEventListener('change', analizEt);
   });
 }
 
-// Sekme Değiştirme
 function sekmeDegistir(tabName) {
   document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
   document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -38,89 +29,107 @@ function sekmeDegistir(tabName) {
   }
 }
 
-// 15 dk bir çağrılan otomatik veri çekici
-async function otomatikVeriYukle() {
+// Repodaki JSON verisini çek
+async function verileriYukle() {
   const statusBadge = document.getElementById('data-status');
+  const possiblePaths = [
+    './data/maclar.json',
+    './data/bulten.json',
+    './outputs/maclar.json',
+    './outputs/bulten.json'
+  ];
+
   let loaded = false;
 
-  for (const path of DATA_PATHS) {
+  for (const path of possiblePaths) {
     try {
-      const response = await fetch(`${path}?v=${new Date().getTime()}`);
-      if (response.ok) {
-        const rawData = await response.json();
-        processData(rawData);
-        statusBadge.innerText = `Canlı Veri Aktif`;
-        statusBadge.style.background = '#15803d';
-        
-        const simdi = new Date();
-        document.getElementById('last-update-time').innerText = 
-          simdi.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-        
-        loaded = true;
-        break;
+      const res = await fetch(`${path}?t=${new Date().getTime()}`);
+      if (res.ok) {
+        const rawData = await res.json();
+        if (Array.isArray(rawData) && rawData.length > 0) {
+          verileriIsle(rawData);
+          statusBadge.innerText = 'Canlı Veri Aktif';
+          statusBadge.style.background = '#15803d';
+          loaded = true;
+          break;
+        }
       }
     } catch (e) {
-      // Bir sonraki yolu dener
+      // Diğer yolu dener
     }
   }
 
   if (!loaded) {
-    statusBadge.innerText = 'Veri Çekilemedi';
-    statusBadge.style.background = '#b91c1c';
+    statusBadge.innerText = 'Veri Bağlantısı Bekleniyor';
+    statusBadge.style.background = '#b45309';
   }
+
+  const simdi = new Date();
+  document.getElementById('last-update-time').innerText = 
+    simdi.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 }
 
-function processData(rawData) {
+// Script'inizden gelen tüm olası kolon adlarını standart JSON objesine çevir
+function verileriIsle(rawData) {
   macVerileri = rawData.map(row => {
-    const msEv = row.msEv !== undefined ? row.msEv : row['MS Ev'];
-    const msDep = row.msDep !== undefined ? row.msDep : row['MS Dep'];
-    const durum = row.durum || row.Status || row.statu || (msEv !== null && msEv !== undefined ? 'MS' : 'Oynanmadı');
+    const msEv = parseScore(row.msEv ?? row['MS Ev'] ?? row.homeScore ?? row.ftHome);
+    const msDep = parseScore(row.msDep ?? row['MS Dep'] ?? row.awayScore ?? row.ftAway);
+    const iyEv = parseScore(row.iyEv ?? row['İY Ev'] ?? row.htHome);
+    const iyDep = parseScore(row.iyDep ?? row['İY Dep'] ?? row.htAway);
+
+    let durum = row.durum || row.status || row.statu || 'Oynanmadı';
+    if (msEv !== null && msDep !== null && (durum === 'Oynanmadı' || !durum)) {
+      durum = 'MS';
+    }
 
     return {
-      tarih: row.tarih || row.Tarih || row.date || '-',
+      tarih: row.tarih || row.Tarih || row.date || 'Bugün',
       saat: row.saat || row.Saat || row.time || '--:--',
-      lig: row.lig || row.Lig || row.league || '-',
-      ev: row.ev || row['Ev Sahibi'] || row.home || '-',
-      dep: row.dep || row['Deplasman'] || row.away || '-',
+      lig: row.lig || row.Lig || row.league || 'Genel',
+      ev: row.ev || row['Ev Sahibi'] || row.home || 'Ev',
+      dep: row.dep || row['Deplasman'] || row.away || 'Dep',
       ms1: parseFloat(row.ms1 || row.MS1 || row['1'] || 0),
       ms0: parseFloat(row.ms0 || row.MSX || row.MS0 || row['X'] || 0),
       ms2: parseFloat(row.ms2 || row.MS2 || row['2'] || 0),
-      ust: parseFloat(row.ust || row['2.5 Üst'] || row['2.5 U'] || 0),
-      kg: parseFloat(row.kg || row['KG Var'] || 0),
-      iyEv: row.iyEv !== undefined ? row.iyEv : row['İY Ev'],
-      iyDep: row.iyDep !== undefined ? row.iyDep : row['İY Dep'],
+      ust: parseFloat(row.ust || row['2.5 Üst'] || row['2.5 U'] || row.over25 || 0),
+      kg: parseFloat(row.kg || row['KG Var'] || row.btts || 0),
+      iyEv: iyEv,
+      iyDep: iyDep,
       msEv: msEv,
       msDep: msDep,
-      durum: durum // MS, Canlı, İY, Oynanmadı vb.
+      durum: durum
     };
   });
 
   document.getElementById('total-matches-count').innerText = macVerileri.length;
-  gununMaclariniListele();
+  gununMaclariniYazdir();
   dropdownlariDoldur();
   analizEt();
 }
 
+function parseScore(val) {
+  if (val === null || val === undefined || val === '') return null;
+  const parsed = parseInt(val, 10);
+  return isNaN(parsed) ? null : parsed;
+}
+
 // 1. Sekme: Günün Maçları ve Canlı Skorlar
-function gununMaclariniListele() {
+function gununMaclariniYazdir() {
   const tbody = document.getElementById('gunun-maclari-body');
   tbody.innerHTML = '';
 
   if (macVerileri.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Bugün için kayıtlı maç bulunamadı.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Listelenecek maç bulunamadı.</td></tr>';
     return;
   }
 
   macVerileri.forEach(m => {
-    let skorMetni = '-';
+    let skorText = '-';
     let durumBadge = '<span class="status-tag tag-normal">Başlamadı</span>';
 
-    // Maç Başlamış veya Bitmişse Skorları Düzenle
-    if (m.msEv !== null && m.msEv !== undefined && m.msDep !== null && m.msDep !== undefined) {
-      skorMetni = `<b>${m.msEv} - ${m.msDep}</b>`;
-      if (m.iyEv !== null && m.iyDep !== null) {
-        skorMetni += ` <small>(${m.iyEv}-${m.iyDep})</small>`;
-      }
+    if (m.msEv !== null && m.msDep !== null) {
+      let iyStr = (m.iyEv !== null && m.iyDep !== null) ? ` <small>(${m.iyEv}-${m.iyDep})</small>` : '';
+      skorText = `<b>${m.msEv} - ${m.msDep}</b>${iyStr}`;
 
       if (m.durum === 'MS' || m.durum === 'Bitti') {
         durumBadge = '<span class="status-tag tag-ended">MS</span>';
@@ -135,26 +144,25 @@ function gununMaclariniListele() {
       <td><span class="league-badge">${m.lig}</span></td>
       <td><b>${m.ev}</b> - ${m.dep}</td>
       <td>${durumBadge}</td>
-      <td><span class="score-badge">${skorMetni}</span></td>
+      <td><span class="score-badge">${skorText}</span></td>
       <td><small>${m.ms1 ? m.ms1.toFixed(2) : '-'} / ${m.ms0 ? m.ms0.toFixed(2) : '-'} / ${m.ms2 ? m.ms2.toFixed(2) : '-'}</small></td>
     `;
     tbody.appendChild(tr);
   });
 }
 
-// 2. Sekme: Dropdown Doldurma ve Kombinasyon Analizi
+// 2. Sekme: Dropdown ve Oran Kombinasyon Analizi
 function dropdownlariDoldur() {
   const populate = (id, key) => {
     const select = document.getElementById(id);
-    const uniqueVals = [...new Set(macVerileri.map(m => m[key]))]
-      .filter(v => v > 0)
-      .sort((a, b) => a - b);
+    if (!select) return;
 
+    const values = [...new Set(macVerileri.map(m => m[key]))].filter(v => v > 0).sort((a, b) => a - b);
     select.innerHTML = '<option value="">Tümü</option>';
-    uniqueVals.forEach(val => {
+    values.forEach(v => {
       const opt = document.createElement('option');
-      opt.value = val;
-      opt.textContent = val.toFixed(2);
+      opt.value = v;
+      opt.textContent = v.toFixed(2);
       select.appendChild(opt);
     });
   };
@@ -191,7 +199,7 @@ function analizEt() {
     ['st-ms1', 'st-ms0', 'st-ms2', 'st-ust', 'st-kg'].forEach(id => {
       document.getElementById(id).innerText = '%0';
     });
-    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Seçilen kombinasyona uygun maç bulunamadı.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">Seçilen oran kombinasyonuna uyan maç bulunamadı.</td></tr>';
     return;
   }
 
@@ -214,13 +222,16 @@ function analizEt() {
 
   tbody.innerHTML = '';
   eslesenler.forEach(m => {
+    let iyStr = (m.iyEv !== null && m.iyDep !== null) ? ` (${m.iyEv}-${m.iyDep})` : '';
+    let msStr = (m.msEv !== null && m.msDep !== null) ? `${m.msEv} - ${m.msDep}${iyStr}` : '-';
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td>${m.tarih}</td>
+      <td>${m.tarih} ${m.saat}</td>
       <td><span class="league-badge">${m.lig}</span></td>
       <td><b>${m.ev}</b> - ${m.dep}</td>
       <td><small>${m.ms1 ? m.ms1.toFixed(2) : '-'} / ${m.ms0 ? m.ms0.toFixed(2) : '-'} / ${m.ms2 ? m.ms2.toFixed(2) : '-'}</small></td>
-      <td><span class="score-badge">${m.msEv !== null ? m.msEv + ' - ' + m.msDep : '-'}</span></td>
+      <td><span class="score-badge">${msStr}</span></td>
     `;
     tbody.appendChild(tr);
   });
