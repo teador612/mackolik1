@@ -8,9 +8,14 @@ const state = {
   }
 };
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-const esc = (value) =>
+
+/* =========================================================
+   HTML ESCAPE
+========================================================= */
+
+const esc = value =>
   String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -19,22 +24,96 @@ const esc = (value) =>
     "'": '&#39;'
   }[char]));
 
-const odd = (value) =>
-  value === null || value === undefined
-    ? '—'
-    : Number(value).toFixed(2);
 
-const score = (value) =>
-  value?.home || value?.away
-    ? `${value.home ?? '-'} - ${value.away ?? '-'}`
+/* =========================================================
+   ORAN
+========================================================= */
+
+const odd = value => {
+
+  if (
+    value === null ||
+    value === undefined ||
+    value === ''
+  ) {
+    return '—';
+  }
+
+  const number = Number(value);
+
+  return Number.isFinite(number)
+    ? number.toFixed(2)
     : '—';
-
-const sortKey = (match) => {
-  const [day, month, year] =
-    String(match.date ?? '').split('.');
-
-  return `${year ?? ''}-${month ?? ''}-${day ?? ''} ${match.time ?? ''} ${match.code ?? ''}`;
 };
+
+
+/* =========================================================
+   SKOR
+========================================================= */
+
+const score = value => {
+
+  if (!value) {
+    return '—';
+  }
+
+  if (
+    value.home !== undefined &&
+    value.home !== null &&
+    value.home !== ''
+  ) {
+    return `${value.home ?? '-'} - ${value.away ?? '-'}`;
+  }
+
+  return '—';
+};
+
+
+/* =========================================================
+   TARİHİ SAYIYA ÇEVİR
+========================================================= */
+
+function dateNumber(date) {
+
+  const parts =
+    String(date ?? '').split('.');
+
+  if (parts.length !== 3) {
+    return 0;
+  }
+
+  const day = Number(parts[0]);
+  const month = Number(parts[1]);
+  const year = Number(parts[2]);
+
+  if (!day || !month || !year) {
+    return 0;
+  }
+
+  return new Date(
+    year,
+    month - 1,
+    day
+  ).getTime();
+}
+
+
+/* =========================================================
+   BUGÜN
+========================================================= */
+
+function todayString() {
+
+  const now = new Date();
+
+  return (
+    String(now.getDate()).padStart(2, '0') +
+    '.' +
+    String(now.getMonth() + 1).padStart(2, '0') +
+    '.' +
+    now.getFullYear()
+  );
+}
 
 
 /* =========================================================
@@ -44,7 +123,8 @@ const sortKey = (match) => {
 function filteredMatches() {
 
   const q =
-    state.filters.search.toLocaleLowerCase('tr-TR');
+    state.filters.search
+      .toLocaleLowerCase('tr-TR');
 
   return state.matches
     .filter(match => {
@@ -54,30 +134,55 @@ function filteredMatches() {
           .toLocaleLowerCase('tr-TR');
 
       return (
+
         (!q || text.includes(q)) &&
-        (!state.filters.date ||
-          match.date === state.filters.date) &&
-        (!state.filters.league ||
-          match.league === state.filters.league) &&
-        (!state.filters.unplayed ||
-          (!match.score?.home &&
-           !match.score?.away))
+
+        (
+          !state.filters.date ||
+          match.date === state.filters.date
+        ) &&
+
+        (
+          !state.filters.league ||
+          match.league === state.filters.league
+        ) &&
+
+        (
+          !state.filters.unplayed ||
+          (
+            !match.score?.home &&
+            !match.score?.away
+          )
+        )
+
       );
 
     })
-    .sort((a, b) =>
-      sortKey(a).localeCompare(sortKey(b))
-    );
+    .sort((a, b) => {
+
+      const dateDiff =
+        dateNumber(a.date) -
+        dateNumber(b.date);
+
+      if (dateDiff !== 0) {
+        return dateDiff;
+      }
+
+      return String(a.time ?? '')
+        .localeCompare(String(b.time ?? ''));
+
+    });
 }
 
 
 /* =========================================================
-   TABLOYU GÖSTER
+   TABLOYU ÇİZ
 ========================================================= */
 
 function render() {
 
-  const rows = filteredMatches();
+  const rows =
+    filteredMatches();
 
   $('message').textContent =
     `${rows.length} maç gösteriliyor.`;
@@ -85,7 +190,8 @@ function render() {
   $('matches').innerHTML =
     rows.map(match => {
 
-      const o = match.openingOdds ?? {};
+      const o =
+        match.openingOdds ?? {};
 
       return `
         <tr>
@@ -112,28 +218,6 @@ function render() {
 
 
 /* =========================================================
-   BUGÜNÜ BUL
-   ÖRNEK: 28.09.2026
-========================================================= */
-
-function getToday() {
-
-  const now = new Date();
-
-  const day =
-    String(now.getDate()).padStart(2, '0');
-
-  const month =
-    String(now.getMonth() + 1).padStart(2, '0');
-
-  const year =
-    String(now.getFullYear());
-
-  return `${day}.${month}.${year}`;
-}
-
-
-/* =========================================================
    FİLTRELERİ DOLDUR
 ========================================================= */
 
@@ -142,99 +226,144 @@ function fillFilters() {
   const dates = [
     ...new Set(
       state.matches
-        .map(m => m.date)
+        .map(match => match.date)
         .filter(Boolean)
     )
-  ].sort((a, b) => {
-
-    const [ad, am, ay] =
-      a.split('.').map(Number);
-
-    const [bd, bm, by] =
-      b.split('.').map(Number);
-
-    return new Date(
-      ay,
-      am - 1,
-      ad
-    ) - new Date(
-      by,
-      bm - 1,
-      bd
-    );
-
-  });
+  ].sort(
+    (a, b) =>
+      dateNumber(a) -
+      dateNumber(b)
+  );
 
 
   const leagues = [
     ...new Set(
       state.matches
-        .map(m => m.league)
+        .map(match => match.league)
         .filter(Boolean)
     )
-  ].sort((a, b) =>
-    a.localeCompare(b, 'tr')
+  ].sort(
+    (a, b) =>
+      String(a).localeCompare(
+        String(b),
+        'tr'
+      )
   );
 
 
-  /* =======================================================
-     TARİH MENÜSÜ
-  ======================================================= */
+  const dateFilter =
+    $('dateFilter');
 
-  const dateFilter = $('dateFilter');
+
+  /* Tarihler */
 
   dateFilter.innerHTML =
     '<option value="">Tüm tarihler</option>' +
+
     dates.map(date =>
       `<option value="${esc(date)}">${esc(date)}</option>`
     ).join('');
 
 
-  /* =======================================================
-     LİG MENÜSÜ
-  ======================================================= */
+  /* Ligler */
 
   $('leagueFilter').innerHTML =
     '<option value="">Tüm ligler</option>' +
+
     leagues.map(league =>
       `<option value="${esc(league)}">${esc(league)}</option>`
     ).join('');
 
 
-  /* =======================================================
-     BUGÜNÜ OTOMATİK SEÇ
-  ======================================================= */
+  /*
+     BUGÜNÜ BUL
+  */
 
-  const today = getToday();
+  const today =
+    todayString();
 
 
-  console.log('Bugün:', today);
-  console.log('Verideki tarihler:', dates);
+  console.log(
+    'BUGÜN =',
+    today
+  );
 
+  console.log(
+    'TARİHLER =',
+    dates
+  );
+
+
+  /*
+     BUGÜN VERİDE VARSA SEÇ
+  */
 
   if (dates.includes(today)) {
 
-    state.filters.date = today;
+    state.filters.date =
+      today;
 
-    dateFilter.value = today;
+    dateFilter.value =
+      today;
 
-  } else {
+    return;
+  }
 
-    /*
-      Bugünün tarihi veride yoksa
-      "Tüm tarihler" bırakılır.
-    */
 
-    state.filters.date = '';
+  /*
+     BUGÜN YOKSA EN YAKIN TARİHİ SEÇ
+  */
 
-    dateFilter.value = '';
+  if (dates.length) {
+
+    const todayTime =
+      dateNumber(today);
+
+    let closest =
+      dates[0];
+
+    let difference =
+      Math.abs(
+        dateNumber(closest) -
+        todayTime
+      );
+
+
+    for (const date of dates) {
+
+      const currentDifference =
+        Math.abs(
+          dateNumber(date) -
+          todayTime
+        );
+
+      if (
+        currentDifference <
+        difference
+      ) {
+
+        closest =
+          date;
+
+        difference =
+          currentDifference;
+      }
+    }
+
+
+    state.filters.date =
+      closest;
+
+    dateFilter.value =
+      closest;
 
   }
+
 }
 
 
 /* =========================================================
-   ARAMA
+   OLAYLAR
 ========================================================= */
 
 $('search').addEventListener(
@@ -250,10 +379,6 @@ $('search').addEventListener(
 );
 
 
-/* =========================================================
-   TARİH
-========================================================= */
-
 $('dateFilter').addEventListener(
   'change',
   event => {
@@ -267,10 +392,6 @@ $('dateFilter').addEventListener(
 );
 
 
-/* =========================================================
-   LİG
-========================================================= */
-
 $('leagueFilter').addEventListener(
   'change',
   event => {
@@ -283,10 +404,6 @@ $('leagueFilter').addEventListener(
   }
 );
 
-
-/* =========================================================
-   OYNANMAMIŞLAR
-========================================================= */
 
 $('unplayedOnly').addEventListener(
   'change',
@@ -302,14 +419,15 @@ $('unplayedOnly').addEventListener(
 
 
 /* =========================================================
-   VERİYİ YÜKLE
+   VERİYİ ÇEK
 ========================================================= */
 
 try {
 
   const response =
     await fetch(
-      'data/matches.json',
+      'data/matches.json?v=' +
+      Date.now(),
       {
         cache: 'no-store'
       }
@@ -317,9 +435,12 @@ try {
 
 
   if (!response.ok) {
+
     throw new Error(
-      `HTTP ${response.status}`
+      'HTTP ' +
+      response.status
     );
+
   }
 
 
@@ -328,33 +449,40 @@ try {
 
 
   state.matches =
-    data.matches ?? [];
+    Array.isArray(data.matches)
+      ? data.matches
+      : [];
 
 
   $('updatedAt').textContent =
     data.updatedAt
-      ? `Son güncelleme: ${
-          new Date(
-            data.updatedAt
-          ).toLocaleString('tr-TR')
-        }`
+      ? 'Son güncelleme: ' +
+        new Date(
+          data.updatedAt
+        ).toLocaleString('tr-TR')
       : 'Henüz veri yok';
 
 
-  /* Önce filtreleri oluştur */
+  /*
+     ÖNCE TARİHLERİ DOLDUR
+  */
+
   fillFilters();
 
 
-  /* Sonra tabloyu çiz */
+  /*
+     SONRA TABLOYU ÇİZ
+  */
+
   render();
 
 
 } catch (error) {
 
+  console.error(error);
+
   $('message').textContent =
     'Veri yüklenemedi. GitHub Actions çalıştırılmış mı kontrol edin.';
-
-  console.error(error);
 
 }
 ```
