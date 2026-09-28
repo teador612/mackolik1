@@ -8,6 +8,7 @@ const DATA_PATH = path.resolve('data/matches.json');
 
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
+
   return vm.runInNewContext(
     '(' + cleanText + ')',
     Object.create(null)
@@ -24,9 +25,13 @@ function numberOrNull(value) {
     return null;
   }
 
-  const number = Number(String(value).replace(',', '.'));
+  const number = Number(
+    String(value).replace(',', '.')
+  );
 
-  return Number.isFinite(number) ? number : null;
+  return Number.isFinite(number)
+    ? number
+    : null;
 }
 
 function parseScoreValue(value, status) {
@@ -46,11 +51,7 @@ function parseScoreValue(value, status) {
 
   const result = String(value).trim();
 
-  if (result === '') {
-    return null;
-  }
-
-  return result;
+  return result === '' ? null : result;
 }
 
 async function getCurrentWeek() {
@@ -109,7 +110,6 @@ async function fetchMatches(week) {
     for (const row of day.m ?? []) {
       const matchStatus = Number(row[5] ?? 0);
 
-
       matches.push({
         code: String(row[0]),
         week: week,
@@ -121,16 +121,27 @@ async function fetchMatches(week) {
         mbs: numberOrNull(row[13]),
         status: matchStatus,
 
-   score: {
-home: parseScoreValue(row[11], matchStatus),
-away: parseScoreValue(row[12], matchStatus)
-},
+        score: {
+          home: parseScoreValue(
+            row[11],
+            matchStatus
+          ),
+          away: parseScoreValue(
+            row[12],
+            matchStatus
+          )
+        },
 
-halfTimeScore: {
-home: parseScoreValue(row[8], matchStatus),
-away: parseScoreValue(row[9], matchStatus)
-},
-
+        halfTimeScore: {
+          home: parseScoreValue(
+            row[8],
+            matchStatus
+          ),
+          away: parseScoreValue(
+            row[9],
+            matchStatus
+          )
+        },
 
         openingOdds: {
           ms1: numberOrNull(row[16]),
@@ -206,49 +217,95 @@ try {
 const week = await getCurrentWeek();
 const fetched = await fetchMatches(week);
 
-const previousByCode = new Map(
-  (previous.matches ?? []).map(function(match) {
-    return [
-      String(match.code),
-      match
-    ];
-  })
-);
+const previousByCode = new Map();
+
+for (const match of previous.matches ?? []) {
+  previousByCode.set(
+    String(match.code),
+    match
+  );
+}
 
 let changed = false;
 
-const matches = fetched.map(function(current) {
-  const old = previousByCode.get(current.code);
+for (const current of fetched) {
+  const code = String(current.code);
+  const old = previousByCode.get(code);
 
+  // Yeni maç
   if (!old) {
-    changed = true;
-
-    return {
+    previousByCode.set(code, {
       ...current,
-      openingRecordedAt: new Date().toISOString()
-    };
+      openingRecordedAt:
+        new Date().toISOString()
+    });
+
+    changed = true;
+    continue;
   }
 
+  // Mevcut maç:
+  // Güncel bilgileri yenile,
+  // fakat açılış oranlarını koru.
   const merged = {
-    ...current,
-    openingOdds: old.openingOdds ?? current.openingOdds,
+    ...old,
+
+    week: current.week,
+    date: current.date,
+    time: current.time,
+    league: current.league,
+    home: current.home,
+    away: current.away,
+    mbs: current.mbs,
+
+    status: current.status,
+
+    score: current.score,
+
+    halfTimeScore:
+      current.halfTimeScore,
+
+    openingOdds:
+      old.openingOdds ??
+      current.openingOdds,
+
     openingRecordedAt:
-      old.openingRecordedAt ?? 'previous-record'
+      old.openingRecordedAt ??
+      'previous-record'
   };
 
   if (
-    !sameJson(old.score, current.score) ||
+    !sameJson(
+      old.score,
+      current.score
+    ) ||
     !sameJson(
       old.halfTimeScore,
       current.halfTimeScore
     ) ||
-    Number(old.status) !== Number(current.status)
+    Number(old.status) !==
+      Number(current.status)
   ) {
     changed = true;
   }
 
-  return merged;
-});
+  previousByCode.set(
+    code,
+    merged
+  );
+}
+
+// Eski maçlar + yeni maçlar
+const matches = Array.from(
+  previousByCode.values()
+);
+
+if (
+  matches.length !==
+  (previous.matches ?? []).length
+) {
+  changed = true;
+}
 
 const next = {
   source: PAGE,
@@ -272,7 +329,8 @@ if (
   );
 
   const output =
-    JSON.stringify(next, null, 2) + '\n';
+    JSON.stringify(next, null, 2) +
+    '\n';
 
   await fs.writeFile(
     DATA_PATH,
@@ -286,6 +344,8 @@ console.log(
     {
       week: week,
       fetched: fetched.length,
+      archived:
+        matches.length,
       changed: changed,
       dataPath: DATA_PATH
     },
