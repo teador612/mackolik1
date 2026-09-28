@@ -1,4 +1,3 @@
-```js
 const state = {
   matches: [],
   filters: {
@@ -9,9 +8,9 @@ const state = {
   }
 };
 
-const $ = (id) => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-const esc = (value) =>
+const esc = value =>
   String(value ?? '').replace(/[&<>"']/g, char => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -20,65 +19,41 @@ const esc = (value) =>
     "'": '&#39;'
   }[char]));
 
-const odd = (value) =>
+const odd = value =>
   value === null || value === undefined || value === ''
     ? '—'
     : Number(value).toFixed(2);
 
-const score = (value) =>
+const score = value =>
   value?.home != null || value?.away != null
     ? `${value.home ?? '-'} - ${value.away ?? '-'}`
     : '—';
 
-const sortKey = (match) => {
-  const [day, month, year] = String(match.date ?? '').split('.');
-  return `${year ?? ''}-${month ?? ''}-${day ?? ''} ${match.time ?? ''} ${match.code ?? ''}`;
-};
-
 
 /* =========================================================
-   TARİHİ NORMALLEŞTİR
-   28.09.2026
-   2026-09-28
-   28/09/2026
-   gibi formatları aynı hale getirir.
+   TARİHİ SAYISAL DEĞERE ÇEVİR
+   24.09.2026 -> timestamp
 ========================================================= */
 
-function normalizeDate(value) {
-  if (!value) return '';
+function dateValue(date) {
+  if (!date) return 0;
 
-  const str = String(value).trim();
+  const parts = String(date).split('.');
 
-  let day, month, year;
+  if (parts.length !== 3) return 0;
 
-  // 28.09.2026 / 28/09/2026 / 28-09-2026
-  let m = str.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  const day = Number(parts[0]);
+  const month = Number(parts[1]);
+  const year = Number(parts[2]);
 
-  if (m) {
-    day = m[1].padStart(2, '0');
-    month = m[2].padStart(2, '0');
-    year = m[3];
+  if (!day || !month || !year) return 0;
 
-    return `${day}.${month}.${year}`;
-  }
-
-  // 2026-09-28
-  m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-
-  if (m) {
-    year = m[1];
-    month = m[2].padStart(2, '0');
-    day = m[3].padStart(2, '0');
-
-    return `${day}.${month}.${year}`;
-  }
-
-  return str;
+  return new Date(year, month - 1, day).getTime();
 }
 
 
 /* =========================================================
-   TÜRKİYE SAATİNE GÖRE BUGÜN
+   BUGÜNÜ TÜRKİYE SAATİNE GÖRE AL
 ========================================================= */
 
 function getTodayTR() {
@@ -98,20 +73,6 @@ function getTodayTR() {
 
 
 /* =========================================================
-   TARİHİ SIRALA
-========================================================= */
-
-function dateToNumber(value) {
-  const normalized = normalizeDate(value);
-  const [day, month, year] = normalized.split('.').map(Number);
-
-  if (!day || !month || !year) return 0;
-
-  return new Date(year, month - 1, day).getTime();
-}
-
-
-/* =========================================================
    FİLTRELENMİŞ MAÇLAR
 ========================================================= */
 
@@ -120,27 +81,33 @@ function filteredMatches() {
 
   return state.matches
     .filter(match => {
+
       const text =
         `${match.home ?? ''} ${match.away ?? ''} ${match.code ?? ''}`
           .toLocaleLowerCase('tr-TR');
 
       return (
         (!q || text.includes(q)) &&
-        (
-          !state.filters.date ||
-          normalizeDate(match.date) === state.filters.date
-        ) &&
-        (
-          !state.filters.league ||
-          match.league === state.filters.league
-        ) &&
+        (!state.filters.date || match.date === state.filters.date) &&
+        (!state.filters.league || match.league === state.filters.league) &&
         (
           !state.filters.unplayed ||
           (!match.score?.home && !match.score?.away)
         )
       );
     })
-    .sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+    .sort((a, b) => {
+
+      const dateDiff =
+        dateValue(a.date) - dateValue(b.date);
+
+      if (dateDiff !== 0) {
+        return dateDiff;
+      }
+
+      return String(a.time ?? '')
+        .localeCompare(String(b.time ?? ''));
+    });
 }
 
 
@@ -149,12 +116,14 @@ function filteredMatches() {
 ========================================================= */
 
 function render() {
+
   const rows = filteredMatches();
 
   $('message').textContent =
     `${rows.length} maç gösteriliyor.`;
 
   $('matches').innerHTML = rows.map(match => {
+
     const o = match.openingOdds ?? {};
 
     return `
@@ -176,6 +145,7 @@ function render() {
         <td>${odd(o.au25Ust)}</td>
       </tr>
     `;
+
   }).join('');
 }
 
@@ -186,30 +156,39 @@ function render() {
 
 function fillFilters() {
 
+  /* -------------------------
+     TARİHLER
+  ------------------------- */
+
   const dates = [
     ...new Set(
       state.matches
-        .map(m => normalizeDate(m.date))
+        .map(match => match.date)
         .filter(Boolean)
     )
-  ].sort((a, b) => dateToNumber(a) - dateToNumber(b));
+  ].sort((a, b) => dateValue(a) - dateValue(b));
 
+
+  /* -------------------------
+     LİGLER
+  ------------------------- */
 
   const leagues = [
     ...new Set(
       state.matches
-        .map(m => m.league)
+        .map(match => match.league)
         .filter(Boolean)
     )
   ].sort((a, b) =>
-    a.localeCompare(b, 'tr')
+    String(a).localeCompare(String(b), 'tr')
   );
 
 
+  /* -------------------------
+     TARİH SELECT
+  ------------------------- */
+
   const dateFilter = $('dateFilter');
-
-
-  /* Tarih listesini oluştur */
 
   dateFilter.innerHTML =
     `<option value="">Tüm tarihler</option>` +
@@ -218,7 +197,9 @@ function fillFilters() {
     ).join('');
 
 
-  /* Lig listesini oluştur */
+  /* -------------------------
+     LİG SELECT
+  ------------------------- */
 
   $('leagueFilter').innerHTML =
     `<option value="">Tüm ligler</option>` +
@@ -228,79 +209,109 @@ function fillFilters() {
 
 
   /* =======================================================
-     EN ÖNEMLİ KISIM:
-     İLK AÇILIŞTA BUGÜNÜ OTOMATİK SEÇ
+     İLK AÇILIŞTA TARİH SEÇİMİ
   ======================================================= */
 
   const today = getTodayTR();
 
-  console.log('Bugünün tarihi:', today);
-  console.log('Verideki tarihler:', dates);
 
+  /*
+     1. Önce doğrudan bugünü ara
+  */
 
   if (dates.includes(today)) {
 
     state.filters.date = today;
-
     dateFilter.value = today;
+
+    return;
+  }
+
+
+  /*
+     2. Bugün yoksa bugüne en yakın tarihi bul
+  */
+
+  if (dates.length > 0) {
+
+    const todayTime = dateValue(today);
+
+    let closestDate = dates[0];
+    let closestDifference =
+      Math.abs(dateValue(dates[0]) - todayTime);
+
+    for (const date of dates) {
+
+      const difference =
+        Math.abs(dateValue(date) - todayTime);
+
+      if (difference < closestDifference) {
+
+        closestDifference = difference;
+        closestDate = date;
+      }
+    }
+
+    state.filters.date = closestDate;
+    dateFilter.value = closestDate;
 
   } else {
 
-    /*
-      Eğer veri farklı formatta geldiyse
-      tekrar kontrol et.
-    */
-
-    const todayMatch = state.matches.find(match =>
-      normalizeDate(match.date) === today
-    );
-
-    if (todayMatch) {
-
-      state.filters.date = today;
-
-      dateFilter.value = today;
-
-    } else {
-
-      /*
-        Bugünün verisi gerçekten yoksa
-        tüm tarihler gösterilir.
-      */
-
-      state.filters.date = '';
-
-      dateFilter.value = '';
-    }
+    state.filters.date = '';
+    dateFilter.value = '';
   }
 }
 
 
 /* =========================================================
-   FİLTRE EVENTLERİ
+   ARAMA
 ========================================================= */
 
 $('search').addEventListener('input', event => {
+
   state.filters.search = event.target.value;
+
   render();
+
 });
 
+
+/* =========================================================
+   TARİH
+========================================================= */
 
 $('dateFilter').addEventListener('change', event => {
+
   state.filters.date = event.target.value;
+
   render();
+
 });
 
+
+/* =========================================================
+   LİG
+========================================================= */
 
 $('leagueFilter').addEventListener('change', event => {
+
   state.filters.league = event.target.value;
+
   render();
+
 });
 
 
+/* =========================================================
+   OYNANMAMIŞLAR
+========================================================= */
+
 $('unplayedOnly').addEventListener('change', event => {
+
   state.filters.unplayed = event.target.checked;
+
   render();
+
 });
 
 
@@ -319,26 +330,45 @@ try {
 
 
   if (!response.ok) {
+
     throw new Error(
-      `Veri dosyası yüklenemedi: ${response.status}`
+      `HTTP ${response.status}`
     );
+
   }
 
 
   const data = await response.json();
 
 
-  state.matches = data.matches ?? [];
+  state.matches =
+    Array.isArray(data.matches)
+      ? data.matches
+      : [];
 
+
+  /* -------------------------
+     SON GÜNCELLEME
+  ------------------------- */
 
   $('updatedAt').textContent =
     data.updatedAt
-      ? `Son güncelleme: ${new Date(data.updatedAt).toLocaleString('tr-TR')}`
+      ? `Son güncelleme: ${
+          new Date(data.updatedAt).toLocaleString('tr-TR')
+        }`
       : 'Henüz veri yok';
 
 
+  /* -------------------------
+     FİLTRELER
+  ------------------------- */
+
   fillFilters();
 
+
+  /* -------------------------
+     TABLO
+  ------------------------- */
 
   render();
 
@@ -349,5 +379,6 @@ try {
     'Veri yüklenemedi. GitHub Actions çalıştırılmış mı kontrol edin.';
 
   console.error(error);
+
 }
 ```
