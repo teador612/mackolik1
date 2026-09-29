@@ -1,5 +1,5 @@
 /* =========================================================
-   BUGÜNÜN MAÇLARI MENÜSÜ (Maçkolik JSON & openingOdds Tam Uyumlu)
+   BUGÜNÜN MAÇLARI MENÜSÜ (Birebir Eşleşme + Filtre + Canlı Skor)
    index.html içindeki DATA / MARKETS değişkenlerini kullanır.
 ========================================================= */
 (function () {
@@ -8,7 +8,7 @@
   var START = '2026-09-01'; // İstatistiklere sadece bu tarih ve sonrası dahil edilir
   var CUR = { items: [], idxPlayed: {}, idxUnp: {}, cfg: {}, liveScores: {} };
   
-  // Maç verilerinizin yerel adresi
+  // Yerel veri yolunuz (Gerekirse doğrudan kendi GitHub Pages URL'inizi de yazabilirsiniz)
   var LIVE_JSON_URL = 'data/matches.json';
 
   /* ---------- Yardımcı Fonksiyonlar ---------- */
@@ -97,6 +97,8 @@
     '.td-meta{font-size:11px;color:#8290a7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.td-teams{margin-top:3px;font-size:14px;font-weight:700;color:#f0f4fb;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.td-score{flex:0 0 auto;font-size:13px;font-weight:800;padding:4px 8px;border-radius:6px;background:#18263a;color:#00ffcc;border:1px solid #283d5a;margin-right:4px}' +
+    '.td-score.live{background:#e74c3c;color:#fff;border-color:#c0392b;animation:pulse 1.5s infinite}' +
+    '@keyframes pulse{0%{opacity:1}50%{opacity:0.6}100%{opacity:1}}' +
     '.td-chip{flex:0 0 auto;font-size:11px;font-weight:800;padding:5px 8px;border-radius:6px;white-space:nowrap;' +
       'color:hsl(var(--h),85%,66%);background:hsl(var(--h),60%,13%);border:1px solid hsl(var(--h),55%,30%)}' +
     '.td-chip.none{color:#7d8aa3;background:#111b2d;border-color:#1d2a3d;font-weight:600}' +
@@ -145,7 +147,7 @@
   st.textContent = css;
   document.head.appendChild(st);
 
-  /* ---------- Sekme Yapısı ---------- */
+  /* ---------- Sekme ve Bölüm Hazırlığı ---------- */
   var tabs = document.querySelector('.tabs');
   var btn = document.createElement('button');
   btn.className = 'tab active';
@@ -174,7 +176,8 @@
     '<div class="td-panel">' +
       '<h2>Bugünün maçları</h2>' +
       '<div class="notice">Oynanmamış maçlar listelenir. Maçın yanındaki <b>+</b> butonuna basınca her oran türü için, aynı oranla ' +
-      '<b>' + fmtDate(START) + ' ve sonrası</b> oynanmış maçların sonuç yüzdeleri çıkar.</div>' +
+      '<b>' + fmtDate(START) + ' ve sonrası</b> oynanmış maçların sonuç yüzdeleri çıkar. ' +
+      'Oranın yanındaki <b>+</b> ile o oranlı maçlar listelenir.</div>' +
       '<div class="td-ctl">' +
         '<div class="field"><label for="tdDate">Maç günü</label><input id="tdDate" type="date" class="input"></div>' +
         '<div class="field wide"><label for="tdBasis">Eşleştirme</label><select id="tdBasis" class="select"></select></div>' +
@@ -208,7 +211,7 @@
   });
   ['tdThr', 'tdMin', 'tdOdd'].forEach(function (id) { $(id).addEventListener('input', render); });
 
-  /* ---------- Canlı Skor Senkronizasyonu ---------- */
+  /* ---------- Canlı Skor Verisi Çekme ---------- */
   function fetchLiveScores() {
     fetch(LIVE_JSON_URL + '?_=' + Date.now(), { cache: 'no-store' })
       .then(function (res) {
@@ -220,8 +223,7 @@
         var scores = [];
 
         matches.forEach(function (m) {
-          var status = Number(m.status);
-          if (status !== 4 && status !== 0 && m.score && (m.score.home !== null && m.score.home !== undefined)) {
+          if (m.score && (m.score.home !== null && m.score.home !== undefined)) {
             scores.push({
               home: m.home,
               away: m.away,
@@ -267,7 +269,7 @@
     });
   }
 
-  /* Event Listener */
+  /* Olay Dinleyicileri */
   sec.addEventListener('click', function (e) {
     var t = e.target;
     if (!t.closest) return;
@@ -299,58 +301,15 @@
     if (d) { $('tdDate').value = d.getAttribute('data-d'); render(); }
   });
 
-  /* ---------- Veri Analizi ve İndeksleme (openingOdds ve Maçkolik JSON Uyumlu) ---------- */
+  /* ---------- Veri Analizi ve İndeksleme ---------- */
   function mk(x) {
-    var o = x.openingOdds || x.odds || x.oranlar || x;
-    
-    var scoreFT = x.scoreFT || x.ft_score || '';
-    var scoreHT = x.scoreHT || x.ht_score || '';
-
-    // Status 4/0 (Oynanmamış) Kontrolü
-    var status = Number(x.status);
-    if (status !== 4 && status !== 0) {
-      if (x.score && typeof x.score === 'object') {
-        scoreFT = (x.score.home !== undefined && x.score.away !== undefined) ? x.score.home + '-' + x.score.away : '';
-      } else if (typeof x.score === 'string') {
-        scoreFT = x.score;
-      }
-    }
-
-    if (x.halfTimeScore && typeof x.halfTimeScore === 'object') {
-      scoreHT = (x.halfTimeScore.home !== undefined && x.halfTimeScore.away !== undefined) ? x.halfTimeScore.home + '-' + x.halfTimeScore.away : '';
-    }
-
-    var isPlayed = (status !== 4 && status !== 0 && scoreFT !== '');
-
-    return { 
-      r: x, 
-      code: x.code || '',
-      played: isPlayed,
-      date: x.date || x.tarih || '', 
-      time: x.time || x.saat || '',
-      league: x.league || x.lig || '', 
-      home: x.home || x.homeTeam || x.ev || '', 
-      away: x.away || x.awayTeam || x.dep || '',
-      HT: scoreHT, 
-      FT: scoreFT, 
-      f: sc(scoreFT), 
-      h: sc(scoreHT), 
-      odds: {
-        ms1: o.ms1 || o['1'] || x.ms1 || '',
-        ms0: o.msX || o.ms0 || o.msx || o['X'] || o['0'] || x.ms0 || '',
-        ms2: o.ms2 || o['2'] || x.ms2 || '',
-        kgVar: o.kgVar || o.kg_var || o['VAR'] || x.kgVar || '',
-        over25: o.au25Ust || o.over25 || o.ust25 || o['2.5Ü'] || o['ÜST'] || x.over25 || '',
-        iyOver05: o.iy05Ust || o.iyOver05 || o.iy_ust05 || '',
-        iyOver15: o.iy15Ust || o.iyOver15 || o.iy_ust15 || ''
-      }
-    };
+    return { r: x, date: x.date, league: x.league, home: x.home, away: x.away,
+              HT: x.scoreHT, FT: x.scoreFT, f: sc(x.scoreFT), h: sc(x.scoreHT), odds: x.odds || {} };
   }
 
   function buildIndex(arr) {
     var m = Object.create(null);
     arr.forEach(function (x) {
-      if (!x.odds) return;
       Object.keys(x.odds).forEach(function (k) {
         var n = num(x.odds[k]);
         if (!(n > 0)) return;
@@ -435,7 +394,7 @@
              best: ideal[0] || null, hasIdeal: ideal.length > 0 };
   }
 
-  /* ---------- HTML Şablonları ---------- */
+  /* ---------- Görünüm Yapısı (HTML) ---------- */
   function boxHtml(x, showOdd) {
     return '<div class="td-box' + (x.ideal ? ' ideal' : ' dim') + '" style="--h:' + hue(x.p) + '">' +
       '<span class="td-l">' + E(x.d.l) + '</span>' +
@@ -513,15 +472,12 @@
 
     var src = (typeof DATA !== 'undefined' && Array.isArray(DATA)) ? DATA : [];
 
-    // Verileri mk() yardımıyla standart formata sok
-    var normalizedSrc = src.map(mk);
-
-    var pool = normalizedSrc.filter(function (x) { return x.played && String(x.date) >= START; });
-    var unpAll = normalizedSrc.filter(function (x) { return !x.played; });
+    var pool = src.filter(function (x) { return x.played && String(x.date) >= START; }).map(mk);
+    var unpAll = src.filter(function (x) { return !x.played; }).map(mk);
     CUR.idxPlayed = buildIndex(pool);
     CUR.idxUnp = buildIndex(unpAll);
 
-    var today = normalizedSrc.filter(function (x) { return !x.played && x.date === date; })
+    var today = src.filter(function (x) { return !x.played && x.date === date; })
       .sort(function (a, b) { return String(a.time).localeCompare(String(b.time)); });
 
     var items = today.map(function (r) {
@@ -541,7 +497,7 @@
 
     if (!today.length) {
       var dates = [];
-      normalizedSrc.forEach(function (x) {
+      src.forEach(function (x) {
         if (!x.played && x.date && String(x.date) >= date && dates.indexOf(x.date) < 0) dates.push(x.date);
       });
       dates.sort();
@@ -578,7 +534,7 @@
     fetchLiveScores();
   }
 
-  // Sayfa yüklendiğinde ve 30 saniyede bir çalıştırma
+  // İlk yükleme ve periyodik skor yenileme (30 saniye)
   setTimeout(render, 300);
   setInterval(fetchLiveScores, 30000);
 
