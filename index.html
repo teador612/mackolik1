@@ -255,7 +255,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('match-date');
             
-            // Varsayılan tarih olarak bugünü ayarla
+            // Varsayılan tarih olarak bugünü ayarla (YYYY-MM-DD)
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
@@ -268,7 +268,6 @@
 
         async function fetchData() {
             try {
-                // skor.html'in kullandığı veri yolunu doğrudan çeker
                 const response = await fetch('data/matches.json');
                 if (!response.ok) throw new Error('Ağ hatası');
                 
@@ -294,14 +293,12 @@
                 return;
             }
 
-            // data/matches.json içeriğinin dizi veya obje olma durumunu kontrol eder
             let matchesList = [];
             if (Array.isArray(rawData)) {
                 matchesList = rawData;
             } else if (rawData.matches && Array.isArray(rawData.matches)) {
                 matchesList = rawData.matches;
             } else if (typeof rawData === 'object') {
-                // Obje yapısındaysa tüm değerleri diziye dönüştürür
                 matchesList = Object.values(rawData).flat();
             }
 
@@ -310,29 +307,39 @@
                 return;
             }
 
-            // Seçilen tarihe göre filtreleme (YYYY-MM-DD veya DD.MM.YYYY formatı uyumlu)
+            // HTML Date Input (YYYY-MM-DD) -> JSON Formatı (DD.MM.YYYY) Dönüştürme
+            const [year, month, day] = selectedDate.split('-');
+            const formattedTRDate = `${day}.${month}.${year}`;
+
+            // Eşleşen maçları filtrele
             const filtered = matchesList.filter(m => {
-                const matchDate = m.date || m.tarih || m.match_date || '';
-                if (!matchDate) return true; // Tarih bilgisi yoksa maçı gizleme
-                return matchDate.includes(selectedDate);
+                const matchDate = m.date || m.tarih || '';
+                return matchDate === formattedTRDate || matchDate.includes(selectedDate);
             });
 
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="no-data">${selectedDate} tarihine ait maç bulunamadı.</div>`;
+                listContainer.innerHTML = `<div class="no-data">${formattedTRDate} tarihine ait maç bulunamadı.</div>`;
                 return;
             }
 
             listContainer.innerHTML = filtered.map(m => {
-                const home = m.home || m.homeTeam || m.ev || m.ev_sahibi || 'Ev Sahibi';
-                const away = m.away || m.awayTeam || m.dep || m.deplasman || 'Deplasman';
-                const score = m.score || m.skor || m.status || m.time || m.saat || 'v';
+                const home = m.home || m.homeTeam || m.ev || 'Ev Sahibi';
+                const away = m.away || m.awayTeam || m.dep || 'Deplasman';
                 const league = m.league || m.lig || 'Lig Bilgisi Yok';
                 const time = m.time || m.saat || '';
                 
-                // Oranlar objesi kontrolü
-                const odds = m.odds || m.oranlar || m;
+                // Skor Formatı (Obje durumunu kontrol etme)
+                let scoreDisplay = time || 'v';
+                if (m.score && typeof m.score === 'object') {
+                    scoreDisplay = `${m.score.home ?? 0} - ${m.score.away ?? 0}`;
+                } else if (typeof m.score === 'string') {
+                    scoreDisplay = m.score;
+                }
+
+                // Oranlar Yapısı
+                const odds = m.odds || m.oranlar || {};
                 const ms1 = odds.ms1 || odds['1'] || '-';
-                const msx = odds.msx || odds.ms0 || odds['X'] || odds['0'] || '-';
+                const msx = odds.msx || odds.ms0 || odds['X'] || '-';
                 const ms2 = odds.ms2 || odds['2'] || '-';
 
                 return `
@@ -343,7 +350,7 @@
                         </div>
                         <div class="match-body">
                             <span class="team home">${home}</span>
-                            <span class="score-time">${score}</span>
+                            <span class="score-time">${scoreDisplay}</span>
                             <span class="team away">${away}</span>
                         </div>
                         ${(ms1 !== '-' || msx !== '-' || ms2 !== '-') ? `
