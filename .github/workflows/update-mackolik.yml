@@ -57,7 +57,7 @@ jobs:
       - name: Site dosyalarını hazırla
         run: |
           mkdir -p _site/data
-          cp index.html app.js style.css _site/
+          cp skor.html app.js style.css _site/
           cp data/matches.json _site/data/
 
       - name: Site dosyalarını paketle
