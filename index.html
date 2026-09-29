@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oran Analiz - Günün Maçları</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+        }
+
+        /* Navigasyon / Menü */
+        .navbar {
+            background-color: #1e293b;
+            border-bottom: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #22c55e;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 12px;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff;
+            background-color: #334155;
+        }
+
+        .nav-link.active {
+            color: #38bdf8;
+        }
+
+        /* Ana İçerik */
+        .container {
+            max-width: 1100px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+
+        /* Filtre Kartı */
+        .filter-card {
+            background-color: #1e293b;
+            padding: 16px 20px;
+            border-radius: 12px;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .date-picker-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .date-picker-group label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        input[type="date"] {
+            background-color: #0f172a;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        input[type="date"]::-calendar-picker-indicator {
+            filter: invert(1);
+        }
+
+        /* Maç Listesi */
+        .matches-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-card {
+            background-color: #1e293b;
+            border-radius: 10px;
+            border: 1px solid #334155;
+            padding: 14px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 6px;
+        }
+
+        .match-body {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .team {
+            flex: 1;
+            font-size: 0.95rem;
+        }
+
+        .team.away {
+            text-align: right;
+        }
+
+        .score-time {
+            padding: 4px 12px;
+            background-color: #0f172a;
+            border-radius: 6px;
+            color: #38bdf8;
+            font-size: 0.9rem;
+        }
+
+        /* Oran Kutuları */
+        .odds-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .odd-box {
+            flex: 1;
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 6px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+
+        .odd-label {
+            color: #64748b;
+            font-size: 0.7rem;
+            display: block;
+        }
+
+        .odd-value {
+            color: #22c55e;
+            font-weight: 700;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+            background-color: #1e293b;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Menü (skor.html bağlantılı) -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">Oran<span>Analiz</span></a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">Bugünün Maçları</a></li>
+                <li><a href="skor.html" class="nav-link">Canlı Skorlar</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <div class="container">
+        <!-- Tarih Filtresi -->
+        <div class="filter-card">
+            <div class="filter-title" id="filter-title-text">Bugünün Maçları</div>
+            <div class="date-picker-group">
+                <label for="match-date">Tarih Seç:</label>
+                <input type="date" id="match-date">
+            </div>
+        </div>
+
+        <!-- Maç Listesi -->
+        <div class="matches-container" id="matches-list">
+            <div class="no-data">Maçlar yükleniyor...</div>
+        </div>
+    </div>
+
+    <script>
+        let allMatches = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('match-date');
+            
+            // Varsayılan olarak bugünün tarihini ayarla
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.value = today;
+
+            // Verileri çek
+            fetchData();
+
+            // Tarih değiştiğinde listeyi filtrele
+            dateInput.addEventListener('change', (e) => {
+                filterAndRenderMatches(e.target.value);
+            });
+        });
+
+        async function fetchData() {
+            try {
+                // 15 dk bir güncellenen data/matches.json dosyasını oku
+                const response = await fetch('data/matches.json');
+                allMatches = await response.json();
+                
+                const selectedDate = document.getElementById('match-date').value;
+                filterAndRenderMatches(selectedDate);
+            } catch (error) {
+                console.error('Veri çekme hatası:', error);
+                document.getElementById('matches-list').innerHTML = 
+                    '<div class="no-data">Veriler yüklenirken bir sorun oluştu.</div>';
+            }
+        }
+
+        function filterAndRenderMatches(selectedDate) {
+            const listContainer = document.getElementById('matches-list');
+            const titleText = document.getElementById('filter-title-text');
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            titleText.innerText = (selectedDate === todayStr) ? "Bugünün Maçları" : `${selectedDate} Tarihli Maçlar`;
+
+            // JSON içindeki tarih alanına göre filtreleme
+            const filtered = allMatches.filter(m => {
+                if (!m.date) return true;
+                return m.date.includes(selectedDate);
+            });
+
+            if (filtered.length === 0) {
+                listContainer.innerHTML = `<div class="no-data">${selectedDate} tarihine ait maç bulunamadı.</div>`;
+                return;
+            }
+
+            listContainer.innerHTML = filtered.map(m => `
+                <div class="match-card">
+                    <div class="match-header">
+                        <span>${m.league || 'Lig Bilgisi Yok'}</span>
+                        <span>${m.time || ''}</span>
+                    </div>
+                    <div class="match-body">
+                        <span class="team home">${m.homeTeam || m.home || 'Ev Sahibi'}</span>
+                        <span class="score-time">${m.score || m.time || 'v'}</span>
+                        <span class="team away">${m.awayTeam || m.away || 'Deplasman'}</span>
+                    </div>
+                    ${m.odds ? `
+                    <div class="odds-row">
+                        <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${m.odds.ms1 || '-'}</span></div>
+                        <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${m.odds.msx || '-'}</span></div>
+                        <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${m.odds.ms2 || '-'}</span></div>
+                    </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
