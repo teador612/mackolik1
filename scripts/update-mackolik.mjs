@@ -109,6 +109,7 @@ async function fetchMatches(week) {
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
       const matchStatus = Number(row[5] ?? 0);
+      console.log("ORNEK ROW:", JSON.stringify(row));
 
       matches.push({
         code: String(row[0]),
