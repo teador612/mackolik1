@@ -19,7 +19,7 @@
             padding-bottom: 30px;
         }
 
-        /* Navigasyon / Üst Menü (Mobil Uyumlu) */
+        /* Navigasyon / Üst Menü */
         .navbar {
             background-color: #162238;
             border-bottom: 1px solid #24344d;
@@ -225,7 +225,6 @@
 </head>
 <body>
 
-    <!-- Menü Yapısı (Küçük Ekran Uyumu Sağlandı) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">Oran<span>Analiz</span></a>
@@ -236,9 +235,7 @@
         </div>
     </nav>
 
-    <!-- Ana İçerik -->
     <div class="container">
-        <!-- Tarih Filtreleme Alanı -->
         <div class="filter-card">
             <div class="filter-title" id="filter-title-text">Bugünün Maçları</div>
             <div class="date-picker-group">
@@ -247,43 +244,37 @@
             </div>
         </div>
 
-        <!-- Maçların Listeleneceği Alan -->
         <div class="matches-container" id="matches-list">
             <div class="no-data">Maçlar yükleniyor...</div>
         </div>
     </div>
 
     <script>
-        let allMatches = [];
+        let rawData = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('match-date');
             
-            // Varsayılan olarak bugünün tarihini ayarla
+            // Varsayılan tarih olarak bugünü ayarla
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
-            // Verileri JSON dosyasından çek
             fetchData();
 
-            // Tarih seçimi değiştiğinde maçları filtrele
             dateInput.addEventListener('change', (e) => {
-                filterAndRenderMatches(e.target.value);
+                renderMatches(e.target.value);
             });
         });
 
         async function fetchData() {
             try {
-                // Öncelikli olarak 'data/matches.json' yolunu dener, bulamazsa root dizini dener
-                let response = await fetch('data/matches.json');
-                if (!response.ok) {
-                    response = await fetch('matches.json');
-                }
+                // skor.html'in kullandığı veri yolunu doğrudan çeker
+                const response = await fetch('data/matches.json');
+                if (!response.ok) throw new Error('Ağ hatası');
                 
-                allMatches = await response.json();
-                
+                rawData = await response.json();
                 const selectedDate = document.getElementById('match-date').value;
-                filterAndRenderMatches(selectedDate);
+                renderMatches(selectedDate);
             } catch (error) {
                 console.error('Veri çekme hatası:', error);
                 document.getElementById('matches-list').innerHTML = 
@@ -291,22 +282,39 @@
             }
         }
 
-        function filterAndRenderMatches(selectedDate) {
+        function renderMatches(selectedDate) {
             const listContainer = document.getElementById('matches-list');
             const titleText = document.getElementById('filter-title-text');
 
             const todayStr = new Date().toISOString().split('T')[0];
             titleText.innerText = (selectedDate === todayStr) ? "Bugünün Maçları" : `${selectedDate} Maçları`;
 
-            if (!Array.isArray(allMatches) || allMatches.length === 0) {
-                listContainer.innerHTML = `<div class="no-data">Henüz maç verisi bulunamadı.</div>`;
+            if (!rawData) {
+                listContainer.innerHTML = `<div class="no-data">Veri bulunamadı.</div>`;
                 return;
             }
 
-            // JSON içindeki tarih alanına göre filtreleme yap
-            const filtered = allMatches.filter(m => {
-                if (!m.date) return true; // Tarih alanı boşsa hepsini göster
-                return m.date.includes(selectedDate);
+            // data/matches.json içeriğinin dizi veya obje olma durumunu kontrol eder
+            let matchesList = [];
+            if (Array.isArray(rawData)) {
+                matchesList = rawData;
+            } else if (rawData.matches && Array.isArray(rawData.matches)) {
+                matchesList = rawData.matches;
+            } else if (typeof rawData === 'object') {
+                // Obje yapısındaysa tüm değerleri diziye dönüştürür
+                matchesList = Object.values(rawData).flat();
+            }
+
+            if (matchesList.length === 0) {
+                listContainer.innerHTML = `<div class="no-data">Henüz eklenmiş maç yok.</div>`;
+                return;
+            }
+
+            // Seçilen tarihe göre filtreleme (YYYY-MM-DD veya DD.MM.YYYY formatı uyumlu)
+            const filtered = matchesList.filter(m => {
+                const matchDate = m.date || m.tarih || m.match_date || '';
+                if (!matchDate) return true; // Tarih bilgisi yoksa maçı gizleme
+                return matchDate.includes(selectedDate);
             });
 
             if (filtered.length === 0) {
@@ -314,26 +322,40 @@
                 return;
             }
 
-            listContainer.innerHTML = filtered.map(m => `
-                <div class="match-card">
-                    <div class="match-header">
-                        <span>${m.league || m.lig || 'Lig Bilgisi Yok'}</span>
-                        <span>${m.time || m.saat || ''}</span>
+            listContainer.innerHTML = filtered.map(m => {
+                const home = m.home || m.homeTeam || m.ev || m.ev_sahibi || 'Ev Sahibi';
+                const away = m.away || m.awayTeam || m.dep || m.deplasman || 'Deplasman';
+                const score = m.score || m.skor || m.status || m.time || m.saat || 'v';
+                const league = m.league || m.lig || 'Lig Bilgisi Yok';
+                const time = m.time || m.saat || '';
+                
+                // Oranlar objesi kontrolü
+                const odds = m.odds || m.oranlar || m;
+                const ms1 = odds.ms1 || odds['1'] || '-';
+                const msx = odds.msx || odds.ms0 || odds['X'] || odds['0'] || '-';
+                const ms2 = odds.ms2 || odds['2'] || '-';
+
+                return `
+                    <div class="match-card">
+                        <div class="match-header">
+                            <span>${league}</span>
+                            <span>${time}</span>
+                        </div>
+                        <div class="match-body">
+                            <span class="team home">${home}</span>
+                            <span class="score-time">${score}</span>
+                            <span class="team away">${away}</span>
+                        </div>
+                        ${(ms1 !== '-' || msx !== '-' || ms2 !== '-') ? `
+                        <div class="odds-row">
+                            <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${ms1}</span></div>
+                            <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${msx}</span></div>
+                            <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${ms2}</span></div>
+                        </div>
+                        ` : ''}
                     </div>
-                    <div class="match-body">
-                        <span class="team home">${m.homeTeam || m.home || m.ev || 'Ev Sahibi'}</span>
-                        <span class="score-time">${m.score || m.skor || m.time || 'v'}</span>
-                        <span class="team away">${m.awayTeam || m.away || m.dep || 'Deplasman'}</span>
-                    </div>
-                    ${(m.odds || m.oranlar) ? `
-                    <div class="odds-row">
-                        <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${m.odds?.ms1 || m.oranlar?.ms1 || '-'}</span></div>
-                        <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${m.odds?.msx || m.oranlar?.msx || '-'}</span></div>
-                        <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${m.odds?.ms2 || m.oranlar?.ms2 || '-'}</span></div>
-                    </div>
-                    ` : ''}
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
     </script>
 </body>
