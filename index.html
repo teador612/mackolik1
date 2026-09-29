@@ -327,13 +327,18 @@
                 const away = m.away || m.awayTeam || m.dep || 'Deplasman';
                 const league = m.league || m.lig || 'Lig Bilgisi Yok';
                 const time = m.time || m.saat || '';
-                
-                // Skor Formatı (Obje durumunu kontrol etme)
-                let scoreDisplay = time || 'v';
-                if (m.score && typeof m.score === 'object') {
-                    scoreDisplay = `${m.score.home ?? 0} - ${m.score.away ?? 0}`;
-                } else if (typeof m.score === 'string') {
-                    scoreDisplay = m.score;
+                const status = Number(m.status);
+
+                // Oynanmamış maç kontrolü (status === 4 veya status === 0 veya status tanımsızsa)
+                let scoreDisplay = time || '-';
+
+                // Yalnızca maç başladıysa veya bittiyse (status != 4 ve status != 0) skorları göster
+                if (status !== 4 && status !== 0) {
+                    if (m.score && typeof m.score === 'object' && (m.score.home !== undefined && m.score.away !== undefined)) {
+                        scoreDisplay = `${m.score.home} - ${m.score.away}`;
+                    } else if (typeof m.score === 'string' && m.score.trim() !== '') {
+                        scoreDisplay = m.score;
+                    }
                 }
 
                 // Oranlar Yapısı
