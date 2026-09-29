@@ -124,22 +124,22 @@ async function fetchMatches(week) {
 
         score: {
           home: parseScoreValue(
-            row[11],
+            row[8],
             matchStatus
           ),
           away: parseScoreValue(
-            row[12],
+            row[9],
             matchStatus
           )
         },
 
         halfTimeScore: {
           home: parseScoreValue(
-            row[8],
+            row[11],
             matchStatus
           ),
           away: parseScoreValue(
-            row[9],
+            row[12],
             matchStatus
           )
         },
