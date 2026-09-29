@@ -358,7 +358,7 @@
             }
         }
 
-        // Birebir Geçmiş Eşleşme Analizi (Hata ve Veri Formatı Korumalı)
+        // Birebir Geçmiş Eşleşme Analizi
         function analyzeMatch(match, historyMatches) {
             const odds = match.odds || match.oranlar || {};
             const ms1 = parseFloat(odds.ms1 || odds['1']);
@@ -367,12 +367,11 @@
 
             if (!ms1 && !msx && !ms2) return { text: "Oran Yok", matchesCount: 0 };
 
-            // Geçmişte birebir aynı oranlara sahip ve OYNANMIŞ maçları bul
+            // Geçmişte birebir aynı oranlara sahip maçları bul
             const exactMatches = historyMatches.filter(h => {
-                const status = Number(h.status);
-                if (status === 4 || status === 0) return false; // Oynanmamış maçları taranamayanlara katma
-
+                if (Number(h.status) === 4 || Number(h.status) === 0) return false; // Oynanmamışları geç
                 const hOdds = h.odds || h.oranlar || {};
+                
                 const h1 = parseFloat(hOdds.ms1 || hOdds['1']);
                 const hx = parseFloat(hOdds.msx || hOdds.ms0 || hOdds['X']);
                 const h2 = parseFloat(hOdds.ms2 || hOdds['2']);
@@ -382,42 +381,28 @@
                        (ms2 ? h2 === ms2 : true);
             });
 
-            // Arşivde birebir eşleşme yoksa doğrudan MS 1 oranını bas (Örn: MS 1: 1.85)
-            if (!exactMatches || exactMatches.length === 0) {
-                return { 
-                    text: ms1 ? `MS 1: ${ms1.toFixed(2)}` : 'Oran Yok', 
-                    matchesCount: 0 
-                };
+            if (exactMatches.length === 0) {
+                return { text: `MS 1: ${ms1 || '-'}`, matchesCount: 0 };
             }
 
             // İstatistiksel Başarı Oranlarını Hesapla
             let ms1Count = 0, over25Count = 0;
-
             exactMatches.forEach(m => {
-                let hG = 0, aG = 0;
-
-                // Obje veya metin bazlı skor ayrıştırma
-                if (m.score && typeof m.score === 'object') {
-                    hG = parseInt(m.score.home) || 0;
-                    aG = parseInt(m.score.away) || 0;
-                } else if (typeof m.score === 'string' && m.score.includes('-')) {
-                    const parts = m.score.split('-');
-                    hG = parseInt(parts[0]) || 0;
-                    aG = parseInt(parts[1]) || 0;
-                }
+                const score = m.score || {};
+                const hG = parseInt(score.home ?? 0);
+                const aG = parseInt(score.away ?? 0);
 
                 if (hG > aG) ms1Count++;
                 if ((hG + aG) > 2.5) over25Count++;
             });
 
-            const total = exactMatches.length;
-            const ms1Pct = total > 0 ? Math.round((ms1Count / total) * 100) : 0;
-            const over25Pct = total > 0 ? Math.round((over25Count / total) * 100) : 0;
+            const ms1Pct = Math.round((ms1Count / exactMatches.length) * 100);
+            const over25Pct = Math.round((over25Count / exactMatches.length) * 100);
 
-            if (over25Pct >= ms1Pct && over25Pct > 0) {
-                return { text: `2,5 Üst %${over25Pct}`, matchesCount: total };
+            if (over25Pct >= ms1Pct) {
+                return { text: `2,5 Üst %${over25Pct}`, matchesCount: exactMatches.length };
             } else {
-                return { text: `MS 1 %${ms1Pct}`, matchesCount: total };
+                return { text: `MS1 %${ms1Pct}`, matchesCount: exactMatches.length };
             }
         }
 
