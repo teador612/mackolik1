@@ -9,19 +9,20 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: #0f172a;
+            background-color: #0b1329;
             color: #f8fafc;
             min-height: 100vh;
+            padding-bottom: 30px;
         }
 
-        /* Navigasyon / Menü */
+        /* Navigasyon / Üst Menü (Mobil Uyumlu) */
         .navbar {
-            background-color: #1e293b;
-            border-bottom: 1px solid #334155;
+            background-color: #162238;
+            border-bottom: 1px solid #24344d;
             position: sticky;
             top: 0;
             z-index: 100;
@@ -30,18 +31,20 @@
         .nav-container {
             max-width: 1100px;
             margin: 0 auto;
-            padding: 0 16px;
+            padding: 0 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             height: 60px;
+            gap: 8px;
         }
 
         .logo {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: #38bdf8;
             text-decoration: none;
+            white-space: nowrap;
         }
 
         .logo span {
@@ -51,22 +54,24 @@
         .nav-menu {
             display: flex;
             list-style: none;
-            gap: 12px;
+            gap: 6px;
+            align-items: center;
         }
 
         .nav-link {
             color: #94a3b8;
             text-decoration: none;
-            padding: 8px 14px;
+            padding: 6px 10px;
             border-radius: 6px;
-            font-size: 0.9rem;
-            font-weight: 500;
+            font-size: 0.82rem;
+            font-weight: 600;
+            white-space: nowrap;
             transition: all 0.2s;
         }
 
         .nav-link:hover, .nav-link.active {
             color: #ffffff;
-            background-color: #334155;
+            background-color: #24344d;
         }
 
         .nav-link.active {
@@ -76,49 +81,49 @@
         /* Ana İçerik */
         .container {
             max-width: 1100px;
-            margin: 24px auto;
-            padding: 0 16px;
+            margin: 16px auto;
+            padding: 0 12px;
         }
 
         /* Filtre Kartı */
         .filter-card {
-            background-color: #1e293b;
-            padding: 16px 20px;
+            background-color: #162238;
+            padding: 14px 16px;
             border-radius: 12px;
-            border: 1px solid #334155;
+            border: 1px solid #24344d;
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 12px;
-            margin-bottom: 24px;
+            margin-bottom: 16px;
         }
 
         .filter-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+            font-size: 1rem;
+            font-weight: 700;
             color: #f1f5f9;
         }
 
         .date-picker-group {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .date-picker-group label {
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #94a3b8;
         }
 
         input[type="date"] {
-            background-color: #0f172a;
+            background-color: #0b1329;
             color: #f8fafc;
-            border: 1px solid #475569;
-            padding: 8px 12px;
+            border: 1px solid #334155;
+            padding: 6px 10px;
             border-radius: 6px;
             outline: none;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
         }
 
@@ -126,29 +131,29 @@
             filter: invert(1);
         }
 
-        /* Maç Listesi */
+        /* Maç Kartları */
         .matches-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .match-card {
-            background-color: #1e293b;
-            border-radius: 10px;
-            border: 1px solid #334155;
-            padding: 14px 18px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
+        .match-card {
+            background-color: #162238;
+            border-radius: 10px;
+            border: 1px solid #24344d;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
         .match-header {
             display: flex;
             justify-content: space-between;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #94a3b8;
-            border-bottom: 1px solid #334155;
+            border-bottom: 1px solid #24344d;
             padding-bottom: 6px;
         }
 
@@ -157,11 +162,13 @@
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
+            gap: 8px;
         }
 
         .team {
             flex: 1;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            word-break: break-word;
         }
 
         .team.away {
@@ -169,53 +176,56 @@
         }
 
         .score-time {
-            padding: 4px 12px;
-            background-color: #0f172a;
+            padding: 4px 10px;
+            background-color: #0b1329;
             border-radius: 6px;
             color: #38bdf8;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
         }
 
         /* Oran Kutuları */
         .odds-row {
             display: flex;
-            gap: 8px;
-            margin-top: 4px;
+            gap: 6px;
+            margin-top: 2px;
         }
 
         .odd-box {
             flex: 1;
-            background-color: #0f172a;
-            border: 1px solid #334155;
+            background-color: #0b1329;
+            border: 1px solid #24344d;
             border-radius: 6px;
-            padding: 6px;
+            padding: 6px 4px;
             text-align: center;
-            font-size: 0.8rem;
         }
 
         .odd-label {
             color: #64748b;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             display: block;
         }
 
         .odd-value {
             color: #22c55e;
             font-weight: 700;
+            font-size: 0.8rem;
         }
 
         .no-data {
             text-align: center;
-            padding: 40px;
+            padding: 30px;
             color: #64748b;
-            background-color: #1e293b;
+            background-color: #162238;
             border-radius: 10px;
+            border: 1px solid #24344d;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <!-- Menü (skor.html bağlantılı) -->
+    <!-- Menü Yapısı (Küçük Ekran Uyumu Sağlandı) -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="index.html" class="logo">Oran<span>Analiz</span></a>
@@ -228,16 +238,16 @@
 
     <!-- Ana İçerik -->
     <div class="container">
-        <!-- Tarih Filtresi -->
+        <!-- Tarih Filtreleme Alanı -->
         <div class="filter-card">
             <div class="filter-title" id="filter-title-text">Bugünün Maçları</div>
             <div class="date-picker-group">
-                <label for="match-date">Tarih Seç:</label>
+                <label for="match-date">Tarih:</label>
                 <input type="date" id="match-date">
             </div>
         </div>
 
-        <!-- Maç Listesi -->
+        <!-- Maçların Listeleneceği Alan -->
         <div class="matches-container" id="matches-list">
             <div class="no-data">Maçlar yükleniyor...</div>
         </div>
@@ -253,10 +263,10 @@
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
-            // Verileri çek
+            // Verileri JSON dosyasından çek
             fetchData();
 
-            // Tarih değiştiğinde listeyi filtrele
+            // Tarih seçimi değiştiğinde maçları filtrele
             dateInput.addEventListener('change', (e) => {
                 filterAndRenderMatches(e.target.value);
             });
@@ -264,8 +274,12 @@
 
         async function fetchData() {
             try {
-                // 15 dk bir güncellenen data/matches.json dosyasını oku
-                const response = await fetch('data/matches.json');
+                // Öncelikli olarak 'data/matches.json' yolunu dener, bulamazsa root dizini dener
+                let response = await fetch('data/matches.json');
+                if (!response.ok) {
+                    response = await fetch('matches.json');
+                }
+                
                 allMatches = await response.json();
                 
                 const selectedDate = document.getElementById('match-date').value;
@@ -282,11 +296,16 @@
             const titleText = document.getElementById('filter-title-text');
 
             const todayStr = new Date().toISOString().split('T')[0];
-            titleText.innerText = (selectedDate === todayStr) ? "Bugünün Maçları" : `${selectedDate} Tarihli Maçlar`;
+            titleText.innerText = (selectedDate === todayStr) ? "Bugünün Maçları" : `${selectedDate} Maçları`;
 
-            // JSON içindeki tarih alanına göre filtreleme
+            if (!Array.isArray(allMatches) || allMatches.length === 0) {
+                listContainer.innerHTML = `<div class="no-data">Henüz maç verisi bulunamadı.</div>`;
+                return;
+            }
+
+            // JSON içindeki tarih alanına göre filtreleme yap
             const filtered = allMatches.filter(m => {
-                if (!m.date) return true;
+                if (!m.date) return true; // Tarih alanı boşsa hepsini göster
                 return m.date.includes(selectedDate);
             });
 
@@ -298,19 +317,19 @@
             listContainer.innerHTML = filtered.map(m => `
                 <div class="match-card">
                     <div class="match-header">
-                        <span>${m.league || 'Lig Bilgisi Yok'}</span>
-                        <span>${m.time || ''}</span>
+                        <span>${m.league || m.lig || 'Lig Bilgisi Yok'}</span>
+                        <span>${m.time || m.saat || ''}</span>
                     </div>
                     <div class="match-body">
-                        <span class="team home">${m.homeTeam || m.home || 'Ev Sahibi'}</span>
-                        <span class="score-time">${m.score || m.time || 'v'}</span>
-                        <span class="team away">${m.awayTeam || m.away || 'Deplasman'}</span>
+                        <span class="team home">${m.homeTeam || m.home || m.ev || 'Ev Sahibi'}</span>
+                        <span class="score-time">${m.score || m.skor || m.time || 'v'}</span>
+                        <span class="team away">${m.awayTeam || m.away || m.dep || 'Deplasman'}</span>
                     </div>
-                    ${m.odds ? `
+                    ${(m.odds || m.oranlar) ? `
                     <div class="odds-row">
-                        <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${m.odds.ms1 || '-'}</span></div>
-                        <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${m.odds.msx || '-'}</span></div>
-                        <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${m.odds.ms2 || '-'}</span></div>
+                        <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${m.odds?.ms1 || m.oranlar?.ms1 || '-'}</span></div>
+                        <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${m.odds?.msx || m.oranlar?.msx || '-'}</span></div>
+                        <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${m.odds?.ms2 || m.oranlar?.ms2 || '-'}</span></div>
                     </div>
                     ` : ''}
                 </div>
