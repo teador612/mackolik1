@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Oran Analiz - Günün Maçları</title>
+    <title>Oran Analiz Havuzu</title>
     <style>
         * {
             margin: 0;
@@ -13,30 +13,29 @@
         }
 
         body {
-            background-color: #0b1329;
+            background-color: #0b111e;
             color: #f8fafc;
             min-height: 100vh;
             padding-bottom: 30px;
         }
 
-        /* Navigasyon / Üst Menü */
+        /* Navigasyon Bar */
         .navbar {
-            background-color: #162238;
-            border-bottom: 1px solid #24344d;
+            background-color: #131c2e;
+            border-bottom: 1px solid #1e2d4a;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
         .nav-container {
-            max-width: 1100px;
+            max-width: 600px;
             margin: 0 auto;
-            padding: 0 12px;
+            padding: 0 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            height: 60px;
-            gap: 8px;
+            height: 56px;
         }
 
         .logo {
@@ -44,7 +43,6 @@
             font-weight: 700;
             color: #38bdf8;
             text-decoration: none;
-            white-space: nowrap;
         }
 
         .logo span {
@@ -54,172 +52,188 @@
         .nav-menu {
             display: flex;
             list-style: none;
-            gap: 6px;
-            align-items: center;
+            gap: 8px;
         }
 
         .nav-link {
             color: #94a3b8;
             text-decoration: none;
-            padding: 6px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            white-space: nowrap;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover, .nav-link.active {
-            color: #ffffff;
-            background-color: #24344d;
         }
 
         .nav-link.active {
-            color: #38bdf8;
+            color: #ffffff;
+            background-color: #1e2d4a;
         }
 
-        /* Ana İçerik */
         .container {
-            max-width: 1100px;
-            margin: 16px auto;
+            max-width: 600px;
+            margin: 12px auto;
             padding: 0 12px;
         }
 
-        /* Filtre Kartı */
-        .filter-card {
-            background-color: #162238;
-            padding: 14px 16px;
-            border-radius: 12px;
-            border: 1px solid #24344d;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 16px;
+        /* Üst İstatistik Sayaç Panelleri */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
         }
 
-        .filter-title {
-            font-size: 1rem;
+        .stat-card {
+            background-color: #131c2e;
+            border: 1px solid #1e2d4a;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .stat-title {
+            font-size: 0.7rem;
+            color: #64748b;
+            margin-bottom: 4px;
+            white-space: nowrap;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
             font-weight: 700;
-            color: #f1f5f9;
+            color: #f8fafc;
         }
 
-        .date-picker-group {
+        /* Filtre Alanı */
+        .filter-section {
+            background-color: #131c2e;
+            border: 1px solid #1e2d4a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
             display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .filter-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
             gap: 8px;
         }
 
-        .date-picker-group label {
-            font-size: 0.8rem;
-            color: #94a3b8;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex: 1;
         }
 
-        input[type="date"] {
-            background-color: #0b1329;
+        .filter-group label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        input[type="date"], select, input[type="number"] {
+            background-color: #0b111e;
             color: #f8fafc;
-            border: 1px solid #334155;
-            padding: 6px 10px;
+            border: 1px solid #1e2d4a;
+            padding: 6px 8px;
             border-radius: 6px;
             outline: none;
-            font-size: 0.85rem;
-            cursor: pointer;
+            font-size: 0.8rem;
+            width: 100%;
         }
 
         input[type="date"]::-calendar-picker-indicator {
             filter: invert(1);
         }
 
-        /* Maç Kartları */
-        .matches-container {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .match-card {
-            background-color: #162238;
-            border-radius: 10px;
-            border: 1px solid #24344d;
-            padding: 12px 14px;
+        /* Görsel Tasarımdaki Maç Kartı Birebir Uyumlu */
+        .match-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .match-header {
+        .match-item {
+            background-color: #131c2e;
+            border: 1px solid #1e2d4a;
+            border-radius: 8px;
+            padding: 10px 12px;
             display: flex;
-            justify-content: space-between;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            border-bottom: 1px solid #24344d;
-            padding-bottom: 6px;
-        }
-
-        .match-body {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            font-weight: 600;
+            justify-content: space-between;
             gap: 8px;
         }
 
-        .team {
-            flex: 1;
-            font-size: 0.9rem;
-            word-break: break-word;
-        }
-
-        .team.away {
-            text-align: right;
-        }
-
-        .score-time {
-            padding: 4px 10px;
-            background-color: #0b1329;
-            border-radius: 6px;
-            color: #38bdf8;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-
-        /* Oran Kutuları */
-        .odds-row {
+        .match-left {
             display: flex;
-            gap: 6px;
-            margin-top: 2px;
+            align-items: center;
+            gap: 10px;
+            overflow: hidden;
         }
 
-        .odd-box {
-            flex: 1;
-            background-color: #0b1329;
-            border: 1px solid #24344d;
+        .plus-btn {
+            background-color: transparent;
+            border: 1px solid #1e2d4a;
+            color: #94a3b8;
+            width: 28px;
+            height: 28px;
             border-radius: 6px;
-            padding: 6px 4px;
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+            cursor: pointer;
         }
 
-        .odd-label {
+        .match-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .match-meta {
+            font-size: 0.7rem;
             color: #64748b;
-            font-size: 0.65rem;
-            display: block;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
-        .odd-value {
-            color: #22c55e;
+        .match-teams {
+            font-size: 0.85rem;
             font-weight: 700;
-            font-size: 0.8rem;
+            color: #f1f5f9;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Sağ Taraf Yeşil Rozet Stili */
+        .match-badge {
+            background-color: #14532d;
+            color: #4ade80;
+            border: 1px solid #166534;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .no-data {
             text-align: center;
             padding: 30px;
             color: #64748b;
-            background-color: #162238;
-            border-radius: 10px;
-            border: 1px solid #24344d;
-            font-size: 0.9rem;
+            background-color: #131c2e;
+            border-radius: 8px;
+            border: 1px solid #1e2d4a;
+            font-size: 0.85rem;
         }
     </style>
 </head>
@@ -229,41 +243,79 @@
         <div class="nav-container">
             <a href="index.html" class="logo">Oran<span>Analiz</span></a>
             <ul class="nav-menu">
-                <li><a href="index.html" class="nav-link active">Bugünün Maçları</a></li>
-                <li><a href="skor.html" class="nav-link">Canlı Skorlar</a></li>
+                <li><a href="index.html" class="nav-link active">Maçlar</a></li>
+                <li><a href="skor.html" class="nav-link">Canlı Skor</a></li>
             </ul>
         </div>
     </nav>
 
     <div class="container">
-        <div class="filter-card">
-            <div class="filter-title" id="filter-title-text">Bugünün Maçları</div>
-            <div class="date-picker-group">
-                <label for="match-date">Tarih:</label>
-                <input type="date" id="match-date">
+        <!-- İstatistik Panelleri -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Oynanmamış maç</div>
+                <div class="stat-value" id="stat-unplayed">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Filtrelenen</div>
+                <div class="stat-value" id="stat-filtered">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Analiz havuzu</div>
+                <div class="stat-value" id="stat-total">0</div>
             </div>
         </div>
 
-        <div class="matches-container" id="matches-list">
-            <div class="no-data">Maçlar yükleniyor...</div>
+        <!-- Filtreleme Paneli -->
+        <div class="filter-section">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="match-date">Tarih:</label>
+                    <input type="date" id="match-date">
+                </div>
+                <div class="filter-group">
+                    <label for="odd-type">Oran Türü:</label>
+                    <select id="odd-type">
+                        <option value="all">Tüm Oranlar</option>
+                        <option value="ms1">MS 1</option>
+                        <option value="msx">MS X</option>
+                        <option value="ms2">MS 2</option>
+                    </select>
+                </div>
+            </div>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label for="min-odd">Min Oran:</label>
+                    <input type="number" id="min-odd" placeholder="Örn: 1.50" step="0.05">
+                </div>
+                <div class="filter-group">
+                    <label for="max-odd">Maks Oran:</label>
+                    <input type="number" id="max-odd" placeholder="Örn: 3.00" step="0.05">
+                </div>
+            </div>
+        </div>
+
+        <!-- Maç Listesi -->
+        <div class="match-list" id="matches-list">
+            <div class="no-data">Veriler yükleniyor...</div>
         </div>
     </div>
 
     <script>
-        let rawData = null;
+        let rawData = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const dateInput = document.getElementById('match-date');
-            
-            // Varsayılan tarih olarak bugünü ayarla (YYYY-MM-DD)
             const today = new Date().toISOString().split('T')[0];
             dateInput.value = today;
 
             fetchData();
 
-            dateInput.addEventListener('change', (e) => {
-                renderMatches(e.target.value);
-            });
+            // Filtreleme dinleyicileri
+            document.getElementById('match-date').addEventListener('change', filterAndRender);
+            document.getElementById('odd-type').addEventListener('change', filterAndRender);
+            document.getElementById('min-odd').addEventListener('input', filterAndRender);
+            document.getElementById('max-odd').addEventListener('input', filterAndRender);
         });
 
         async function fetchData() {
@@ -271,100 +323,102 @@
                 const response = await fetch('data/matches.json');
                 if (!response.ok) throw new Error('Ağ hatası');
                 
-                rawData = await response.json();
-                const selectedDate = document.getElementById('match-date').value;
-                renderMatches(selectedDate);
+                const data = await response.json();
+                
+                if (Array.isArray(data)) {
+                    rawData = data;
+                } else if (data.matches && Array.isArray(data.matches)) {
+                    rawData = data.matches;
+                } else if (typeof data === 'object') {
+                    rawData = Object.values(data).flat();
+                }
+
+                filterAndRender();
             } catch (error) {
-                console.error('Veri çekme hatası:', error);
+                console.error('Veri yükleme hatası:', error);
                 document.getElementById('matches-list').innerHTML = 
                     '<div class="no-data">Veriler yüklenirken bir sorun oluştu.</div>';
             }
         }
 
-        function renderMatches(selectedDate) {
-            const listContainer = document.getElementById('matches-list');
-            const titleText = document.getElementById('filter-title-text');
+        function filterAndRender() {
+            const selectedDate = document.getElementById('match-date').value;
+            const oddType = document.getElementById('odd-type').value;
+            const minOdd = parseFloat(document.getElementById('min-odd').value) || 0;
+            const maxOdd = parseFloat(document.getElementById('max-odd').value) || 999;
 
-            const todayStr = new Date().toISOString().split('T')[0];
-            titleText.innerText = (selectedDate === todayStr) ? "Bugünün Maçları" : `${selectedDate} Maçları`;
-
-            if (!rawData) {
-                listContainer.innerHTML = `<div class="no-data">Veri bulunamadı.</div>`;
-                return;
-            }
-
-            let matchesList = [];
-            if (Array.isArray(rawData)) {
-                matchesList = rawData;
-            } else if (rawData.matches && Array.isArray(rawData.matches)) {
-                matchesList = rawData.matches;
-            } else if (typeof rawData === 'object') {
-                matchesList = Object.values(rawData).flat();
-            }
-
-            if (matchesList.length === 0) {
-                listContainer.innerHTML = `<div class="no-data">Henüz eklenmiş maç yok.</div>`;
-                return;
-            }
-
-            // HTML Date Input (YYYY-MM-DD) -> JSON Formatı (DD.MM.YYYY) Dönüştürme
             const [year, month, day] = selectedDate.split('-');
             const formattedTRDate = `${day}.${month}.${year}`;
 
-            // Eşleşen maçları filtrele
-            const filtered = matchesList.filter(m => {
+            // 1. Tarihe göre filtrele
+            let filtered = rawData.filter(m => {
                 const matchDate = m.date || m.tarih || '';
                 return matchDate === formattedTRDate || matchDate.includes(selectedDate);
             });
 
+            // Üst İstatistikleri Güncelle
+            document.getElementById('stat-total').innerText = rawData.length;
+            const unplayed = filtered.filter(m => Number(m.status) === 4 || Number(m.status) === 0).length;
+            document.getElementById('stat-unplayed').innerText = unplayed;
+
+            // 2. Oran Filtreleme Yap
+            if (oddType !== 'all' || minOdd > 0 || maxOdd < 999) {
+                filtered = filtered.filter(m => {
+                    const odds = m.odds || m.oranlar || {};
+                    let targetOdd = 0;
+
+                    if (oddType === 'ms1') targetOdd = parseFloat(odds.ms1 || odds['1']);
+                    else if (oddType === 'msx') targetOdd = parseFloat(odds.msx || odds.ms0 || odds['X']);
+                    else if (oddType === 'ms2') targetOdd = parseFloat(odds.ms2 || odds['2']);
+                    else {
+                        // Tüm oranlardan herhangi biri aralığa uyuyor mu
+                        const o1 = parseFloat(odds.ms1 || odds['1']) || 0;
+                        const ox = parseFloat(odds.msx || odds.ms0 || odds['X']) || 0;
+                        const o2 = parseFloat(odds.ms2 || odds['2']) || 0;
+                        return (o1 >= minOdd && o1 <= maxOdd) || 
+                               (ox >= minOdd && ox <= maxOdd) || 
+                               (o2 >= minOdd && o2 <= maxOdd);
+                    }
+
+                    return targetOdd >= minOdd && targetOdd <= maxOdd;
+                });
+            }
+
+            document.getElementById('stat-filtered').innerText = filtered.length;
+
+            const listContainer = document.getElementById('matches-list');
+
             if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="no-data">${formattedTRDate} tarihine ait maç bulunamadı.</div>`;
+                listContainer.innerHTML = `<div class="no-data">Kriterlere uygun maç bulunamadı.</div>`;
                 return;
             }
 
             listContainer.innerHTML = filtered.map(m => {
-                const home = m.home || m.homeTeam || m.ev || 'Ev Sahibi';
-                const away = m.away || m.awayTeam || m.dep || 'Deplasman';
-                const league = m.league || m.lig || 'Lig Bilgisi Yok';
-                const time = m.time || m.saat || '';
-                const status = Number(m.status);
-
-                // Oynanmamış maç kontrolü (status === 4 veya status === 0 veya status tanımsızsa)
-                let scoreDisplay = time || '-';
-
-                // Yalnızca maç başladıysa veya bittiyse (status != 4 ve status != 0) skorları göster
-                if (status !== 4 && status !== 0) {
-                    if (m.score && typeof m.score === 'object' && (m.score.home !== undefined && m.score.away !== undefined)) {
-                        scoreDisplay = `${m.score.home} - ${m.score.away}`;
-                    } else if (typeof m.score === 'string' && m.score.trim() !== '') {
-                        scoreDisplay = m.score;
-                    }
-                }
-
-                // Oranlar Yapısı
+                const home = m.home || m.homeTeam || 'Ev Sahibi';
+                const away = m.away || m.awayTeam || 'Deplasman';
+                const league = m.league || m.lig || 'LİG';
+                const time = m.time || m.saat || '00:00';
+                
                 const odds = m.odds || m.oranlar || {};
                 const ms1 = odds.ms1 || odds['1'] || '-';
                 const msx = odds.msx || odds.ms0 || odds['X'] || '-';
                 const ms2 = odds.ms2 || odds['2'] || '-';
 
+                // Rozette gösterilecek baskın oran veya öneri
+                let badgeText = `MS 1 %${ms1}`;
+                if (ms1 !== '-') badgeText = `MS 1: ${ms1}`;
+                else if (ms2 !== '-') badgeText = `MS 2: ${ms2}`;
+
                 return `
-                    <div class="match-card">
-                        <div class="match-header">
-                            <span>${league}</span>
-                            <span>${time}</span>
+                    <div class="match-item">
+                        <div class="match-left">
+                            <button class="plus-btn">+</button>
+                            <div class="match-info">
+                                <div class="match-meta">${time} · ${league}</div>
+                                <div class="match-teams">${home} - ${away}</div>
+                            </div>
                         </div>
-                        <div class="match-body">
-                            <span class="team home">${home}</span>
-                            <span class="score-time">${scoreDisplay}</span>
-                            <span class="team away">${away}</span>
-                        </div>
-                        ${(ms1 !== '-' || msx !== '-' || ms2 !== '-') ? `
-                        <div class="odds-row">
-                            <div class="odd-box"><span class="odd-label">MS 1</span><span class="odd-value">${ms1}</span></div>
-                            <div class="odd-box"><span class="odd-label">MS X</span><span class="odd-value">${msx}</span></div>
-                            <div class="odd-box"><span class="odd-label">MS 2</span><span class="odd-value">${ms2}</span></div>
-                        </div>
-                        ` : ''}
+                        <div class="match-badge">${badgeText}</div>
                     </div>
                 `;
             }).join('');
