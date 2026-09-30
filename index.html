@@ -2,184 +2,510 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oran Analiz Sistemi</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maçkolik - Oran Analiz</title>
 <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0f172a] text-white">
+
+<body class="bg-slate-950 text-white">
+
 <div class="max-w-7xl mx-auto p-4">
-  <h1 class="text-3xl font-bold text-center py-6">ORAN ANALİZ SİSTEMİ</h1>
-  
-  <div id="hataKutusu" class="hidden bg-red-900/50 border border-red-500 p-4 rounded-xl mb-4 text-sm"></div>
-  <div id="debug" class="bg-black/50 border border-yellow-500/30 p-3 rounded-xl mb-4 text-xs font-mono">Durum: Yükleniyor...</div>
 
-  <!-- TARİH SEÇME -->
-  <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10 mb-4">
-    <label class="text-xs opacity-60">TARİH SEÇ - Verideki tarihler otomatik gelir</label>
-    <div class="flex flex-col md:flex-row gap-2 mt-1">
-      <select id="tarihSec" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1"><option>Yükleniyor...</option></select>
-      <button onclick="tariheGoreFiltrele()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-bold">GÖSTER</button>
-      <button onclick="tumunuGoster()" class="bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">Tümünü Göster</button>
-    </div>
-    <p id="tarihBilgi" class="text-xs opacity-50 mt-2"></p>
-  </div>
+<h1 class="text-2xl font-bold text-center mb-4">
+Maçkolik Oran Analiz
+</h1>
 
-  <!-- ORAN FİLTRE - TOLERANS YOK -->
-  <div class="bg-[#1e293b] p-4 rounded-xl flex flex-col md:flex-row gap-4 mb-2 border border-white/10">
-    <select id="oranTip" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
-      <option value="ms1">MS1</option><option value="msX">MSX</option><option value="ms2">MS2</option>
-      <option value="iy1">İY1</option><option value="iyX">İY X</option><option value="iy2">İY2</option>
-      <option value="kgVar">KG VAR</option><option value="kgYok">KG YOK</option>
-      <option value="au25Alt">2.5 ALT</option><option value="au25Ust">2.5 ÜST</option>
-    </select>
-    <input id="hedefOran" type="number" step="0.01" value="1.66" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
-    <button onclick="analizEt()" class="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded font-bold">ANALİZ ET</button>
-  </div>
+<div id="message"
+class="bg-slate-800 p-3 rounded mb-3 text-center">
+Veriler yükleniyor...
+</div>
 
-  <!-- ANALİZ SONUÇ -->
-  <div id="sonucKutu" class="hidden space-y-4 mb-6">
-    <h2 id="analizBaslik" class="text-center font-bold text-yellow-400"></h2>
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-      <div class="bg-[#1e293b] p-3 rounded-xl border border-white/10"><h3 class="text-center opacity-60 mb-2">MAÇ SONUCU</h3><div>MS1: <b id="ms1Yuzde">%0</b> (<span id="ms1Adet">0</span>)</div><div>MSX: <b id="msxYuzde">%0</b> (<span id="msxAdet">0</span>)</div><div>MS2: <b id="ms2Yuzde">%0</b> (<span id="ms2Adet">0</span>)</div></div>
-      <div class="bg-[#1e293b] p-3 rounded-xl border border-white/10"><h3 class="text-center opacity-60 mb-2">2.5 GOL</h3><div>ÜST: <b id="ustYuzde">%0</b> (<span id="ustAdet">0</span>)</div><div>ALT: <b id="altYuzde">%0</b> (<span id="altAdet">0</span>)</div></div>
-      <div class="bg-[#1e293b] p-3 rounded-xl border border-white/10"><h3 class="text-center opacity-60 mb-2">KG</h3><div>VAR: <b id="varYuzde">%0</b> (<span id="varAdet">0</span>)</div><div>YOK: <b id="yokYuzde">%0</b> (<span id="yokAdet">0</span>)</div></div>
-      <div class="bg-[#1e293b] p-3 rounded-xl border border-white/10"><h3 class="text-center opacity-60 mb-2">İY 0.5</h3><div>ÜST: <b id="iyUstYuzde">%0</b> (<span id="iyUstAdet">0</span>)</div><div>ALT: <b id="iyAltYuzde">%0</b> (<span id="iyAltAdet">0</span>)</div></div>
-    </div>
-    <button onclick="resetAnaliz()" class="w-full bg-white/10 p-2 rounded text-sm">Kapat</button>
-  </div>
+<div id="updatedAt"
+class="text-center text-xs text-slate-400 mb-4"></div>
 
-  <!-- LİSTE -->
-  <div class="bg-[#1e293b] rounded-xl overflow-hidden border border-white/10">
-    <div class="p-4 flex justify-between items-center bg-black/20"><h3 id="listeBaslik" class="font-bold">Yükleniyor...</h3><span id="toplamMac" class="text-sm bg-white/10 px-3 py-1 rounded-full"></span></div>
-    <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-black/30 text-left text-xs opacity-60"><tr><th class="p-3">Saat</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">Skor</th><th class="p-3">2.5</th><th class="p-3">KG</th><th class="p-3">Sonuç</th></tr></thead><tbody id="tablo"><tr><td colspan=7 class="p-6 text-center opacity-50">Bekleniyor...</td></tr></tbody></table></div>
-  </div>
+<div class="bg-slate-800 p-4 rounded-xl mb-4">
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+
+<input
+id="search"
+type="text"
+placeholder="Takım ara..."
+class="bg-slate-900 border border-slate-700 rounded p-3">
+
+<select
+id="dateFilter"
+class="bg-slate-900 border border-slate-700 rounded p-3">
+<option value="">Tüm tarihler</option>
+</select>
+
+<select
+id="leagueFilter"
+class="bg-slate-900 border border-slate-700 rounded p-3">
+<option value="">Tüm ligler</option>
+</select>
+
+<label class="flex items-center gap-2 p-3">
+<input id="unplayedOnly" type="checkbox">
+Oynanmamış maçlar
+</label>
+
+</div>
+</div>
+
+<div class="bg-slate-800 rounded-xl overflow-hidden">
+
+<div class="overflow-x-auto">
+
+<table class="w-full text-sm">
+
+<thead class="bg-slate-900">
+
+<tr>
+<th class="p-3">Tarih</th>
+<th class="p-3">Saat</th>
+<th class="p-3">Lig</th>
+<th class="p-3">Kod</th>
+<th class="p-3">Ev</th>
+<th class="p-3">Deplasman</th>
+<th class="p-3">İY</th>
+<th class="p-3">MS</th>
+<th class="p-3">MS1</th>
+<th class="p-3">MSX</th>
+<th class="p-3">MS2</th>
+<th class="p-3">KG Var</th>
+<th class="p-3">KG Yok</th>
+<th class="p-3">2.5 Alt</th>
+<th class="p-3">2.5 Üst</th>
+</tr>
+
+</thead>
+
+<tbody id="matches">
+
+<tr>
+<td colspan="15"
+class="p-8 text-center">
+Veriler yükleniyor...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+</div>
+
 </div>
 
 <script>
-let tumVeri = [];
-function macSonucu(m){ const ev=parseInt(m.score.home), dep=parseInt(m.score.away); if(ev>dep) return \'MS1\'; if(ev<dep) return \'MS2\'; return \'MSX\'; }
-function isUst(m){ return (parseInt(m.score.home)+parseInt(m.score.away)) > 2.5 ? \'ÜST\' : \'ALT\'; }
-function isKg(m){ return (parseInt(m.score.home)>0 && parseInt(m.score.away)>0) ? \'VAR\' : \'YOK\'; }
-function isIyUst(m){ return (parseInt(m.halfTimeScore.home)+parseInt(m.halfTimeScore.away)) > 0.5 ? \'ÜST\' : \'ALT\'; }
 
-async function veriYukle(){
-  const debug = document.getElementById(\'debug\');
-  const urls = [
-    \'data/matches.json\',
-    \'./data/matches.json\',
-    \'/mackolik1/data/matches.json\',
-    \'https://raw.githubusercontent.com/teador612/mackolik1/main/data/matches.json\'
-  ];
-  let data = null;
-  let denenen = "";
-  for(let url of urls){
-    try{
-      debug.textContent = "Deneniyor: " + url;
-      const r = await fetch(url + \'?v=\' + Date.now(), {cache:\'no-store\'});
-      denenen += url + " -> " + r.status + " | ";
-      if(r.ok){ 
-        data = await r.json(); 
-        debug.textContent = "BAŞARILI: " + url + " | Toplam anahtar: " + Object.keys(data).join(\',\');
-        break; 
-      }
-    }catch(e){ denenen += url + " -> HATA:" + e.message + " | "; }
-  }
-  if(!data){
-    throw new Error("Hiçbir yoldan yüklenemedi. Denenenler: " + denenen + " | Kontrol et: https://teador612.github.io/mackolik1/data/matches.json açılıyor mu?");
-  }
+const state={
+matches:[],
+filters:{
+search:"",
+date:"",
+league:"",
+unplayed:false
+}
+};
 
-  tumVeri = data.matches || data;
-  if(!Array.isArray(tumVeri)) throw new Error("JSON içinde matches array bulunamadı. Gelen tip: " + typeof tumVeri);
-  
-  const hamSayi = tumVeri.length;
-  // Filtreyi GEVŞETTİK - skor kontrolünü kaldırdık debug için
-  tumVeri = tumVeri.filter(m => m.date && m.home);
-  
-  debug.textContent += ` | Ham: ${hamSayi} -> Filtre sonrası: ${tumVeri.length} maç`;
-  document.getElementById(\'hataKutusu\').classList.remove(\'hidden\');
-  document.getElementById(\'hataKutusu\').className = "bg-green-900/30 border border-green-500 p-3 rounded-xl mb-4 text-sm text-center";
-  document.getElementById(\'hataKutusu\').innerHTML = `✅ Veri yüklendi! Ham: ${hamSayi} maç, Gösterilen: ${tumVeri.length} maç. İlk örnek tarih: ${tumVeri[0]?.date}`;
+const $=id=>document.getElementById(id);
 
-  const tarihler = [...new Set(tumVeri.map(m => String(m.date).trim()))].sort((a,b)=>{
-    const [da,ma,ya]=a.split(\'.\'); const [db,mb,yb]=b.split(\'.\');
-    return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
-  });
-  const sel = document.getElementById(\'tarihSec\');
-  sel.innerHTML = tarihler.map(t => `<option value="${t}">${t} (${tumVeri.filter(x=>String(x.date).trim()===t).length} maç)</option>`).join(\'\');
-  sel.innerHTML += `<option value="ALL">TÜMÜ (${tumVeri.length} maç)</option>`;
-  sel.value = tarihler[tarihler.length-1];
-  document.getElementById(\'tarihBilgi\').textContent = `${tarihler.length} gün var. Seçili: ${sel.value}`;
-  tariheGoreFiltrele();
+const esc=value=>
+String(value??"").replace(
+/[&<>"']/g,
+char=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[char])
+);
+
+function odd(value){
+
+if(value===null||
+value===undefined||
+value===""){
+return "—";
 }
 
-veriYukle().catch(err=>{
-  document.getElementById(\'debug\').textContent = "HATA: " + err.message;
-  document.getElementById(\'hataKutusu\').classList.remove(\'hidden\');
-  document.getElementById(\'hataKutusu\').innerHTML = "❌ " + err.message;
-  document.getElementById(\'tablo\').innerHTML = `<tr><td colspan=7 class="p-6 text-center text-red-400 text-xs">${err.message}</td></tr>`;
-});
+const n=Number(value);
 
-function listele(data){
-  document.getElementById(\'toplamMac\').textContent = `${data.length} maç`;
-  document.getElementById(\'listeBaslik\').textContent = data.length + " maç listeleniyor";
-  if(data.length===0){ document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=7 class="p-6 text-center opacity-50">Bu tarihte maç yok</td></tr>\'; return; }
-  document.getElementById(\'tablo\').innerHTML = data.slice(0,500).map(m => {
-    const sonuc = macSonucu(m);
-    const renk = sonuc==\'MS1\'?\'text-emerald-400\':sonuc==\'MS2\'?\'text-red-400\':\'text-zinc-400\';
-    return `<tr class="border-t border-white/5 hover:bg-white/5">
-      <td class="p-3 opacity-60 text-xs">${m.time||\'\'}</td>
-      <td class="p-3"><b>${m.home}</b> - ${m.away} <span class="text-xs opacity-40 ml-1">${m.league}</span><div class="text-xs opacity-30">${m.date}</div></td>
-      <td class="p-3 cursor-pointer hover:text-yellow-400" onclick="hizliAnaliz(\'ms1\',${m.openingOdds.ms1})">${m.openingOdds?.ms1||\'-\'}</td>
-      <td class="p-3 font-bold">${m.score?.home}-${m.score?.away} <span class="opacity-50 text-xs">(${m.halfTimeScore?.home}-${m.halfTimeScore?.away})</span></td>
-      <td class="p-3 ${isUst(m)==\'ÜST\'?\'text-emerald-400\':\'text-red-400\'}">${isUst(m)}</td>
-      <td class="p-3 ${isKg(m)==\'VAR\'?\'text-emerald-400\':\'text-red-400\'}">${isKg(m)}</td>
-      <td class="p-3 font-bold ${renk}">${sonuc}</td>
-    </tr>`
-  }).join(\'\');
-}
-function tariheGoreFiltrele(){
-  const val = document.getElementById(\'tarihSec\').value;
-  if(val==="ALL") return tumunuGoster();
-  const filtreli = tumVeri.filter(m => String(m.date).trim() === val);
-  document.getElementById(\'listeBaslik\').textContent = `${val} Maçları`;
-  document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
-  listele(filtreli);
-}
-function tumunuGoster(){ document.getElementById(\'listeBaslik\').textContent = `Tüm Maçlar`; document.getElementById(\'sonucKutu\').classList.add(\'hidden\'); listele(tumVeri); }
-document.getElementById(\'tarihSec\').addEventListener(\'change\', tariheGoreFiltrele);
+return Number.isFinite(n)
+?n.toFixed(2)
+:"—";
 
-function analizEt(){
-  const tip = document.getElementById(\'oranTip\').value;
-  const hedef = parseFloat(document.getElementById(\'hedefOran\').value);
-  if(isNaN(hedef)) return alert(\'Oran gir\');
-  const filtreli = tumVeri.filter(m => {
-    const oran = m.openingOdds?.[tip];
-    return oran != null && oran != 0 && parseFloat(Number(oran).toFixed(2)) === parseFloat(hedef.toFixed(2));
-  });
-  if(filtreli.length === 0){ alert(\'Bu oranda birebir eşleşen maç yok!\'); return; }
-  const toplam = filtreli.length;
-  const ms1 = filtreli.filter(m => macSonucu(m)===\'MS1\').length;
-  const msx = filtreli.filter(m => macSonucu(m)===\'MSX\').length;
-  const ms2 = filtreli.filter(m => macSonucu(m)===\'MS2\').length;
-  const ust = filtreli.filter(m => isUst(m)===\'ÜST\').length;
-  const v = filtreli.filter(m => isKg(m)===\'VAR\').length;
-  const iyUst = filtreli.filter(m => isIyUst(m)===\'ÜST\').length;
-  document.getElementById(\'sonucKutu\').classList.remove(\'hidden\');
-  document.getElementById(\'analizBaslik\').textContent = `${tip.toUpperCase()} = ${hedef} için ${toplam} maç`;
-  const pct = (n) => `%${((n/toplam)*100).toFixed(1)}`;
-  document.getElementById(\'ms1Yuzde\').textContent = pct(ms1); document.getElementById(\'ms1Adet\').textContent = `${ms1}`;
-  document.getElementById(\'msxYuzde\').textContent = pct(msx); document.getElementById(\'msxAdet\').textContent = `${msx}`;
-  document.getElementById(\'ms2Yuzde\').textContent = pct(ms2); document.getElementById(\'ms2Adet\').textContent = `${ms2}`;
-  document.getElementById(\'ustYuzde\').textContent = pct(ust); document.getElementById(\'ustAdet\').textContent = `${ust}`;
-  document.getElementById(\'altYuzde\').textContent = pct(toplam-ust); document.getElementById(\'altAdet\').textContent = `${toplam-ust}`;
-  document.getElementById(\'varYuzde\').textContent = pct(v); document.getElementById(\'varAdet\').textContent = `${v}`;
-  document.getElementById(\'yokYuzde\').textContent = pct(toplam-v); document.getElementById(\'yokAdet\').textContent = `${toplam-v}`;
-  document.getElementById(\'iyUstYuzde\').textContent = pct(iyUst); document.getElementById(\'iyUstAdet\').textContent = `${iyUst}`;
-  document.getElementById(\'iyAltYuzde\').textContent = pct(toplam-iyUst); document.getElementById(\'iyAltAdet\').textContent = `${toplam-iyUst}`;
-  listele(filtreli);
 }
-function resetAnaliz(){ document.getElementById(\'sonucKutu\').classList.add(\'hidden\'); tariheGoreFiltrele(); }
-function hizliAnaliz(tip, oran){ document.getElementById(\'oranTip\').value=tip; document.getElementById(\'hedefOran\').value=oran; analizEt(); }
+
+function score(value){
+
+if(!value){
+return "—";
+}
+
+if(
+value.home===null||
+value.home===undefined||
+value.away===null||
+value.away===undefined
+){
+return "—";
+}
+
+return `${value.home} - ${value.away}`;
+
+}
+
+function sortKey(match){
+
+const parts=
+String(match.date??"").split(".");
+
+const day=parts[0]??"";
+const month=parts[1]??"";
+const year=parts[2]??"";
+
+return `${year}-${month}-${day} ${match.time??""}`;
+
+}
+
+function filteredMatches(){
+
+const q=
+state.filters.search
+.toLocaleLowerCase("tr-TR");
+
+return state.matches
+.filter(match=>{
+
+const text=
+`${match.home??""} ${match.away??""} ${match.code??""}`
+.toLocaleLowerCase("tr-TR");
+
+const searchOK=
+!q||text.includes(q);
+
+const dateOK=
+!state.filters.date||
+match.date===state.filters.date;
+
+const leagueOK=
+!state.filters.league||
+match.league===state.filters.league;
+
+const unplayedOK=
+!state.filters.unplayed||
+(
+(match.score?.home===null||
+match.score?.home===undefined||
+match.score?.home==="")&&
+(match.score?.away===null||
+match.score?.away===undefined||
+match.score?.away==="")
+);
+
+return(
+searchOK&&
+dateOK&&
+leagueOK&&
+unplayedOK
+);
+
+})
+.sort(
+(a,b)=>
+sortKey(a).localeCompare(
+sortKey(b)
+)
+);
+
+}
+
+function render(){
+
+const rows=
+filteredMatches();
+
+$("message").textContent=
+`${rows.length} maç gösteriliyor.`;
+
+$("matches").innerHTML=
+rows.map(match=>{
+
+const o=
+match.openingOdds||{};
+
+return `
+<tr class="border-t border-slate-800 hover:bg-slate-800">
+
+<td class="p-3">${esc(match.date)}</td>
+
+<td class="p-3">${esc(match.time||"—")}</td>
+
+<td class="p-3">${esc(match.league)}</td>
+
+<td class="p-3">${esc(match.code)}</td>
+
+<td class="p-3 font-semibold">
+${esc(match.home)}
+</td>
+
+<td class="p-3 font-semibold">
+${esc(match.away)}
+</td>
+
+<td class="p-3">
+${esc(score(match.halfTimeScore))}
+</td>
+
+<td class="p-3 font-bold text-yellow-400">
+${esc(score(match.score))}
+</td>
+
+<td class="p-3">${odd(o.ms1)}</td>
+
+<td class="p-3">${odd(o.msX)}</td>
+
+<td class="p-3">${odd(o.ms2)}</td>
+
+<td class="p-3">${odd(o.kgVar)}</td>
+
+<td class="p-3">${odd(o.kgYok)}</td>
+
+<td class="p-3">${odd(o.au25Alt)}</td>
+
+<td class="p-3">${odd(o.au25Ust)}</td>
+
+</tr>
+`;
+
+}).join("");
+
+}
+
+function fillFilters(){
+
+const dates=[
+...new Set(
+state.matches
+.map(m=>m.date)
+.filter(Boolean)
+)
+].sort();
+
+const leagues=[
+...new Set(
+state.matches
+.map(m=>m.league)
+.filter(Boolean)
+)
+].sort(
+(a,b)=>
+a.localeCompare(b,"tr")
+);
+
+$("dateFilter").innerHTML=
+'<option value="">Tüm tarihler</option>'+
+dates.map(
+v=>
+`<option value="${esc(v)}">${esc(v)}</option>`
+).join("");
+
+$("leagueFilter").innerHTML=
+'<option value="">Tüm ligler</option>'+
+leagues.map(
+v=>
+`<option value="${esc(v)}">${esc(v)}</option>`
+).join("");
+
+}
+
+$("search").addEventListener(
+"input",
+event=>{
+state.filters.search=
+event.target.value;
+render();
+}
+);
+
+$("dateFilter").addEventListener(
+"change",
+event=>{
+state.filters.date=
+event.target.value;
+render();
+}
+);
+
+$("leagueFilter").addEventListener(
+"change",
+event=>{
+state.filters.league=
+event.target.value;
+render();
+}
+);
+
+$("unplayedOnly").addEventListener(
+"change",
+event=>{
+state.filters.unplayed=
+event.target.checked;
+render();
+}
+);
+
+async function loadData(){
+
+try{
+
+$("message").textContent=
+"Veriler yükleniyor...";
+
+const url=
+new URL(
+"./data/matches.json",
+window.location.href
+);
+
+url.searchParams.set(
+"_",
+Date.now()
+);
+
+console.log(
+"VERİ ADRESİ:",
+url.href
+);
+
+const response=
+await fetch(
+url.href,
+{
+method:"GET",
+cache:"no-store"
+}
+);
+
+console.log(
+"HTTP:",
+response.status
+);
+
+if(!response.ok){
+
+throw new Error(
+`HTTP ${response.status} ${response.statusText}`
+);
+
+}
+
+const text=
+await response.text();
+
+console.log(
+"GELEN VERİ:",
+text.substring(0,300)
+);
+
+let data;
+
+try{
+
+data=
+JSON.parse(text);
+
+}catch(e){
+
+throw new Error(
+"JSON okunamadı. Gelen cevap JSON değil."
+);
+
+}
+
+if(!data){
+
+throw new Error(
+"JSON boş."
+);
+
+}
+
+if(Array.isArray(data)){
+
+state.matches=data;
+
+}else if(
+Array.isArray(data.matches)
+){
+
+state.matches=
+data.matches;
+
+}else{
+
+throw new Error(
+"JSON içinde matches bulunamadı."
+);
+
+}
+
+$("updatedAt").textContent=
+data.updatedAt
+?
+`Son güncelleme: ${new Date(data.updatedAt).toLocaleString("tr-TR")}`
+:
+"Veri güncelleme zamanı bulunamadı.";
+
+fillFilters();
+
+render();
+
+console.log(
+"BAŞARILI:",
+state.matches.length,
+"maç"
+);
+
+}catch(error){
+
+console.error(
+"VERİ HATASI:",
+error
+);
+
+$("message").innerHTML=
+`
+<span class="text-red-400">
+Veri yüklenemedi: ${esc(error.message)}
+</span>
+`;
+
+$("updatedAt").textContent=
+"Veri bağlantısı başarısız.";
+
+$("matches").innerHTML=
+`
+<tr>
+<td colspan="15"
+class="p-8 text-center text-red-400">
+${esc(error.message)}
+</td>
+</tr>
+`;
+
+}
+
+}
+
+loadData();
+
 </script>
+
 </body>
 </html>
