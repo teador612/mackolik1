@@ -10,26 +10,21 @@
 <div class="max-w-7xl mx-auto p-4">
   <h1 class="text-3xl font-bold text-center py-6">ORAN ANALİZ SİSTEMİ</h1>
   
-  <!-- TARİH SEÇME ALANI -->
+  <div id="hataKutusu" class="hidden bg-red-900/50 border border-red-500 p-3 rounded-xl mb-4 text-sm text-center"></div>
+
+  <!-- TARİH SEÇME - ARTIK VERİDEKİ TARİHLERİ LİSTELİYOR -->
   <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10 mb-4">
-    <div class="flex flex-col md:flex-row gap-3 items-end md:items-center justify-between">
-      <div class="flex-1 w-full">
-        <label class="text-xs opacity-60">TARİH SEÇ</label>
-        <div class="flex gap-2 mt-1">
-          <input id="tarihSec" type="date" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1 text-white">
-          <button onclick="tariheGoreFiltrele()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-bold">GÖSTER</button>
-        </div>
-      </div>
-      <div class="flex gap-2 w-full md:w-auto">
-        <button onclick="bugunGoster()" class="flex-1 md:flex-none bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">Bugün</button>
-        <button onclick="tumunuGoster()" class="flex-1 md:flex-none bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">Tüm Maçlar</button>
-      </div>
+    <label class="text-xs opacity-60">TARİH SEÇ</label>
+    <div class="flex flex-col md:flex-row gap-2 mt-1">
+      <select id="tarihSec" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1"></select>
+      <button onclick="tariheGoreFiltrele()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-bold">GÖSTER</button>
+      <button onclick="tumunuGoster()" class="bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">Tümünü Göster</button>
     </div>
-    <p id="tarihBilgi" class="text-xs opacity-50 mt-2"></p>
+    <p id="tarihBilgi" class="text-xs opacity-50 mt-2">Yükleniyor...</p>
   </div>
 
   <!-- ORAN FİLTRE - TOLERANS YOK -->
-  <div class="bg-[#1e293b] p-4 rounded-xl flex flex-col md:flex-row gap-4 mb-6 border border-white/10">
+  <div class="bg-[#1e293b] p-4 rounded-xl flex flex-col md:flex-row gap-4 mb-2 border border-white/10">
     <select id="oranTip" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
       <option value="ms1">MS1</option>
       <option value="msX">MSX</option>
@@ -41,106 +36,84 @@
       <option value="kgYok">KG YOK</option>
       <option value="au25Alt">2.5 ALT</option>
       <option value="au25Ust">2.5 ÜST</option>
-      <option value="iy15Alt">İY 1.5 ALT</option>
-      <option value="iy15Ust">İY 1.5 ÜST</option>
     </select>
     <input id="hedefOran" type="number" step="0.01" value="1.66" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
     <button onclick="analizEt()" class="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded font-bold">ANALİZ ET</button>
   </div>
-  <p class="text-xs opacity-50 text-center -mt-4 mb-6">Birebir eşleşme arar. Örn: 1.66 sadece 1.66 olanları bulur.</p>
+  <p class="text-xs opacity-50 text-center mb-6">Birebir eşleşme. 1.66 sadece 1.66 olanları bulur.</p>
 
   <!-- ANALİZ SONUCU -->
   <div id="sonucKutu" class="hidden space-y-4 mb-6">
     <h2 id="analizBaslik" class="text-center font-bold text-yellow-400"></h2>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">MAÇ SONUCU</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>MS1</span><b id="ms1Yuzde">%0</b><span id="ms1Adet">0</span></div>
-          <div class="flex justify-between bg-zinc-600/20 p-2 rounded"><span>MSX</span><b id="msxYuzde">%0</b><span id="msxAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>MS2</span><b id="ms2Yuzde">%0</b><span id="ms2Adet">0</span></div>
-        </div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">2.5 GOL</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>ÜST</span><b id="ustYuzde">%0</b><span id="ustAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>ALT</span><b id="altYuzde">%0</b><span id="altAdet">0</span></div>
-        </div>
-        <div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barUst" class="bg-emerald-500 h-2"></div><div id="barAlt" class="bg-red-500 h-2"></div></div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">KG VAR/YOK</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>VAR</span><b id="varYuzde">%0</b><span id="varAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>YOK</span><b id="yokYuzde">%0</b><span id="yokAdet">0</span></div>
-        </div>
-        <div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barVar" class="bg-emerald-500 h-2"></div><div id="barYok" class="bg-red-500 h-2"></div></div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">İLK YARI GOL</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>İY 0.5 ÜST</span><b id="iyUstYuzde">%0</b><span id="iyUstAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>İY 0.5 ALT</span><b id="iyAltYuzde">%0</b><span id="iyAltAdet">0</span></div>
-          <div class="flex justify-between bg-white/5 p-2 rounded text-xs"><span>İY 1.5 ÜST</span><b id="iy15UstYuzde">%0</b><span id="iy15UstAdet">0</span></div>
-        </div>
-      </div>
+      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10"><h3 class="font-bold text-sm mb-3 text-center opacity-70">MAÇ SONUCU</h3><div class="space-y-2 text-sm"><div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>MS1</span><b id="ms1Yuzde">%0</b><span id="ms1Adet">0</span></div><div class="flex justify-between bg-zinc-600/20 p-2 rounded"><span>MSX</span><b id="msxYuzde">%0</b><span id="msxAdet">0</span></div><div class="flex justify-between bg-red-600/20 p-2 rounded"><span>MS2</span><b id="ms2Yuzde">%0</b><span id="ms2Adet">0</span></div></div></div>
+      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10"><h3 class="font-bold text-sm mb-3 text-center opacity-70">2.5 GOL</h3><div class="space-y-2 text-sm"><div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>ÜST</span><b id="ustYuzde">%0</b><span id="ustAdet">0</span></div><div class="flex justify-between bg-red-600/20 p-2 rounded"><span>ALT</span><b id="altYuzde">%0</b><span id="altAdet">0</span></div></div><div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barUst" class="bg-emerald-500 h-2"></div><div id="barAlt" class="bg-red-500 h-2"></div></div></div>
+      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10"><h3 class="font-bold text-sm mb-3 text-center opacity-70">KG VAR/YOK</h3><div class="space-y-2 text-sm"><div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>VAR</span><b id="varYuzde">%0</b><span id="varAdet">0</span></div><div class="flex justify-between bg-red-600/20 p-2 rounded"><span>YOK</span><b id="yokYuzde">%0</b><span id="yokAdet">0</span></div></div><div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barVar" class="bg-emerald-500 h-2"></div><div id="barYok" class="bg-red-500 h-2"></div></div></div>
+      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10"><h3 class="font-bold text-sm mb-3 text-center opacity-70">İY GOL</h3><div class="space-y-2 text-sm"><div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>İY 0.5 ÜST</span><b id="iyUstYuzde">%0</b><span id="iyUstAdet">0</span></div><div class="flex justify-between bg-red-600/20 p-2 rounded"><span>İY 0.5 ALT</span><b id="iyAltYuzde">%0</b><span id="iyAltAdet">0</span></div></div></div>
     </div>
-    <button onclick="resetAnaliz()" class="w-full bg-white/10 hover:bg-white/20 p-2 rounded text-sm">Analizi Kapat</button>
+    <button onclick="resetAnaliz()" class="w-full bg-white/10 p-2 rounded text-sm">Analizi Kapat</button>
   </div>
 
   <!-- LİSTE -->
   <div class="bg-[#1e293b] rounded-xl overflow-hidden border border-white/10">
-    <div class="p-4 flex justify-between items-center bg-black/20">
-      <h3 id="listeBaslik" class="font-bold">Günün Maçları</h3>
-      <span id="toplamMac" class="text-sm bg-white/10 px-3 py-1 rounded-full"></span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-black/30 text-left text-xs opacity-60"><tr><th class="p-3">Saat</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">MS Skor</th><th class="p-3">2.5</th><th class="p-3">KG</th><th class="p-3">Sonuç</th></tr></thead>
-        <tbody id="tablo"></tbody>
-      </table>
-    </div>
+    <div class="p-4 flex justify-between items-center bg-black/20"><h3 id="listeBaslik" class="font-bold">Yükleniyor...</h3><span id="toplamMac" class="text-sm bg-white/10 px-3 py-1 rounded-full"></span></div>
+    <div class="overflow-x-auto"><table class="w-full text-sm"><thead class="bg-black/30 text-left text-xs opacity-60"><tr><th class="p-3">Saat</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">MS Skor</th><th class="p-3">2.5</th><th class="p-3">KG</th><th class="p-3">Sonuç</th></tr></thead><tbody id="tablo"><tr><td colspan=7 class="p-6 text-center opacity-50">Veriler yükleniyor...</td></tr></tbody></table></div>
   </div>
 </div>
 
 <script>
 let tumVeri = [];
-let gosterilenVeri = [];
-
-// Yardımcı
-function dotToIso(dot){ const [d,m,y]=dot.split(\'.\'); return `${y}-${m.padStart(2,\'0\')}-${d.padStart(2,\'0\')}` }
-function isoToDot(iso){ const [y,m,d]=iso.split(\'-\'); return `${d}.${m}.${y}` }
 function macSonucu(m){ const ev=parseInt(m.score.home), dep=parseInt(m.score.away); if(ev>dep) return \'MS1\'; if(ev<dep) return \'MS2\'; return \'MSX\'; }
 function isUst(m){ return (parseInt(m.score.home)+parseInt(m.score.away)) > 2.5 ? \'ÜST\' : \'ALT\'; }
 function isKg(m){ return (parseInt(m.score.home)>0 && parseInt(m.score.away)>0) ? \'VAR\' : \'YOK\'; }
 function isIyUst(m){ return (parseInt(m.halfTimeScore.home)+parseInt(m.halfTimeScore.away)) > 0.5 ? \'ÜST\' : \'ALT\'; }
-function isIy15(m){ return (parseInt(m.halfTimeScore.home)+parseInt(m.halfTimeScore.away)) > 1.5 ? \'ÜST\' : \'ALT\'; }
 
-fetch(\'data/matches.json\')
-  .then(r => r.json())
-  .then(data => { 
-    tumVeri = data.matches || data;
-    tumVeri = tumVeri.filter(m => m.score && m.score.home !== "" && m.score.home !== null);
-    // En son tarihi bul ve inputa set et
-    const tarihler = [...new Set(tumVeri.map(m=>m.date))].sort((a,b)=>{
-      const [da,ma,ya]=a.split(\'.\'); const [db,mb,yb]=b.split(\'.\');
-      return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
-    });
-    const sonTarih = tarihler[tarihler.length-1];
-    document.getElementById(\'tarihSec\').value = dotToIso(sonTarih);
-    document.getElementById(\'tarihBilgi\').textContent = `Veride ${tarihler.length} farklı gün var. En son: ${sonTarih}`;
-    tariheGoreFiltrele();
+// EN GARANTİ YÜKLEME - 3 Farklı Yolu Dener
+async function veriYukle(){
+  const urls = [\'data/matches.json\', \'./data/matches.json\', \'/mackolik1/data/matches.json\'];
+  let data = null, hata = "";
+  for(let url of urls){
+    try{
+      const r = await fetch(url + \'?v=\' + Date.now(), {cache:\'no-store\'});
+      if(r.ok){ data = await r.json(); console.log("Yüklendi:", url); break; }
+      else hata += url + " -> " + r.status + " | ";
+    }catch(e){ hata += url + " -> " + e.message + " | "; }
+  }
+  if(!data) throw new Error(hata);
+
+  tumVeri = data.matches || data;
+  if(!Array.isArray(tumVeri)) throw new Error("matches array değil");
+  // Skor var mı kontrolü - boş skorları at ama hepsini silme
+  tumVeri = tumVeri.filter(m => m.score && m.score.home !== "" && m.score.home !== null && m.date);
+
+  if(tumVeri.length === 0) throw new Error("Dosya yüklendi ama içinde maç yok.");
+
+  // Tarihleri bul ve Select\'e doldur
+  const tarihler = [...new Set(tumVeri.map(m => String(m.date).trim()))].sort((a,b)=>{
+    const [da,ma,ya]=a.split(\'.\'); const [db,mb,yb]=b.split(\'.\');
+    return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
   });
 
+  const sel = document.getElementById(\'tarihSec\');
+  sel.innerHTML = tarihler.map(t => `<option value="${t}">${t} (${tumVeri.filter(x=>x.date===t).length} maç)</option>`).join(\'\');
+  sel.innerHTML += `<option value="ALL">Tüm Tarihler (${tumVeri.length} maç)</option>`;
+  
+  // En son tarihi seç
+  sel.value = tarihler[tarihler.length-1];
+  document.getElementById(\'tarihBilgi\').textContent = `${tarihler.length} farklı gün bulundu. En son: ${tarihler[tarihler.length-1]} | Toplam ${tumVeri.length} maç`;
+  tariheGoreFiltrele();
+}
+
+veriYukle().catch(err=>{
+  document.getElementById(\'hataKutusu\').classList.remove(\'hidden\');
+  document.getElementById(\'hataKutusu\').innerHTML = "Veri Yüklenemedi: " + err.message + "<br><a href=\'data/matches.json\' target=\'_blank\' class=\'underline text-yellow-400\'>data/matches.json</a> açılıyor mu kontrol et. F12 Console\'a bak.";
+  document.getElementById(\'tablo\').innerHTML = `<tr><td colspan=7 class="p-6 text-center text-red-400">${err.message}</td></tr>`;
+});
+
 function listele(data){
-  gosterilenVeri = data;
   document.getElementById(\'toplamMac\').textContent = `${data.length} maç`;
-  if(data.length===0){
-    document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=7 class="p-6 text-center opacity-50">Bu tarihte maç bulunamadı</td></tr>\';
-    return;
-  }
-  document.getElementById(\'tablo\').innerHTML = data.map(m => {
+  if(data.length===0){ document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=7 class="p-6 text-center opacity-50">Bu tarihte maç yok</td></tr>\'; return; }
+  document.getElementById(\'tablo\').innerHTML = data.slice(0,500).map(m => {
     const sonuc = macSonucu(m);
     const renk = sonuc==\'MS1\'?\'text-emerald-400\':sonuc==\'MS2\'?\'text-red-400\':\'text-zinc-400\';
     return `<tr class="border-t border-white/5 hover:bg-white/5">
@@ -154,31 +127,21 @@ function listele(data){
     </tr>`
   }).join(\'\');
 }
-
-// TARİH FONKSİYONLARI
 function tariheGoreFiltrele(){
-  const iso = document.getElementById(\'tarihSec\').value;
-  if(!iso) return tumunuGoster();
-  const dot = isoToDot(iso);
-  const filtreli = tumVeri.filter(m => m.date === dot);
-  document.getElementById(\'listeBaslik\').textContent = `${dot} Maçları`;
+  const val = document.getElementById(\'tarihSec\').value;
+  if(val==="ALL") return tumunuGoster();
+  const filtreli = tumVeri.filter(m => String(m.date).trim() === val);
+  document.getElementById(\'listeBaslik\').textContent = `${val} Maçları`;
   document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
   listele(filtreli);
 }
 function tumunuGoster(){
-  document.getElementById(\'tarihSec\').value = "";
   document.getElementById(\'listeBaslik\').textContent = `Tüm Maçlar`;
   document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
   listele(tumVeri);
 }
-function bugunGoster(){
-  const bugun = new Date().toISOString().slice(0,10);
-  document.getElementById(\'tarihSec\').value = bugun;
-  tariheGoreFiltrele();
-}
 document.getElementById(\'tarihSec\').addEventListener(\'change\', tariheGoreFiltrele);
 
-// ORAN ANALİZ - TOLERANS YOK
 function analizEt(){
   const tip = document.getElementById(\'oranTip\').value;
   const hedef = parseFloat(document.getElementById(\'hedefOran\').value);
@@ -187,7 +150,7 @@ function analizEt(){
     const oran = m.openingOdds[tip];
     return oran !== null && oran !== 0 && parseFloat(Number(oran).toFixed(2)) === parseFloat(hedef.toFixed(2));
   });
-  if(filtreli.length === 0){ alert(\'Bu oranda birebir eşleşen maç bulunamadı!\'); return; }
+  if(filtreli.length === 0){ alert(\'Bu oranda birebir eşleşen maç yok!\'); return; }
   const toplam = filtreli.length;
   const ms1 = filtreli.filter(m => macSonucu(m)===\'MS1\').length;
   const msx = filtreli.filter(m => macSonucu(m)===\'MSX\').length;
@@ -197,11 +160,8 @@ function analizEt(){
   const v = filtreli.filter(m => isKg(m)===\'VAR\').length;
   const y = toplam - v;
   const iyUst = filtreli.filter(m => isIyUst(m)===\'ÜST\').length;
-  const iyAlt = toplam - iyUst;
-  const iy15Ust = filtreli.filter(m => isIy15(m)===\'ÜST\').length;
-
   document.getElementById(\'sonucKutu\').classList.remove(\'hidden\');
-  document.getElementById(\'analizBaslik\').textContent = `${tip.toUpperCase()} = ${hedef} için ${toplam} maç bulundu (Tüm tarihlerde birebir)`;
+  document.getElementById(\'analizBaslik\').textContent = `${tip.toUpperCase()} = ${hedef} için ${toplam} maç bulundu`;
   const pct = (n) => `%${((n/toplam)*100).toFixed(1)}`;
   document.getElementById(\'ms1Yuzde\').textContent = pct(ms1); document.getElementById(\'ms1Adet\').textContent = `${ms1}`;
   document.getElementById(\'msxYuzde\').textContent = pct(msx); document.getElementById(\'msxAdet\').textContent = `${msx}`;
@@ -213,8 +173,7 @@ function analizEt(){
   document.getElementById(\'yokYuzde\').textContent = pct(y); document.getElementById(\'yokAdet\').textContent = `${y}`;
   document.getElementById(\'barVar\').style.width = (v/toplam*100)+\'%\'; document.getElementById(\'barYok\').style.width = (y/toplam*100)+\'%\';
   document.getElementById(\'iyUstYuzde\').textContent = pct(iyUst); document.getElementById(\'iyUstAdet\').textContent = `${iyUst}`;
-  document.getElementById(\'iyAltYuzde\').textContent = pct(iyAlt); document.getElementById(\'iyAltAdet\').textContent = `${iyAlt}`;
-  document.getElementById(\'iy15UstYuzde\').textContent = pct(iy15Ust); document.getElementById(\'iy15UstAdet\').textContent = `${iy15Ust}`;
+  document.getElementById(\'iyAltYuzde\').textContent = pct(toplam-iyUst); document.getElementById(\'iyAltAdet\').textContent = `${toplam-iyUst}`;
   listele(filtreli);
   window.scrollTo({top:0, behavior:\'smooth\'});
 }
