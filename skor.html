@@ -1,234 +1,42 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Oran Analiz Sistemi</title>
-<script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>İddaa Bülteni</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-[#0f172a] text-white">
-<div class="max-w-7xl mx-auto p-4">
-  <h1 class="text-3xl font-bold text-center py-6">ORAN ANALİZ SİSTEMİ</h1>
-  
-  <div id="hataKutusu" class="hidden bg-red-900/50 border border-red-500 p-4 rounded-xl mb-4 text-center"></div>
+<body>
+  <main class="container">
+    <header>
+      <div>
+        <p class="eyebrow">Mackolik arşiv verisi</p>
+        <h1>İddaa Bülteni</h1>
+        <p class="muted">Açılış oranları sabittir. Skorlar GitHub Actions ile periyodik güncellenir.</p>
+      </div>
+      <div id="updatedAt" class="updated">Veri yükleniyor…</div>
+    </header>
 
-  <!-- TARİH SEÇME -->
-  <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10 mb-4">
-    <div class="flex flex-col md:flex-row gap-3 items-end md:items-center justify-between">
-      <div class="flex-1 w-full">
-        <label class="text-xs opacity-60">TARİH SEÇ</label>
-        <div class="flex gap-2 mt-1">
-          <input id="tarihSec" type="date" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1 text-white">
-          <button onclick="tariheGoreFiltrele()" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-bold">GÖSTER</button>
-        </div>
-      </div>
-      <div class="flex gap-2 w-full md:w-auto">
-        <button onclick="tumunuGoster()" class="flex-1 md:flex-none bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">Tüm Maçlar</button>
-      </div>
-    </div>
-    <p id="tarihBilgi" class="text-xs opacity-50 mt-2"></p>
-  </div>
+    <section class="controls" aria-label="Filtreler">
+      <input id="search" type="search" placeholder="Takım veya maç kodu ara">
+      <select id="dateFilter"><option value="">Tüm tarihler</option></select>
+      <select id="leagueFilter"><option value="">Tüm ligler</option></select>
+      <label class="checkbox"><input id="unplayedOnly" type="checkbox"> Oynanmamışlar</label>
+    </section>
 
-  <!-- ORAN FİLTRE - TOLERANS YOK -->
-  <div class="bg-[#1e293b] p-4 rounded-xl flex flex-col md:flex-row gap-4 mb-2 border border-white/10">
-    <select id="oranTip" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
-      <option value="ms1">MS1</option>
-      <option value="msX">MSX</option>
-      <option value="ms2">MS2</option>
-      <option value="iy1">İY1</option>
-      <option value="iyX">İY X</option>
-      <option value="iy2">İY2</option>
-      <option value="kgVar">KG VAR</option>
-      <option value="kgYok">KG YOK</option>
-      <option value="au25Alt">2.5 ALT</option>
-      <option value="au25Ust">2.5 ÜST</option>
-      <option value="iy15Alt">İY 1.5 ALT</option>
-      <option value="iy15Ust">İY 1.5 ÜST</option>
-    </select>
-    <input id="hedefOran" type="number" step="0.01" value="1.66" class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
-    <button onclick="analizEt()" class="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded font-bold">ANALİZ ET</button>
-  </div>
-  <p class="text-xs opacity-50 text-center mb-6">Birebir eşleşme. Örn: 1.66 sadece 1.66 olanları bulur.</p>
-
-  <!-- ANALİZ SONUCU -->
-  <div id="sonucKutu" class="hidden space-y-4 mb-6">
-    <h2 id="analizBaslik" class="text-center font-bold text-yellow-400"></h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">MAÇ SONUCU</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>MS1</span><b id="ms1Yuzde">%0</b><span id="ms1Adet">0</span></div>
-          <div class="flex justify-between bg-zinc-600/20 p-2 rounded"><span>MSX</span><b id="msxYuzde">%0</b><span id="msxAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>MS2</span><b id="ms2Yuzde">%0</b><span id="ms2Adet">0</span></div>
-        </div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">2.5 GOL</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>ÜST</span><b id="ustYuzde">%0</b><span id="ustAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>ALT</span><b id="altYuzde">%0</b><span id="altAdet">0</span></div>
-        </div>
-        <div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barUst" class="bg-emerald-500 h-2"></div><div id="barAlt" class="bg-red-500 h-2"></div></div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">KG VAR/YOK</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>VAR</span><b id="varYuzde">%0</b><span id="varAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>YOK</span><b id="yokYuzde">%0</b><span id="yokAdet">0</span></div>
-        </div>
-        <div class="w-full bg-black h-2 rounded-full mt-3 flex overflow-hidden"><div id="barVar" class="bg-emerald-500 h-2"></div><div id="barYok" class="bg-red-500 h-2"></div></div>
-      </div>
-      <div class="bg-[#1e293b] p-4 rounded-xl border border-white/10">
-        <h3 class="font-bold text-sm mb-3 text-center opacity-70">İLK YARI GOL</h3>
-        <div class="space-y-2 text-sm">
-          <div class="flex justify-between bg-emerald-600/20 p-2 rounded"><span>İY 0.5 ÜST</span><b id="iyUstYuzde">%0</b><span id="iyUstAdet">0</span></div>
-          <div class="flex justify-between bg-red-600/20 p-2 rounded"><span>İY 0.5 ALT</span><b id="iyAltYuzde">%0</b><span id="iyAltAdet">0</span></div>
-          <div class="flex justify-between bg-white/5 p-2 rounded text-xs"><span>İY 1.5 ÜST</span><b id="iy15UstYuzde">%0</b><span id="iy15UstAdet">0</span></div>
-        </div>
-      </div>
-    </div>
-    <button onclick="resetAnaliz()" class="w-full bg-white/10 hover:bg-white/20 p-2 rounded text-sm">Analizi Kapat</button>
-  </div>
-
-  <!-- LİSTE -->
-  <div class="bg-[#1e293b] rounded-xl overflow-hidden border border-white/10">
-    <div class="p-4 flex justify-between items-center bg-black/20">
-      <h3 id="listeBaslik" class="font-bold">Yükleniyor...</h3>
-      <span id="toplamMac" class="text-sm bg-white/10 px-3 py-1 rounded-full"></span>
-    </div>
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead class="bg-black/30 text-left text-xs opacity-60"><tr><th class="p-3">Saat</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">MS Skor</th><th class="p-3">2.5</th><th class="p-3">KG</th><th class="p-3">Sonuç</th></tr></thead>
-        <tbody id="tablo"><tr><td colspan=7 class="p-6 text-center opacity-50">Veriler yükleniyor...</td></tr></tbody>
+    <div id="message" class="message">Veri yükleniyor…</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tarih</th><th>Saat</th><th>Lig</th><th>Kod</th><th>Ev sahibi</th><th>Misafir</th>
+            <th>IY</th><th>Skor</th><th>MS 1</th><th>MS X</th><th>MS 2</th><th>KG Var</th><th>KG Yok</th><th>Alt 2,5</th><th>Üst 2,5</th>
+          </tr>
+        </thead>
+        <tbody id="matches"></tbody>
       </table>
     </div>
-  </div>
-</div>
-
-<script>
-let tumVeri = [];
-function dotToIso(dot){ const [d,m,y]=dot.split(\'.\'); return `${y}-${m.padStart(2,\'0\')}-${d.padStart(2,\'0\')}` }
-function isoToDot(iso){ const [y,m,d]=iso.split(\'-\'); return `${d}.${m}.${y}` }
-function macSonucu(m){ const ev=parseInt(m.score.home), dep=parseInt(m.score.away); if(ev>dep) return \'MS1\'; if(ev<dep) return \'MS2\'; return \'MSX\'; }
-function isUst(m){ return (parseInt(m.score.home)+parseInt(m.score.away)) > 2.5 ? \'ÜST\' : \'ALT\'; }
-function isKg(m){ return (parseInt(m.score.home)>0 && parseInt(m.score.away)>0) ? \'VAR\' : \'YOK\'; }
-function isIyUst(m){ return (parseInt(m.halfTimeScore.home)+parseInt(m.halfTimeScore.away)) > 0.5 ? \'ÜST\' : \'ALT\'; }
-function isIy15(m){ return (parseInt(m.halfTimeScore.home)+parseInt(m.halfTimeScore.away)) > 1.5 ? \'ÜST\' : \'ALT\'; }
-
-// DÜZELTİLMİŞ VERİ ÇEKME - Github Pages uyumlu
-// skor.html nerede olursa olsun doğru yolu bulur
-const DATA_URL = window.location.pathname.includes(\'/mackolik1/\') 
-  ? \'/mackolik1/data/matches.json\' 
-  : \'data/matches.json\';
-
-console.log("Veri çekiliyor:", DATA_URL);
-
-fetch(DATA_URL + \'?v=\' + Date.now(), {cache: \'no-store\'})
-  .then(r => {
-    if(!r.ok) throw new Error(`HTTP ${r.status} - Dosya bulunamadı: ${DATA_URL}`);
-    return r.json();
-  })
-  .then(data => { 
-    tumVeri = data.matches || data;
-    if(!Array.isArray(tumVeri)) throw new Error("JSON formatı hatalı - matches array değil");
-    tumVeri = tumVeri.filter(m => m.score && m.score.home !== "" && m.score.home !== null);
-    
-    if(tumVeri.length === 0) throw new Error("JSON içinde maç yok");
-
-    const tarihler = [...new Set(tumVeri.map(m=>m.date))].sort((a,b)=>{
-      const [da,ma,ya]=a.split(\'.\'); const [db,mb,yb]=b.split(\'.\');
-      return new Date(`${ya}-${ma}-${da}`) - new Date(`${yb}-${mb}-${db}`);
-    });
-    const sonTarih = tarihler[tarihler.length-1];
-    document.getElementById(\'tarihSec\').value = dotToIso(sonTarih);
-    document.getElementById(\'tarihBilgi\').textContent = `Veride ${tarihler.length} farklı gün var. En son: ${sonTarih} | Toplam ${tumVeri.length} maç`;
-    tariheGoreFiltrele();
-  })
-  .catch(err => {
-    document.getElementById(\'hataKutusu\').classList.remove(\'hidden\');
-    document.getElementById(\'hataKutusu\').innerHTML = `<b>Veri Yüklenemedi!</b><br>${err.message}<br><br>
-    <span class="text-xs opacity-70">Kontrol et: <a href="${DATA_URL}" target="_blank" class="underline text-yellow-400">${DATA_URL}</a> linki açılıyor mu?<br>
-    Açılmıyorsa repo\'da data/matches.json dosyası main branch\'e pushlanmamış demektir.</span>`;
-    document.getElementById(\'tablo\').innerHTML = `<tr><td colspan=7 class="p-6 text-center text-red-400">${err.message}</td></tr>`;
-  });
-
-function listele(data){
-  document.getElementById(\'toplamMac\').textContent = `${data.length} maç`;
-  if(data.length===0){
-    document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=7 class="p-6 text-center opacity-50">Bu tarihte maç bulunamadı</td></tr>\';
-    return;
-  }
-  document.getElementById(\'tablo\').innerHTML = data.slice(0,500).map(m => {
-    const sonuc = macSonucu(m);
-    const renk = sonuc==\'MS1\'?\'text-emerald-400\':sonuc==\'MS2\'?\'text-red-400\':\'text-zinc-400\';
-    return `<tr class="border-t border-white/5 hover:bg-white/5">
-      <td class="p-3 opacity-60 text-xs">${m.time||\'\'}</td>
-      <td class="p-3"><b>${m.home}</b> - ${m.away} <span class="text-xs opacity-40 ml-1">${m.league}</span><span class="text-xs opacity-30 block">${m.date}</span></td>
-      <td class="p-3 cursor-pointer hover:text-yellow-400" onclick="hizliAnaliz(\'ms1\',${m.openingOdds.ms1})">${m.openingOdds.ms1||\'-\'}</td>
-      <td class="p-3 font-bold">${m.score.home}-${m.score.away} <span class="opacity-50 text-xs">(${m.halfTimeScore.home}-${m.halfTimeScore.away})</span></td>
-      <td class="p-3 ${isUst(m)==\'ÜST\'?\'text-emerald-400\':\'text-red-400\'}">${isUst(m)}</td>
-      <td class="p-3 ${isKg(m)==\'VAR\'?\'text-emerald-400\':\'text-red-400\'}">${isKg(m)}</td>
-      <td class="p-3 font-bold ${renk}">${sonuc}</td>
-    </tr>`
-  }).join(\'\');
-}
-function tariheGoreFiltrele(){
-  const iso = document.getElementById(\'tarihSec\').value;
-  if(!iso) return tumunuGoster();
-  const dot = isoToDot(iso);
-  const filtreli = tumVeri.filter(m => m.date === dot);
-  document.getElementById(\'listeBaslik\').textContent = `${dot} Maçları`;
-  document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
-  listele(filtreli);
-}
-function tumunuGoster(){
-  document.getElementById(\'tarihSec\').value = "";
-  document.getElementById(\'listeBaslik\').textContent = `Tüm Maçlar`;
-  document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
-  listele(tumVeri);
-}
-document.getElementById(\'tarihSec\').addEventListener(\'change\', tariheGoreFiltrele);
-
-function analizEt(){
-  const tip = document.getElementById(\'oranTip\').value;
-  const hedef = parseFloat(document.getElementById(\'hedefOran\').value);
-  if(isNaN(hedef)) return alert(\'Oran gir\');
-  const filtreli = tumVeri.filter(m => {
-    const oran = m.openingOdds[tip];
-    return oran !== null && oran !== 0 && parseFloat(Number(oran).toFixed(2)) === parseFloat(hedef.toFixed(2));
-  });
-  if(filtreli.length === 0){ alert(\'Bu oranda birebir eşleşen maç bulunamadı!\'); return; }
-  const toplam = filtreli.length;
-  const ms1 = filtreli.filter(m => macSonucu(m)===\'MS1\').length;
-  const msx = filtreli.filter(m => macSonucu(m)===\'MSX\').length;
-  const ms2 = filtreli.filter(m => macSonucu(m)===\'MS2\').length;
-  const ust = filtreli.filter(m => isUst(m)===\'ÜST\').length;
-  const alt = toplam - ust;
-  const v = filtreli.filter(m => isKg(m)===\'VAR\').length;
-  const y = toplam - v;
-  const iyUst = filtreli.filter(m => isIyUst(m)===\'ÜST\').length;
-  const iyAlt = toplam - iyUst;
-  const iy15Ust = filtreli.filter(m => isIy15(m)===\'ÜST\').length;
-  document.getElementById(\'sonucKutu\').classList.remove(\'hidden\');
-  document.getElementById(\'analizBaslik\').textContent = `${tip.toUpperCase()} = ${hedef} için ${toplam} maç bulundu (Birebir)`;
-  const pct = (n) => `%${((n/toplam)*100).toFixed(1)}`;
-  document.getElementById(\'ms1Yuzde\').textContent = pct(ms1); document.getElementById(\'ms1Adet\').textContent = `${ms1}`;
-  document.getElementById(\'msxYuzde\').textContent = pct(msx); document.getElementById(\'msxAdet\').textContent = `${msx}`;
-  document.getElementById(\'ms2Yuzde\').textContent = pct(ms2); document.getElementById(\'ms2Adet\').textContent = `${ms2}`;
-  document.getElementById(\'ustYuzde\').textContent = pct(ust); document.getElementById(\'ustAdet\').textContent = `${ust}`;
-  document.getElementById(\'altYuzde\').textContent = pct(alt); document.getElementById(\'altAdet\').textContent = `${alt}`;
-  document.getElementById(\'barUst\').style.width = (ust/toplam*100)+\'%\'; document.getElementById(\'barAlt\').style.width = (alt/toplam*100)+\'%\';
-  document.getElementById(\'varYuzde\').textContent = pct(v); document.getElementById(\'varAdet\').textContent = `${v}`;
-  document.getElementById(\'yokYuzde\').textContent = pct(y); document.getElementById(\'yokAdet\').textContent = `${y}`;
-  document.getElementById(\'barVar\').style.width = (v/toplam*100)+\'%\'; document.getElementById(\'barYok\').style.width = (y/toplam*100)+\'%\';
-  document.getElementById(\'iyUstYuzde\').textContent = pct(iyUst); document.getElementById(\'iyUstAdet\').textContent = `${iyUst}`;
-  document.getElementById(\'iyAltYuzde\').textContent = pct(iyAlt); document.getElementById(\'iyAltAdet\').textContent = `${iyAlt}`;
-  document.getElementById(\'iy15UstYuzde\').textContent = pct(iy15Ust); document.getElementById(\'iy15UstAdet\').textContent = `${iy15Ust}`;
-  listele(filtreli);
-  window.scrollTo({top:0, behavior:\'smooth\'});
-}
-function resetAnaliz(){ document.getElementById(\'sonucKutu\').classList.add(\'hidden\'); tariheGoreFiltrele(); }
-function hizliAnaliz(tip, oran){ document.getElementById(\'oranTip\').value=tip; document.getElementById(\'hedefOran\').value=oran; analizEt(); }
-</script>
+  </main>
+  <script src="app.js" type="module"></script>
 </body>
 </html>
