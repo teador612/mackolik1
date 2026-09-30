@@ -1,2596 +1,664 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Maçkolik - Açılış Oran Analizi</title>
-
-<style>
-*{
-    box-sizing:border-box;
-    -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-    margin:0;
-    padding:0;
-    min-height:100%;
-    background:#070d19;
-    color:#eef3ff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
-}
-
-body{
-    padding-bottom:20px;
-}
-
-button,
-select{
-    font:inherit;
-}
-
-.app{
-    width:100%;
-    max-width:920px;
-    margin:auto;
-    padding:10px;
-}
-
-/* ================================
-   HEADER
-================================ */
-
-.header{
-    padding:7px 5px 12px;
-}
-
-.header-title{
-    margin:0;
-    font-size:23px;
-    font-weight:900;
-}
-
-.header-subtitle{
-    margin:4px 0 0;
-    color:#8392aa;
-    font-size:12px;
-}
-
-/* ================================
-   FİLTRE
-================================ */
-
-.filter-box{
-    display:flex;
-    gap:8px;
-    margin-bottom:10px;
-}
-
-.date-select{
-    flex:1;
-    min-width:0;
-    height:44px;
-    padding:0 12px;
-    border:1px solid #263a57;
-    border-radius:12px;
-    background:#101a2b;
-    color:#eef3ff;
-    outline:none;
-}
-
-.refresh-btn{
-    width:48px;
-    height:44px;
-    border:0;
-    border-radius:12px;
-    background:#1769e8;
-    color:#fff;
-    font-size:20px;
-    font-weight:900;
-}
-
-/* ================================
-   BİLGİ
-================================ */
-
-.info{
-    padding:3px 3px 10px;
-    color:#8493aa;
-    font-size:12px;
-    line-height:1.5;
-}
-
-/* ================================
-   MAÇ
-================================ */
-
-.match{
-    margin-bottom:9px;
-    background:#0b1423;
-    border:1px solid #1d3049;
-    border-radius:17px;
-    overflow:hidden;
-}
-
-/* ================================
-   MAÇ ÜST
-================================ */
-
-.match-main{
-    display:grid;
-    grid-template-columns:58px minmax(0,1fr) auto;
-    gap:9px;
-    align-items:center;
-    min-height:105px;
-    padding:10px 10px 10px 9px;
-}
-
-/* ================================
-   + BUTONU
-================================ */
-
-.plus-btn{
-    width:52px;
-    height:52px;
-    border-radius:15px;
-    border:2px solid #29445f;
-    background:#111e31;
-    color:#9cb2ce;
-    font-size:31px;
-    line-height:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-}
-
-.plus-btn.open{
-    background:#176ce9;
-    border-color:#176ce9;
-    color:#fff;
-}
-
-/* ================================
-   MAÇ BİLGİ
-================================ */
-
-.match-info{
-    min-width:0;
-}
-
-.match-meta{
-    margin-bottom:5px;
-    color:#8494ac;
-    font-size:12px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.match-time{
-    color:#9eacc0;
-}
-
-.match-teams{
-    font-size:16px;
-    font-weight:850;
-    line-height:1.35;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.team-separator{
-    color:#657892;
-    padding:0 3px;
-}
-
-.score{
-    margin-top:5px;
-    color:#00e7d4;
-    font-size:15px;
-    font-weight:900;
-}
-
-/* ================================
-   ANA ÖNERİ
-================================ */
-
-.main-pick{
-    min-width:125px;
-    max-width:155px;
-}
-
-.main-pick-box{
-    border:2px solid #3f9219;
-    background:#123706;
-    border-radius:12px;
-    padding:7px 8px;
-    text-align:center;
-}
-
-.main-pick-name{
-    color:#8df04c;
-    font-size:12px;
-    font-weight:850;
-    line-height:1.2;
-}
-
-.main-pick-percent{
-    margin-top:2px;
-    color:#91f64f;
-    font-size:20px;
-    font-weight:950;
-}
-
-.no-pick{
-    color:#64748d;
-    font-size:10px;
-    text-align:center;
-    line-height:1.3;
-}
-
-/* ================================
-   DETAY
-================================ */
-
-.details{
-    display:none;
-    border-top:1px solid #1c2d44;
-    background:#09121f;
-    padding:11px;
-}
-
-.details.open{
-    display:block;
-}
-
-.details-info{
-    margin:0 2px 10px;
-    color:#8291a8;
-    font-size:11px;
-    line-height:1.5;
-}
-
-/* ================================
-   ÖNERİ
-================================ */
-
-.suggestion{
-    margin-bottom:9px;
-    padding:11px;
-    border:1px solid #213750;
-    border-radius:14px;
-    background:#0c1727;
-}
-
-.suggestion:last-child{
-    margin-bottom:0;
-}
-
-.suggestion-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    margin-bottom:9px;
-}
-
-.source-name{
-    min-width:0;
-    color:#eef3ff;
-    font-size:14px;
-    font-weight:850;
-}
-
-.source-odd{
-    color:#51dfd0;
-    margin-left:4px;
-}
-
-.sample-count{
-    flex:none;
-    color:#7e8da5;
-    font-size:11px;
-}
-
-.suggestion-body{
-    display:flex;
-    gap:9px;
-    align-items:stretch;
-}
-
-.best-result{
-    min-width:145px;
-    border:2px solid #57b91c;
-    background:#143c08;
-    border-radius:13px;
-    padding:8px;
-    text-align:center;
-}
-
-.best-name{
-    color:#91ef4e;
-    font-size:13px;
-    font-weight:850;
-}
-
-.best-percent{
-    margin-top:2px;
-    color:#92f74e;
-    font-size:24px;
-    font-weight:950;
-    line-height:1.05;
-}
-
-.best-count{
-    margin-top:4px;
-    color:#9eacbf;
-    font-size:10px;
-}
-
-.other-results{
-    flex:1;
-    display:flex;
-    flex-wrap:wrap;
-    align-content:flex-start;
-    gap:5px;
-}
-
-.result-tag{
-    height:max-content;
-    padding:6px 8px;
-    border:1px solid #2a405e;
-    border-radius:9px;
-    background:#111d30;
-    color:#b8c6da;
-    font-size:10px;
-}
-
-.result-tag strong{
-    color:#83e94b;
-    margin-left:3px;
-}
-
-.source-note{
-    margin-top:8px;
-    color:#65758e;
-    font-size:9px;
-}
-
-/* ================================
-   BOŞ
-================================ */
-
-.empty{
-    padding:25px 15px;
-    border:1px solid #20344f;
-    border-radius:14px;
-    background:#0c1524;
-    color:#7889a2;
-    text-align:center;
-    font-size:12px;
-    line-height:1.6;
-}
-
-.loading{
-    padding:35px 10px;
-    color:#7f8ea6;
-    text-align:center;
-    font-size:13px;
-}
-
-/* ================================
-   MOBİL
-================================ */
-
-@media(max-width:600px){
-
-    .app{
-        padding:7px;
-    }
-
-    .header-title{
-        font-size:21px;
-    }
-
-    .match-main{
-        grid-template-columns:52px minmax(0,1fr) 110px;
-        gap:7px;
-        padding:9px 7px;
-        min-height:98px;
-    }
-
-    .plus-btn{
-        width:46px;
-        height:46px;
-        border-radius:14px;
-        font-size:28px;
-    }
-
-    .match-meta{
-        font-size:11px;
-    }
-
-    .match-teams{
-        font-size:14px;
-    }
-
-    .main-pick{
-        min-width:108px;
-        max-width:110px;
-    }
-
-    .main-pick-box{
-        padding:6px 4px;
-        border-radius:10px;
-    }
-
-    .main-pick-name{
-        font-size:10px;
-    }
-
-    .main-pick-percent{
-        font-size:17px;
-    }
-
-    .suggestion-body{
-        display:block;
-    }
-
-    .best-result{
-        width:100%;
-    }
-
-    .other-results{
-        margin-top:7px;
-    }
-}
-
-@media(max-width:370px){
-
-    .match-main{
-        grid-template-columns:47px minmax(0,1fr) 98px;
-    }
-
-    .plus-btn{
-        width:42px;
-        height:42px;
-    }
-
-    .main-pick{
-        min-width:96px;
-    }
-
-    .main-pick-percent{
-        font-size:16px;
-    }
-
-    .match-teams{
-        font-size:13px;
-    }
-}
-</style>
-</head>
-
-<body>
-
-<div class="app">
-
-    <div class="header">
-        <h1 class="header-title">⚽ Maçkolik</h1>
-        <div class="header-subtitle">
-            Açılış oranlarına göre geçmiş sonuç analizi
-        </div>
-    </div>
-
-    <div class="filter-box">
-
-        <select
-            id="dateSelect"
-            class="date-select"
-        >
-            <option>Yükleniyor...</option>
-        </select>
-
-        <button
-            id="refreshBtn"
-            class="refresh-btn"
-            type="button"
-        >
-            ↻
-        </button>
-
-    </div>
-
-    <div
-        id="info"
-        class="info"
-    >
-        Veriler yükleniyor...
-    </div>
-
-    <div id="matches">
-
-        <div class="loading">
-            Maçlar yükleniyor...
-        </div>
-
-    </div>
-
-</div>
-
-
 <script>
+(function () {
+    'use strict';
 
-"use strict";
+    /* =========================================================
+       GÜNÜN MAÇLARI
+       🟢 Başarılı
+       🔴 Başarısız
+       🟡 Henüz oynanmamış
+       ========================================================= */
 
+    const MIN_SAMPLE = 5;
 
-/* ==========================================================
-   AYARLAR
-========================================================== */
+    let matches = [];
 
-const DATA_URL =
-    "./data/matches.json";
+    /* ---------------------------------------------------------
+       YARDIMCI
+       --------------------------------------------------------- */
 
-
-/*
-   Ana kartta ve detayda sadece
-   %70 ve üzeri sonuçlar gösterilir.
-*/
-const MIN_SUCCESS = 70;
-
-
-/*
-   Aynı açılış oranına sahip geçmişte
-   en az 5 maç olmalı.
-*/
-const MIN_SAMPLE = 5;
-
-
-/*
-   Oranları 2 haneye yuvarlayarak
-   karşılaştırıyoruz.
-
-   3.3 = 3.30
-   1.7 = 1.70
-*/
-const ODDS_DECIMALS = 2;
-
-
-/* ==========================================================
-   VERİ
-========================================================== */
-
-let matches = [];
-
-let selectedDate = "";
-
-const openedMatches = new Set();
-
-
-/* ==========================================================
-   AÇILIŞ ORANI KAYNAKLARI
-========================================================== */
-
-const SOURCE_MARKETS = [
-
-    {
-        key:"ms1",
-        label:"MS1"
-    },
-
-    {
-        key:"msX",
-        label:"MS0 / Beraberlik"
-    },
-
-    {
-        key:"ms2",
-        label:"MS2"
-    },
-
-    {
-        key:"kgVar",
-        label:"KG Var"
-    },
-
-    {
-        key:"kgYok",
-        label:"KG Yok"
-    },
-
-    {
-        key:"au25Alt",
-        label:"MS 2,5 Alt"
-    },
-
-    {
-        key:"au25Ust",
-        label:"MS 2,5 Üst"
-    },
-
-    {
-        key:"iy15Alt",
-        label:"İY 1,5 Alt"
-    },
-
-    {
-        key:"iy15Ust",
-        label:"İY 1,5 Üst"
-    },
-
-    {
-        key:"au15Alt",
-        label:"MS 1,5 Alt"
-    },
-
-    {
-        key:"au15Ust",
-        label:"MS 1,5 Üst"
-    },
-
-    {
-        key:"au35Alt",
-        label:"MS 3,5 Alt"
-    },
-
-    {
-        key:"au35Ust",
-        label:"MS 3,5 Üst"
-    },
-
-    {
-        key:"iy1",
-        label:"İY1"
-    },
-
-    {
-        key:"iyX",
-        label:"İYX"
-    },
-
-    {
-        key:"iy2",
-        label:"İY2"
-    },
-
-    {
-        key:"cs1X",
-        label:"ÇŞ 1X"
-    },
-
-    {
-        key:"cs12",
-        label:"ÇŞ 12"
-    },
-
-    {
-        key:"csX2",
-        label:"ÇŞ X2"
+    function esc(v) {
+        return String(v ?? '')
+            .replace(/[&<>"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[c]));
     }
 
-];
+    function getData() {
+        if (Array.isArray(window.DATA)) return window.DATA;
 
-
-/* ==========================================================
-   SONUÇLAR
-========================================================== */
-
-const TARGET_RESULTS = [
-
-    {
-        key:"ms1",
-        label:"MS1"
-    },
-
-    {
-        key:"msX",
-        label:"MS0 / Beraberlik"
-    },
-
-    {
-        key:"ms2",
-        label:"MS2"
-    },
-
-    {
-        key:"kgVar",
-        label:"KG Var"
-    },
-
-    {
-        key:"kgYok",
-        label:"KG Yok"
-    },
-
-    {
-        key:"over15",
-        label:"MS 1,5 Üst"
-    },
-
-    {
-        key:"under15",
-        label:"MS 1,5 Alt"
-    },
-
-    {
-        key:"over25",
-        label:"MS 2,5 Üst"
-    },
-
-    {
-        key:"under25",
-        label:"MS 2,5 Alt"
-    },
-
-    {
-        key:"over35",
-        label:"MS 3,5 Üst"
-    },
-
-    {
-        key:"under35",
-        label:"MS 3,5 Alt"
-    },
-
-    {
-        key:"iyOver05",
-        label:"İY 0,5 Üst"
-    },
-
-    {
-        key:"iyUnder05",
-        label:"İY 0,5 Alt"
-    },
-
-    {
-        key:"iyOver15",
-        label:"İY 1,5 Üst"
-    },
-
-    {
-        key:"iyUnder15",
-        label:"İY 1,5 Alt"
-    },
-
-    {
-        key:"iy1",
-        label:"İY1"
-    },
-
-    {
-        key:"iyX",
-        label:"İYX"
-    },
-
-    {
-        key:"iy2",
-        label:"İY2"
-    }
-
-];
-
-
-/* ==========================================================
-   VERİYİ YÜKLE
-========================================================== */
-
-async function loadData(){
-
-    try{
-
-        setInfo("Veriler yükleniyor...");
-
-        const response =
-            await fetch(
-                DATA_URL + "?v=" + Date.now(),
-                {
-                    cache:"no-store"
-                }
-            );
-
-
-        if(!response.ok){
-
-            throw new Error(
-                "matches.json HTTP " +
-                response.status
-            );
-
+        if (window.DATA && Array.isArray(window.DATA.matches)) {
+            return window.DATA.matches;
         }
 
-
-        const json =
-            await response.json();
-
-
-        if(
-            json &&
-            Array.isArray(json.matches)
-        ){
-
-            matches =
-                json.matches;
-
-        }
-        else if(
-            Array.isArray(json)
-        ){
-
-            matches =
-                json;
-
-        }
-        else{
-
-            throw new Error(
-                "matches.json içinde matches bulunamadı."
-            );
-
+        if (Array.isArray(window.matches)) {
+            return window.matches;
         }
 
-
-        if(!matches.length){
-
-            throw new Error(
-                "Maç verisi boş."
-            );
-
+        if (window.state && Array.isArray(window.state.matches)) {
+            return window.state.matches;
         }
-
-
-        createDateList();
-
-
-    }
-    catch(error){
-
-        console.error(
-            "Veri hatası:",
-            error
-        );
-
-
-        document.getElementById(
-            "matches"
-        ).innerHTML = `
-
-            <div class="empty">
-
-                Veri yüklenemedi.
-
-                <br><br>
-
-                ${escapeHTML(
-                    error.message ||
-                    "Bilinmeyen hata"
-                )}
-
-            </div>
-
-        `;
-
-
-        setInfo(
-            "Veri yüklenemedi."
-        );
-
-    }
-
-}
-
-
-/* ==========================================================
-   TARİH LİSTESİ
-========================================================== */
-
-function createDateList(){
-
-    const dates =
-        [...new Set(
-            matches
-                .map(
-                    match =>
-                        String(
-                            match.date || ""
-                        ).trim()
-                )
-                .filter(Boolean)
-        )];
-
-
-    dates.sort(
-        compareDates
-    );
-
-
-    const select =
-        document.getElementById(
-            "dateSelect"
-        );
-
-
-    select.innerHTML = "";
-
-
-    dates.forEach(
-        date => {
-
-            const option =
-                document.createElement(
-                    "option"
-                );
-
-            option.value =
-                date;
-
-            option.textContent =
-                date;
-
-            select.appendChild(
-                option
-            );
-
-        }
-    );
-
-
-    /*
-       Bugün varsa bugün.
-       Yoksa veri içindeki en son tarih.
-    */
-
-    const today =
-        getToday();
-
-
-    if(
-        dates.includes(today)
-    ){
-
-        selectedDate =
-            today;
-
-    }
-    else{
-
-        selectedDate =
-            dates[dates.length - 1] ||
-            "";
-
-    }
-
-
-    select.value =
-        selectedDate;
-
-
-    renderMatches();
-
-}
-
-
-/* ==========================================================
-   BUGÜN
-========================================================== */
-
-function getToday(){
-
-    const now =
-        new Date();
-
-
-    const day =
-        String(
-            now.getDate()
-        ).padStart(2,"0");
-
-
-    const month =
-        String(
-            now.getMonth() + 1
-        ).padStart(2,"0");
-
-
-    const year =
-        now.getFullYear();
-
-
-    return (
-        day +
-        "." +
-        month +
-        "." +
-        year
-    );
-
-}
-
-
-/* ==========================================================
-   MAÇLARI GÖSTER
-========================================================== */
-
-function renderMatches(){
-
-    selectedDate =
-        document.getElementById(
-            "dateSelect"
-        ).value;
-
-
-    const todayMatches =
-        matches
-            .filter(
-                match =>
-                    String(
-                        match.date || ""
-                    ) === selectedDate
-            )
-            .sort(
-                sortTime
-            );
-
-
-    setInfo(`
-        <strong>${escapeHTML(selectedDate)}</strong>
-        · ${todayMatches.length} maç
-        · eşik %${MIN_SUCCESS}
-        · minimum ${MIN_SAMPLE} geçmiş maç
-        · açılış oranları
-    `);
-
-
-    if(!todayMatches.length){
-
-        document.getElementById(
-            "matches"
-        ).innerHTML = `
-
-            <div class="empty">
-                Bu tarihte maç bulunamadı.
-            </div>
-
-        `;
-
-        return;
-
-    }
-
-
-    const html =
-        todayMatches
-            .map(
-                match =>
-                    renderMatch(
-                        match
-                    )
-            )
-            .join("");
-
-
-    document.getElementById(
-        "matches"
-    ).innerHTML =
-        html;
-
-}
-
-
-/* ==========================================================
-   MAÇ KARTI
-========================================================== */
-
-function renderMatch(match){
-
-    const analysis =
-        analyzeMatch(
-            match
-        );
-
-
-    const best =
-        analysis.length
-            ? analysis[0].best
-            : null;
-
-
-    const id =
-        String(
-            match.code ||
-            (
-                match.home +
-                "-" +
-                match.away +
-                "-" +
-                match.date +
-                "-" +
-                match.time
-            )
-        );
-
-
-    const isOpen =
-        openedMatches.has(id);
-
-
-    const hasScore =
-        getFullScore(
-            match
-        ) !== null;
-
-
-    return `
-
-        <div
-            class="match"
-            data-match-id="${escapeHTML(id)}"
-        >
-
-            <div class="match-main">
-
-
-                <button
-                    class="plus-btn ${isOpen ? "open" : ""}"
-                    type="button"
-                    onclick="toggleMatch('${escapeAttribute(id)}')"
-                >
-                    ${isOpen ? "−" : "+"}
-                </button>
-
-
-                <div class="match-info">
-
-
-                    <div class="match-meta">
-
-                        <span class="match-time">
-                            ${escapeHTML(
-                                match.time ||
-                                "--:--"
-                            )}
-                        </span>
-
-                        ·
-
-                        ${escapeHTML(
-                            match.league ||
-                            "LİG"
-                        )}
-
-                    </div>
-
-
-                    <div class="match-teams">
-
-                        ${escapeHTML(
-                            match.home ||
-                            "-"
-                        )}
-
-                        <span class="team-separator">
-                            -
-                        </span>
-
-                        ${escapeHTML(
-                            match.away ||
-                            "-"
-                        )}
-
-                    </div>
-
-
-                    ${
-                        hasScore
-                        ?
-                        `
-                        <div class="score">
-
-                            ${escapeHTML(
-                                match.score.home
-                            )}
-
-                            -
-
-                            ${escapeHTML(
-                                match.score.away
-                            )}
-
-                        </div>
-                        `
-                        :
-                        ""
-                    }
-
-
-                </div>
-
-
-                <div class="main-pick">
-
-
-                    ${
-                        best
-                        ?
-                        `
-
-                        <div class="main-pick-box">
-
-                            <div class="main-pick-name">
-                                ${escapeHTML(
-                                    best.target.label
-                                )}
-                            </div>
-
-                            <div class="main-pick-percent">
-                                %${best.percent}
-                            </div>
-
-                        </div>
-
-                        `
-                        :
-                        `
-
-                        <div class="no-pick">
-                            %70+
-                            <br>
-                            öneri yok
-                        </div>
-
-                        `
-                    }
-
-
-                </div>
-
-
-            </div>
-
-
-            <div
-                class="details ${isOpen ? "open" : ""}"
-                id="details-${escapeAttribute(id)}"
-            >
-
-                ${
-                    analysis.length
-                    ?
-                    `
-
-                    <div class="details-info">
-
-                        Her açılış oranı ayrı aranır.
-                        Aynı açılış oranına sahip geçmiş
-                        maçların sonuçları hesaplanır.
-                        Yalnızca %${MIN_SUCCESS}
-                        ve üzerindeki sonuçlar gösterilir.
-
-                    </div>
-
-
-                    ${
-
-                        analysis
-                            .map(
-                                item =>
-                                    renderSuggestion(
-                                        item
-                                    )
-                            )
-                            .join("")
-
-                    }
-
-                    `
-                    :
-                    `
-
-                    <div class="empty">
-
-                        Bu maç için;
-
-                        <br>
-
-                        en az ${MIN_SAMPLE} geçmiş maç
-                        ve %${MIN_SUCCESS} başarı şartını
-                        karşılayan öneri bulunamadı.
-
-                    </div>
-
-                    `
-                }
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-/* ==========================================================
-   DETAY AÇ / KAPAT
-========================================================== */
-
-function toggleMatch(id){
-
-    if(
-        openedMatches.has(id)
-    ){
-
-        openedMatches.delete(id);
-
-    }
-    else{
-
-        openedMatches.add(id);
-
-    }
-
-
-    renderMatches();
-
-}
-
-
-/* ==========================================================
-   ÖNERİ KARTI
-========================================================== */
-
-function renderSuggestion(item){
-
-    return `
-
-        <div class="suggestion">
-
-
-            <div class="suggestion-top">
-
-
-                <div class="source-name">
-
-                    + ${escapeHTML(
-                        item.source.label
-                    )}
-
-                    <span class="source-odd">
-
-                        ${formatOdd(
-                            item.odd
-                        )}
-
-                    </span>
-
-                </div>
-
-
-                <div class="sample-count">
-
-                    ${item.sample}
-                    maç
-
-                </div>
-
-
-            </div>
-
-
-            <div class="suggestion-body">
-
-
-                <div class="best-result">
-
-                    <div class="best-name">
-
-                        ${escapeHTML(
-                            item.best.target.label
-                        )}
-
-                    </div>
-
-
-                    <div class="best-percent">
-
-                        %${item.best.percent}
-
-                    </div>
-
-
-                    <div class="best-count">
-
-                        ${item.best.hits}/${item.best.total}
-
-                    </div>
-
-                </div>
-
-
-                <div class="other-results">
-
-                    ${
-                        item.results
-                            .map(
-                                result => `
-
-                                    <div class="result-tag">
-
-                                        ${escapeHTML(
-                                            result.target.label
-                                        )}
-
-                                        <strong>
-                                            %${result.percent}
-                                        </strong>
-
-                                    </div>
-
-                                `
-                            )
-                            .join("")
-                    }
-
-                </div>
-
-
-            </div>
-
-
-            <div class="source-note">
-
-                Açılış oranı:
-                ${formatOdd(item.odd)}
-                ·
-                ${item.sample} geçmiş maç
-
-            </div>
-
-
-        </div>
-
-    `;
-
-}
-
-
-/* ==========================================================
-   MAÇ ANALİZİ
-========================================================== */
-
-function analyzeMatch(currentMatch){
-
-    const currentDate =
-        parseDate(
-            currentMatch.date
-        );
-
-
-    if(!currentDate){
 
         return [];
-
     }
 
+    function getToday() {
+        const d = new Date();
 
-    /*
-       SADECE BU MAÇTAN ÖNCEKİ
-       MAÇLAR GEÇMİŞ OLARAK KULLANILIR.
-    */
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
 
-    const history =
-        matches.filter(
-            oldMatch => {
-
-                const oldDate =
-                    parseDate(
-                        oldMatch.date
-                    );
-
-
-                if(!oldDate){
-
-                    return false;
-
-                }
-
-
-                if(
-                    oldDate >= currentDate
-                ){
-
-                    return false;
-
-                }
-
-
-                /*
-                   Tam skor olmayan geçmiş maç
-                   hesaba katılmaz.
-                */
-
-                if(
-                    getFullScore(
-                        oldMatch
-                    ) === null
-                ){
-
-                    return false;
-
-                }
-
-
-                return true;
-
-            }
-        );
-
-
-    if(!history.length){
-
-        return [];
-
+        return `${day}.${month}.${year}`;
     }
 
+    function getScore(match) {
 
-    const allSuggestions = [];
+        const s =
+            match.score ||
+            match.result ||
+            null;
 
+        if (!s) return null;
 
-    /*
-       MAÇIN HER AÇILIŞ ORANI
-       TEK TEK İNCELENİR.
-    */
+        const home = Number(s.home);
+        const away = Number(s.away);
 
-    for(
-        const source
-        of SOURCE_MARKETS
-    ){
-
-        const currentOdd =
-            getOpeningOdd(
-                currentMatch,
-                source.key
-            );
-
-
-        /*
-           Oran yoksa devam.
-        */
-
-        if(
-            currentOdd === null
-        ){
-
-            continue;
-
+        if (!Number.isFinite(home) ||
+            !Number.isFinite(away)) {
+            return null;
         }
 
-
         /*
-           Geçmişte aynı açılış oranına
-           sahip maçları bul.
-        */
+         * Maçın henüz başlamadığı durumlarda
+         * 0-0 değerini sonuç kabul etmiyoruz.
+         */
 
-        const sameOddMatches =
-            history.filter(
-                oldMatch => {
-
-                    const oldOdd =
-                        getOpeningOdd(
-                            oldMatch,
-                            source.key
-                        );
-
-
-                    return (
-                        oldOdd !== null &&
-                        sameOdd(
-                            oldOdd,
-                            currentOdd
-                        )
-                    );
-
-                }
-            );
-
-
-        if(
-            sameOddMatches.length <
-            MIN_SAMPLE
-        ){
-
-            continue;
-
+        if (
+            match.status === 0 ||
+            match.status === '0' ||
+            match.status === 1 ||
+            match.status === '1'
+        ) {
+            return null;
         }
 
+        return {
+            home,
+            away
+        };
+    }
 
-        const validResults = [];
+    function getHTScore(match) {
 
+        const s =
+            match.halfTimeScore ||
+            match.htScore ||
+            match.firstHalfScore;
 
-        /*
-           Bu oran grubundaki geçmiş maçlarda
-           bütün sonuçları test et.
-        */
+        if (!s) return null;
 
-        for(
-            const target
-            of TARGET_RESULTS
-        ){
+        const home = Number(s.home);
+        const away = Number(s.away);
 
-            let hits = 0;
-            let total = 0;
-
-
-            for(
-                const oldMatch
-                of sameOddMatches
-            ){
-
-                const result =
-                    calculateResult(
-                        oldMatch,
-                        target.key
-                    );
-
-
-                /*
-                   Sonuç hesaplanamıyorsa
-                   toplam örneğe dahil edilmez.
-                */
-
-                if(
-                    result === null
-                ){
-
-                    continue;
-
-                }
-
-
-                total++;
-
-
-                if(result){
-
-                    hits++;
-
-                }
-
-            }
-
-
-            if(
-                total <
-                MIN_SAMPLE
-            ){
-
-                continue;
-
-            }
-
-
-            const percent =
-                (hits / total) * 100;
-
-
-            /*
-               %70 ALTINI AT.
-            */
-
-            if(
-                percent <
-                MIN_SUCCESS
-            ){
-
-                continue;
-
-            }
-
-
-            validResults.push({
-
-                target,
-
-                hits,
-
-                total,
-
-                percent:Number(
-                    percent.toFixed(1)
-                )
-
-            });
-
+        if (!Number.isFinite(home) ||
+            !Number.isFinite(away)) {
+            return null;
         }
 
+        return {
+            home,
+            away
+        };
+    }
 
-        /*
-           Bu açılış oranından
-           %70+ hiçbir sonuç yoksa
-           kart oluşturma.
-        */
+    /* ---------------------------------------------------------
+       ÖNERİYİ BUL
+       --------------------------------------------------------- */
 
-        if(
-            !validResults.length
-        ){
+    function getSuggestion(match) {
 
-            continue;
-
-        }
-
-
-        /*
-           En yüksek başarı oranı önce.
-           Eşitlikte daha fazla örnek önce.
-        */
-
-        validResults.sort(
-            (a,b) => {
-
-                if(
-                    b.percent !==
-                    a.percent
-                ){
-
-                    return (
-                        b.percent -
-                        a.percent
-                    );
-
-                }
-
-
-                return (
-                    b.total -
-                    a.total
-                );
-
-            }
+        return (
+            match.best ||
+            match.bestSuggestion ||
+            match.suggestion ||
+            match.recommendation ||
+            match.prediction ||
+            match.tip ||
+            match.bestResult ||
+            null
         );
+    }
 
+    function getSuggestionLabel(suggestion) {
 
-        allSuggestions.push({
+        if (!suggestion) return '';
 
-            source,
+        if (typeof suggestion === 'string') {
+            return suggestion;
+        }
 
-            odd:currentOdd,
+        return (
+            suggestion.label ||
+            suggestion.name ||
+            suggestion.type ||
+            suggestion.key ||
+            suggestion.market ||
+            suggestion.target?.label ||
+            ''
+        );
+    }
 
-            sample:sameOddMatches.length,
+    /* ---------------------------------------------------------
+       ÖNERİNİN DOĞRU OLUP OLMADIĞI
+       --------------------------------------------------------- */
 
-            results:validResults,
+    function checkSuggestion(match, suggestion) {
 
-            best:validResults[0]
+        const score = getScore(match);
 
+        if (!score || !suggestion) {
+            return null;
+        }
+
+        const ht = getHTScore(match);
+
+        let type = getSuggestionLabel(suggestion)
+            .toLowerCase()
+            .trim();
+
+        const h = score.home;
+        const a = score.away;
+        const total = h + a;
+
+        /* MS 1 */
+
+        if (
+            type === 'ms1' ||
+            type === 'ms 1' ||
+            type === '1' ||
+            type.includes('ms1')
+        ) {
+            return h > a;
+        }
+
+        /* MS X */
+
+        if (
+            type === 'msx' ||
+            type === 'ms x' ||
+            type === 'ms0' ||
+            type === 'ms 0' ||
+            type === 'x' ||
+            type.includes('msx')
+        ) {
+            return h === a;
+        }
+
+        /* MS 2 */
+
+        if (
+            type === 'ms2' ||
+            type === 'ms 2' ||
+            type === '2' ||
+            type.includes('ms2')
+        ) {
+            return h < a;
+        }
+
+        /* KG VAR */
+
+        if (
+            type.includes('kg var') ||
+            type.includes('kgvar') ||
+            type.includes('kg+')
+        ) {
+            return h > 0 && a > 0;
+        }
+
+        /* KG YOK */
+
+        if (
+            type.includes('kg yok') ||
+            type.includes('kgyok') ||
+            type.includes('kg-')
+        ) {
+            return h === 0 || a === 0;
+        }
+
+        /* 2.5 ÜST */
+
+        if (
+            type.includes('2,5 üst') ||
+            type.includes('2.5 üst') ||
+            type.includes('over25')
+        ) {
+            return total >= 3;
+        }
+
+        /* 2.5 ALT */
+
+        if (
+            type.includes('2,5 alt') ||
+            type.includes('2.5 alt') ||
+            type.includes('under25')
+        ) {
+            return total <= 2;
+        }
+
+        /* İY 0.5 ÜST */
+
+        if (
+            type.includes('iy 0,5 üst') ||
+            type.includes('iy 0.5 üst') ||
+            type.includes('iyover05')
+        ) {
+            if (!ht) return null;
+
+            return ht.home + ht.away >= 1;
+        }
+
+        /* İY 1.5 ÜST */
+
+        if (
+            type.includes('iy 1,5 üst') ||
+            type.includes('iy 1.5 üst') ||
+            type.includes('iyover15')
+        ) {
+            if (!ht) return null;
+
+            return ht.home + ht.away >= 2;
+        }
+
+        return null;
+    }
+
+    /* ---------------------------------------------------------
+       KART DURUMU
+       --------------------------------------------------------- */
+
+    function getMatchStatus(match) {
+
+        const suggestion = getSuggestion(match);
+        const score = getScore(match);
+
+        /*
+         * Henüz öneri yoksa veya maç başlamadıysa sarı.
+         */
+
+        if (!suggestion || !score) {
+            return {
+                className: 'match-pending',
+                icon: '🟡',
+                text: 'Bekliyor'
+            };
+        }
+
+        const result =
+            checkSuggestion(match, suggestion);
+
+        if (result === true) {
+            return {
+                className: 'match-success',
+                icon: '🟢',
+                text: 'Başarılı'
+            };
+        }
+
+        if (result === false) {
+            return {
+                className: 'match-fail',
+                icon: '🔴',
+                text: 'Başarısız'
+            };
+        }
+
+        return {
+            className: 'match-pending',
+            icon: '🟡',
+            text: 'Bekliyor'
+        };
+    }
+
+    /* ---------------------------------------------------------
+       GÜNLÜK TOPLAM BAŞARI
+       --------------------------------------------------------- */
+
+    function calculateDailySuccess(list) {
+
+        let total = 0;
+        let success = 0;
+
+        list.forEach(match => {
+
+            const suggestion = getSuggestion(match);
+            const score = getScore(match);
+
+            if (!suggestion || !score) return;
+
+            const result =
+                checkSuggestion(match, suggestion);
+
+            if (result === null) return;
+
+            total++;
+
+            if (result === true) {
+                success++;
+            }
         });
 
+        const percentage =
+            total
+                ? (success / total) * 100
+                : 0;
+
+        return {
+            total,
+            success,
+            percentage
+        };
     }
 
+    /* ---------------------------------------------------------
+       CSS
+       --------------------------------------------------------- */
 
-    /*
-       MAÇIN ANA ÖNERİSİ:
+    function addStyles() {
 
-       Tüm açılış oranları içerisindeki
-       EN YÜKSEK başarı oranı.
-    */
+        if (document.getElementById('gununMaclariStyles')) {
+            return;
+        }
 
-    allSuggestions.sort(
-        (a,b) => {
+        const style = document.createElement('style');
 
-            if(
-                b.best.percent !==
-                a.best.percent
-            ){
+        style.id = 'gununMaclariStyles';
 
-                return (
-                    b.best.percent -
-                    a.best.percent
-                );
+        style.textContent = `
 
-            }
+        .today-success-box {
+            width: 100%;
+            box-sizing: border-box;
+            margin: 12px 0 15px;
+            padding: 16px;
+            border-radius: 16px;
+            text-align: center;
+            background: #111827;
+            color: white;
+            box-shadow: 0 5px 16px rgba(0,0,0,.12);
+        }
 
+        .today-success-title {
+            font-size: 12px;
+            font-weight: 700;
+            opacity: .75;
+            letter-spacing: .5px;
+        }
 
-            if(
-                b.best.total !==
-                a.best.total
-            ){
+        .today-success-percent {
+            font-size: 34px;
+            font-weight: 900;
+            margin-top: 4px;
+        }
 
-                return (
-                    b.best.total -
-                    a.best.total
-                );
+        .today-success-detail {
+            font-size: 13px;
+            opacity: .75;
+            margin-top: 3px;
+        }
 
-            }
+        .today-match-card {
+            position: relative;
+            border-radius: 14px;
+            padding: 12px;
+            margin-bottom: 9px;
+            border-left: 5px solid;
+            transition: .2s;
+        }
 
+        .today-match-card.match-success {
+            background: #ecfdf5;
+            border-left-color: #16a34a;
+        }
+
+        .today-match-card.match-fail {
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+
+        .today-match-card.match-pending {
+            background: #fffbeb;
+            border-left-color: #eab308;
+        }
+
+        .today-match-status {
+            font-size: 11px;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .match-success .today-match-status {
+            color: #15803d;
+        }
+
+        .match-fail .today-match-status {
+            color: #b91c1c;
+        }
+
+        .match-pending .today-match-status {
+            color: #a16207;
+        }
+
+        .today-match-teams {
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        .today-match-score {
+            margin-top: 5px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .today-match-suggestion {
+            margin-top: 7px;
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 8px;
+            background: rgba(0,0,0,.06);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    /* ---------------------------------------------------------
+       GÜNÜN MAÇLARINI GÖSTER
+       --------------------------------------------------------- */
+
+    function renderToday() {
+
+        matches = getData();
+
+        if (!matches.length) {
+            return;
+        }
+
+        const today = getToday();
+
+        const todayMatches = matches.filter(m => {
 
             return (
-                b.sample -
-                a.sample
+                m.date === today ||
+                m.matchDate === today
             );
+        });
 
-        }
-    );
-
-
-    return allSuggestions;
-
-}
-
-
-/* ==========================================================
-   SONUÇ HESAPLA
-========================================================== */
-
-function calculateResult(
-    match,
-    resultType
-){
-
-    const score =
-        getFullScore(
-            match
-        );
-
-
-    /*
-       MS1
-    */
-
-    if(
-        resultType === "ms1"
-    ){
-
-        if(!score){
-
-            return null;
-
-        }
-
-        return (
-            score.home >
-            score.away
-        );
-
-    }
-
-
-    /*
-       MSX
-    */
-
-    if(
-        resultType === "msX"
-    ){
-
-        if(!score){
-
-            return null;
-
-        }
-
-        return (
-            score.home ===
-            score.away
-        );
-
-    }
-
-
-    /*
-       MS2
-    */
-
-    if(
-        resultType === "ms2"
-    ){
-
-        if(!score){
-
-            return null;
-
-        }
-
-        return (
-            score.home <
-            score.away
-        );
-
-    }
-
-
-    /*
-       KG VAR
-    */
-
-    if(
-        resultType === "kgVar"
-    ){
-
-        if(!score){
-
-            return null;
-
-        }
-
-        return (
-            score.home > 0 &&
-            score.away > 0
-        );
-
-    }
-
-
-    /*
-       KG YOK
-    */
-
-    if(
-        resultType === "kgYok"
-    ){
-
-        if(!score){
-
-            return null;
-
-        }
-
-        return !(
-            score.home > 0 &&
-            score.away > 0
-        );
-
-    }
-
-
-    if(!score){
+        const success =
+            calculateDailySuccess(todayMatches);
 
         /*
-           MS toplam gol analizleri
-           için skor şart.
-        */
+         * Mevcut Günün Maçları konteynerini bul.
+         */
 
-        if(
-            resultType === "over15" ||
-            resultType === "under15" ||
-            resultType === "over25" ||
-            resultType === "under25" ||
-            resultType === "over35" ||
-            resultType === "under35"
-        ){
+        let container =
+            document.getElementById('todayMatches') ||
+            document.getElementById('todayList') ||
+            document.querySelector('.today-matches');
 
-            return null;
-
+        if (!container) {
+            return;
         }
 
-    }
+        /*
+         * Günlük başarı kutusu
+         */
 
+        let successBox =
+            document.getElementById('todaySuccessBox');
 
-    if(
-        resultType === "over15"
-    ){
+        if (!successBox) {
 
-        return (
-            score.home +
-            score.away
-        ) > 1.5;
+            successBox =
+                document.createElement('div');
 
-    }
+            successBox.id =
+                'todaySuccessBox';
 
-
-    if(
-        resultType === "under15"
-    ){
-
-        return (
-            score.home +
-            score.away
-        ) < 1.5;
-
-    }
-
-
-    if(
-        resultType === "over25"
-    ){
-
-        return (
-            score.home +
-            score.away
-        ) > 2.5;
-
-    }
-
-
-    if(
-        resultType === "under25"
-    ){
-
-        return (
-            score.home +
-            score.away
-        ) < 2.5;
-
-    }
-
-
-    if(
-        resultType === "over35"
-    ){
-
-        return (
-            score.home +
-            score.away
-        ) > 3.5;
-
-    }
-
-
-    if(
-        resultType === "under35"
-    ){
-
-        return (
-            score.home +
-            score.away
-        ) < 3.5;
-
-    }
-
-
-    /*
-       İLK YARI
-    */
-
-    const half =
-        getHalfScore(
-            match
-        );
-
-
-    if(
-        resultType === "iyOver05"
-    ){
-
-        if(!half){
-
-            return null;
-
+            container.parentNode.insertBefore(
+                successBox,
+                container
+            );
         }
 
-        return (
-            half.home +
-            half.away
-        ) > 0.5;
+        successBox.className =
+            'today-success-box';
 
+        successBox.innerHTML = `
+
+            <div class="today-success-title">
+                BUGÜNÜN GENEL BAŞARISI
+            </div>
+
+            <div class="today-success-percent">
+                ${
+                    success.total
+                        ? '%' + success.percentage.toFixed(1)
+                        : '--'
+                }
+            </div>
+
+            <div class="today-success-detail">
+                ${
+                    success.total
+                        ? `${success.success} / ${success.total} öneri tuttu`
+                        : 'Henüz sonuçlanan öneri yok'
+                }
+            </div>
+
+        `;
+
+        /*
+         * Kartları renklendir.
+         *
+         * Mevcut kartların HTML'ini bozmayız.
+         * Sadece durum class'ı ekleriz.
+         */
+
+        const cards =
+            container.querySelectorAll(
+                '[data-match-id], .match-card, .today-card'
+            );
+
+        cards.forEach(card => {
+
+            const id =
+                card.dataset.matchId ||
+                card.dataset.id;
+
+            if (!id) return;
+
+            const match =
+                todayMatches.find(m =>
+                    String(
+                        m.code ||
+                        m.id ||
+                        m.matchId
+                    ) === String(id)
+                );
+
+            if (!match) return;
+
+            card.classList.remove(
+                'match-success',
+                'match-fail',
+                'match-pending'
+            );
+
+            const status =
+                getMatchStatus(match);
+
+            card.classList.add(
+                status.className
+            );
+
+            /*
+             * Kartın içine durum etiketi ekle.
+             */
+
+            let statusEl =
+                card.querySelector('.today-match-status');
+
+            if (!statusEl) {
+
+                statusEl =
+                    document.createElement('div');
+
+                statusEl.className =
+                    'today-match-status';
+
+                card.prepend(statusEl);
+            }
+
+            statusEl.textContent =
+                `${status.icon} ${status.text}`;
+        });
     }
 
+    /* ---------------------------------------------------------
+       BAŞLAT
+       --------------------------------------------------------- */
 
-    if(
-        resultType === "iyUnder05"
-    ){
+    function start() {
 
-        if(!half){
+        addStyles();
 
-            return null;
+        renderToday();
 
-        }
+        /*
+         * Skorlar değişebileceği için tekrar kontrol.
+         */
 
-        return (
-            half.home +
-            half.away
-        ) < 0.5;
-
+        setTimeout(renderToday, 1000);
+        setTimeout(renderToday, 3000);
+        setTimeout(renderToday, 7000);
     }
 
-
-    if(
-        resultType === "iyOver15"
-    ){
-
-        if(!half){
-
-            return null;
-
-        }
-
-        return (
-            half.home +
-            half.away
-        ) > 1.5;
-
-    }
-
-
-    if(
-        resultType === "iyUnder15"
-    ){
-
-        if(!half){
-
-            return null;
-
-        }
-
-        return (
-            half.home +
-            half.away
-        ) < 1.5;
-
-    }
-
-
-    if(
-        resultType === "iy1"
-    ){
-
-        if(!half){
-
-            return null;
-
-        }
-
-        return (
-            half.home >
-            half.away
+    if (document.readyState === 'loading') {
+        document.addEventListener(
+            'DOMContentLoaded',
+            start
         );
-
+    } else {
+        start();
     }
 
-
-    if(
-        resultType === "iyX"
-    ){
-
-        if(!half){
-
-            return null;
-
-        }
-
-        return (
-            half.home ===
-            half.away
-        );
-
-    }
-
-
-    if(
-        resultType === "iy2"
-    ){
-
-        if(!half){
-
-            return null;
-
-        }
-
-        return (
-            half.home <
-            half.away
-        );
-
-    }
-
-
-    return null;
-
-}
-
-
-/* ==========================================================
-   TAM SKOR
-========================================================== */
-
-function getFullScore(match){
-
-    if(
-        !match ||
-        !match.score
-    ){
-
-        return null;
-
-    }
-
-
-    const home =
-        Number(
-            match.score.home
-        );
-
-    const away =
-        Number(
-            match.score.away
-        );
-
-
-    if(
-        !Number.isFinite(home) ||
-        !Number.isFinite(away) ||
-        home < 0 ||
-        away < 0
-    ){
-
-        return null;
-
-    }
-
-
-    return {
-        home,
-        away
-    };
-
-}
-
-
-/* ==========================================================
-   İLK YARI SKORU
-========================================================== */
-
-function getHalfScore(match){
-
-    if(
-        !match ||
-        !match.halfTimeScore
-    ){
-
-        return null;
-
-    }
-
-
-    const home =
-        Number(
-            match.halfTimeScore.home
-        );
-
-    const away =
-        Number(
-            match.halfTimeScore.away
-        );
-
-
-    if(
-        !Number.isFinite(home) ||
-        !Number.isFinite(away) ||
-        home < 0 ||
-        away < 0
-    ){
-
-        return null;
-
-    }
-
-
-    return {
-        home,
-        away
-    };
-
-}
-
-
-/* ==========================================================
-   AÇILIŞ ORANI
-========================================================== */
-
-function getOpeningOdd(
-    match,
-    key
-){
-
-    if(
-        !match ||
-        !match.openingOdds
-    ){
-
-        return null;
-
-    }
-
-
-    const value =
-        Number(
-            match.openingOdds[key]
-        );
-
-
-    /*
-       0, null, undefined,
-       NaN gibi değerler
-       oran değildir.
-    */
-
-    if(
-        !Number.isFinite(value) ||
-        value <= 0
-    ){
-
-        return null;
-
-    }
-
-
-    return value;
-
-}
-
-
-/* ==========================================================
-   ORAN EŞİTLİĞİ
-========================================================== */
-
-function sameOdd(
-    a,
-    b
-){
-
-    return (
-        Number(a).toFixed(
-            ODDS_DECIMALS
-        )
-        ===
-        Number(b).toFixed(
-            ODDS_DECIMALS
-        )
-    );
-
-}
-
-
-/* ==========================================================
-   ORAN FORMAT
-========================================================== */
-
-function formatOdd(value){
-
-    if(
-        value === null ||
-        value === undefined
-    ){
-
-        return "-";
-
-    }
-
-
-    return Number(value)
-        .toFixed(2);
-
-}
-
-
-/* ==========================================================
-   TARİH PARSE
-========================================================== */
-
-function parseDate(value){
-
-    if(!value){
-
-        return null;
-
-    }
-
-
-    const parts =
-        String(value)
-            .split(".");
-
-
-    if(
-        parts.length !== 3
-    ){
-
-        return null;
-
-    }
-
-
-    const day =
-        Number(parts[0]);
-
-    const month =
-        Number(parts[1]) - 1;
-
-    const year =
-        Number(parts[2]);
-
-
-    const date =
-        new Date(
-            year,
-            month,
-            day
-        );
-
-
-    if(
-        Number.isNaN(
-            date.getTime()
-        )
-    ){
-
-        return null;
-
-    }
-
-
-    return date;
-
-}
-
-
-/* ==========================================================
-   TARİH SIRALA
-========================================================== */
-
-function compareDates(
-    a,
-    b
-){
-
-    const da =
-        parseDate(a);
-
-    const db =
-        parseDate(b);
-
-
-    if(!da) return -1;
-
-    if(!db) return 1;
-
-
-    return da - db;
-
-}
-
-
-/* ==========================================================
-   SAAT SIRALA
-========================================================== */
-
-function sortTime(
-    a,
-    b
-){
-
-    return String(
-        a.time || ""
-    ).localeCompare(
-        String(
-            b.time || ""
-        )
-    );
-
-}
-
-
-/* ==========================================================
-   BİLGİ YAZ
-========================================================== */
-
-function setInfo(
-    html
-){
-
-    document.getElementById(
-        "info"
-    ).innerHTML =
-        html;
-
-}
-
-
-/* ==========================================================
-   HTML GÜVENLİK
-========================================================== */
-
-function escapeHTML(
-    value
-){
-
-    return String(
-        value ?? ""
-    )
-    .replaceAll(
-        "&",
-        "&amp;"
-    )
-    .replaceAll(
-        "<",
-        "&lt;"
-    )
-    .replaceAll(
-        ">",
-        "&gt;"
-    )
-    .replaceAll(
-        '"',
-        "&quot;"
-    )
-    .replaceAll(
-        "'",
-        "&#039;"
-    );
-
-}
-
-
-/* ==========================================================
-   ATTRIBUTE GÜVENLİK
-========================================================== */
-
-function escapeAttribute(
-    value
-){
-
-    return String(
-        value ?? ""
-    )
-    .replaceAll(
-        "\\",
-        "\\\\"
-    )
-    .replaceAll(
-        "'",
-        "\\'"
-    );
-
-}
-
-
-/* ==========================================================
-   TARİH DEĞİŞİNCE
-========================================================== */
-
-document
-    .getElementById(
-        "dateSelect"
-    )
-    .addEventListener(
-        "change",
-        function(){
-
-            openedMatches.clear();
-
-            renderMatches();
-
-        }
-    );
-
-
-/* ==========================================================
-   YENİLE
-========================================================== */
-
-document
-    .getElementById(
-        "refreshBtn"
-    )
-    .addEventListener(
-        "click",
-        function(){
-
-            openedMatches.clear();
-
-            loadData();
-
-        }
-    );
-
-
-/* ==========================================================
-   BAŞLAT
-========================================================== */
-
-loadData();
-
+})();
 </script>
-
-</body>
-</html>
