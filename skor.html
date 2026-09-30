@@ -2,211 +2,200 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>İddaa Bülteni</title>
 
 <style>
-* {
-    box-sizing: border-box;
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#f3f4f6;
+    color:#111827;
+    font-family:Arial,Helvetica,sans-serif
 }
 
-body {
-    margin: 0;
-    background: #f4f6f8;
-    color: #17202a;
-    font-family: Arial, Helvetica, sans-serif;
+header{
+    background:#111827;
+    color:#fff;
+    padding:18px 14px;
+    text-align:center
 }
 
-header {
-    background: #111827;
-    color: white;
-    padding: 18px 15px;
-    text-align: center;
+header h1{
+    margin:0;
+    font-size:22px
 }
 
-header h1 {
-    margin: 0;
-    font-size: 22px;
+header p{
+    margin:6px 0 0;
+    color:#cbd5e1;
+    font-size:13px
 }
 
-header p {
-    margin: 7px 0 0;
-    color: #cbd5e1;
-    font-size: 13px;
+.container{
+    max-width:1600px;
+    margin:auto;
+    padding:14px
 }
 
-.container {
-    max-width: 1500px;
-    margin: auto;
-    padding: 15px;
+.status{
+    background:#fff;
+    border-radius:10px;
+    padding:12px 15px;
+    margin-bottom:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06);
+    font-size:14px
 }
 
-.status {
-    background: white;
-    border-radius: 10px;
-    padding: 12px 15px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-    font-size: 14px;
+.status.ok{
+    border-left:4px solid #16a34a
 }
 
-.status.ok {
-    border-left: 4px solid #16a34a;
+.status.error{
+    border-left:4px solid #dc2626;
+    color:#991b1b
 }
 
-.status.error {
-    border-left: 4px solid #dc2626;
-    color: #991b1b;
-}
-
-.filters {
-    background: white;
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
-
-    display: grid;
-    grid-template-columns:
-        minmax(180px, 2fr)
-        minmax(140px, 1fr)
-        minmax(140px, 1fr)
-        minmax(120px, 1fr)
-        auto;
-    gap: 10px;
+.filters{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr 1fr auto;
+    gap:9px;
+    background:#fff;
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:14px;
+    box-shadow:0 2px 8px rgba(0,0,0,.06)
 }
 
 input,
 select,
-button {
-    width: 100%;
-    min-height: 40px;
-    border: 1px solid #d1d5db;
-    border-radius: 7px;
-    padding: 8px 10px;
-    font-size: 14px;
-    background: white;
+button{
+    width:100%;
+    height:40px;
+    border:1px solid #d1d5db;
+    border-radius:7px;
+    padding:0 10px;
+    font-size:14px;
+    background:#fff
 }
 
-button {
-    cursor: pointer;
-    background: #111827;
-    color: white;
-    border: none;
+button{
+    background:#111827;
+    color:#fff;
+    border:0;
+    cursor:pointer;
+    padding:0 18px
 }
 
-button:hover {
-    opacity: .9;
+.table-wrap{
+    background:#fff;
+    border-radius:10px;
+    overflow:auto;
+    box-shadow:0 2px 8px rgba(0,0,0,.06)
 }
 
-.table-wrap {
-    background: white;
-    border-radius: 10px;
-    overflow-x: auto;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+table{
+    width:100%;
+    min-width:1250px;
+    border-collapse:collapse
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 1150px;
-}
-
-thead {
-    background: #111827;
-    color: white;
+thead{
+    background:#111827;
+    color:#fff
 }
 
 th,
-td {
-    padding: 9px 8px;
-    border-bottom: 1px solid #e5e7eb;
-    text-align: center;
-    white-space: nowrap;
-    font-size: 13px;
+td{
+    padding:9px 7px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:center;
+    white-space:nowrap;
+    font-size:13px
 }
 
-th {
-    font-weight: 600;
+th{
+    font-weight:600
 }
 
-tbody tr:hover {
-    background: #f8fafc;
+tbody tr:hover{
+    background:#f8fafc
 }
 
-.home {
-    text-align: right;
-    font-weight: 600;
+.home{
+    text-align:right;
+    font-weight:600
 }
 
-.away {
-    text-align: left;
-    font-weight: 600;
+.away{
+    text-align:left;
+    font-weight:600
 }
 
-.score {
-    font-weight: bold;
+.score{
+    font-weight:700
 }
 
-.ht {
-    color: #64748b;
+.ht{
+    color:#64748b;
+    font-weight:600
 }
 
-.odd {
-    font-weight: 600;
+.odd{
+    font-weight:600
 }
 
-.empty {
-    text-align: center;
-    padding: 30px;
-    color: #64748b;
+.no-data{
+    padding:35px!important;
+    color:#64748b
 }
 
-.loading {
-    text-align: center;
-    padding: 30px;
+.badge{
+    display:inline-block;
+    padding:4px 7px;
+    border-radius:5px;
+    font-size:11px;
+    font-weight:600
 }
 
-.badge {
-    display: inline-block;
-    padding: 3px 7px;
-    border-radius: 5px;
-    font-size: 11px;
-    background: #e5e7eb;
+.played{
+    background:#dcfce7;
+    color:#166534
 }
 
-.badge.played {
-    background: #dcfce7;
-    color: #166534;
+.unplayed{
+    background:#fef3c7;
+    color:#92400e
 }
 
-.badge.unplayed {
-    background: #fef3c7;
-    color: #92400e;
-}
+@media(max-width:800px){
 
-@media (max-width: 800px) {
-    .filters {
-        grid-template-columns: 1fr 1fr;
+    .filters{
+        grid-template-columns:1fr 1fr
     }
 
-    .filters .search {
-        grid-column: 1 / -1;
+    .search{
+        grid-column:1/-1
     }
 }
 
-@media (max-width: 500px) {
-    .container {
-        padding: 8px;
+@media(max-width:500px){
+
+    .container{
+        padding:8px
     }
 
-    .filters {
-        grid-template-columns: 1fr;
+    .filters{
+        grid-template-columns:1fr
     }
 
-    header h1 {
-        font-size: 19px;
+    .search{
+        grid-column:auto
+    }
+
+    header h1{
+        font-size:19px
     }
 }
 </style>
@@ -243,7 +232,7 @@ tbody tr:hover {
         </select>
 
         <select id="playedFilter">
-            <option value="all">Tümü</option>
+            <option value="all">Tüm maçlar</option>
             <option value="played">Oynananlar</option>
             <option value="unplayed">Oynanmamışlar</option>
         </select>
@@ -267,7 +256,7 @@ tbody tr:hover {
                     <th>Ev Sahibi</th>
                     <th>Misafir</th>
                     <th>İY</th>
-                    <th>Skor</th>
+                    <th>MS</th>
                     <th>MS 1</th>
                     <th>MS X</th>
                     <th>MS 2</th>
@@ -280,7 +269,7 @@ tbody tr:hover {
 
             <tbody id="tbody">
                 <tr>
-                    <td colspan="15" class="loading">
+                    <td colspan="15" class="no-data">
                         Veri yükleniyor...
                     </td>
                 </tr>
@@ -297,158 +286,67 @@ tbody tr:hover {
 "use strict";
 
 /* =========================================================
-   AYARLAR
+   VERİ
 ========================================================= */
 
 const DATA_URL = "./data/matches.json";
 
-
-/* =========================================================
-   DURUM
-========================================================= */
-
-let allMatches = [];
+let matches = [];
 
 
 /* =========================================================
    ELEMENTLER
 ========================================================= */
 
-const $ = id => document.getElementById(id);
+const statusEl = document.getElementById("status");
+const tbody = document.getElementById("tbody");
 
-const statusEl = $("status");
-const tbody = $("tbody");
-const searchEl = $("search");
-const dateEl = $("dateFilter");
-const leagueEl = $("leagueFilter");
-const playedEl = $("playedFilter");
-const refreshBtn = $("refresh");
+const searchEl = document.getElementById("search");
+const dateEl = document.getElementById("dateFilter");
+const leagueEl = document.getElementById("leagueFilter");
+const playedEl = document.getElementById("playedFilter");
+
+const refreshBtn = document.getElementById("refresh");
 
 
 /* =========================================================
-   YARDIMCI FONKSİYONLAR
+   GÜVENLİ METİN
 ========================================================= */
 
-function text(value) {
+function esc(value){
 
-    if (
-        value === null ||
-        value === undefined
-    ) {
-        return "";
-    }
-
-    return String(value);
-}
-
-
-function esc(value) {
-
-    return text(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
-
-
-function number(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return "";
-    }
-
-    return text(value);
+    return String(value ?? "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
 }
 
 
 /* =========================================================
-   SKOR
+   ORANLAR
+   ÖNEMLİ:
+   oranlar match.openingOdds İÇİNDE
 ========================================================= */
 
-function getScore(match) {
+function odds(match){
 
-    const score = match && match.score;
-
-    if (!score) {
-        return "";
-    }
-
-    const home = score.home;
-    const away = score.away;
-
-    if (
-        home === null ||
-        home === undefined ||
-        away === null ||
-        away === undefined ||
-        home === "" ||
-        away === ""
-    ) {
-        return "";
-    }
-
-    return `${home}-${away}`;
+    return match && match.openingOdds
+        ? match.openingOdds
+        : {};
 }
 
 
-function getHalfTimeScore(match) {
+function odd(value){
 
-    const score = match && match.halfTimeScore;
-
-    if (!score) {
-        return "";
-    }
-
-    const home = score.home;
-    const away = score.away;
-
-    if (
-        home === null ||
-        home === undefined ||
-        away === null ||
-        away === undefined ||
-        home === "" ||
-        away === ""
-    ) {
-        return "";
-    }
-
-    return `${home}-${away}`;
-}
-
-
-/* =========================================================
-   MAÇ OYNANDI MI?
-========================================================= */
-
-function isPlayed(match) {
-
-    const score = getScore(match);
-
-    return score !== "";
-}
-
-
-/* =========================================================
-   ORAN
-========================================================= */
-
-function odd(value) {
-
-    if (
+    if(
         value === null ||
         value === undefined ||
         value === "" ||
-        value === "-" ||
-        value === "0"
-    ) {
-        return "";
+        Number(value) === 0
+    ){
+        return "-";
     }
 
     return esc(value);
@@ -456,71 +354,125 @@ function odd(value) {
 
 
 /* =========================================================
-   TARİH LİSTESİ
+   SKOR
 ========================================================= */
 
-function createDateList() {
+function getScore(match){
 
-    const dates = [
-        ...new Set(
-            allMatches
-                .map(m => text(m.date).trim())
-                .filter(Boolean)
-        )
-    ];
+    const s = match && match.score;
 
-    dates.sort((a, b) => {
+    if(!s){
+        return "";
+    }
 
-        function convert(value) {
+    if(
+        s.home === null ||
+        s.home === undefined ||
+        s.away === null ||
+        s.away === undefined ||
+        s.home === "" ||
+        s.away === ""
+    ){
+        return "";
+    }
 
-            const parts = value.split(".");
+    return `${s.home}-${s.away}`;
+}
 
-            if (parts.length !== 3) {
-                return value;
-            }
 
-            return `${parts[2]}-${parts[1]}-${parts[0]}`;
-        }
+function getHalfScore(match){
 
-        return convert(a).localeCompare(convert(b));
+    const s = match && match.halfTimeScore;
 
-    });
+    if(!s){
+        return "";
+    }
 
-    dateEl.innerHTML =
-        `<option value="">Tüm tarihler</option>` +
-        dates
-            .map(date =>
-                `<option value="${esc(date)}">${esc(date)}</option>`
-            )
-            .join("");
+    if(
+        s.home === null ||
+        s.home === undefined ||
+        s.away === null ||
+        s.away === undefined ||
+        s.home === "" ||
+        s.away === ""
+    ){
+        return "";
+    }
+
+    return `${s.home}-${s.away}`;
 }
 
 
 /* =========================================================
-   LİG LİSTESİ
+   OYNANDI MI?
 ========================================================= */
 
-function createLeagueList() {
+function isPlayed(match){
 
-    const leagues = [
+    return getScore(match) !== "";
+}
+
+
+/* =========================================================
+   TARİHLER
+========================================================= */
+
+function loadDates(){
+
+    const dates = [
         ...new Set(
-            allMatches
-                .map(m => text(m.league).trim())
+            matches
+                .map(m => String(m.date || "").trim())
                 .filter(Boolean)
         )
     ];
 
-    leagues.sort((a, b) =>
-        a.localeCompare(b, "tr")
+    dates.sort((a,b)=>{
+
+        const pa = a.split(".");
+        const pb = b.split(".");
+
+        if(pa.length !== 3 || pb.length !== 3){
+            return a.localeCompare(b);
+        }
+
+        return `${pa[2]}-${pa[1]}-${pa[0]}`
+            .localeCompare(
+                `${pb[2]}-${pb[1]}-${pb[0]}`
+            );
+    });
+
+    dateEl.innerHTML =
+        `<option value="">Tüm tarihler</option>` +
+        dates.map(date =>
+            `<option value="${esc(date)}">${esc(date)}</option>`
+        ).join("");
+}
+
+
+/* =========================================================
+   LİGLER
+========================================================= */
+
+function loadLeagues(){
+
+    const leagues = [
+        ...new Set(
+            matches
+                .map(m => String(m.league || "").trim())
+                .filter(Boolean)
+        )
+    ];
+
+    leagues.sort((a,b)=>
+        a.localeCompare(b,"tr")
     );
 
     leagueEl.innerHTML =
         `<option value="">Tüm ligler</option>` +
-        leagues
-            .map(league =>
-                `<option value="${esc(league)}">${esc(league)}</option>`
-            )
-            .join("");
+        leagues.map(league =>
+            `<option value="${esc(league)}">${esc(league)}</option>`
+        ).join("");
 }
 
 
@@ -528,102 +480,102 @@ function createLeagueList() {
    TABLO
 ========================================================= */
 
-function render() {
+function render(){
 
     const search =
         searchEl.value
             .trim()
-            .toLocaleLowerCase("tr");
+            .toLocaleLowerCase("tr-TR");
 
-    const date =
+    const selectedDate =
         dateEl.value;
 
-    const league =
+    const selectedLeague =
         leagueEl.value;
 
-    const played =
+    const playedFilter =
         playedEl.value;
 
 
-    const filtered = allMatches.filter(match => {
+    const filtered =
+        matches.filter(match => {
 
-        const home =
-            text(match.home)
-                .toLocaleLowerCase("tr");
+            const home =
+                String(match.home || "")
+                    .toLocaleLowerCase("tr-TR");
 
-        const away =
-            text(match.away)
-                .toLocaleLowerCase("tr");
+            const away =
+                String(match.away || "")
+                    .toLocaleLowerCase("tr-TR");
 
-        const code =
-            text(match.code)
-                .toLocaleLowerCase("tr");
+            const code =
+                String(match.code || "")
+                    .toLocaleLowerCase("tr-TR");
 
-        const matchLeague =
-            text(match.league);
+            const date =
+                String(match.date || "");
 
-        const matchDate =
-            text(match.date);
+            const league =
+                String(match.league || "");
 
-        const playedState =
-            isPlayed(match);
+            const played =
+                isPlayed(match);
 
 
-        if (search) {
+            if(search){
 
-            const found =
-                home.includes(search) ||
-                away.includes(search) ||
-                code.includes(search);
+                if(
+                    !home.includes(search) &&
+                    !away.includes(search) &&
+                    !code.includes(search)
+                ){
+                    return false;
+                }
+            }
 
-            if (!found) {
+
+            if(
+                selectedDate &&
+                date !== selectedDate
+            ){
                 return false;
             }
-        }
 
 
-        if (
-            date &&
-            matchDate !== date
-        ) {
-            return false;
-        }
+            if(
+                selectedLeague &&
+                league !== selectedLeague
+            ){
+                return false;
+            }
 
 
-        if (
-            league &&
-            matchLeague !== league
-        ) {
-            return false;
-        }
+            if(
+                playedFilter === "played" &&
+                !played
+            ){
+                return false;
+            }
 
 
-        if (
-            played === "played" &&
-            !playedState
-        ) {
-            return false;
-        }
+            if(
+                playedFilter === "unplayed" &&
+                played
+            ){
+                return false;
+            }
 
 
-        if (
-            played === "unplayed" &&
-            playedState
-        ) {
-            return false;
-        }
+            return true;
+
+        });
 
 
-        return true;
-
-    });
-
-
-    if (!filtered.length) {
+    if(!filtered.length){
 
         tbody.innerHTML = `
             <tr>
-                <td colspan="15" class="empty">
+                <td colspan="15" class="no-data">
                     Filtrelere uygun maç bulunamadı.
                 </td>
             </tr>
@@ -633,133 +585,133 @@ function render() {
     }
 
 
-    tbody.innerHTML = filtered.map(match => {
+    tbody.innerHTML =
+        filtered.map(match => {
 
-        const score =
-            getScore(match);
+            const o = odds(match);
 
-        const halfScore =
-            getHalfTimeScore(match);
+            const score =
+                getScore(match);
 
-        const playedState =
-            score !== "";
+            const ht =
+                getHalfScore(match);
+
+            const played =
+                isPlayed(match);
 
 
-        return `
-            <tr>
+            return `
+                <tr>
 
-                <td>
-                    ${esc(match.date)}
-                </td>
+                    <td>
+                        ${esc(match.date)}
+                    </td>
 
-                <td>
-                    ${esc(match.time)}
-                </td>
+                    <td>
+                        ${esc(match.time)}
+                    </td>
 
-                <td>
-                    ${esc(match.league)}
-                </td>
+                    <td>
+                        ${esc(match.league)}
+                    </td>
 
-                <td>
-                    ${esc(match.code)}
-                </td>
+                    <td>
+                        ${esc(match.code)}
+                    </td>
 
-                <td class="home">
-                    ${esc(match.home)}
-                </td>
+                    <td class="home">
+                        ${esc(match.home)}
+                    </td>
 
-                <td class="away">
-                    ${esc(match.away)}
-                </td>
+                    <td class="away">
+                        ${esc(match.away)}
+                    </td>
 
-                <td class="ht">
-                    ${esc(halfScore || "-")}
-                </td>
+                    <td class="ht">
+                        ${ht ? esc(ht) : "-"}
+                    </td>
 
-                <td class="score">
+                    <td class="score">
 
-                    ${
-                        playedState
-                        ? esc(score)
-                        : `<span class="badge unplayed">Oynanmadı</span>`
-                    }
+                        ${
+                            played
+                            ? esc(score)
+                            : `<span class="badge unplayed">-</span>`
+                        }
 
-                </td>
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.ms1)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.ms1)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.msX)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.msX)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.ms2)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.ms2)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.kgVar)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.kgVar)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.kgYok)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.kgYok)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.au25Alt)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.au25Alt)}
+                    </td>
 
-                <td class="odd">
-                    ${odd(match.au25Ust)}
-                </td>
+                    <td class="odd">
+                        ${odd(o.au25Ust)}
+                    </td>
 
-            </tr>
-        `;
+                </tr>
+            `;
 
-    }).join("");
-
+        }).join("");
 }
 
 
 /* =========================================================
-   VERİYİ YÜKLE
+   VERİYİ ÇEK
 ========================================================= */
 
-async function loadData() {
+async function loadData(){
 
     statusEl.className = "status";
     statusEl.textContent =
         "Veriler yükleniyor...";
 
+
     tbody.innerHTML = `
         <tr>
-            <td colspan="15" class="loading">
+            <td colspan="15" class="no-data">
                 Veri yükleniyor...
             </td>
         </tr>
     `;
 
 
-    try {
-
-        const url =
-            `${DATA_URL}?v=${Date.now()}`;
-
+    try{
 
         const response =
-            await fetch(url, {
-                method: "GET",
-                cache: "no-store"
-            });
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                `HTTP ${response.status} - ${response.statusText}`
+            await fetch(
+                `${DATA_URL}?v=${Date.now()}`,
+                {
+                    cache:"no-store"
+                }
             );
 
+
+        if(!response.ok){
+
+            throw new Error(
+                `HTTP ${response.status}`
+            );
         }
 
 
@@ -768,50 +720,42 @@ async function loadData() {
 
 
         /* ---------------------------------------------
-           JSON FORMATINI KONTROL ET
+           JSON YAPISI
         --------------------------------------------- */
 
-        if (Array.isArray(data)) {
-
-            allMatches = data;
-
-        }
-        else if (
-            data &&
-            Array.isArray(data.matches)
-        ) {
-
-            allMatches = data.matches;
-
-        }
-        else {
+        if(
+            !data ||
+            !Array.isArray(data.matches)
+        ){
 
             throw new Error(
-                "JSON içinde 'matches' dizisi bulunamadı."
+                "JSON içinde matches dizisi bulunamadı."
             );
-
         }
 
 
-        if (!allMatches.length) {
+        matches =
+            data.matches;
+
+
+        if(!matches.length){
 
             throw new Error(
-                "matches dizisi boş."
+                "Maç listesi boş."
             );
-
         }
 
 
         /* ---------------------------------------------
-           LİSTELER
+           FİLTRELER
         --------------------------------------------- */
 
-        createDateList();
-        createLeagueList();
+        loadDates();
+        loadLeagues();
 
 
         /* ---------------------------------------------
-           TABLOYU ÇİZ
+           TABLO
         --------------------------------------------- */
 
         render();
@@ -824,15 +768,26 @@ async function loadData() {
         statusEl.className =
             "status ok";
 
-        statusEl.textContent =
-            `${allMatches.length.toLocaleString("tr-TR")} maç yüklendi.`;
+        statusEl.innerHTML =
+            `
+            <strong>
+                ${matches.length.toLocaleString("tr-TR")}
+                maç yüklendi.
+            </strong>
+            <br>
+            Hafta:
+            ${esc(data.week)}
+            &nbsp; | &nbsp;
+            Güncelleme:
+            ${esc(data.updatedAt)}
+            `;
 
 
     }
-    catch (error) {
+    catch(error){
 
         console.error(
-            "Mackolik veri yükleme hatası:",
+            "Veri yükleme hatası:",
             error
         );
 
@@ -840,33 +795,24 @@ async function loadData() {
         statusEl.className =
             "status error";
 
-
         statusEl.innerHTML =
             `
-            <strong>Veri yüklenemedi.</strong><br>
-            ${esc(error.message)}
+            <strong>Veri yüklenemedi.</strong>
             <br><br>
-            <small>
-                Kaynak:
-                ${esc(DATA_URL)}
-            </small>
+            ${esc(error.message)}
             `;
 
 
-        tbody.innerHTML =
-            `
+        tbody.innerHTML = `
             <tr>
-                <td colspan="15" class="empty">
-                    Veri yüklenemedi.<br><br>
-                    <strong>
-                        ${esc(error.message)}
-                    </strong>
+                <td colspan="15" class="no-data">
+                    <strong>Veri yüklenemedi.</strong>
+                    <br><br>
+                    ${esc(error.message)}
                 </td>
             </tr>
-            `;
-
+        `;
     }
-
 }
 
 
