@@ -1,165 +1,800 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
-
 <head>
-  <meta charset="utf-8">
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1">
-
-  <title>İddaa Bülteni</title>
-
-  <link rel="stylesheet"
-        href="./style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>İddaa Bülteni</title>
+<style>
+*{
+    box-sizing:border-box;
+}
+body{
+    margin:0;
+    font-family:Arial,Helvetica,sans-serif;
+    background:#f4f6f8;
+    color:#111827;
+}
+.container{
+    width:100%;
+    max-width:1500px;
+    margin:auto;
+    padding:18px;
+}
+.header{
+    background:#111827;
+    color:white;
+    padding:20px;
+    border-radius:16px;
+    margin-bottom:15px;
+}
+.header h1{
+    margin:0 0 5px;
+    font-size:24px;
+}
+.header p{
+    margin:0;
+    opacity:.75;
+    font-size:13px;
+}
+.filters{
+    background:white;
+    padding:14px;
+    border-radius:14px;
+    margin-bottom:15px;
+    display:grid;
+    grid-template-columns:
+        minmax(180px,2fr)
+        minmax(150px,1fr)
+        minmax(150px,1fr)
+        minmax(150px,1fr)
+        auto;
+    gap:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+input,
+select{
+    width:100%;
+    height:42px;
+    padding:0 12px;
+    border:1px solid #d1d5db;
+    border-radius:9px;
+    background:white;
+    font-size:14px;
+    outline:none;
+}
+input:focus,
+select:focus{
+    border-color:#2563eb;
+}
+.check{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    white-space:nowrap;
+    font-size:14px;
+}
+.check input{
+    width:18px;
+    height:18px;
+}
+.info{
+    background:white;
+    border-radius:14px;
+    padding:13px 15px;
+    margin-bottom:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+    font-size:13px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+}
+.table-wrap{
+    background:white;
+    border-radius:14px;
+    overflow:auto;
+    box-shadow:0 2px 10px rgba(0,0,0,.06);
+}
+table{
+    width:100%;
+    min-width:1150px;
+    border-collapse:collapse;
+}
+thead{
+    background:#111827;
+    color:white;
+}
+th,
+td{
+    padding:10px 8px;
+    border-bottom:1px solid #e5e7eb;
+    text-align:center;
+    font-size:12px;
+    white-space:nowrap;
+}
+th{
+    font-weight:700;
+}
+tbody tr:hover{
+    background:#f9fafb;
+}
+.team{
+    text-align:left;
+    font-weight:700;
+}
+.score{
+    font-weight:800;
+    font-size:13px;
+}
+.unplayed{
+    background:#fff7ed;
+}
+.finished{
+    background:#f0fdf4;
+}
+.badge{
+    display:inline-block;
+    padding:4px 7px;
+    border-radius:6px;
+    font-weight:700;
+    font-size:11px;
+}
+.empty{
+    padding:35px;
+    text-align:center;
+    color:#6b7280;
+}
+.error{
+    background:#fef2f2;
+    color:#b91c1c;
+    border:1px solid #fecaca;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    line-height:1.5;
+}
+.loading{
+    padding:30px;
+    text-align:center;
+    color:#6b7280;
+}
+@media(max-width:800px){
+    .container{
+        padding:10px;
+    }
+    .header{
+        padding:15px;
+        border-radius:12px;
+    }
+    .header h1{
+        font-size:20px;
+    }
+    .filters{
+        grid-template-columns:1fr;
+        padding:10px;
+    }
+    .info{
+        font-size:12px;
+    }
+}
+</style>
 </head>
-
 <body>
-
-<main class="container">
-
-  <header>
-
-    <div>
-
-      <p class="eyebrow">
-        MACKOLİK ARŞİV VERİSİ
-      </p>
-
-      <h1>
-        İddaa Bülteni
-      </h1>
-
-      <p class="muted">
-        Geçmiş maç sonuçları ve açılış oranları
-      </p>
-
+<div class="container">
+    <div class="header">
+        <h1>İddaa Bülteni</h1>
+        <p>Geçmiş maç sonuçları ve açılış oranları</p>
     </div>
-
-    <div id="updatedAt"
-         class="updated">
-
-      Veri yükleniyor…
-
+    <div id="errorBox"></div>
+    <div class="filters">
+        <input
+            id="search"
+            type="text"
+            placeholder="Takım veya maç kodu ara">
+        <select id="dateFilter">
+            <option value="">Tüm tarihler</option>
+        </select>
+        <select id="leagueFilter">
+            <option value="">Tüm ligler</option>
+        </select>
+        <select id="statusFilter">
+            <option value="">Tüm maçlar</option>
+            <option value="finished">Sonuçlananlar</option>
+            <option value="unplayed">Oynanmamışlar</option>
+        </select>
+        <label class="check">
+            <input type="checkbox" id="onlyUnplayed">
+            Oynanmamışlar
+        </label>
     </div>
-
-  </header>
-
-
-  <!-- FİLTRELER -->
-
-  <section class="controls">
-
-    <input
-      id="search"
-      type="search"
-      placeholder="Takım veya maç kodu ara">
-
-
-    <select id="dateFilter">
-
-      <option value="">
-        Tüm tarihler
-      </option>
-
-    </select>
-
-
-    <select id="leagueFilter">
-
-      <option value="">
-        Tüm ligler
-      </option>
-
-    </select>
-
-
-    <label class="checkbox">
-
-      <input
-        id="unplayedOnly"
-        type="checkbox">
-
-      Oynanmamışlar
-
-    </label>
-
-  </section>
-
-
-  <!-- DURUM -->
-
-  <div id="message"
-       class="message">
-
-    Veri yükleniyor…
-
-  </div>
-
-
-  <!-- MAÇ TABLOSU -->
-
-  <div class="table-wrap">
-
-    <table>
-
-      <thead>
-
-        <tr>
-
-          <th>Tarih</th>
-
-          <th>Saat</th>
-
-          <th>Lig</th>
-
-          <th>Kod</th>
-
-          <th>Ev Sahibi</th>
-
-          <th>Misafir</th>
-
-          <th>İY</th>
-
-          <th>Skor</th>
-
-          <th>MS 1</th>
-
-          <th>MS X</th>
-
-          <th>MS 2</th>
-
-          <th>KG Var</th>
-
-          <th>KG Yok</th>
-
-          <th>Alt 2,5</th>
-
-          <th>Üst 2,5</th>
-
-        </tr>
-
-      </thead>
-
-
-      <tbody id="matches">
-
-      </tbody>
-
-    </table>
-
-  </div>
-
-</main>
-
-
-<!-- ÖNEMLİ -->
-
-<script
-  src="./app.js"
-  type="module">
+    <div class="info">
+        <div>
+            Maç:
+            <strong id="matchCount">0</strong>
+        </div>
+        <div>
+            Veri:
+            <strong id="dataUpdated">-</strong>
+        </div>
+    </div>
+    <div id="loading" class="loading">
+        Veri yükleniyor…
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Saat</th>
+                    <th>Lig</th>
+                    <th>Kod</th>
+                    <th>Ev Sahibi</th>
+                    <th>Misafir</th>
+                    <th>İY</th>
+                    <th>Skor</th>
+                    <th>MS 1</th>
+                    <th>MS X</th>
+                    <th>MS 2</th>
+                    <th>KG Var</th>
+                    <th>KG Yok</th>
+                    <th>Alt 2,5</th>
+                    <th>Üst 2,5</th>
+                </tr>
+            </thead>
+            <tbody id="matchesBody"></tbody>
+        </table>
+    </div>
+</div>
+<script>
+'use strict';
+/* =========================================================
+   AYARLAR
+========================================================= */
+const DATA_URL =
+    './data/matches.json?v=' + Date.now();
+/* =========================================================
+   STATE
+========================================================= */
+const state = {
+    matches: [],
+    filters: {
+        search: '',
+        date: '',
+        league: '',
+        status: '',
+        unplayed: false
+    }
+};
+/* =========================================================
+   ELEMENTLER
+========================================================= */
+const $ = id =>
+    document.getElementById(id);
+/* =========================================================
+   ESCAPE
+========================================================= */
+function esc(value){
+    return String(value ?? '')
+        .replace(/[&<>"']/g, char => ({
+            '&':'&amp;',
+            '<':'&lt;',
+            '>':'&gt;',
+            '"':'&quot;',
+            "'":'&#39;'
+        }[char]));
+}
+/* =========================================================
+   SAYI
+========================================================= */
+function num(value){
+    if(
+        value === null ||
+        value === undefined ||
+        value === ''
+    ){
+        return null;
+    }
+    const n =
+        Number(
+            String(value)
+                .replace(',', '.')
+        );
+    return Number.isFinite(n)
+        ? n
+        : null;
+}
+/* =========================================================
+   SKOR
+========================================================= */
+function getScore(match){
+    const s =
+        match.score;
+    if(!s){
+        return null;
+    }
+    const home = num(s.home);
+    const away = num(s.away);
+    if(
+        home === null ||
+        away === null
+    ){
+        return null;
+    }
+    /*
+     * Mackolik verisinde oynanmamış maçların
+     * 0-0 görünme ihtimaline karşı status kontrolü.
+     */
+    const status =
+        String(match.status ?? '');
+    if(
+        status === '0' ||
+        status === '1'
+    ){
+        return null;
+    }
+    return {
+        home,
+        away
+    };
+}
+/* =========================================================
+   İLK YARI SKORU
+========================================================= */
+function getHTScore(match){
+    const s =
+        match.halfTimeScore;
+    if(!s){
+        return null;
+    }
+    const home = num(s.home);
+    const away = num(s.away);
+    if(
+        home === null ||
+        away === null
+    ){
+        return null;
+    }
+    return {
+        home,
+        away
+    };
+}
+/* =========================================================
+   MAÇ DURUMU
+========================================================= */
+function isFinished(match){
+    return getScore(match) !== null;
+}
+/* =========================================================
+   TARİH NORMALİZE
+========================================================= */
+function normalizeDate(value){
+    if(!value){
+        return '';
+    }
+    const text =
+        String(value).trim();
+    /*
+     * DD.MM.YYYY
+     */
+    if(
+        /^\d{2}\.\d{2}\.\d{4}$/.test(text)
+    ){
+        return text;
+    }
+    /*
+     * YYYY-MM-DD
+     */
+    if(
+        /^\d{4}-\d{2}-\d{2}$/.test(text)
+    ){
+        const [y,m,d] =
+            text.split('-');
+        return `${d}.${m}.${y}`;
+    }
+    return text;
+}
+/* =========================================================
+   MAÇ TARİHİ
+========================================================= */
+function getMatchDate(match){
+    return normalizeDate(
+        match.date ||
+        match.matchDate ||
+        ''
+    );
+}
+/* =========================================================
+   LİG
+========================================================= */
+function getLeague(match){
+    return (
+        match.league ||
+        match.leagueName ||
+        match.competition ||
+        ''
+    );
+}
+/* =========================================================
+   MAÇ KODU
+========================================================= */
+function getCode(match){
+    return (
+        match.code ||
+        match.id ||
+        match.matchId ||
+        ''
+    );
+}
+/* =========================================================
+   RENDER
+========================================================= */
+function render(){
+    const body =
+        $('matchesBody');
+    if(!body){
+        return;
+    }
+    const filtered =
+        getFilteredMatches();
+    $('matchCount').textContent =
+        filtered.length.toLocaleString('tr-TR');
+    if(!filtered.length){
+        body.innerHTML = `
+            <tr>
+                <td colspan="15" class="empty">
+                    Filtrelere uygun maç bulunamadı.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    body.innerHTML =
+        filtered.map(match => {
+            const score =
+                getScore(match);
+            const ht =
+                getHTScore(match);
+            const finished =
+                !!score;
+            const rowClass =
+                finished
+                    ? 'finished'
+                    : 'unplayed';
+            return `
+                <tr class="${rowClass}">
+                    <td>
+                        ${esc(getMatchDate(match))}
+                    </td>
+                    <td>
+                        ${esc(match.time || '')}
+                    </td>
+                    <td>
+                        ${esc(getLeague(match))}
+                    </td>
+                    <td>
+                        ${esc(getCode(match))}
+                    </td>
+                    <td class="team">
+                        ${esc(match.home || '')}
+                    </td>
+                    <td class="team">
+                        ${esc(match.away || '')}
+                    </td>
+                    <td class="score">
+                        ${
+                            ht
+                                ? `${ht.home}-${ht.away}`
+                                : '-'
+                        }
+                    </td>
+                    <td class="score">
+                        ${
+                            score
+                                ? `${score.home}-${score.away}`
+                                : '<span class="badge">-</span>'
+                        }
+                    </td>
+                    <td>
+                        ${esc(match.ms1 ?? '-')}
+                    </td>
+                    <td>
+                        ${esc(
+                            match.msX ??
+                            match.ms0 ??
+                            '-'
+                        )}
+                    </td>
+                    <td>
+                        ${esc(match.ms2 ?? '-')}
+                    </td>
+                    <td>
+                        ${esc(match.kgVar ?? '-')}
+                    </td>
+                    <td>
+                        ${esc(match.kgYok ?? '-')}
+                    </td>
+                    <td>
+                        ${esc(match.au25Alt ?? '-')}
+                    </td>
+                    <td>
+                        ${esc(match.au25Ust ?? '-')}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+}
+/* =========================================================
+   FİLTRELE
+========================================================= */
+function getFilteredMatches(){
+    const search =
+        state.filters.search
+            .trim()
+            .toLowerCase();
+    return state.matches.filter(match => {
+        const date =
+            getMatchDate(match);
+        const league =
+            getLeague(match)
+                .toLowerCase();
+        const code =
+            String(getCode(match))
+                .toLowerCase();
+        const home =
+            String(match.home || '')
+                .toLowerCase();
+        const away =
+            String(match.away || '')
+                .toLowerCase();
+        /*
+         * Arama
+         */
+        if(search){
+            const found =
+                home.includes(search) ||
+                away.includes(search) ||
+                code.includes(search);
+            if(!found){
+                return false;
+            }
+        }
+        /*
+         * Tarih
+         */
+        if(
+            state.filters.date &&
+            date !== state.filters.date
+        ){
+            return false;
+        }
+        /*
+         * Lig
+         */
+        if(
+            state.filters.league &&
+            league !==
+            state.filters.league.toLowerCase()
+        ){
+            return false;
+        }
+        /*
+         * Durum
+         */
+        if(
+            state.filters.status === 'finished' &&
+            !isFinished(match)
+        ){
+            return false;
+        }
+        if(
+            state.filters.status === 'unplayed' &&
+            isFinished(match)
+        ){
+            return false;
+        }
+        /*
+         * Checkbox
+         */
+        if(
+            state.filters.unplayed &&
+            isFinished(match)
+        ){
+            return false;
+        }
+        return true;
+    });
+}
+/* =========================================================
+   TARİH FİLTRESİNİ DOLDUR
+========================================================= */
+function fillDates(){
+    const select =
+        $('dateFilter');
+    const dates =
+        [...new Set(
+            state.matches
+                .map(getMatchDate)
+                .filter(Boolean)
+        )];
+    dates.sort((a,b) => {
+        const pa =
+            a.split('.').reverse().join('');
+        const pb =
+            b.split('.').reverse().join('');
+        return pb.localeCompare(pa);
+    });
+    select.innerHTML =
+        `<option value="">Tüm tarihler</option>` +
+        dates.map(date =>
+            `<option value="${esc(date)}">
+                ${esc(date)}
+            </option>`
+        ).join('');
+}
+/* =========================================================
+   LİG FİLTRESİNİ DOLDUR
+========================================================= */
+function fillLeagues(){
+    const select =
+        $('leagueFilter');
+    const leagues =
+        [...new Set(
+            state.matches
+                .map(getLeague)
+                .filter(Boolean)
+        )];
+    leagues.sort(
+        (a,b) =>
+            a.localeCompare(
+                b,
+                'tr'
+            )
+    );
+    select.innerHTML =
+        `<option value="">Tüm ligler</option>` +
+        leagues.map(league =>
+            `<option value="${esc(league)}">
+                ${esc(league)}
+            </option>`
+        ).join('');
+}
+/* =========================================================
+   EVENTLER
+========================================================= */
+$('search').addEventListener(
+    'input',
+    e => {
+        state.filters.search =
+            e.target.value;
+        render();
+    }
+);
+$('dateFilter').addEventListener(
+    'change',
+    e => {
+        state.filters.date =
+            e.target.value;
+        render();
+    }
+);
+$('leagueFilter').addEventListener(
+    'change',
+    e => {
+        state.filters.league =
+            e.target.value;
+        render();
+    }
+);
+$('statusFilter').addEventListener(
+    'change',
+    e => {
+        state.filters.status =
+            e.target.value;
+        render();
+    }
+);
+$('onlyUnplayed').addEventListener(
+    'change',
+    e => {
+        state.filters.unplayed =
+            e.target.checked;
+        render();
+    }
+);
+/* =========================================================
+   VERİ YÜKLE
+========================================================= */
+async function loadData(){
+    try{
+        $('loading').style.display =
+            'block';
+        $('errorBox').innerHTML =
+            '';
+        const response =
+            await fetch(
+                DATA_URL,
+                {
+                    method:'GET',
+                    cache:'no-store'
+                }
+            );
+        if(!response.ok){
+            throw new Error(
+                `matches.json yüklenemedi. HTTP ${response.status}`
+            );
+        }
+        const data =
+            await response.json();
+        /*
+         * Beklenen yapı:
+         *
+         * {
+         *   source: "...",
+         *   week: "...",
+         *   updatedAt: "...",
+         *   matches: [...]
+         * }
+         */
+        const list =
+            Array.isArray(data)
+                ? data
+                : data.matches;
+        if(!Array.isArray(list)){
+            throw new Error(
+                'matches.json içinde "matches" dizisi bulunamadı.'
+            );
+        }
+        state.matches =
+            list;
+        /*
+         * Güncelleme zamanı
+         */
+        if(data.updatedAt){
+            const d =
+                new Date(data.updatedAt);
+            $('dataUpdated').textContent =
+                Number.isNaN(d.getTime())
+                    ? data.updatedAt
+                    : d.toLocaleString(
+                        'tr-TR'
+                    );
+        }
+        fillDates();
+        fillLeagues();
+        render();
+        $('loading').style.display =
+            'none';
+        console.log(
+            'Mackolik verisi yüklendi:',
+            state.matches.length,
+            'maç'
+        );
+    }catch(error){
+        console.error(
+            'Veri yükleme hatası:',
+            error
+        );
+        $('loading').style.display =
+            'none';
+        $('errorBox').innerHTML = `
+            <div class="error">
+                <strong>Veri yüklenemedi.</strong>
+                <br>
+                ${esc(error.message)}
+                <br><br>
+                <small>
+                    Beklenen dosya:
+                    ./data/matches.json
+                </small>
+            </div>
+        `;
+    }
+}
+/* =========================================================
+   BAŞLAT
+========================================================= */
+loadData();
 </script>
-
-
 </body>
-
 </html>
