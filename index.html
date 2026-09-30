@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-<title>Maçkolik - Oran Analiz</title>
+<title>Maçkolik - Bugünün Maçları</title>
 
 <style>
 
@@ -14,13 +15,13 @@
 
 body{
     margin:0;
-    background:#07101d;
-    color:#f8fafc;
+    background:#f3f5f8;
+    color:#172033;
     font-family:Arial,Helvetica,sans-serif;
 }
 
 .container{
-    max-width:1250px;
+    max-width:1150px;
     margin:auto;
     padding:15px;
 }
@@ -28,149 +29,189 @@ body{
 /* HEADER */
 
 .header{
-    background:linear-gradient(135deg,#172554,#0f172a);
-    border:1px solid #263452;
-    border-radius:18px;
-    padding:22px;
+    background:#ffffff;
+    border-radius:15px;
+    padding:18px;
     margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
 }
 
 .header h1{
-    margin:0 0 7px;
-    font-size:27px;
+    margin:0;
+    font-size:25px;
 }
 
 .header p{
-    margin:0;
-    color:#94a3b8;
+    margin:6px 0 0;
+    color:#7b8494;
+    font-size:13px;
 }
 
-/* FILTER */
 
-.panel{
-    background:#101b2d;
-    border:1px solid #263452;
-    border-radius:16px;
-    padding:16px;
+/* TARİH */
+
+.date-box{
+    background:#ffffff;
+    border-radius:15px;
+    padding:15px;
     margin-bottom:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
 }
 
-.filter{
-    display:grid;
-    grid-template-columns:1fr 160px;
+.date-row{
+    display:flex;
     gap:10px;
 }
 
-select,
-button{
-    height:48px;
-    border-radius:10px;
-    border:1px solid #334155;
-    padding:0 14px;
-    font-size:15px;
-}
-
 select{
-    background:#07101d;
-    color:white;
+    flex:1;
+    height:45px;
+    border:1px solid #d9dee7;
+    border-radius:9px;
+    background:#fff;
+    padding:0 12px;
+    font-size:14px;
+    color:#172033;
 }
 
 button{
+    height:45px;
+    padding:0 18px;
+    border:0;
+    border-radius:9px;
     background:#2563eb;
     color:white;
-    border:0;
     font-weight:bold;
     cursor:pointer;
 }
 
-button:hover{
-    background:#1d4ed8;
-}
 
-.info{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    margin-top:12px;
-}
+/* BAŞLIK */
 
-.badge{
-    background:#07101d;
-    border:1px solid #263452;
-    border-radius:9px;
-    padding:9px 12px;
-    color:#cbd5e1;
-    font-size:13px;
-}
-
-/* STATUS */
-
-.status{
-    padding:12px;
-    background:#101b2d;
-    border:1px solid #263452;
-    border-radius:10px;
-    color:#94a3b8;
-    margin-bottom:15px;
-}
-
-/* MATCH */
-
-.match-card{
-    background:#101b2d;
-    border:1px solid #263452;
-    border-radius:16px;
-    margin-bottom:18px;
-    overflow:hidden;
-}
-
-.match-header{
-    padding:15px;
-    background:#0d1728;
+.section-title{
     display:flex;
     justify-content:space-between;
     align-items:center;
-    gap:10px;
+    margin:20px 2px 10px;
 }
 
-.match-info{
-    color:#94a3b8;
-    font-size:12px;
+.section-title h2{
+    margin:0;
+    font-size:19px;
 }
+
+.section-count{
+    color:#7b8494;
+    font-size:13px;
+}
+
+
+/* MAÇ KARTI */
+
+.match-card{
+    background:white;
+    border-radius:15px;
+    margin-bottom:15px;
+    overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+.match-top{
+    padding:11px 14px;
+    background:#fafbfc;
+    border-bottom:1px solid #edf0f4;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.league{
+    font-size:12px;
+    font-weight:bold;
+    color:#4b5563;
+}
+
+.time{
+    font-size:13px;
+    font-weight:bold;
+    color:#2563eb;
+}
+
+
+/* TAKIMLAR */
 
 .teams{
-    padding:18px 15px;
     display:grid;
-    grid-template-columns:1fr 80px 1fr;
+    grid-template-columns:1fr 90px 1fr;
     align-items:center;
-    text-align:center;
-    gap:10px;
+    padding:18px 15px;
 }
 
 .team{
-    font-size:17px;
+    font-size:16px;
     font-weight:bold;
 }
 
-.team.away{
-    text-align:left;
-}
-
-.team.home{
+.home{
     text-align:right;
 }
 
-.final-score{
-    font-size:20px;
-    font-weight:bold;
-    color:#facc15;
+.away{
+    text-align:left;
 }
 
-/* ANALYSIS */
+.score{
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+    color:#111827;
+}
+
+
+/* ORANLAR */
+
+.odds{
+    padding:0 14px 15px;
+}
+
+.odds-title{
+    font-size:12px;
+    color:#8a93a2;
+    margin-bottom:8px;
+}
+
+.odds-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:6px;
+}
+
+.odd-box{
+    background:#f6f8fa;
+    border:1px solid #e7ebf0;
+    border-radius:8px;
+    padding:7px 4px;
+    text-align:center;
+}
+
+.odd-name{
+    font-size:10px;
+    color:#7b8494;
+    margin-bottom:3px;
+}
+
+.odd-value{
+    font-size:13px;
+    font-weight:bold;
+}
+
+
+/* ANALİZ */
 
 .analysis{
-    padding:15px;
-    border-top:1px solid #263452;
+    border-top:1px solid #edf0f4;
+    padding:14px;
 }
 
 .analysis-title{
@@ -181,116 +222,112 @@ button:hover{
 
 .analysis-grid{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
+    grid-template-columns:repeat(3,1fr);
+    gap:9px;
 }
 
 .analysis-card{
-    background:#07101d;
-    border:1px solid #263452;
-    border-radius:12px;
-    padding:13px;
+    border:1px solid #e5e9ef;
+    border-radius:10px;
+    overflow:hidden;
 }
 
-.analysis-card.no-data{
-    opacity:.6;
-}
+.analysis-head{
+    padding:9px 10px;
+    background:#f8fafc;
 
-.market{
-    font-size:12px;
-    color:#94a3b8;
-    margin-bottom:5px;
-}
-
-.market-odd{
-    font-size:20px;
-    font-weight:bold;
-    color:#60a5fa;
-    margin-bottom:9px;
-}
-
-.sample{
-    font-size:11px;
-    color:#64748b;
-    margin-bottom:8px;
-}
-
-.percent-row{
     display:flex;
     justify-content:space-between;
-    font-size:12px;
-    padding:4px 0;
-    border-bottom:1px solid #162235;
+    align-items:center;
 }
 
-.percent-row:last-child{
+.analysis-name{
+    font-size:12px;
+    font-weight:bold;
+}
+
+.analysis-odd{
+    font-size:13px;
+    font-weight:bold;
+    color:#2563eb;
+}
+
+.analysis-body{
+    padding:9px 10px;
+}
+
+.matches{
+    font-size:10px;
+    color:#8a93a2;
+    margin-bottom:7px;
+}
+
+.result-row{
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+    border-bottom:1px solid #f0f2f5;
+    font-size:11px;
+}
+
+.result-row:last-child{
     border-bottom:0;
 }
 
-.result-1{
-    color:#4ade80;
-}
-
-.result-x{
-    color:#facc15;
-}
-
-.result-2{
-    color:#f87171;
-}
-
-.result-var{
-    color:#4ade80;
-}
-
-.result-yok{
-    color:#f87171;
-}
-
-.result-ust{
-    color:#4ade80;
-}
-
-.result-alt{
-    color:#f87171;
-}
-
-/* MATCH LIST */
-
-.matches-count{
-    font-size:15px;
+.result-label{
     font-weight:bold;
-    margin-bottom:12px;
 }
 
-.empty{
-    text-align:center;
-    padding:40px 10px;
-    color:#64748b;
+.green{
+    color:#16a34a;
 }
 
-/* MOBILE */
-
-@media(max-width:850px){
-
-    .analysis-grid{
-        grid-template-columns:repeat(2,1fr);
-    }
-
+.yellow{
+    color:#ca8a04;
 }
 
-@media(max-width:600px){
+.red{
+    color:#dc2626;
+}
+
+.gray{
+    color:#9ca3af;
+}
+
+.no-data{
+    padding:12px 10px;
+    color:#9ca3af;
+    font-size:11px;
+}
+
+
+/* DURUM */
+
+.status{
+    background:white;
+    border-radius:10px;
+    padding:11px 13px;
+    margin-bottom:15px;
+    color:#6b7280;
+    font-size:12px;
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+}
+
+
+/* MOBİL */
+
+@media(max-width:700px){
 
     .container{
         padding:9px;
     }
 
-    .header h1{
-        font-size:22px;
+    .date-row{
+        flex-direction:column;
     }
 
-    .filter{
-        grid-template-columns:1fr;
+    .date-row button{
+        width:100%;
     }
 
     .teams{
@@ -301,62 +338,62 @@ button:hover{
         font-size:14px;
     }
 
+    .score{
+        font-size:18px;
+    }
+
+    .odds-grid{
+        grid-template-columns:repeat(5,1fr);
+    }
+
     .analysis-grid{
         grid-template-columns:1fr 1fr;
     }
 
-    .analysis-card{
-        padding:10px;
+}
+
+@media(max-width:430px){
+
+    .analysis-grid{
+        grid-template-columns:1fr;
     }
 
 }
 
 </style>
+
 </head>
+
 
 <body>
 
 <div class="container">
 
+
     <div class="header">
 
-        <h1>⚽ Oran Geçmiş Analizi</h1>
+        <h1>⚽ Maçkolik</h1>
 
         <p>
-            Seçilen tarihteki maçların oranlarını geçmiş maçlarla karşılaştır
+            Bugünün maçları ve geçmiş oran istatistikleri
         </p>
 
     </div>
 
 
-    <div class="panel">
+    <div class="date-box">
 
-        <div class="filter">
+        <div class="date-row">
 
             <select id="dateSelect">
-                <option value="">Tarihler yükleniyor...</option>
+                <option value="">
+                    Tarih yükleniyor...
+                </option>
             </select>
 
-            <button onclick="loadSelectedDate()">
-                MAÇLARI GÖSTER
+            <button onclick="showSelectedDate()">
+                Göster
             </button>
-
-        </div>
-
-
-        <div class="info">
-
-            <div class="badge">
-                📅 <span id="selectedDate">-</span>
-            </div>
-
-            <div class="badge">
-                ⚽ <span id="matchCount">0</span> maç
-            </div>
-
-            <div class="badge">
-                📊 Geçmiş oran analizi aktif
-            </div>
 
         </div>
 
@@ -368,67 +405,48 @@ button:hover{
     </div>
 
 
-    <div id="matches">
+    <div class="section-title">
 
-        <div class="empty">
-            Maçlar yükleniyor...
+        <h2 id="title">
+            Bugünün Maçları
+        </h2>
+
+        <div
+            id="count"
+            class="section-count"
+        >
+            0 maç
         </div>
 
     </div>
+
+
+    <div id="matches">
+
+        Yükleniyor...
+
+    </div>
+
 
 </div>
 
 
 <script>
 
+
 /* =====================================================
-   AYARLAR
+   VERİ DOSYASI
 ===================================================== */
 
-const DATA_URL = "./data/matches.json";
-
-/*
-   0.01 tolerans demek:
-
-   1.66 oranı için
-
-   1.65
-   1.66
-   1.67
-
-   değerleri de eşleşme kabul edilir.
-
-   Tam eşleşme istersen:
-   MATCH_TOLERANCE = 0
-*/
-const MATCH_TOLERANCE = 0.01;
+const DATA_URL =
+    "./data/matches.json";
 
 
 /* =====================================================
    GLOBAL
 ===================================================== */
 
-let matches = [];
-
-
-/* =====================================================
-   ELEMENTLER
-===================================================== */
-
-const dateSelect =
-    document.getElementById("dateSelect");
-
-const matchesDiv =
-    document.getElementById("matches");
-
-const statusDiv =
-    document.getElementById("status");
-
-const selectedDateDiv =
-    document.getElementById("selectedDate");
-
-const matchCountDiv =
-    document.getElementById("matchCount");
+let allMatches = [];
 
 
 /* =====================================================
@@ -439,77 +457,80 @@ async function loadData(){
 
     try{
 
-        statusDiv.innerHTML =
-            "⏳ Veriler yükleniyor...";
+        document.getElementById("status").textContent =
+            "Veriler yükleniyor...";
+
 
         const response =
             await fetch(
-                DATA_URL + "?v=" + Date.now(),
+                DATA_URL +
+                "?v=" +
+                Date.now(),
                 {
                     cache:"no-store"
                 }
             );
 
+
         if(!response.ok){
 
             throw new Error(
-                "Veri dosyası okunamadı. HTTP " +
-                response.status
+                "Veri dosyası okunamadı."
             );
 
         }
+
 
         const data =
             await response.json();
 
+
         if(Array.isArray(data)){
 
-            matches = data;
+            allMatches = data;
 
-        }else if(
+        }
+        else if(
             data &&
             Array.isArray(data.matches)
         ){
 
-            matches = data.matches;
+            allMatches =
+                data.matches;
 
-        }else{
+        }
+        else{
 
             throw new Error(
-                "matches.json içinde matches dizisi bulunamadı."
+                "matches dizisi bulunamadı."
             );
 
         }
 
 
-        if(!matches.length){
-
-            throw new Error(
-                "Hiç maç bulunamadı."
-            );
-
-        }
-
-
-        statusDiv.innerHTML =
+        document.getElementById("status").textContent =
             "✅ " +
-            matches.length +
-            " maç yüklendi. Geçmiş oran analizleri hazır.";
+            allMatches.length +
+            " maç yüklendi.";
 
 
-        createDateList();
+        createDates();
 
 
-    }catch(error){
+    }
+    catch(error){
 
         console.error(error);
 
-        statusDiv.innerHTML =
-            "❌ " + error.message;
 
-        matchesDiv.innerHTML =
+        document.getElementById("status").textContent =
+            "❌ " +
+            error.message;
+
+
+        document.getElementById("matches").innerHTML =
             `
-            <div class="empty">
+            <div class="status">
                 Veri yüklenemedi.
             </div>
             `;
@@ -520,72 +541,78 @@ async function loadData(){
 
 
 /* =====================================================
-   TARİHLERİ OLUŞTUR
+   TARİHLER
 ===================================================== */
 
-function createDateList(){
+function createDates(){
 
-    const dates = [
-        ...new Set(
-            matches
-                .map(m => m.date)
-                .filter(Boolean)
-        )
-    ];
+    const dates =
+        [
+            ...new Set(
+                allMatches
+                    .map(
+                        m => m.date
+                    )
+                    .filter(Boolean)
+            )
+        ];
 
 
-    dates.sort((a,b) => {
+    dates.sort(
+        sortDate
+    );
 
-        const pa = a.split(".");
-        const pb = b.split(".");
 
-        const da =
-            new Date(
-                pa[2],
-                pa[1]-1,
-                pa[0]
+    const select =
+        document.getElementById(
+            "dateSelect"
+        );
+
+
+    select.innerHTML =
+        `
+        <option value="">
+            Tarih seç
+        </option>
+        `;
+
+
+    dates.forEach(
+        date => {
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                date;
+
+
+            option.textContent =
+                date;
+
+
+            select.appendChild(
+                option
             );
 
-        const db =
-            new Date(
-                pb[2],
-                pb[1]-1,
-                pb[0]
-            );
-
-        return da-db;
-
-    });
+        }
+    );
 
 
-    dateSelect.innerHTML =
-        '<option value="">Tarih seç</option>';
-
-
-    dates.forEach(date => {
-
-        const option =
-            document.createElement("option");
-
-        option.value = date;
-
-        option.textContent = date;
-
-        dateSelect.appendChild(option);
-
-    });
-
+    /*
+       Son mevcut tarihi otomatik aç
+    */
 
     if(dates.length){
 
-        /*
-           En son tarihi otomatik seç
-        */
-
-        dateSelect.value =
+        select.value =
             dates[dates.length-1];
 
-        loadSelectedDate();
+
+        showSelectedDate();
 
     }
 
@@ -593,20 +620,24 @@ function createDateList(){
 
 
 /* =====================================================
-   SEÇİLEN TARİH
+   TARİH GÖSTER
 ===================================================== */
 
-function loadSelectedDate(){
+function showSelectedDate(){
 
     const date =
-        dateSelect.value;
+        document.getElementById(
+            "dateSelect"
+        ).value;
 
 
     if(!date){
 
-        matchesDiv.innerHTML =
+        document.getElementById(
+            "matches"
+        ).innerHTML =
             `
-            <div class="empty">
+            <div class="status">
                 Lütfen tarih seçin.
             </div>
             `;
@@ -616,10 +647,11 @@ function loadSelectedDate(){
     }
 
 
-    const selectedMatches =
-        matches
+    const selected =
+        allMatches
             .filter(
-                m => m.date === date
+                m =>
+                    m.date === date
             )
             .sort(
                 (a,b) =>
@@ -630,18 +662,27 @@ function loadSelectedDate(){
             );
 
 
-    selectedDateDiv.textContent =
-        date;
+    document.getElementById(
+        "title"
+    ).textContent =
+        date +
+        " Maçları";
 
-    matchCountDiv.textContent =
-        selectedMatches.length;
+
+    document.getElementById(
+        "count"
+    ).textContent =
+        selected.length +
+        " maç";
 
 
-    if(!selectedMatches.length){
+    if(!selected.length){
 
-        matchesDiv.innerHTML =
+        document.getElementById(
+            "matches"
+        ).innerHTML =
             `
-            <div class="empty">
+            <div class="status">
                 Bu tarihte maç bulunamadı.
             </div>
             `;
@@ -651,10 +692,15 @@ function loadSelectedDate(){
     }
 
 
-    matchesDiv.innerHTML =
-        selectedMatches
+    document.getElementById(
+        "matches"
+    ).innerHTML =
+        selected
             .map(
-                match => createMatchCard(match)
+                match =>
+                    createMatch(
+                        match
+                    )
             )
             .join("");
 
@@ -665,133 +711,227 @@ function loadSelectedDate(){
    MAÇ KARTI
 ===================================================== */
 
-function createMatchCard(match){
+function createMatch(match){
 
-    const score =
-        getScore(match);
-
-    const historical =
-        getHistoricalMatches(match);
+    const history =
+        getHistory(
+            match.date
+        );
 
 
     return `
 
     <div class="match-card">
 
-        <div class="match-header">
 
-            <div>
-                <strong>
-                    ${escapeHtml(match.league || "Lig")}
-                </strong>
+        <div class="match-top">
+
+            <div class="league">
+
+                ${esc(
+                    match.league ||
+                    "Lig"
+                )}
+
             </div>
 
-            <div class="match-info">
 
-                ${escapeHtml(match.date || "")}
+            <div class="time">
 
-                &nbsp; • &nbsp;
-
-                ${escapeHtml(match.time || "")}
+                ${esc(
+                    match.time ||
+                    "-"
+                )}
 
             </div>
 
         </div>
+
 
 
         <div class="teams">
 
             <div class="team home">
-                ${escapeHtml(match.home || "-")}
+
+                ${esc(
+                    match.home ||
+                    "-"
+                )}
+
             </div>
 
-            <div class="final-score">
-                ${score}
+
+            <div class="score">
+
+                ${getScore(
+                    match
+                )}
+
             </div>
+
 
             <div class="team away">
-                ${escapeHtml(match.away || "-")}
+
+                ${esc(
+                    match.away ||
+                    "-"
+                )}
+
             </div>
 
         </div>
 
 
+
+        ${createOdds(
+            match
+        )}
+
+
+
         <div class="analysis">
 
             <div class="analysis-title">
-                📊 Bu maçın oranları geçmişte nasıl sonuçlandı?
+
+                📊 Geçmişte Aynı Oran Nasıl Sonuçlandı?
+
             </div>
 
 
             <div class="analysis-grid">
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "ms1",
-                    "MS1",
-                    "1"
+                    "MS1"
                 )}
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "msX",
-                    "MSX",
-                    "X"
+                    "MSX"
                 )}
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "ms2",
-                    "MS2",
-                    "2"
+                    "MS2"
                 )}
 
 
-                ${createKGCard(
+                ${analyzeKG(
                     match,
-                    historical
+                    history
                 )}
 
 
-                ${createOverCard(
+                ${analyze25(
                     match,
-                    historical
+                    history
                 )}
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "iy1",
-                    "İY1",
-                    "1"
+                    "İY1"
                 )}
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "iyX",
-                    "İYX",
-                    "X"
+                    "İYX"
                 )}
 
 
-                ${createMSCard(
+                ${analyzeMS(
                     match,
-                    historical,
+                    history,
                     "iy2",
-                    "İY2",
-                    "2"
+                    "İY2"
                 )}
 
             </div>
+
+        </div>
+
+
+    </div>
+
+    `;
+
+}
+
+
+/* =====================================================
+   MAÇIN ORANLARI
+===================================================== */
+
+function createOdds(match){
+
+    const odds =
+        match.openingOdds ||
+        {};
+
+
+    const list = [
+
+        ["MS1","ms1"],
+        ["MSX","msX"],
+        ["MS2","ms2"],
+        ["KG Var","kgVar"],
+        ["2.5 Üst","au25Ust"]
+
+    ];
+
+
+    return `
+
+    <div class="odds">
+
+        <div class="odds-title">
+            Açılış Oranları
+        </div>
+
+
+        <div class="odds-grid">
+
+            ${
+                list
+                    .map(
+                        item => `
+
+                        <div class="odd-box">
+
+                            <div class="odd-name">
+                                ${item[0]}
+                            </div>
+
+                            <div class="odd-value">
+
+                                ${formatOdd(
+                                    odds[
+                                        item[1]
+                                    ]
+                                )}
+
+                            </div>
+
+                        </div>
+
+                        `
+                    )
+                    .join("")
+            }
 
         </div>
 
@@ -803,82 +943,20 @@ function createMatchCard(match){
 
 
 /* =====================================================
-   GEÇMİŞ MAÇLARI BUL
+   MS1 / MSX / MS2 / İY
 ===================================================== */
 
-function getHistoricalMatches(currentMatch){
-
-    /*
-       Sadece seçilen maçtan ÖNCEKİ maçları
-       geçmiş olarak kabul ediyoruz.
-
-       Böylece gelecekteki maçlar analize
-       dahil edilmiyor.
-    */
-
-    const currentDate =
-        parseDate(currentMatch.date);
-
-
-    return matches.filter(match => {
-
-        const date =
-            parseDate(match.date);
-
-
-        if(!date || !currentDate){
-            return false;
-        }
-
-
-        if(date >= currentDate){
-            return false;
-        }
-
-
-        if(!match.score){
-            return false;
-        }
-
-
-        const home =
-            Number(match.score.home);
-
-        const away =
-            Number(match.score.away);
-
-
-        if(
-            !Number.isFinite(home) ||
-            !Number.isFinite(away)
-        ){
-            return false;
-        }
-
-
-        return true;
-
-    });
-
-}
-
-
-/* =====================================================
-   MS ANALİZ KARTI
-===================================================== */
-
-function createMSCard(
-    match,
-    historical,
-    oddKey,
-    title,
-    selectedResult
+function analyzeMS(
+    current,
+    history,
+    key,
+    title
 ){
 
     const currentOdd =
         getOdd(
-            match,
-            oddKey
+            current,
+            key
         );
 
 
@@ -889,124 +967,153 @@ function createMSCard(
     }
 
 
-    const sameOdds =
-        historical.filter(
+    /*
+       SADECE TAM EŞLEŞME
+
+       Örneğin:
+
+       1.66 = 1.66
+
+       1.66 != 1.65
+
+       1.66 != 1.67
+    */
+
+    const same =
+        history.filter(
             m =>
-                oddsMatch(
-                    getOdd(m,oddKey),
-                    currentOdd
-                )
+                getOdd(
+                    m,
+                    key
+                ) === currentOdd
         );
 
 
-    if(!sameOdds.length){
+    if(!same.length){
 
-        return `
-
-        <div class="analysis-card no-data">
-
-            <div class="market">
-                ${title}
-            </div>
-
-            <div class="market-odd">
-                ${formatOdd(currentOdd)}
-            </div>
-
-            <div class="sample">
-                Geçmiş eşleşme: 0
-            </div>
-
-            <div class="percent-row">
-                <span>Geçmiş veri yok</span>
-                <span>-</span>
-            </div>
-
-        </div>
-
-        `;
+        return noData(
+            title,
+            currentOdd
+        );
 
     }
 
 
-    const counts = {
-        "1":0,
-        "X":0,
-        "2":0
-    };
+    let one = 0;
+    let x = 0;
+    let two = 0;
 
 
-    sameOdds.forEach(m => {
+    same.forEach(
+        m => {
 
-        const result =
-            matchResult(m);
+            const result =
+                resultMS(
+                    m
+                );
 
 
-        if(
-            result === "1" ||
-            result === "X" ||
-            result === "2"
-        ){
+            if(result === "1"){
+                one++;
+            }
 
-            counts[result]++;
+            if(result === "X"){
+                x++;
+            }
+
+            if(result === "2"){
+                two++;
+            }
 
         }
-
-    });
+    );
 
 
     const total =
-        counts["1"] +
-        counts["X"] +
-        counts["2"];
+        one +
+        x +
+        two;
 
 
     return `
 
     <div class="analysis-card">
 
-        <div class="market">
-            ${title}
-        </div>
 
-        <div class="market-odd">
-            ${formatOdd(currentOdd)}
-        </div>
+        <div class="analysis-head">
 
-        <div class="sample">
-            ${sameOdds.length} geçmiş eşleşme
-        </div>
+            <div class="analysis-name">
+                ${title}
+            </div>
 
-        <div class="percent-row">
-            <span class="result-1">
-                1
-            </span>
+            <div class="analysis-odd">
+                ${formatOdd(
+                    currentOdd
+                )}
+            </div>
 
-            <strong>
-                ${percentage(counts["1"],total)}%
-            </strong>
         </div>
 
 
-        <div class="percent-row">
-            <span class="result-x">
-                X
-            </span>
-
-            <strong>
-                ${percentage(counts["X"],total)}%
-            </strong>
-        </div>
+        <div class="analysis-body">
 
 
-        <div class="percent-row">
-            <span class="result-2">
-                2
-            </span>
+            <div class="matches">
 
-            <strong>
-                ${percentage(counts["2"],total)}%
-            </strong>
+                ${same.length}
+                birebir eşleşme
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label green">
+                    1
+                </span>
+
+                <strong>
+                    ${percent(
+                        one,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label yellow">
+                    X
+                </span>
+
+                <strong>
+                    ${percent(
+                        x,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label red">
+                    2
+                </span>
+
+                <strong>
+                    ${percent(
+                        two,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
+
         </div>
 
     </div>
@@ -1017,43 +1124,41 @@ function createMSCard(
 
 
 /* =====================================================
-   KG ANALİZ
+   KG
 ===================================================== */
 
-function createKGCard(
-    match,
-    historical
+function analyzeKG(
+    current,
+    history
 ){
 
-    const currentOdd =
+    const odd =
         getOdd(
-            match,
+            current,
             "kgVar"
         );
 
 
-    if(currentOdd === null){
-
+    if(odd === null){
         return "";
-
     }
 
 
-    const sameOdds =
-        historical.filter(
+    const same =
+        history.filter(
             m =>
-                oddsMatch(
-                    getOdd(m,"kgVar"),
-                    currentOdd
-                )
+                getOdd(
+                    m,
+                    "kgVar"
+                ) === odd
         );
 
 
-    if(!sameOdds.length){
+    if(!same.length){
 
-        return noDataCard(
+        return noData(
             "KG VAR",
-            currentOdd
+            odd
         );
 
     }
@@ -1063,61 +1168,93 @@ function createKGCard(
     let yokCount = 0;
 
 
-    sameOdds.forEach(m => {
+    same.forEach(
+        m => {
 
-        const result =
-            kgResult(m);
+            const result =
+                resultKG(
+                    m
+                );
 
 
-        if(result === "VAR"){
-            varCount++;
+            if(result === "VAR"){
+                varCount++;
+            }
+
+            if(result === "YOK"){
+                yokCount++;
+            }
+
         }
-
-        if(result === "YOK"){
-            yokCount++;
-        }
-
-    });
+    );
 
 
     const total =
-        varCount + yokCount;
+        varCount +
+        yokCount;
 
 
     return `
 
     <div class="analysis-card">
 
-        <div class="market">
-            KG VAR
+
+        <div class="analysis-head">
+
+            <div class="analysis-name">
+                KG VAR
+            </div>
+
+            <div class="analysis-odd">
+                ${formatOdd(
+                    odd
+                )}
+            </div>
+
         </div>
 
-        <div class="market-odd">
-            ${formatOdd(currentOdd)}
-        </div>
 
-        <div class="sample">
-            ${sameOdds.length} geçmiş eşleşme
-        </div>
+        <div class="analysis-body">
 
-        <div class="percent-row">
-            <span class="result-var">
-                VAR
-            </span>
+            <div class="matches">
 
-            <strong>
-                ${percentage(varCount,total)}%
-            </strong>
-        </div>
+                ${same.length}
+                birebir eşleşme
 
-        <div class="percent-row">
-            <span class="result-yok">
-                YOK
-            </span>
+            </div>
 
-            <strong>
-                ${percentage(yokCount,total)}%
-            </strong>
+
+            <div class="result-row">
+
+                <span class="result-label green">
+                    VAR
+                </span>
+
+                <strong>
+                    ${percent(
+                        varCount,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label red">
+                    YOK
+                </span>
+
+                <strong>
+                    ${percent(
+                        yokCount,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
         </div>
 
     </div>
@@ -1128,43 +1265,41 @@ function createKGCard(
 
 
 /* =====================================================
-   2.5 ANALİZ
+   2.5
 ===================================================== */
 
-function createOverCard(
-    match,
-    historical
+function analyze25(
+    current,
+    history
 ){
 
-    const currentOdd =
+    const odd =
         getOdd(
-            match,
+            current,
             "au25Ust"
         );
 
 
-    if(currentOdd === null){
-
+    if(odd === null){
         return "";
-
     }
 
 
-    const sameOdds =
-        historical.filter(
+    const same =
+        history.filter(
             m =>
-                oddsMatch(
-                    getOdd(m,"au25Ust"),
-                    currentOdd
-                )
+                getOdd(
+                    m,
+                    "au25Ust"
+                ) === odd
         );
 
 
-    if(!sameOdds.length){
+    if(!same.length){
 
-        return noDataCard(
+        return noData(
             "2.5 ÜST",
-            currentOdd
+            odd
         );
 
     }
@@ -1174,61 +1309,93 @@ function createOverCard(
     let alt = 0;
 
 
-    sameOdds.forEach(m => {
+    same.forEach(
+        m => {
 
-        const result =
-            over25Result(m);
+            const result =
+                result25(
+                    m
+                );
 
 
-        if(result === "ÜST"){
-            ust++;
+            if(result === "ÜST"){
+                ust++;
+            }
+
+            if(result === "ALT"){
+                alt++;
+            }
+
         }
-
-        if(result === "ALT"){
-            alt++;
-        }
-
-    });
+    );
 
 
     const total =
-        ust + alt;
+        ust +
+        alt;
 
 
     return `
 
     <div class="analysis-card">
 
-        <div class="market">
-            2.5 ÜST
+
+        <div class="analysis-head">
+
+            <div class="analysis-name">
+                2.5 ÜST
+            </div>
+
+            <div class="analysis-odd">
+                ${formatOdd(
+                    odd
+                )}
+            </div>
+
         </div>
 
-        <div class="market-odd">
-            ${formatOdd(currentOdd)}
-        </div>
 
-        <div class="sample">
-            ${sameOdds.length} geçmiş eşleşme
-        </div>
+        <div class="analysis-body">
 
-        <div class="percent-row">
-            <span class="result-ust">
-                ÜST
-            </span>
+            <div class="matches">
 
-            <strong>
-                ${percentage(ust,total)}%
-            </strong>
-        </div>
+                ${same.length}
+                birebir eşleşme
 
-        <div class="percent-row">
-            <span class="result-alt">
-                ALT
-            </span>
+            </div>
 
-            <strong>
-                ${percentage(alt,total)}%
-            </strong>
+
+            <div class="result-row">
+
+                <span class="result-label green">
+                    ÜST
+                </span>
+
+                <strong>
+                    ${percent(
+                        ust,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
+
+            <div class="result-row">
+
+                <span class="result-label red">
+                    ALT
+                </span>
+
+                <strong>
+                    ${percent(
+                        alt,
+                        total
+                    )}%
+                </strong>
+
+            </div>
+
         </div>
 
     </div>
@@ -1239,41 +1406,203 @@ function createOverCard(
 
 
 /* =====================================================
-   VERİ YOK KARTI
+   GEÇMİŞ MAÇLAR
 ===================================================== */
 
-function noDataCard(
-    title,
-    odd
+function getHistory(
+    currentDate
 ){
 
-    return `
+    const current =
+        parseDate(
+            currentDate
+        );
 
-    <div class="analysis-card no-data">
 
-        <div class="market">
-            ${title}
-        </div>
+    if(!current){
+        return [];
+    }
 
-        <div class="market-odd">
-            ${formatOdd(odd)}
-        </div>
 
-        <div class="sample">
-            Geçmiş eşleşme: 0
-        </div>
+    return allMatches.filter(
+        match => {
 
-        <div class="percent-row">
-            <span>
-                Yeterli geçmiş veri yok
-            </span>
+            const date =
+                parseDate(
+                    match.date
+                );
 
-            <strong>-</strong>
-        </div>
 
-    </div>
+            if(!date){
+                return false;
+            }
 
-    `;
+
+            /*
+               SADECE GEÇMİŞ
+
+               Aynı gün içindeki maçları
+               geçmiş kabul etmiyoruz.
+            */
+
+            if(date >= current){
+                return false;
+            }
+
+
+            if(!match.score){
+                return false;
+            }
+
+
+            const h =
+                Number(
+                    match.score.home
+                );
+
+            const a =
+                Number(
+                    match.score.away
+                );
+
+
+            return (
+                Number.isFinite(h) &&
+                Number.isFinite(a)
+            );
+
+        }
+    );
+
+}
+
+
+/* =====================================================
+   MS SONUCU
+===================================================== */
+
+function resultMS(
+    match
+){
+
+    if(!match.score){
+        return null;
+    }
+
+
+    const h =
+        Number(
+            match.score.home
+        );
+
+    const a =
+        Number(
+            match.score.away
+        );
+
+
+    if(
+        !Number.isFinite(h) ||
+        !Number.isFinite(a)
+    ){
+        return null;
+    }
+
+
+    if(h > a){
+        return "1";
+    }
+
+
+    if(h === a){
+        return "X";
+    }
+
+
+    return "2";
+
+}
+
+
+/* =====================================================
+   KG SONUCU
+===================================================== */
+
+function resultKG(
+    match
+){
+
+    if(!match.score){
+        return null;
+    }
+
+
+    const h =
+        Number(
+            match.score.home
+        );
+
+    const a =
+        Number(
+            match.score.away
+        );
+
+
+    if(
+        !Number.isFinite(h) ||
+        !Number.isFinite(a)
+    ){
+        return null;
+    }
+
+
+    return (
+        h > 0 &&
+        a > 0
+    )
+    ? "VAR"
+    : "YOK";
+
+}
+
+
+/* =====================================================
+   2.5 SONUCU
+===================================================== */
+
+function result25(
+    match
+){
+
+    if(!match.score){
+        return null;
+    }
+
+
+    const h =
+        Number(
+            match.score.home
+        );
+
+    const a =
+        Number(
+            match.score.away
+        );
+
+
+    if(
+        !Number.isFinite(h) ||
+        !Number.isFinite(a)
+    ){
+        return null;
+    }
+
+
+    return (
+        h + a > 2.5
+    )
+    ? "ÜST"
+    : "ALT";
 
 }
 
@@ -1291,7 +1620,9 @@ function getOdd(
         !match ||
         !match.openingOdds
     ){
+
         return null;
+
     }
 
 
@@ -1301,15 +1632,13 @@ function getOdd(
         );
 
 
-    /*
-       0 değerlerini oran olarak kabul etmiyoruz.
-    */
-
     if(
         !Number.isFinite(value) ||
         value <= 0
     ){
+
         return null;
+
     }
 
 
@@ -1319,129 +1648,94 @@ function getOdd(
 
 
 /* =====================================================
-   ORAN EŞLEŞTİRME
+   ORAN FORMAT
 ===================================================== */
 
-function oddsMatch(
-    a,
-    b
+function formatOdd(
+    value
 ){
 
-    if(a === null || b === null){
-        return false;
+    if(
+        value === null ||
+        value === undefined ||
+        value === "" ||
+        Number(value) <= 0
+    ){
+
+        return "-";
+
     }
 
 
-    return Math.abs(a-b)
-        <= MATCH_TOLERANCE;
+    return Number(value)
+        .toFixed(2);
 
 }
 
 
 /* =====================================================
-   MAÇ SONUCU
+   YÜZDE
 ===================================================== */
 
-function matchResult(match){
+function percent(
+    value,
+    total
+){
 
-    if(!match.score){
-        return null;
-    }
-
-
-    const home =
-        Number(match.score.home);
-
-    const away =
-        Number(match.score.away);
-
-
-    if(
-        !Number.isFinite(home) ||
-        !Number.isFinite(away)
-    ){
-        return null;
-    }
-
-
-    if(home > away){
-        return "1";
-    }
-
-    if(home === away){
-        return "X";
-    }
-
-    return "2";
-
-}
-
-
-/* =====================================================
-   KG
-===================================================== */
-
-function kgResult(match){
-
-    if(!match.score){
-        return null;
-    }
-
-
-    const home =
-        Number(match.score.home);
-
-    const away =
-        Number(match.score.away);
-
-
-    if(
-        !Number.isFinite(home) ||
-        !Number.isFinite(away)
-    ){
-        return null;
+    if(!total){
+        return "0.0";
     }
 
 
     return (
-        home > 0 &&
-        away > 0
-    )
-    ? "VAR"
-    : "YOK";
+        value /
+        total *
+        100
+    ).toFixed(1);
 
 }
 
 
 /* =====================================================
-   2.5
+   VERİ YOK
 ===================================================== */
 
-function over25Result(match){
+function noData(
+    title,
+    odd
+){
 
-    if(!match.score){
-        return null;
-    }
+    return `
 
-
-    const home =
-        Number(match.score.home);
-
-    const away =
-        Number(match.score.away);
+    <div class="analysis-card">
 
 
-    if(
-        !Number.isFinite(home) ||
-        !Number.isFinite(away)
-    ){
-        return null;
-    }
+        <div class="analysis-head">
+
+            <div class="analysis-name">
+                ${title}
+            </div>
+
+            <div class="analysis-odd">
+                ${formatOdd(
+                    odd
+                )}
+            </div>
+
+        </div>
 
 
-    return home + away > 2.5
-        ? "ÜST"
-        : "ALT";
+        <div class="no-data">
+
+            Geçmişte aynı oranla
+            oynanmış maç bulunamadı.
+
+        </div>
+
+
+    </div>
+
+    `;
 
 }
 
@@ -1450,7 +1744,9 @@ function over25Result(match){
    SKOR
 ===================================================== */
 
-function getScore(match){
+function getScore(
+    match
+){
 
     if(!match.score){
         return "-";
@@ -1461,7 +1757,9 @@ function getScore(match){
         match.score.home === undefined ||
         match.score.away === undefined
     ){
+
         return "-";
+
     }
 
 
@@ -1475,63 +1773,70 @@ function getScore(match){
 
 
 /* =====================================================
-   TARİH
+   TARİH SIRALA
 ===================================================== */
 
-function parseDate(date){
+function sortDate(
+    a,
+    b
+){
+
+    const pa =
+        a.split(".");
+
+    const pb =
+        b.split(".");
+
+
+    const da =
+        new Date(
+            Number(pa[2]),
+            Number(pa[1])-1,
+            Number(pa[0])
+        );
+
+
+    const db =
+        new Date(
+            Number(pb[2]),
+            Number(pb[1])-1,
+            Number(pb[0])
+        );
+
+
+    return da - db;
+
+}
+
+
+/* =====================================================
+   TARİH PARSE
+===================================================== */
+
+function parseDate(
+    date
+){
 
     if(!date){
         return null;
     }
 
 
-    const parts =
-        String(date).split(".");
+    const p =
+        String(date)
+        .split(".");
 
 
-    if(parts.length !== 3){
+    if(p.length !== 3){
         return null;
     }
 
 
     return new Date(
-        Number(parts[2]),
-        Number(parts[1])-1,
-        Number(parts[0])
+        Number(p[2]),
+        Number(p[1])-1,
+        Number(p[0])
     );
-
-}
-
-
-/* =====================================================
-   YÜZDE
-===================================================== */
-
-function percentage(
-    value,
-    total
-){
-
-    if(!total){
-        return "0.0";
-    }
-
-
-    return (
-        value / total * 100
-    ).toFixed(1);
-
-}
-
-
-/* =====================================================
-   ORAN GÖSTER
-===================================================== */
-
-function formatOdd(value){
-
-    return Number(value)
-        .toFixed(2);
 
 }
 
@@ -1540,7 +1845,9 @@ function formatOdd(value){
    HTML GÜVENLİK
 ===================================================== */
 
-function escapeHtml(value){
+function esc(
+    value
+){
 
     return String(value)
         .replaceAll("&","&amp;")
