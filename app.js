@@ -1,4 +1,4 @@
-Const state = { matches: [], filters: { search: '', date: '', league: '', unplayed: false } };
+const state = { matches: [], filters: { search: '', date: '', league: '', unplayed: false } };
 const $ = (id) => document.getElementById(id);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const odd = (value) => value === null || value === undefined ? '—' : Number(value).toFixed(2);
