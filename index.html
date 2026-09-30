@@ -8,43 +8,50 @@
 </head>
 <body class="bg-[#0f172a] text-white">
 <div class="max-w-7xl mx-auto p-4">
-  <h1 class="text-3xl font-bold text-center py-6">ORAN ANALİZ SİSTEMİ</h1>
+  <h1 class="text-2xl md:text-3xl font-bold text-center py-6">ORAN ANALİZ SİSTEMİ <span class="block text-sm font-normal opacity-60">arsiv.mackolik.com verisi</span></h1>
   
-  <div class="bg-[#1e293b] p-4 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <select id="oranTip" class="bg-[#0f172a] p-3 rounded">
-      <option value="oran_ms1">MS1</option>
-      <option value="oran_msx">MSX</option>
-      <option value="oran_ms2">MS2</option>
-      <option value="oran_iy1">İY1</option>
+  <div class="bg-[#1e293b] p-4 rounded-xl grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 border border-white/10">
+    <select id="oranTip" class="bg-[#0f172a] p-3 rounded border border-white/20">
+      <option value="ms1">MS1</option>
+      <option value="msX">MSX</option>
+      <option value="ms2">MS2</option>
+      <option value="iy1">İY1</option>
+      <option value="iyX">İYX</option>
+      <option value="iy2">İY2</option>
+      <option value="kgVar">KG VAR</option>
+      <option value="kgYok">KG YOK</option>
+      <option value="au25Alt">2.5 ALT</option>
+      <option value="au25Ust">2.5 ÜST</option>
     </select>
-    <input id="hedefOran" type="number" step="0.01" value="1.50" class="bg-[#0f172a] p-3 rounded" placeholder="Oran gir: 1.50">
-    <div class="flex items-center gap-2">
-      <label>Tolerans:</label>
-      <input id="tolerans" type="range" min="0" max="0.2" step="0.01" value="0.05">
-      <span id="tolDeger" class="text-yellow-400">0.05</span>
+    <input id="hedefOran" type="number" step="0.01" value="1.66" class="bg-[#0f172a] p-3 rounded border border-white/20" placeholder="Oran: 1.66">
+    <div class="flex items-center gap-2 bg-[#0f172a] p-3 rounded border border-white/20">
+      <label class="text-sm">Tolerans:</label>
+      <input id="tolerans" type="range" min="0" max="0.3" step="0.01" value="0.05" class="flex-1">
+      <span id="tolDeger" class="text-yellow-400 font-bold">0.05</span>
     </div>
-    <button onclick="analizEt()" class="bg-green-600 hover:bg-green-700 p-3 rounded font-bold">ANALİZ ET</button>
+    <button onclick="analizEt()" class="bg-emerald-600 hover:bg-emerald-700 p-3 rounded font-bold">ANALİZ ET</button>
   </div>
 
-  <div id="sonucKutu" class="hidden bg-[#1e293b] p-6 rounded-xl mb-6 text-center">
-    <h2 id="analizBaslik" class="text-xl font-bold mb-4"></h2>
+  <div id="sonucKutu" class="hidden bg-[#1e293b] p-6 rounded-xl mb-6 text-center border border-emerald-500/30">
+    <h2 id="analizBaslik" class="text-lg font-bold mb-4"></h2>
     <div class="grid grid-cols-3 gap-4">
-      <div class="bg-green-600 p-4 rounded"><p>MS1</p><p id="yuzde1" class="text-2xl font-bold">%0</p><p id="adet1">0 maç</p></div>
-      <div class="bg-gray-600 p-4 rounded"><p>MSX</p><p id="yuzdeX" class="text-2xl font-bold">%0</p><p id="adetX">0 maç</p></div>
-      <div class="bg-red-600 p-4 rounded"><p>MS2</p><p id="yuzde2" class="text-2xl font-bold">%0</p><p id="adet2">0 maç</p></div>
+      <div class="bg-emerald-600 p-4 rounded-lg"><p class="text-sm opacity-80">MS1 BİTTİ</p><p id="yuzde1" class="text-3xl font-bold">%0</p><p id="adet1" class="text-sm">0 maç</p></div>
+      <div class="bg-zinc-600 p-4 rounded-lg"><p class="text-sm opacity-80">BERABERE</p><p id="yuzdeX" class="text-3xl font-bold">%0</p><p id="adetX" class="text-sm">0 maç</p></div>
+      <div class="bg-red-600 p-4 rounded-lg"><p class="text-sm opacity-80">MS2 BİTTİ</p><p id="yuzde2" class="text-3xl font-bold">%0</p><p id="adet2" class="text-sm">0 maç</p></div>
     </div>
-    <div class="w-full bg-black h-4 rounded-full mt-4 flex overflow-hidden">
-      <div id="bar1" class="bg-green-600 h-4"></div>
-      <div id="barX" class="bg-gray-500 h-4"></div>
-      <div id="bar2" class="bg-red-600 h-4"></div>
+    <div class="w-full bg-black h-5 rounded-full mt-4 flex overflow-hidden">
+      <div id="bar1" class="bg-emerald-600 h-5 transition-all"></div>
+      <div id="barX" class="bg-zinc-500 h-5 transition-all"></div>
+      <div id="bar2" class="bg-red-600 h-5 transition-all"></div>
     </div>
+    <button onclick="resetFiltre()" class="mt-4 text-sm underline opacity-70">Filtreyi Temizle</button>
   </div>
 
-  <div class="bg-[#1e293b] rounded-xl overflow-hidden">
-    <div class="p-4 flex justify-between"><h3 class="font-bold">Geçmiş Maçlar</h3><span id="toplamMac" class="text-sm opacity-70"></span></div>
+  <div class="bg-[#1e293b] rounded-xl overflow-hidden border border-white/10">
+    <div class="p-4 flex justify-between items-center bg-black/20"><h3 class="font-bold">Geçmiş Maçlar</h3><span id="toplamMac" class="text-sm bg-white/10 px-3 py-1 rounded-full"></span></div>
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
-        <thead class="bg-black/30 text-left"><tr><th class="p-3">Tarih</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">MSX</th><th class="p-3">MS2</th><th class="p-3">Skor</th><th class="p-3">Sonuç</th></tr></thead>
+        <thead class="bg-black/30 text-left text-xs opacity-60"><tr><th class="p-3">Tarih</th><th class="p-3">Maç</th><th class="p-3">MS1</th><th class="p-3">MSX</th><th class="p-3">MS2</th><th class="p-3">İY Skor</th><th class="p-3">MS Skor</th><th class="p-3">Sonuç</th></tr></thead>
         <tbody id="tablo"></tbody>
       </table>
     </div>
@@ -55,25 +62,38 @@
 let tumVeri = [];
 document.getElementById(\'tolerans\').addEventListener(\'input\', e => document.getElementById(\'tolDeger\').textContent = e.target.value);
 
-// VERİYİ ÇEK
 fetch(\'data/sonuclar.json\')
   .then(r => r.json())
-  .then(data => { tumVeri = data; listele(data); })
-  .catch(() => { document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=7 class="p-4 text-center text-red-400">data/sonuclar.json bulunamadı!</td></tr>\' });
+  .then(data => { 
+    tumVeri = Array.isArray(data) ? data : data.matches || [];
+    listele(tumVeri); 
+  })
+  .catch(() => { document.getElementById(\'tablo\').innerHTML = \'<tr><td colspan=8 class="p-6 text-center text-red-400">data/sonuclar.json bulunamadı! Dosyayı oluşturduğundan emin ol.</td></tr>\' });
+
+function macSonucu(m){
+  const ev = parseInt(m.score.home), dep = parseInt(m.score.away);
+  if(ev > dep) return \'MS1\';
+  if(ev < dep) return \'MS2\';
+  return \'MSX\';
+}
 
 function listele(data){
   document.getElementById(\'toplamMac\').textContent = `${data.length} maç`;
-  document.getElementById(\'tablo\').innerHTML = data.map(m => `
-    <tr class="border-t border-white/10 hover:bg-white/5">
-      <td class="p-3 opacity-70">${m.tarih}</td>
-      <td class="p-3">${m.ev} - ${m.dep} <span class="text-xs opacity-50">${m.lig}</span></td>
-      <td class="p-3">${m.oran_ms1}</td>
-      <td class="p-3">${m.oran_msx}</td>
-      <td class="p-3">${m.oran_ms2}</td>
-      <td class="p-3">${m.skor_ms} <span class="opacity-50">(${m.skor_iy})</span></td>
-      <td class="p-3 font-bold ${m.sonuc_ms==\'MS1\'?\'text-green-400\':m.sonuc_ms==\'MS2\'?\'text-red-400\':\'text-gray-400\'}">${m.sonuc_ms}</td>
-    </tr>
-  `).join(\'\');
+  document.getElementById(\'tablo\').innerHTML = data.slice(0,500).map(m => {
+    const sonuc = macSonucu(m);
+    const renk = sonuc==\'MS1\'?\'text-emerald-400\':sonuc==\'MS2\'?\'text-red-400\':\'text-zinc-400\';
+    return `
+    <tr class="border-t border-white/5 hover:bg-white/5 cursor-pointer" onclick="hizliAnaliz(${m.openingOdds.ms1})">
+      <td class="p-3 opacity-60 text-xs">${m.date} ${m.time}</td>
+      <td class="p-3"><b>${m.home}</b> - ${m.away} <span class="text-xs opacity-40 ml-1">${m.league}</span></td>
+      <td class="p-3">${m.openingOdds.ms1 || \'-\'}</td>
+      <td class="p-3">${m.openingOdds.msX || \'-\'}</td>
+      <td class="p-3">${m.openingOdds.ms2 || \'-\'}</td>
+      <td class="p-3 opacity-70">${m.halfTimeScore.home}-${m.halfTimeScore.away}</td>
+      <td class="p-3 font-bold">${m.score.home}-${m.score.away}</td>
+      <td class="p-3 font-bold ${renk}">${sonuc}</td>
+    </tr>`
+  }).join(\'\');
 }
 
 function analizEt(){
@@ -81,13 +101,16 @@ function analizEt(){
   const hedef = parseFloat(document.getElementById(\'hedefOran\').value);
   const tol = parseFloat(document.getElementById(\'tolerans\').value);
   
-  const filtreli = tumVeri.filter(m => Math.abs(m[tip] - hedef) <= tol);
+  const filtreli = tumVeri.filter(m => {
+    const oran = m.openingOdds[tip];
+    return oran && Math.abs(parseFloat(oran) - hedef) <= tol;
+  });
   
   if(filtreli.length === 0){ alert(\'Bu oranda eşleşen maç bulunamadı! Toleransı artır.\'); return; }
 
-  const ms1 = filtreli.filter(m => m.sonuc_ms === \'MS1\').length;
-  const msx = filtreli.filter(m => m.sonuc_ms === \'MSX\').length;
-  const ms2 = filtreli.filter(m => m.sonuc_ms === \'MS2\').length;
+  const ms1 = filtreli.filter(m => macSonucu(m) === \'MS1\').length;
+  const msx = filtreli.filter(m => macSonucu(m) === \'MSX\').length;
+  const ms2 = filtreli.filter(m => macSonucu(m) === \'MS2\').length;
   const toplam = filtreli.length;
 
   document.getElementById(\'sonucKutu\').classList.remove(\'hidden\');
@@ -101,9 +124,17 @@ function analizEt(){
   document.getElementById(\'bar1\').style.width = (ms1/toplam*100)+\'%\';
   document.getElementById(\'barX\').style.width = (msx/toplam*100)+\'%\';
   document.getElementById(\'bar2\').style.width = (ms2/toplam*100)+\'%\';
-
   listele(filtreli);
   window.scrollTo({top: 0, behavior: \'smooth\'});
+}
+function resetFiltre(){
+  document.getElementById(\'sonucKutu\').classList.add(\'hidden\');
+  listele(tumVeri);
+}
+function hizliAnaliz(oran){
+  document.getElementById(\'hedefOran\').value = oran;
+  document.getElementById(\'oranTip\').value = \'ms1\';
+  analizEt();
 }
 </script>
 </body>
