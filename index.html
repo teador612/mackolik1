@@ -2,91 +2,212 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Maçkolik - Oran Analiz</title>
-<script src="https://cdn.tailwindcss.com"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Maçkolik - Tarih Maçları</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#0b1220;
+ color:#f8fafc;
+ font-family:Arial,sans-serif;
+}
+.container{
+ max-width:1200px;
+ margin:auto;
+ padding:20px;
+}
+.header{
+ background:linear-gradient(135deg,#172554,#0f172a);
+ border:1px solid #263452;
+ border-radius:18px;
+ padding:24px;
+ margin-bottom:18px;
+}
+.header h1{
+ margin:0 0 8px;
+ font-size:28px;
+}
+.header p{
+ margin:0;
+ color:#94a3b8;
+}
+.panel{
+ background:#111b2e;
+ border:1px solid #263452;
+ border-radius:16px;
+ padding:18px;
+ margin-bottom:18px;
+}
+label{
+ display:block;
+ color:#94a3b8;
+ font-size:13px;
+ margin-bottom:8px;
+}
+.controls{
+ display:grid;
+ grid-template-columns:1fr auto;
+ gap:10px;
+}
+input,select,button{
+ width:100%;
+ min-height:48px;
+ border-radius:10px;
+ border:1px solid #334155;
+ padding:0 14px;
+ font-size:15px;
+}
+input,select{
+ background:#0b1220;
+ color:white;
+}
+button{
+ background:#2563eb;
+ color:white;
+ border:0;
+ font-weight:bold;
+ cursor:pointer;
+}
+button:hover{background:#1d4ed8}
+.info{
+ display:flex;
+ gap:10px;
+ flex-wrap:wrap;
+ margin-top:15px;
+}
+.badge{
+ background:#0b1220;
+ border:1px solid #263452;
+ border-radius:10px;
+ padding:10px 14px;
+ color:#cbd5e1;
+ font-size:13px;
+}
+.status{
+ margin-bottom:15px;
+ padding:12px;
+ border-radius:10px;
+ background:#0b1220;
+ color:#94a3b8;
+ font-size:13px;
+}
+.table-wrap{
+ overflow-x:auto;
+}
+table{
+ width:100%;
+ border-collapse:collapse;
+ min-width:850px;
+}
+th{
+ background:#0b1220;
+ color:#94a3b8;
+ font-size:12px;
+ text-align:left;
+ padding:13px 10px;
+}
+td{
+ padding:13px 10px;
+ border-top:1px solid #1e293b;
+ font-size:13px;
+}
+tr:hover td{
+ background:#162238;
+}
+.team{
+ font-weight:bold;
+}
+.score{
+ font-weight:bold;
+ color:#facc15;
+}
+.odds{
+ color:#93c5fd;
+}
+.empty{
+ text-align:center;
+ padding:40px;
+ color:#64748b;
+}
+@media(max-width:600px){
+ .container{padding:10px}
+ .header{padding:18px}
+ .header h1{font-size:22px}
+ .controls{grid-template-columns:1fr}
+}
+</style>
 </head>
 
-<body class="bg-slate-950 text-white">
+<body>
 
-<div class="max-w-7xl mx-auto p-4">
+<div class="container">
 
-<h1 class="text-2xl font-bold text-center mb-4">
-Maçkolik Oran Analiz
-</h1>
+<div class="header">
+<h1>⚽ Maçkolik</h1>
+<p>Seçtiğin tarihteki maçları listele</p>
+</div>
 
-<div id="message"
-class="bg-slate-800 p-3 rounded mb-3 text-center">
+<div class="panel">
+
+<label for="dateSelect">MAÇ TARİHİ</label>
+
+<div class="controls">
+
+<select id="dateSelect">
+<option value="">Tarihler yükleniyor...</option>
+</select>
+
+<button id="showButton">
+MAÇLARI GÖSTER
+</button>
+
+</div>
+
+<div class="info">
+<div class="badge">
+📅 <span id="selectedDate">Tarih seçilmedi</span>
+</div>
+
+<div class="badge">
+⚽ <span id="matchCount">0</span> maç
+</div>
+</div>
+
+</div>
+
+<div id="status" class="status">
 Veriler yükleniyor...
 </div>
 
-<div id="updatedAt"
-class="text-center text-xs text-slate-400 mb-4"></div>
+<div class="panel">
 
-<div class="bg-slate-800 p-4 rounded-xl mb-4">
+<div class="table-wrap">
 
-<div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+<table>
 
-<input
-id="search"
-type="text"
-placeholder="Takım ara..."
-class="bg-slate-900 border border-slate-700 rounded p-3">
-
-<select
-id="dateFilter"
-class="bg-slate-900 border border-slate-700 rounded p-3">
-<option value="">Tüm tarihler</option>
-</select>
-
-<select
-id="leagueFilter"
-class="bg-slate-900 border border-slate-700 rounded p-3">
-<option value="">Tüm ligler</option>
-</select>
-
-<label class="flex items-center gap-2 p-3">
-<input id="unplayedOnly" type="checkbox">
-Oynanmamış maçlar
-</label>
-
-</div>
-</div>
-
-<div class="bg-slate-800 rounded-xl overflow-hidden">
-
-<div class="overflow-x-auto">
-
-<table class="w-full text-sm">
-
-<thead class="bg-slate-900">
-
+<thead>
 <tr>
-<th class="p-3">Tarih</th>
-<th class="p-3">Saat</th>
-<th class="p-3">Lig</th>
-<th class="p-3">Kod</th>
-<th class="p-3">Ev</th>
-<th class="p-3">Deplasman</th>
-<th class="p-3">İY</th>
-<th class="p-3">MS</th>
-<th class="p-3">MS1</th>
-<th class="p-3">MSX</th>
-<th class="p-3">MS2</th>
-<th class="p-3">KG Var</th>
-<th class="p-3">KG Yok</th>
-<th class="p-3">2.5 Alt</th>
-<th class="p-3">2.5 Üst</th>
+<th>SAAT</th>
+<th>LİG</th>
+<th>EV SAHİBİ</th>
+<th>DEPLASMAN</th>
+<th>İY</th>
+<th>MS</th>
+<th>MS1</th>
+<th>MSX</th>
+<th>MS2</th>
+<th>KG</th>
+<th>2.5</th>
 </tr>
-
 </thead>
 
-<tbody id="matches">
+<tbody id="matchTable">
 
 <tr>
-<td colspan="15"
-class="p-8 text-center">
-Veriler yükleniyor...
+<td colspan="11" class="empty">
+Maçlar yükleniyor...
 </td>
 </tr>
 
@@ -95,413 +216,416 @@ Veriler yükleniyor...
 </table>
 
 </div>
+
 </div>
 
 </div>
 
 <script>
 
-const state={
-matches:[],
-filters:{
-search:"",
-date:"",
-league:"",
-unplayed:false
+const DATA_URL = "./data/matches.json";
+
+let matches = [];
+
+const dateSelect =
+document.getElementById("dateSelect");
+
+const showButton =
+document.getElementById("showButton");
+
+const matchTable =
+document.getElementById("matchTable");
+
+const status =
+document.getElementById("status");
+
+const selectedDate =
+document.getElementById("selectedDate");
+
+const matchCount =
+document.getElementById("matchCount");
+
+
+function getMatches(data){
+
+    if(Array.isArray(data)){
+        return data;
+    }
+
+    if(data && Array.isArray(data.matches)){
+        return data.matches;
+    }
+
+    return [];
 }
-};
 
-const $=id=>document.getElementById(id);
 
-const esc=value=>
-String(value??"").replace(
-/[&<>"']/g,
-char=>({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
-}[char])
-);
+function formatDate(date){
 
-function odd(value){
+    if(!date) return "";
 
-if(value===null||
-value===undefined||
-value===""){
-return "—";
-}
-
-const n=Number(value);
-
-return Number.isFinite(n)
-?n.toFixed(2)
-:"—";
+    return String(date).trim();
 
 }
+
+
+function dateSort(a,b){
+
+    const pa = a.split(".");
+    const pb = b.split(".");
+
+    if(pa.length !== 3 || pb.length !== 3){
+        return a.localeCompare(b);
+    }
+
+    const da =
+        new Date(
+            Number(pa[2]),
+            Number(pa[1])-1,
+            Number(pa[0])
+        );
+
+    const db =
+        new Date(
+            Number(pb[2]),
+            Number(pb[1])-1,
+            Number(pb[0])
+        );
+
+    return da-db;
+
+}
+
 
 function score(value){
 
-if(!value){
-return "—";
-}
+    if(!value) return "-";
 
-if(
-value.home===null||
-value.home===undefined||
-value.away===null||
-value.away===undefined
-){
-return "—";
-}
+    if(
+        value.home === undefined ||
+        value.away === undefined
+    ){
+        return "-";
+    }
 
-return `${value.home} - ${value.away}`;
+    return value.home+" - "+value.away;
 
 }
 
-function sortKey(match){
 
-const parts=
-String(match.date??"").split(".");
+function odd(value){
 
-const day=parts[0]??"";
-const month=parts[1]??"";
-const year=parts[2]??"";
+    if(
+        value === null ||
+        value === undefined ||
+        value === ""
+    ){
+        return "-";
+    }
 
-return `${year}-${month}-${day} ${match.time??""}`;
+    const n = Number(value);
 
-}
-
-function filteredMatches(){
-
-const q=
-state.filters.search
-.toLocaleLowerCase("tr-TR");
-
-return state.matches
-.filter(match=>{
-
-const text=
-`${match.home??""} ${match.away??""} ${match.code??""}`
-.toLocaleLowerCase("tr-TR");
-
-const searchOK=
-!q||text.includes(q);
-
-const dateOK=
-!state.filters.date||
-match.date===state.filters.date;
-
-const leagueOK=
-!state.filters.league||
-match.league===state.filters.league;
-
-const unplayedOK=
-!state.filters.unplayed||
-(
-(match.score?.home===null||
-match.score?.home===undefined||
-match.score?.home==="")&&
-(match.score?.away===null||
-match.score?.away===undefined||
-match.score?.away==="")
-);
-
-return(
-searchOK&&
-dateOK&&
-leagueOK&&
-unplayedOK
-);
-
-})
-.sort(
-(a,b)=>
-sortKey(a).localeCompare(
-sortKey(b)
-)
-);
+    return Number.isFinite(n)
+        ? n.toFixed(2)
+        : "-";
 
 }
 
-function render(){
 
-const rows=
-filteredMatches();
+function kgResult(match){
 
-$("message").textContent=
-`${rows.length} maç gösteriliyor.`;
+    const h = Number(match.score?.home);
+    const a = Number(match.score?.away);
 
-$("matches").innerHTML=
-rows.map(match=>{
+    if(!Number.isFinite(h) || !Number.isFinite(a)){
+        return "-";
+    }
 
-const o=
-match.openingOdds||{};
-
-return `
-<tr class="border-t border-slate-800 hover:bg-slate-800">
-
-<td class="p-3">${esc(match.date)}</td>
-
-<td class="p-3">${esc(match.time||"—")}</td>
-
-<td class="p-3">${esc(match.league)}</td>
-
-<td class="p-3">${esc(match.code)}</td>
-
-<td class="p-3 font-semibold">
-${esc(match.home)}
-</td>
-
-<td class="p-3 font-semibold">
-${esc(match.away)}
-</td>
-
-<td class="p-3">
-${esc(score(match.halfTimeScore))}
-</td>
-
-<td class="p-3 font-bold text-yellow-400">
-${esc(score(match.score))}
-</td>
-
-<td class="p-3">${odd(o.ms1)}</td>
-
-<td class="p-3">${odd(o.msX)}</td>
-
-<td class="p-3">${odd(o.ms2)}</td>
-
-<td class="p-3">${odd(o.kgVar)}</td>
-
-<td class="p-3">${odd(o.kgYok)}</td>
-
-<td class="p-3">${odd(o.au25Alt)}</td>
-
-<td class="p-3">${odd(o.au25Ust)}</td>
-
-</tr>
-`;
-
-}).join("");
+    return h > 0 && a > 0
+        ? "VAR"
+        : "YOK";
 
 }
 
-function fillFilters(){
 
-const dates=[
-...new Set(
-state.matches
-.map(m=>m.date)
-.filter(Boolean)
-)
-].sort();
+function goalResult(match){
 
-const leagues=[
-...new Set(
-state.matches
-.map(m=>m.league)
-.filter(Boolean)
-)
-].sort(
-(a,b)=>
-a.localeCompare(b,"tr")
-);
+    const h = Number(match.score?.home);
+    const a = Number(match.score?.away);
 
-$("dateFilter").innerHTML=
-'<option value="">Tüm tarihler</option>'+
-dates.map(
-v=>
-`<option value="${esc(v)}">${esc(v)}</option>`
-).join("");
+    if(!Number.isFinite(h) || !Number.isFinite(a)){
+        return "-";
+    }
 
-$("leagueFilter").innerHTML=
-'<option value="">Tüm ligler</option>'+
-leagues.map(
-v=>
-`<option value="${esc(v)}">${esc(v)}</option>`
-).join("");
+    return h+a > 2.5
+        ? "ÜST"
+        : "ALT";
 
 }
 
-$("search").addEventListener(
-"input",
-event=>{
-state.filters.search=
-event.target.value;
-render();
-}
-);
 
-$("dateFilter").addEventListener(
-"change",
-event=>{
-state.filters.date=
-event.target.value;
-render();
-}
-);
+function loadDates(){
 
-$("leagueFilter").addEventListener(
-"change",
-event=>{
-state.filters.league=
-event.target.value;
-render();
-}
-);
+    const dates = [
+        ...new Set(
+            matches
+            .map(m => formatDate(m.date))
+            .filter(Boolean)
+        )
+    ];
 
-$("unplayedOnly").addEventListener(
-"change",
-event=>{
-state.filters.unplayed=
-event.target.checked;
-render();
+    dates.sort(dateSort);
+
+    dateSelect.innerHTML =
+        '<option value="">Tarih seç</option>';
+
+    dates.forEach(date => {
+
+        const option =
+        document.createElement("option");
+
+        option.value = date;
+
+        option.textContent = date;
+
+        dateSelect.appendChild(option);
+
+    });
+
+    if(dates.length){
+
+        dateSelect.value =
+            dates[dates.length-1];
+
+        showMatches(
+            dates[dates.length-1]
+        );
+
+    }else{
+
+        status.textContent =
+            "Veri içinde tarih bulunamadı.";
+
+    }
+
 }
-);
+
+
+function showMatches(date){
+
+    if(!date){
+
+        matchTable.innerHTML =
+        `
+        <tr>
+        <td colspan="11" class="empty">
+        Lütfen bir tarih seçin.
+        </td>
+        </tr>
+        `;
+
+        selectedDate.textContent =
+            "Tarih seçilmedi";
+
+        matchCount.textContent = "0";
+
+        return;
+
+    }
+
+    const selected =
+        matches.filter(
+            match =>
+            formatDate(match.date) === date
+        );
+
+    selected.sort((a,b) =>
+        String(a.time || "")
+        .localeCompare(
+            String(b.time || "")
+        )
+    );
+
+    selectedDate.textContent = date;
+
+    matchCount.textContent =
+        selected.length;
+
+    if(!selected.length){
+
+        matchTable.innerHTML =
+        `
+        <tr>
+        <td colspan="11" class="empty">
+        Bu tarihte maç bulunamadı.
+        </td>
+        </tr>
+        `;
+
+        return;
+
+    }
+
+    matchTable.innerHTML =
+        selected.map(match => {
+
+            const odds =
+                match.openingOdds || {};
+
+            return `
+            <tr>
+
+                <td>
+                    ${match.time || "-"}
+                </td>
+
+                <td>
+                    ${match.league || "-"}
+                </td>
+
+                <td class="team">
+                    ${match.home || "-"}
+                </td>
+
+                <td class="team">
+                    ${match.away || "-"}
+                </td>
+
+                <td class="score">
+                    ${score(match.halfTimeScore)}
+                </td>
+
+                <td class="score">
+                    ${score(match.score)}
+                </td>
+
+                <td class="odds">
+                    ${odd(odds.ms1)}
+                </td>
+
+                <td class="odds">
+                    ${odd(odds.msX)}
+                </td>
+
+                <td class="odds">
+                    ${odd(odds.ms2)}
+                </td>
+
+                <td>
+                    ${kgResult(match)}
+                </td>
+
+                <td>
+                    ${goalResult(match)}
+                </td>
+
+            </tr>
+            `;
+
+        }).join("");
+
+}
+
 
 async function loadData(){
 
-try{
+    try{
 
-$("message").textContent=
-"Veriler yükleniyor...";
+        status.textContent =
+            "Veriler yükleniyor...";
 
-const url=
-new URL(
-"./data/matches.json",
-window.location.href
-);
+        const url =
+            DATA_URL +
+            "?v=" +
+            Date.now();
 
-url.searchParams.set(
-"_",
-Date.now()
-);
+        const response =
+            await fetch(
+                url,
+                {
+                    cache:"no-store"
+                }
+            );
 
-console.log(
-"VERİ ADRESİ:",
-url.href
-);
+        if(!response.ok){
 
-const response=
-await fetch(
-url.href,
-{
-method:"GET",
-cache:"no-store"
-}
-);
+            throw new Error(
+                "HTTP " +
+                response.status
+            );
 
-console.log(
-"HTTP:",
-response.status
-);
+        }
 
-if(!response.ok){
+        const data =
+            await response.json();
 
-throw new Error(
-`HTTP ${response.status} ${response.statusText}`
-);
+        matches =
+            getMatches(data);
 
-}
+        if(!matches.length){
 
-const text=
-await response.text();
+            throw new Error(
+                "matches.json içinde maç bulunamadı."
+            );
 
-console.log(
-"GELEN VERİ:",
-text.substring(0,300)
-);
+        }
 
-let data;
+        status.textContent =
+            "✅ " +
+            matches.length +
+            " maç yüklendi.";
 
-try{
+        loadDates();
 
-data=
-JSON.parse(text);
+    }catch(error){
 
-}catch(e){
+        console.error(error);
 
-throw new Error(
-"JSON okunamadı. Gelen cevap JSON değil."
-);
+        status.textContent =
+            "❌ Veri yüklenemedi: " +
+            error.message;
 
-}
+        matchTable.innerHTML =
+        `
+        <tr>
+        <td colspan="11" class="empty">
+        ${error.message}
+        </td>
+        </tr>
+        `;
 
-if(!data){
-
-throw new Error(
-"JSON boş."
-);
+    }
 
 }
 
-if(Array.isArray(data)){
 
-state.matches=data;
+showButton.addEventListener(
+    "click",
+    function(){
 
-}else if(
-Array.isArray(data.matches)
-){
+        showMatches(
+            dateSelect.value
+        );
 
-state.matches=
-data.matches;
-
-}else{
-
-throw new Error(
-"JSON içinde matches bulunamadı."
+    }
 );
 
-}
 
-$("updatedAt").textContent=
-data.updatedAt
-?
-`Son güncelleme: ${new Date(data.updatedAt).toLocaleString("tr-TR")}`
-:
-"Veri güncelleme zamanı bulunamadı.";
+dateSelect.addEventListener(
+    "change",
+    function(){
 
-fillFilters();
+        if(this.value){
 
-render();
+            showMatches(
+                this.value
+            );
 
-console.log(
-"BAŞARILI:",
-state.matches.length,
-"maç"
+        }
+
+    }
 );
 
-}catch(error){
-
-console.error(
-"VERİ HATASI:",
-error
-);
-
-$("message").innerHTML=
-`
-<span class="text-red-400">
-Veri yüklenemedi: ${esc(error.message)}
-</span>
-`;
-
-$("updatedAt").textContent=
-"Veri bağlantısı başarısız.";
-
-$("matches").innerHTML=
-`
-<tr>
-<td colspan="15"
-class="p-8 text-center text-red-400">
-${esc(error.message)}
-</td>
-</tr>
-`;
-
-}
-
-}
 
 loadData();
 
