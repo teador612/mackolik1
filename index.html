@@ -1,664 +1,1320 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Oran Analiz Sistemi</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+html,body{margin:0;padding:0;background:#0f172a;color:#fff}
+table{min-width:850px}
+::-webkit-scrollbar{height:6px;width:6px}
+::-webkit-scrollbar-thumb{background:#475569;border-radius:10px}
+</style>
+</head>
+
+<body class="bg-[#0f172a] text-white">
+
+<div class="max-w-7xl mx-auto p-4">
+
+<h1 class="text-3xl font-bold text-center py-6">
+ORAN ANALİZ SİSTEMİ
+</h1>
+
+<div id="hataKutusu" class="hidden p-4 rounded-xl mb-4 text-sm"></div>
+
+<div id="debug"
+class="bg-black/50 border border-yellow-500/30 p-3 rounded-xl mb-4 text-xs font-mono">
+Durum: Veri yükleniyor...
+</div>
+
+<!-- TARİH -->
+
+<div class="bg-[#1e293b] p-4 rounded-xl border border-white/10 mb-4">
+
+<label class="text-xs opacity-60">
+TARİH SEÇ
+</label>
+
+<div class="flex flex-col md:flex-row gap-2 mt-1">
+
+<select id="tarihSec"
+class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
+<option>Yükleniyor...</option>
+</select>
+
+<button onclick="tariheGoreFiltrele()"
+class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded font-bold">
+GÖSTER
+</button>
+
+<button onclick="tumunuGoster()"
+class="bg-white/10 hover:bg-white/20 px-4 py-3 rounded text-sm">
+Tümünü Göster
+</button>
+
+</div>
+
+<p id="tarihBilgi" class="text-xs opacity-50 mt-2"></p>
+
+</div>
+
+
+<!-- ORAN ANALİZ -->
+
+<div class="bg-[#1e293b] p-4 rounded-xl flex flex-col md:flex-row gap-4 mb-2 border border-white/10">
+
+<select id="oranTip"
+class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
+
+<option value="ms1">MS1</option>
+<option value="msX">MSX</option>
+<option value="ms2">MS2</option>
+
+<option value="iy1">İY1</option>
+<option value="iyX">İY X</option>
+<option value="iy2">İY2</option>
+
+<option value="kgVar">KG VAR</option>
+<option value="kgYok">KG YOK</option>
+
+<option value="au25Alt">2.5 ALT</option>
+<option value="au25Ust">2.5 ÜST</option>
+
+</select>
+
+<input id="hedefOran"
+type="number"
+step="0.01"
+value="1.66"
+class="bg-[#0f172a] p-3 rounded border border-white/20 flex-1">
+
+<button onclick="analizEt()"
+class="bg-emerald-600 hover:bg-emerald-700 px-8 py-3 rounded font-bold">
+ANALİZ ET
+</button>
+
+</div>
+
+
+<!-- ANALİZ SONUÇ -->
+
+<div id="sonucKutu" class="hidden space-y-4 mb-6">
+
+<h2 id="analizBaslik"
+class="text-center font-bold text-yellow-400">
+</h2>
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+
+<div class="bg-[#1e293b] p-3 rounded-xl border border-white/10">
+
+<h3 class="text-center opacity-60 mb-2">
+MAÇ SONUCU
+</h3>
+
+<div>MS1:
+<b id="ms1Yuzde">%0</b>
+(<span id="ms1Adet">0</span>)
+</div>
+
+<div>MSX:
+<b id="msxYuzde">%0</b>
+(<span id="msxAdet">0</span>)
+</div>
+
+<div>MS2:
+<b id="ms2Yuzde">%0</b>
+(<span id="ms2Adet">0</span>)
+</div>
+
+</div>
+
+
+<div class="bg-[#1e293b] p-3 rounded-xl border border-white/10">
+
+<h3 class="text-center opacity-60 mb-2">
+2.5 GOL
+</h3>
+
+<div>ÜST:
+<b id="ustYuzde">%0</b>
+(<span id="ustAdet">0</span>)
+</div>
+
+<div>ALT:
+<b id="altYuzde">%0</b>
+(<span id="altAdet">0</span>)
+</div>
+
+</div>
+
+
+<div class="bg-[#1e293b] p-3 rounded-xl border border-white/10">
+
+<h3 class="text-center opacity-60 mb-2">
+KG
+</h3>
+
+<div>VAR:
+<b id="varYuzde">%0</b>
+(<span id="varAdet">0</span>)
+</div>
+
+<div>YOK:
+<b id="yokYuzde">%0</b>
+(<span id="yokAdet">0</span>)
+</div>
+
+</div>
+
+
+<div class="bg-[#1e293b] p-3 rounded-xl border border-white/10">
+
+<h3 class="text-center opacity-60 mb-2">
+İY 0.5
+</h3>
+
+<div>ÜST:
+<b id="iyUstYuzde">%0</b>
+(<span id="iyUstAdet">0</span>)
+</div>
+
+<div>ALT:
+<b id="iyAltYuzde">%0</b>
+(<span id="iyAltAdet">0</span>)
+</div>
+
+</div>
+
+</div>
+
+<button onclick="resetAnaliz()"
+class="w-full bg-white/10 p-2 rounded text-sm">
+Kapat
+</button>
+
+</div>
+
+
+<!-- MAÇ LİSTESİ -->
+
+<div class="bg-[#1e293b] rounded-xl overflow-hidden border border-white/10">
+
+<div class="p-4 flex justify-between items-center bg-black/20">
+
+<h3 id="listeBaslik" class="font-bold">
+Yükleniyor...
+</h3>
+
+<span id="toplamMac"
+class="text-sm bg-white/10 px-3 py-1 rounded-full">
+</span>
+
+</div>
+
+<div class="overflow-x-auto">
+
+<table class="w-full text-sm">
+
+<thead class="bg-black/30 text-left text-xs opacity-60">
+
+<tr>
+<th class="p-3">Saat</th>
+<th class="p-3">Maç</th>
+<th class="p-3">MS1</th>
+<th class="p-3">Skor</th>
+<th class="p-3">2.5</th>
+<th class="p-3">KG</th>
+<th class="p-3">Sonuç</th>
+</tr>
+
+</thead>
+
+<tbody id="tablo">
+
+<tr>
+<td colspan="7"
+class="p-6 text-center opacity-50">
+Veri yükleniyor...
+</td>
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+</div>
+
+
 <script>
-(function () {
-    'use strict';
-
-    /* =========================================================
-       GÜNÜN MAÇLARI
-       🟢 Başarılı
-       🔴 Başarısız
-       🟡 Henüz oynanmamış
-       ========================================================= */
-
-    const MIN_SAMPLE = 5;
-
-    let matches = [];
-
-    /* ---------------------------------------------------------
-       YARDIMCI
-       --------------------------------------------------------- */
-
-    function esc(v) {
-        return String(v ?? '')
-            .replace(/[&<>"']/g, c => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#39;'
-            }[c]));
-    }
-
-    function getData() {
-        if (Array.isArray(window.DATA)) return window.DATA;
-
-        if (window.DATA && Array.isArray(window.DATA.matches)) {
-            return window.DATA.matches;
-        }
-
-        if (Array.isArray(window.matches)) {
-            return window.matches;
-        }
-
-        if (window.state && Array.isArray(window.state.matches)) {
-            return window.state.matches;
-        }
-
-        return [];
-    }
-
-    function getToday() {
-        const d = new Date();
-
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-
-        return `${day}.${month}.${year}`;
-    }
-
-    function getScore(match) {
-
-        const s =
-            match.score ||
-            match.result ||
-            null;
-
-        if (!s) return null;
-
-        const home = Number(s.home);
-        const away = Number(s.away);
-
-        if (!Number.isFinite(home) ||
-            !Number.isFinite(away)) {
-            return null;
-        }
-
-        /*
-         * Maçın henüz başlamadığı durumlarda
-         * 0-0 değerini sonuç kabul etmiyoruz.
-         */
-
-        if (
-            match.status === 0 ||
-            match.status === '0' ||
-            match.status === 1 ||
-            match.status === '1'
-        ) {
-            return null;
-        }
-
-        return {
-            home,
-            away
-        };
-    }
-
-    function getHTScore(match) {
-
-        const s =
-            match.halfTimeScore ||
-            match.htScore ||
-            match.firstHalfScore;
-
-        if (!s) return null;
-
-        const home = Number(s.home);
-        const away = Number(s.away);
-
-        if (!Number.isFinite(home) ||
-            !Number.isFinite(away)) {
-            return null;
-        }
-
-        return {
-            home,
-            away
-        };
-    }
-
-    /* ---------------------------------------------------------
-       ÖNERİYİ BUL
-       --------------------------------------------------------- */
-
-    function getSuggestion(match) {
-
-        return (
-            match.best ||
-            match.bestSuggestion ||
-            match.suggestion ||
-            match.recommendation ||
-            match.prediction ||
-            match.tip ||
-            match.bestResult ||
-            null
-        );
-    }
-
-    function getSuggestionLabel(suggestion) {
-
-        if (!suggestion) return '';
-
-        if (typeof suggestion === 'string') {
-            return suggestion;
-        }
-
-        return (
-            suggestion.label ||
-            suggestion.name ||
-            suggestion.type ||
-            suggestion.key ||
-            suggestion.market ||
-            suggestion.target?.label ||
-            ''
-        );
-    }
-
-    /* ---------------------------------------------------------
-       ÖNERİNİN DOĞRU OLUP OLMADIĞI
-       --------------------------------------------------------- */
-
-    function checkSuggestion(match, suggestion) {
-
-        const score = getScore(match);
-
-        if (!score || !suggestion) {
-            return null;
-        }
-
-        const ht = getHTScore(match);
-
-        let type = getSuggestionLabel(suggestion)
-            .toLowerCase()
-            .trim();
-
-        const h = score.home;
-        const a = score.away;
-        const total = h + a;
-
-        /* MS 1 */
-
-        if (
-            type === 'ms1' ||
-            type === 'ms 1' ||
-            type === '1' ||
-            type.includes('ms1')
-        ) {
-            return h > a;
-        }
-
-        /* MS X */
-
-        if (
-            type === 'msx' ||
-            type === 'ms x' ||
-            type === 'ms0' ||
-            type === 'ms 0' ||
-            type === 'x' ||
-            type.includes('msx')
-        ) {
-            return h === a;
-        }
-
-        /* MS 2 */
-
-        if (
-            type === 'ms2' ||
-            type === 'ms 2' ||
-            type === '2' ||
-            type.includes('ms2')
-        ) {
-            return h < a;
-        }
-
-        /* KG VAR */
-
-        if (
-            type.includes('kg var') ||
-            type.includes('kgvar') ||
-            type.includes('kg+')
-        ) {
-            return h > 0 && a > 0;
-        }
-
-        /* KG YOK */
-
-        if (
-            type.includes('kg yok') ||
-            type.includes('kgyok') ||
-            type.includes('kg-')
-        ) {
-            return h === 0 || a === 0;
-        }
-
-        /* 2.5 ÜST */
-
-        if (
-            type.includes('2,5 üst') ||
-            type.includes('2.5 üst') ||
-            type.includes('over25')
-        ) {
-            return total >= 3;
-        }
-
-        /* 2.5 ALT */
-
-        if (
-            type.includes('2,5 alt') ||
-            type.includes('2.5 alt') ||
-            type.includes('under25')
-        ) {
-            return total <= 2;
-        }
-
-        /* İY 0.5 ÜST */
-
-        if (
-            type.includes('iy 0,5 üst') ||
-            type.includes('iy 0.5 üst') ||
-            type.includes('iyover05')
-        ) {
-            if (!ht) return null;
-
-            return ht.home + ht.away >= 1;
-        }
-
-        /* İY 1.5 ÜST */
-
-        if (
-            type.includes('iy 1,5 üst') ||
-            type.includes('iy 1.5 üst') ||
-            type.includes('iyover15')
-        ) {
-            if (!ht) return null;
-
-            return ht.home + ht.away >= 2;
-        }
-
-        return null;
-    }
-
-    /* ---------------------------------------------------------
-       KART DURUMU
-       --------------------------------------------------------- */
-
-    function getMatchStatus(match) {
-
-        const suggestion = getSuggestion(match);
-        const score = getScore(match);
-
-        /*
-         * Henüz öneri yoksa veya maç başlamadıysa sarı.
-         */
-
-        if (!suggestion || !score) {
-            return {
-                className: 'match-pending',
-                icon: '🟡',
-                text: 'Bekliyor'
-            };
-        }
-
-        const result =
-            checkSuggestion(match, suggestion);
-
-        if (result === true) {
-            return {
-                className: 'match-success',
-                icon: '🟢',
-                text: 'Başarılı'
-            };
-        }
-
-        if (result === false) {
-            return {
-                className: 'match-fail',
-                icon: '🔴',
-                text: 'Başarısız'
-            };
-        }
-
-        return {
-            className: 'match-pending',
-            icon: '🟡',
-            text: 'Bekliyor'
-        };
-    }
-
-    /* ---------------------------------------------------------
-       GÜNLÜK TOPLAM BAŞARI
-       --------------------------------------------------------- */
-
-    function calculateDailySuccess(list) {
-
-        let total = 0;
-        let success = 0;
-
-        list.forEach(match => {
-
-            const suggestion = getSuggestion(match);
-            const score = getScore(match);
-
-            if (!suggestion || !score) return;
-
-            const result =
-                checkSuggestion(match, suggestion);
-
-            if (result === null) return;
-
-            total++;
-
-            if (result === true) {
-                success++;
-            }
-        });
-
-        const percentage =
-            total
-                ? (success / total) * 100
-                : 0;
-
-        return {
-            total,
-            success,
-            percentage
-        };
-    }
-
-    /* ---------------------------------------------------------
-       CSS
-       --------------------------------------------------------- */
-
-    function addStyles() {
-
-        if (document.getElementById('gununMaclariStyles')) {
-            return;
-        }
-
-        const style = document.createElement('style');
-
-        style.id = 'gununMaclariStyles';
-
-        style.textContent = `
-
-        .today-success-box {
-            width: 100%;
-            box-sizing: border-box;
-            margin: 12px 0 15px;
-            padding: 16px;
-            border-radius: 16px;
-            text-align: center;
-            background: #111827;
-            color: white;
-            box-shadow: 0 5px 16px rgba(0,0,0,.12);
-        }
-
-        .today-success-title {
-            font-size: 12px;
-            font-weight: 700;
-            opacity: .75;
-            letter-spacing: .5px;
-        }
-
-        .today-success-percent {
-            font-size: 34px;
-            font-weight: 900;
-            margin-top: 4px;
-        }
-
-        .today-success-detail {
-            font-size: 13px;
-            opacity: .75;
-            margin-top: 3px;
-        }
-
-        .today-match-card {
-            position: relative;
-            border-radius: 14px;
-            padding: 12px;
-            margin-bottom: 9px;
-            border-left: 5px solid;
-            transition: .2s;
-        }
-
-        .today-match-card.match-success {
-            background: #ecfdf5;
-            border-left-color: #16a34a;
-        }
-
-        .today-match-card.match-fail {
-            background: #fef2f2;
-            border-left-color: #dc2626;
-        }
-
-        .today-match-card.match-pending {
-            background: #fffbeb;
-            border-left-color: #eab308;
-        }
-
-        .today-match-status {
-            font-size: 11px;
-            font-weight: 800;
-            margin-bottom: 5px;
-        }
-
-        .match-success .today-match-status {
-            color: #15803d;
-        }
-
-        .match-fail .today-match-status {
-            color: #b91c1c;
-        }
-
-        .match-pending .today-match-status {
-            color: #a16207;
-        }
-
-        .today-match-teams {
-            font-weight: 800;
-            font-size: 14px;
-        }
-
-        .today-match-score {
-            margin-top: 5px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .today-match-suggestion {
-            margin-top: 7px;
-            display: inline-block;
-            padding: 5px 9px;
-            border-radius: 8px;
-            background: rgba(0,0,0,.06);
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        `;
-
-        document.head.appendChild(style);
-    }
-
-    /* ---------------------------------------------------------
-       GÜNÜN MAÇLARINI GÖSTER
-       --------------------------------------------------------- */
-
-    function renderToday() {
-
-        matches = getData();
-
-        if (!matches.length) {
-            return;
-        }
-
-        const today = getToday();
-
-        const todayMatches = matches.filter(m => {
-
-            return (
-                m.date === today ||
-                m.matchDate === today
-            );
-        });
-
-        const success =
-            calculateDailySuccess(todayMatches);
-
-        /*
-         * Mevcut Günün Maçları konteynerini bul.
-         */
-
-        let container =
-            document.getElementById('todayMatches') ||
-            document.getElementById('todayList') ||
-            document.querySelector('.today-matches');
-
-        if (!container) {
-            return;
-        }
-
-        /*
-         * Günlük başarı kutusu
-         */
-
-        let successBox =
-            document.getElementById('todaySuccessBox');
-
-        if (!successBox) {
-
-            successBox =
-                document.createElement('div');
-
-            successBox.id =
-                'todaySuccessBox';
-
-            container.parentNode.insertBefore(
-                successBox,
-                container
-            );
-        }
-
-        successBox.className =
-            'today-success-box';
-
-        successBox.innerHTML = `
-
-            <div class="today-success-title">
-                BUGÜNÜN GENEL BAŞARISI
-            </div>
-
-            <div class="today-success-percent">
-                ${
-                    success.total
-                        ? '%' + success.percentage.toFixed(1)
-                        : '--'
-                }
-            </div>
-
-            <div class="today-success-detail">
-                ${
-                    success.total
-                        ? `${success.success} / ${success.total} öneri tuttu`
-                        : 'Henüz sonuçlanan öneri yok'
-                }
-            </div>
-
-        `;
-
-        /*
-         * Kartları renklendir.
-         *
-         * Mevcut kartların HTML'ini bozmayız.
-         * Sadece durum class'ı ekleriz.
-         */
-
-        const cards =
-            container.querySelectorAll(
-                '[data-match-id], .match-card, .today-card'
-            );
-
-        cards.forEach(card => {
-
-            const id =
-                card.dataset.matchId ||
-                card.dataset.id;
-
-            if (!id) return;
-
-            const match =
-                todayMatches.find(m =>
-                    String(
-                        m.code ||
-                        m.id ||
-                        m.matchId
-                    ) === String(id)
-                );
-
-            if (!match) return;
-
-            card.classList.remove(
-                'match-success',
-                'match-fail',
-                'match-pending'
-            );
-
-            const status =
-                getMatchStatus(match);
-
-            card.classList.add(
-                status.className
-            );
-
-            /*
-             * Kartın içine durum etiketi ekle.
-             */
-
-            let statusEl =
-                card.querySelector('.today-match-status');
-
-            if (!statusEl) {
-
-                statusEl =
-                    document.createElement('div');
-
-                statusEl.className =
-                    'today-match-status';
-
-                card.prepend(statusEl);
-            }
-
-            statusEl.textContent =
-                `${status.icon} ${status.text}`;
-        });
-    }
-
-    /* ---------------------------------------------------------
-       BAŞLAT
-       --------------------------------------------------------- */
-
-    function start() {
-
-        addStyles();
-
-        renderToday();
-
-        /*
-         * Skorlar değişebileceği için tekrar kontrol.
-         */
-
-        setTimeout(renderToday, 1000);
-        setTimeout(renderToday, 3000);
-        setTimeout(renderToday, 7000);
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener(
-            'DOMContentLoaded',
-            start
-        );
-    } else {
-        start();
-    }
-
-})();
+
+"use strict";
+
+
+/* =========================================================
+   ANA VERİ
+========================================================= */
+
+let tumVeri = [];
+
+const VERI_URL =
+"./data/matches.json";
+
+
+/* =========================================================
+   SAYI
+========================================================= */
+
+function sayi(v){
+
+if(v === null || v === undefined || v === ""){
+return null;
+}
+
+const n = Number(
+String(v)
+.replace(",", ".")
+.trim()
+);
+
+return Number.isFinite(n) ? n : null;
+
+}
+
+
+/* =========================================================
+   SKOR
+========================================================= */
+
+function macSkoru(m){
+
+if(!m || !m.score){
+return null;
+}
+
+const ev = sayi(m.score.home);
+const dep = sayi(m.score.away);
+
+if(ev === null || dep === null){
+return null;
+}
+
+
+/*
+MAÇ BAŞLAMAMIŞSA MACKOLİK BAZEN
+0-0 GÖNDEREBİLİR.
+
+BUNU SONUÇ KABUL ETMİYORUZ.
+*/
+
+const status = String(m.status ?? "").trim();
+
+if(status === "0" || status === "1"){
+return null;
+}
+
+
+/*
+Eğer skor gerçekten 0-0 bittiyse
+ve status başka bir değer ise
+geçerli sonuç olarak kabul edilir.
+*/
+
+return {
+home:ev,
+away:dep
+};
+
+}
+
+
+/* =========================================================
+   İLK YARI SKORU
+========================================================= */
+
+function ilkYariSkoru(m){
+
+if(!m){
+return null;
+}
+
+const s =
+m.halfTimeScore ||
+m.htScore ||
+m.firstHalfScore;
+
+if(!s){
+return null;
+}
+
+const ev = sayi(s.home);
+const dep = sayi(s.away);
+
+if(ev === null || dep === null){
+return null;
+}
+
+return {
+home:ev,
+away:dep
+};
+
+}
+
+
+/* =========================================================
+   MAÇ SONUCU
+========================================================= */
+
+function macSonucu(m){
+
+const s = macSkoru(m);
+
+if(!s){
+return null;
+}
+
+if(s.home > s.away){
+return "MS1";
+}
+
+if(s.home < s.away){
+return "MS2";
+}
+
+return "MSX";
+
+}
+
+
+/* =========================================================
+   2.5
+========================================================= */
+
+function isUst(m){
+
+const s = macSkoru(m);
+
+if(!s){
+return null;
+}
+
+return s.home + s.away > 2.5
+? "ÜST"
+: "ALT";
+
+}
+
+
+/* =========================================================
+   KG
+========================================================= */
+
+function isKg(m){
+
+const s = macSkoru(m);
+
+if(!s){
+return null;
+}
+
+return (
+s.home > 0 &&
+s.away > 0
+)
+? "VAR"
+: "YOK";
+
+}
+
+
+/* =========================================================
+   İY 0.5
+========================================================= */
+
+function isIyUst(m){
+
+const s = ilkYariSkoru(m);
+
+if(!s){
+return null;
+}
+
+return s.home + s.away > 0.5
+? "ÜST"
+: "ALT";
+
+}
+
+
+/* =========================================================
+   İLK YARI MS
+========================================================= */
+
+function iySonucu(m){
+
+const s = ilkYariSkoru(m);
+
+if(!s){
+return null;
+}
+
+if(s.home > s.away){
+return "İY1";
+}
+
+if(s.home < s.away){
+return "İY2";
+}
+
+return "İYX";
+
+}
+
+
+/* =========================================================
+   ORAN
+========================================================= */
+
+function oran(m,key){
+
+if(!m){
+return null;
+}
+
+const odds =
+m.openingOdds ||
+{};
+
+const value = odds[key];
+
+if(value === null ||
+value === undefined ||
+value === ""){
+return null;
+}
+
+const n = Number(
+String(value).replace(",", ".")
+);
+
+return Number.isFinite(n)
+? n
+: null;
+
+}
+
+
+/* =========================================================
+   VERİ YÜKLE
+========================================================= */
+
+async function veriYukle(){
+
+const debug =
+document.getElementById("debug");
+
+const hata =
+document.getElementById("hataKutusu");
+
+try{
+
+debug.textContent =
+"Veri yükleniyor...";
+
+
+const response =
+await fetch(
+VERI_URL + "?v=" + Date.now(),
+{
+cache:"no-store"
+}
+);
+
+
+if(!response.ok){
+
+throw new Error(
+"matches.json yüklenemedi. HTTP " +
+response.status
+);
+
+}
+
+
+const data =
+await response.json();
+
+
+if(
+!data ||
+!Array.isArray(data.matches)
+){
+
+throw new Error(
+"JSON içinde matches dizisi bulunamadı."
+);
+
+}
+
+
+tumVeri =
+data.matches.filter(m =>
+m &&
+m.date &&
+m.home &&
+m.away
+);
+
+
+debug.textContent =
+"BAŞARILI | " +
+tumVeri.length +
+" maç yüklendi | Güncelleme: " +
+(data.updatedAt || "-");
+
+
+hata.className =
+"bg-emerald-900/30 border border-emerald-500 p-3 rounded-xl mb-4 text-sm text-center";
+
+
+hata.innerHTML =
+"✅ " +
+tumVeri.length +
+" maç başarıyla yüklendi.";
+
+
+hata.classList.remove("hidden");
+
+
+tarihleriDoldur();
+
+
+/*
+İLK AÇILIŞTA BUGÜNÜ SEÇ
+*/
+
+const bugun =
+bugununTarihi();
+
+const tarihSec =
+document.getElementById("tarihSec");
+
+const bugunVar =
+[...tarihSec.options]
+.some(o => o.value === bugun);
+
+if(bugunVar){
+
+tarihSec.value = bugun;
+
+}else if(tarihSec.options.length){
+
+/*
+Bugünün maçı yoksa
+en güncel tarihi seç.
+*/
+
+tarihSec.value =
+tarihSec.options[0].value;
+
+}
+
+
+tariheGoreFiltrele();
+
+
+}catch(error){
+
+console.error(error);
+
+debug.textContent =
+"HATA: " + error.message;
+
+
+hata.className =
+"bg-red-900/40 border border-red-500 p-4 rounded-xl mb-4 text-sm";
+
+
+hata.innerHTML =
+"❌ " + error.message;
+
+
+hata.classList.remove("hidden");
+
+
+document.getElementById("tablo").innerHTML =
+
+`<tr>
+<td colspan="7"
+class="p-6 text-center text-red-400">
+${escapeHtml(error.message)}
+</td>
+</tr>`;
+
+}
+
+}
+
+
+/* =========================================================
+   BUGÜN DD.MM.YYYY
+========================================================= */
+
+function bugununTarihi(){
+
+const d = new Date();
+
+const gun =
+String(d.getDate()).padStart(2,"0");
+
+const ay =
+String(d.getMonth()+1).padStart(2,"0");
+
+const yil =
+d.getFullYear();
+
+return gun + "." + ay + "." + yil;
+
+}
+
+
+/* =========================================================
+   HTML GÜVENLİK
+========================================================= */
+
+function escapeHtml(value){
+
+return String(value ?? "")
+.replace(/[&<>"']/g,function(c){
+
+return {
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+
+}[c];
+
+});
+
+}
+
+
+/* =========================================================
+   TARİHLER
+========================================================= */
+
+function tarihSirala(a,b){
+
+function parse(t){
+
+const p =
+String(t).split(".");
+
+if(p.length !== 3){
+return 0;
+}
+
+return new Date(
+Number(p[2]),
+Number(p[1])-1,
+Number(p[0])
+).getTime();
+
+}
+
+return parse(b)-parse(a);
+
+}
+
+
+function tarihleriDoldur(){
+
+const select =
+document.getElementById("tarihSec");
+
+const tarihler =
+[
+...new Set(
+tumVeri.map(m =>
+String(m.date).trim()
+)
+)
+].sort(tarihSirala);
+
+
+select.innerHTML = "";
+
+tarihler.forEach(tarih => {
+
+const adet =
+tumVeri.filter(
+m => String(m.date).trim() === tarih
+).length;
+
+const option =
+document.createElement("option");
+
+option.value = tarih;
+
+option.textContent =
+tarih + " (" + adet + " maç)";
+
+select.appendChild(option);
+
+});
+
+
+const all =
+document.createElement("option");
+
+all.value = "ALL";
+
+all.textContent =
+"TÜMÜ (" + tumVeri.length + " maç)";
+
+select.appendChild(all);
+
+
+document.getElementById("tarihBilgi").textContent =
+tarihler.length +
+" farklı tarih bulundu.";
+
+}
+
+
+/* =========================================================
+   TARİH FİLTRE
+========================================================= */
+
+function tariheGoreFiltrele(){
+
+const sec =
+document.getElementById("tarihSec").value;
+
+
+if(sec === "ALL"){
+
+tumunuGoster();
+
+return;
+
+}
+
+
+const liste =
+tumVeri.filter(
+m => String(m.date).trim() === sec
+);
+
+
+document.getElementById("listeBaslik").textContent =
+sec + " Maçları";
+
+
+document.getElementById("sonucKutu")
+.classList.add("hidden");
+
+
+listele(liste);
+
+}
+
+
+/* =========================================================
+   TÜMÜ
+========================================================= */
+
+function tumunuGoster(){
+
+document.getElementById("listeBaslik")
+.textContent =
+"Tüm Maçlar";
+
+
+document.getElementById("sonucKutu")
+.classList.add("hidden");
+
+
+listele(tumVeri);
+
+}
+
+
+/* =========================================================
+   LİSTE
+========================================================= */
+
+function listele(data){
+
+document.getElementById("toplamMac")
+.textContent =
+data.length + " maç";
+
+
+if(!data.length){
+
+document.getElementById("tablo").innerHTML =
+
+`<tr>
+<td colspan="7"
+class="p-6 text-center opacity-50">
+Bu tarihte maç yok
+</td>
+</tr>`;
+
+return;
+
+}
+
+
+document.getElementById("tablo").innerHTML =
+
+data.slice(0,1000).map(function(m){
+
+const sonuc =
+macSonucu(m);
+
+const ust =
+isUst(m);
+
+const kg =
+isKg(m);
+
+const iy =
+isIyUst(m);
+
+const skor =
+macSkoru(m);
+
+const iySkor =
+ilkYariSkoru(m);
+
+const ms1 =
+oran(m,"ms1");
+
+
+let sonucRenk =
+"text-yellow-400";
+
+if(sonuc === "MS1"){
+sonucRenk =
+"text-emerald-400";
+}
+
+if(sonuc === "MS2"){
+sonucRenk =
+"text-red-400";
+}
+
+if(sonuc === "MSX"){
+sonucRenk =
+"text-slate-300";
+}
+
+
+let skorHtml =
+'<span class="text-yellow-400">-</span>';
+
+
+if(skor){
+
+skorHtml =
+`<b>${skor.home}-${skor.away}</b>`;
+
+if(iySkor){
+
+skorHtml +=
+` <span class="opacity-50 text-xs">
+İY ${iySkor.home}-${iySkor.away}
+</span>`;
+
+}
+
+}
+
+
+const ustHtml =
+ust === null
+? '<span class="opacity-40">-</span>'
+: `<span class="${
+ust === "ÜST"
+? "text-emerald-400"
+: "text-red-400"
+}">
+${ust}
+</span>`;
+
+
+const kgHtml =
+kg === null
+? '<span class="opacity-40">-</span>'
+: `<span class="${
+kg === "VAR"
+? "text-emerald-400"
+: "text-red-400"
+}">
+${kg}
+</span>`;
+
+
+return `
+
+<tr class="border-t border-white/5 hover:bg-white/5">
+
+<td class="p-3 opacity-60 text-xs">
+${escapeHtml(m.time || "-")}
+</td>
+
+
+<td class="p-3">
+
+<b>${escapeHtml(m.home || "")}</b>
+
+<span class="opacity-50">
+-
+</span>
+
+${escapeHtml(m.away || "")}
+
+<span class="text-xs opacity-40 ml-1">
+${escapeHtml(m.league || "")}
+</span>
+
+<div class="text-xs opacity-30">
+${escapeHtml(m.date || "")}
+</div>
+
+</td>
+
+
+<td class="p-3">
+
+${
+ms1 === null
+? "-"
+:
+`<button
+onclick="hizliAnaliz('ms1',${ms1})"
+class="hover:text-yellow-400 font-bold">
+${ms1}
+</button>`
+}
+
+</td>
+
+
+<td class="p-3 font-bold">
+
+${skorHtml}
+
+</td>
+
+
+<td class="p-3">
+
+${ustHtml}
+
+</td>
+
+
+<td class="p-3">
+
+${kgHtml}
+
+</td>
+
+
+<td class="p-3 font-bold ${sonucRenk}">
+
+${
+sonuc || "-"
+}
+
+</td>
+
+</tr>
+
+`;
+
+}).join("");
+
+}
+
+
+/* =========================================================
+   ORAN ANALİZİ
+========================================================= */
+
+function analizEt(){
+
+const tip =
+document.getElementById("oranTip").value;
+
+const hedef =
+parseFloat(
+document.getElementById("hedefOran").value
+);
+
+
+if(!Number.isFinite(hedef)){
+
+alert("Geçerli bir oran gir.");
+
+return;
+
+}
+
+
+/*
+SADECE ORANI BULUNAN MAÇLAR
+*/
+
+const filtreli =
+tumVeri.filter(function(m){
+
+const o =
+oran(m,tip);
+
+return (
+o !== null &&
+Number(o.toFixed(2)) ===
+Number(hedef.toFixed(2))
+);
+
+});
+
+
+if(!filtreli.length){
+
+alert(
+"Bu oranda birebir eşleşen maç bulunamadı."
+);
+
+return;
+
+}
+
+
+/*
+SADECE SONUCU BELLİ MAÇLAR
+*/
+
+const sonuclular =
+filtreli.filter(
+m => macSkoru(m) !== null
+);
+
+
+const toplam =
+sonuclular.length;
+
+
+if(!toplam){
+
+alert(
+"Bu oranda henüz sonucu belli maç bulunamadı."
+);
+
+return;
+
+}
+
+
+const ms1 =
+sonuclular.filter(
+m => macSonucu(m) === "MS1"
+).length;
+
+
+const msx =
+sonuclular.filter(
+m => macSonucu(m) === "MSX"
+).length;
+
+
+const ms2 =
+sonuclular.filter(
+m => macSonucu(m) === "MS2"
+).length;
+
+
+const ust =
+sonuclular.filter(
+m => isUst(m) === "ÜST"
+).length;
+
+
+const varSayisi =
+sonuclular.filter(
+m => isKg(m) === "VAR"
+).length;
+
+
+const iyUst =
+sonuclular.filter(
+m => isIyUst(m) === "ÜST"
+).length;
+
+
+function pct(n){
+
+return "%" +
+((n / toplam) * 100).toFixed(1);
+
+}
+
+
+document.getElementById("sonucKutu")
+.classList.remove("hidden");
+
+
+document.getElementById("analizBaslik")
+.textContent =
+tip.toUpperCase() +
+" = " +
+hedef.toFixed(2) +
+" | " +
+toplam +
+" sonuçlanan maç";
+
+
+document.getElementById("ms1Yuzde").textContent =
+pct(ms1);
+
+document.getElementById("ms1Adet").textContent =
+ms1;
+
+
+document.getElementById("msxYuzde").textContent =
+pct(msx);
+
+document.getElementById("msxAdet").textContent =
+msx;
+
+
+document.getElementById("ms2Yuzde").textContent =
+pct(ms2);
+
+document.getElementById("ms2Adet").textContent =
+ms2;
+
+
+document.getElementById("ustYuzde").textContent =
+pct(ust);
+
+document.getElementById("ustAdet").textContent =
+ust;
+
+
+document.getElementById("altYuzde").textContent =
+pct(toplam - ust);
+
+document.getElementById("altAdet").textContent =
+toplam - ust;
+
+
+document.getElementById("varYuzde").textContent =
+pct(varSayisi);
+
+document.getElementById("varAdet").textContent =
+varSayisi;
+
+
+document.getElementById("yokYuzde").textContent =
+pct(toplam - varSayisi);
+
+document.getElementById("yokAdet").textContent =
+toplam - varSayisi;
+
+
+document.getElementById("iyUstYuzde").textContent =
+pct(iyUst);
+
+document.getElementById("iyUstAdet").textContent =
+iyUst;
+
+
+document.getElementById("iyAltYuzde").textContent =
+pct(toplam - iyUst);
+
+document.getElementById("iyAltAdet").textContent =
+toplam - iyUst;
+
+
+listele(filtreli);
+
+}
+
+
+/* =========================================================
+   ANALİZ KAPAT
+========================================================= */
+
+function resetAnaliz(){
+
+document.getElementById("sonucKutu")
+.classList.add("hidden");
+
+tariheGoreFiltrele();
+
+}
+
+
+/* =========================================================
+   HIZLI ANALİZ
+========================================================= */
+
+function hizliAnaliz(tip,oranDegeri){
+
+document.getElementById("oranTip").value =
+tip;
+
+document.getElementById("hedefOran").value =
+oranDegeri;
+
+analizEt();
+
+}
+
+
+/* =========================================================
+   TARİH DEĞİŞİNCE
+========================================================= */
+
+document.getElementById("tarihSec")
+.addEventListener(
+"change",
+tariheGoreFiltrele
+);
+
+
+/* =========================================================
+   BAŞLAT
+========================================================= */
+
+veriYukle();
+
+
+/* =========================================================
+   15 DAKİKADA BİR VERİYİ YENİLE
+========================================================= */
+
+setInterval(function(){
+
+veriYukle();
+
+},900000);
+
 </script>
+
+</body>
+</html>
