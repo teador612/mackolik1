@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>data.js → matches.json Birleştirici</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  padding:20px;
+  background:#0b1020;
+  color:#fff;
+  font-family:Arial,sans-serif;
+}
+
+.container{
+  max-width:700px;
+  margin:auto;
+}
+
+h1{
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.info{
+  background:#151d35;
+  padding:15px;
+  border-radius:12px;
+  line-height:1.6;
+  margin-bottom:20px;
+}
+
+.card{
+  background:#11182b;
+  border:1px solid #26314d;
+  padding:18px;
+  border-radius:14px;
+  margin-bottom:15px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  font-weight:bold;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  background:#080d19;
+  color:white;
+  border:1px solid #34415f;
+  border-radius:8px;
+  margin-bottom:15px;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:10px;
+  background:#16a34a;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.5;
+}
+
+#log{
+  white-space:pre-wrap;
+  background:#080d19;
+  padding:15px;
+  border-radius:10px;
+  margin-top:15px;
+  min-height:100px;
+  font-size:13px;
+  line-height:1.5;
+  overflow:auto;
+}
+
+.success{
+  color:#4ade80;
+}
+
+.error{
+  color:#f87171;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>data.js → matches.json Birleştirici</h1>
+
+<div class="info">
+  <b>Tarih kuralı</b><br>
+  02.10.2026 dahil → eski data.js<br>
+  03.10.2026 ve sonrası → mevcut matches.json
+  <br><br>
+  İşlem tamamen cihazında yapılır.
+</div>
+
+<div class="card">
+
+<label>Eski data.js</label>
+<input
+  type="file"
+  id="dataFile"
+  accept=".js,.txt"
+>
+
+<label>Mevcut matches.json</label>
+<input
+  type="file"
+  id="matchesFile"
+  accept=".json"
+>
+
+<button id="run">
+Birleştir ve matches.json oluştur
+</button>
+
+</div>
+
+<div id="log">Dosyaları seç.</div>
+
+</div>
+
+<script>
+
+const CUTOFF = "2026-10-02";
+
+const logEl = document.getElementById("log");
+const dataFile = document.getElementById("dataFile");
+const matchesFile = document.getElementById("matchesFile");
+const runBtn = document.getElementById("run");
+
+function log(text, cls=""){
+  logEl.className = cls;
+  logEl.textContent += "\n" + text;
+}
+
+function cleanText(value){
+  return String(value ?? "").trim();
+}
+
+function parseOdd(value){
+
+  if(
+    value === null ||
+    value === undefined ||
+    value === ""
+  ){
+    return null;
+  }
+
+  let s = String(value)
+    .trim()
+    .replace(/\s/g,"");
+
+  if(!s) return null;
+
+  s = s.replace(",", ".");
+
+  const n = Number(s);
+
+  if(!Number.isFinite(n) || n <= 0){
+    return null;
+  }
+
+  return n;
+}
+
+function dateToISO(date){
+
+  if(!date) return "";
+
+  date = String(date).trim();
+
+  // YYYY-MM-DD
+  if(/^\\d{4}-\\d{2}-\\d{2}$/.test(date)){
+    return date;
+  }
+
+  // DD.MM.YYYY
+  const m = date.match(
+    /^(\\d{1,2})[.\\/-](\\d{1,2})[.\\/-](\\d{4})$/
+  );
+
+  if(m){
+
+    const dd = m[1].padStart(2,"0");
+    const mm = m[2].padStart(2,"0");
+    const yyyy = m[3];
+
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  return "";
+}
+
+function dateToTR(date){
+
+  const iso = dateToISO(date);
+
+  if(!iso) return "";
+
+  const [y,m,d] = iso.split("-");
+
+  return `${d}.${m}.${y}`;
+}
+
+function parseScore(value){
+
+  if(
+    value === null ||
+    value === undefined
+  ){
+    return {
+      home:"",
+      away:""
+    };
+  }
+
+  const s = String(value).trim();
+
+  const m = s.match(
+    /^(\\d+)\\s*[-:]\\s*(\\d+)$/
+  );
+
+  if(!m){
+
+    return {
+      home:"",
+      away:""
+    };
+  }
+
+  return {
+    home:m[1],
+    away:m[2]
+  };
+}
+
+function normalizeLeague(value){
+  return cleanText(value);
+}
+
+function normalizeMatchKey(match){
+
+  const date = dateToISO(match.date);
+
+  const time = cleanText(match.time);
+
+  const home = cleanText(match.home)
+    .toUpperCase();
+
+  const away = cleanText(match.away)
+    .toUpperCase();
+
+  return [
+    date,
+    time,
+    home,
+    away
+  ].join("|");
+}
+
+function makeOldCode(match,index){
+
+  const date = dateToISO(match.date)
+    .replace(/-/g,"");
+
+  const time = cleanText(match.time)
+    .replace(":","");
+
+  const home = cleanText(match.home)
+    .toUpperCase()
+    .replace(/[^A-Z0-9ÇĞİÖŞÜ]/gi,"")
+    .slice(0,20);
+
+  const away = cleanText(match.away)
+    .toUpperCase()
+    .replace(/[^A-Z0-9ÇĞİÖŞÜ]/gi,"")
+    .slice(0,20);
+
+  return `OLD-${date}-${time}-${home}-${away}-${index}`;
+}
+
+function convertOldMatch(old,index){
+
+  const isoDate = dateToISO(old.date);
+
+  const score = parseScore(old.scoreFT);
+  const ht = parseScore(old.scoreHT);
+
+  const odds = old.odds || {};
+
+  const openingOdds = {};
+
+  function add(target,source){
+
+    const value = parseOdd(odds[source]);
+
+    if(value !== null){
+      openingOdds[target] = value;
+    }
+  }
+
+  // MS
+  add("ms1","ms1");
+  add("msX","ms0");
+  add("ms2","ms2");
+
+  // KG
+  add("kgVar","kgVar");
+  add("kgYok","kgYok");
+
+  // 1.5
+  add("au15Ust","over15");
+  add("au15Alt","under15");
+
+  // 2.5
+  add("au25Ust","over25");
+  add("au25Alt","under25");
+
+  // 3.5
+  add("au35Ust","over35");
+  add("au35Alt","under35");
+
+  // İlk yarı
+  add("iy1","iy1");
+  add("iyX","iy0");
+  add("iy2","iy2");
+
+  add("iy15Ust","iyOver15");
+  add("iy15Alt","iyUnder15");
+
+  const result = {
+
+    code:makeOldCode(old,index),
+
+    week:"",
+
+    date:dateToTR(old.date),
+
+    time:cleanText(old.time),
+
+    league:normalizeLeague(old.league),
+
+    home:cleanText(old.home),
+
+    away:cleanText(old.away),
+
+    mbs:0,
+
+    status:old.played ? 4 : 0,
+
+    score:{
+      home:score.home,
+      away:score.away
+    },
+
+    halfTimeScore:{
+      home:ht.home,
+      away:ht.away
+    },
+
+    openingOdds,
+
+    openingRecordedAt:
+      isoDate
+      ? `${isoDate}T00:00:00.000Z`
+      : null
+  };
+
+  return result;
+}
+
+function isValidOldMatch(match){
+
+  return !!(
+    match &&
+    match.date &&
+    match.home &&
+    match.away
+  );
+}
+
+async function readText(file){
+  return await file.text();
+}
+
+async function readJSON(file){
+
+  const text = await readText(file);
+
+  return JSON.parse(text);
+}
+
+function extractORANData(jsText){
+
+  /*
+    data.js yapısı:
+
+    window.ORAN_DATA=[
+      {...},
+      {...}
+    ];
+  */
+
+  const start =
+    jsText.indexOf("window.ORAN_DATA");
+
+  if(start === -1){
+
+    throw new Error(
+      "window.ORAN_DATA bulunamadı."
+    );
+  }
+
+  const eq =
+    jsText.indexOf("=",start);
+
+  if(eq === -1){
+
+    throw new Error(
+      "ORAN_DATA = bölümü bulunamadı."
+    );
+  }
+
+  let arrayText =
+    jsText.slice(eq + 1).trim();
+
+  /*
+    Son ; varsa kaldır
+  */
+
+  if(arrayText.endsWith(";")){
+    arrayText =
+      arrayText.slice(0,-1);
+  }
+
+  /*
+    Güvenli JSON parse için:
+    data.js içindeki yapı JSON uyumlu.
+  */
+
+  try{
+
+    return JSON.parse(arrayText);
+
+  }catch(error){
+
+    /*
+      Eğer dosyada sonlandırıcı veya
+      fazladan karakter varsa ilk [ ile
+      son ] arasını al.
+    */
+
+    const first =
+      arrayText.indexOf("[");
+
+    const last =
+      arrayText.lastIndexOf("]");
+
+    if(first === -1 || last === -1){
+      throw error;
+    }
+
+    const clean =
+      arrayText.slice(first,last + 1);
+
+    return JSON.parse(clean);
+  }
+}
+
+function normalizeExistingMatch(match){
+
+  return {
+    ...match,
+
+    openingOdds:
+      match.openingOdds || {},
+
+    score:
+      match.score || {
+        home:"",
+        away:""
+      },
+
+    halfTimeScore:
+      match.halfTimeScore || {
+        home:"",
+        away:""
+      }
+  };
+}
+
+async function main(){
+
+  logEl.textContent = "";
+
+  if(!dataFile.files.length){
+
+    throw new Error(
+      "Önce data.js dosyasını seç."
+    );
+  }
+
+  if(!matchesFile.files.length){
+
+    throw new Error(
+      "Önce matches.json dosyasını seç."
+    );
+  }
+
+  runBtn.disabled = true;
+
+  try{
+
+    log("data.js okunuyor...");
+
+    const jsText =
+      await readText(dataFile.files[0]);
+
+    log(
+      `data.js boyutu: ${(jsText.length / 1024 / 1024).toFixed(2)} MB`
+    );
+
+    log("Eski ORAN_DATA çıkarılıyor...");
+
+    const oldData =
+      extractORANData(jsText);
+
+    if(!Array.isArray(oldData)){
+
+      throw new Error(
+        "ORAN_DATA bir dizi değil."
+      );
+    }
+
+    log(
+      `Eski kayıt sayısı: ${oldData.length}`
+    );
+
+    log("Mevcut matches.json okunuyor...");
+
+    const currentJSON =
+      await readJSON(matchesFile.files[0]);
+
+    let currentMatches =
+      Array.isArray(currentJSON)
+      ? currentJSON
+      : currentJSON.matches;
+
+    if(!Array.isArray(currentMatches)){
+
+      throw new Error(
+        "matches.json içinde matches dizisi bulunamadı."
+      );
+    }
+
+    log(
+      `Mevcut matches.json kayıtları: ${currentMatches.length}`
+    );
+
+    /*
+      --------------------------------------------------
+      ESKİ VERİLER
+      02.10.2026 dahil
+      --------------------------------------------------
+    */
+
+    const oldConverted = [];
+
+    for(let i=0;i<oldData.length;i++){
+
+      const old =
+        oldData[i];
+
+      if(!isValidOldMatch(old)){
+        continue;
+      }
+
+      const iso =
+        dateToISO(old.date);
+
+      if(!iso){
+        continue;
+      }
+
+      if(iso <= CUTOFF){
+
+        oldConverted.push(
+          convertOldMatch(old,i)
+        );
+      }
+    }
+
+    log(
+      `02.10.2026 dahil alınan eski kayıt: ${oldConverted.length}`
+    );
+
+    /*
+      --------------------------------------------------
+      YENİ MATCHES
+      03.10.2026 VE SONRASI
+      --------------------------------------------------
+    */
+
+    const newMatches = [];
+
+    for(const match of currentMatches){
+
+      const iso =
+        dateToISO(match.date);
+
+      if(!iso){
+        continue;
+      }
+
+      if(iso > CUTOFF){
+
+        newMatches.push(
+          normalizeExistingMatch(match)
+        );
+      }
+    }
+
+    log(
+      `03.10.2026 sonrası alınan yeni kayıt: ${newMatches.length}`
+    );
+
+    /*
+      --------------------------------------------------
+      BİRLEŞTİR
+      --------------------------------------------------
+    */
+
+    const finalMap =
+      new Map();
+
+    /*
+      Önce eski veriler.
+      */
+
+    for(const match of oldConverted){
+
+      const key =
+        normalizeMatchKey(match);
+
+      if(!key){
+        continue;
+      }
+
+      finalMap.set(key,match);
+    }
+
+    /*
+      Sonra yeni matches.
+      */
+
+    for(const match of newMatches){
+
+      const key =
+        normalizeMatchKey(match);
+
+      if(!key){
+        continue;
+      }
+
+      /*
+        Tarih sınırı gereği yeni taraf
+        öncelikli.
+      */
+
+      finalMap.set(key,match);
+    }
+
+    const finalMatches =
+      Array.from(finalMap.values());
+
+    /*
+      Tarihe göre sırala.
+    */
+
+    finalMatches.sort((a,b)=>{
+
+      const da =
+        dateToISO(a.date);
+
+      const db =
+        dateToISO(b.date);
+
+      if(da !== db){
+        return da.localeCompare(db);
+      }
+
+      const ta =
+        cleanText(a.time);
+
+      const tb =
+        cleanText(b.time);
+
+      return ta.localeCompare(tb);
+    });
+
+    /*
+      --------------------------------------------------
+      ÇIKTI
+      --------------------------------------------------
+    */
+
+    const output = {
+
+      source:
+        "https://arsiv.mackolik.com/Genis-Iddaa-Programi",
+
+      week:
+        currentJSON.week || "",
+
+      updatedAt:
+        new Date().toISOString(),
+
+      matches:
+        finalMatches
+
+    };
+
+    const json =
+      JSON.stringify(output,null,2);
+
+    const blob =
+      new Blob(
+        [json],
+        {type:"application/json"}
+      );
+
+    const url =
+      URL.createObjectURL(blob);
+
+    const a =
+      document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+      "matches-merged.json";
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    URL.revokeObjectURL(url);
+
+    /*
+      İstatistik
+    */
+
+    log(
+      "\n------------------------------"
+    );
+
+    log(
+      `ESKİ data.js: ${oldConverted.length}`
+    );
+
+    log(
+      `YENİ matches.json: ${newMatches.length}`
+    );
+
+    log(
+      `SONUÇ: ${finalMatches.length}`
+    );
+
+    log(
+      "matches-merged.json hazır.",
+      "success"
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    log(
+      "\nHATA: " + error.message,
+      "error"
+    );
+
+  }finally{
+
+    runBtn.disabled = false;
+  }
+}
+
+runBtn.addEventListener(
+  "click",
+  main
+);
+
+</script>
+
+</body>
+</html>
