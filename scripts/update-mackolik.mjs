@@ -68,16 +68,30 @@ function numberOrNull(value) {
     : null;
 }
 
-function parseScoreValue(value, status) {
-  const normalizedStatus = Number(status);
+/* =========================================================
+   SKOR
+========================================================= */
 
-  /*
-   * Status 0 = maç başlamamış.
-   */
-  if (normalizedStatus === 0) {
-    return null;
-  }
+/*
+ * ÖNEMLİ:
+ *
+ * Eski kodda:
+ *
+ * status === 0
+ *
+ * ise skor otomatik null yapılıyordu.
+ *
+ * Bazı Mackolik maçlarında status değeri 0/1
+ * olsa bile skor alanında gerçek skor bulunabiliyor.
+ *
+ * Bu nedenle artık skorun olup olmadığına
+ * doğrudan skor alanından bakıyoruz.
+ *
+ * Boşsa null.
+ * 0 ise gerçek 0 olarak korunur.
+ */
 
+function parseScoreValue(value) {
   if (
     value === '' ||
     value === null ||
@@ -88,7 +102,11 @@ function parseScoreValue(value, status) {
 
   const result = String(value).trim();
 
-  return result === '' ? null : result;
+  if (result === '') {
+    return null;
+  }
+
+  return result;
 }
 
 function scoreNumber(value) {
@@ -163,11 +181,15 @@ function isPlayed(match) {
 }
 
 /* =========================================================
-   OLD KAYIT EŞLEŞTİRME
+   TAKIM ADI NORMALİZASYONU
 ========================================================= */
 
 /*
- * Takım isimlerini karşılaştırırken:
+ * Sadece karşılaştırma için kullanılır.
+ *
+ * JSON'daki takım adı DEĞİŞTİRİLMEZ.
+ *
+ * Örnek:
  *
  * ARUBA
  * Aruba
@@ -175,45 +197,49 @@ function isPlayed(match) {
  *
  * aynı kabul edilir.
  *
- * Birden fazla boşluk da tek boşluğa düşürülür.
- */
-function normalizeTeamName(value) {
-  return String(value ?? '')
-    .trim()
-    .toLocaleLowerCase('tr-TR')
-    .replace(/\s+/g, ' ');
-}
-
-/*
- * Tarihi normalize et.
+ * Ayrıca:
  *
- * 01.10.2026
- * 01/10/2026
+ * LAS VEGAS Lİ
+ * Las Vegas Li
  *
  * aynı kabul edilir.
  */
+
+function normalizeTeamName(value) {
+  return String(value ?? '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/I/g, 'i')
+    .toLocaleLowerCase('tr-TR')
+    .replace(/[^a-z0-9]+/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/* =========================================================
+   TARİH
+========================================================= */
+
 function normalizeDate(value) {
   return String(value ?? '')
     .trim()
     .replace(/\//g, '.');
 }
 
-/*
- * Saati normalize et.
- */
+/* =========================================================
+   SAAT
+========================================================= */
+
 function normalizeTime(value) {
   return String(value ?? '')
     .trim();
 }
 
-/*
- * Aynı maçın kodu değişmiş olsa bile
- * bu anahtarla bulunur.
- *
- * Örnek:
- *
- * 01.10.2026|05:00|sacramento r|las vegas li
- */
+/* =========================================================
+   MAÇ KEY
+========================================================= */
+
 function makeMatchKey(match) {
   const date =
     normalizeDate(match?.date);
@@ -395,11 +421,14 @@ async function fetchMatches(week) {
 
   for (const day of payload.m ?? []) {
     for (const row of day.m ?? []) {
+
       const matchStatus =
         Number(row[5] ?? 0);
 
       matches.push({
-        code: String(row[0]),
+
+        code:
+          String(row[0]),
 
         week,
 
@@ -416,8 +445,8 @@ async function fetchMatches(week) {
           '',
 
         /*
-         * MACKOLIK'İN GERÇEK TAKIM İSİMLERİ
-         * DEĞİŞTİRİLMEDEN KULLANILIYOR.
+         * MACKOLIK'TEN GELEN İSİM
+         * AYNEN KORUNUR.
          */
         home:
           row[1] ||
@@ -438,16 +467,10 @@ async function fetchMatches(week) {
          */
         score: {
           home:
-            parseScoreValue(
-              row[8],
-              matchStatus
-            ),
+            parseScoreValue(row[8]),
 
           away:
-            parseScoreValue(
-              row[9],
-              matchStatus
-            )
+            parseScoreValue(row[9])
         },
 
         /*
@@ -455,22 +478,19 @@ async function fetchMatches(week) {
          */
         halfTimeScore: {
           home:
-            parseScoreValue(
-              row[11],
-              matchStatus
-            ),
+            parseScoreValue(row[11]),
 
           away:
-            parseScoreValue(
-              row[12],
-              matchStatus
-            )
+            parseScoreValue(row[12])
         },
 
         /*
          * AÇILIŞ ORANLARI
+         *
+         * BURAYA DOKUNULMADI.
          */
         openingOdds: {
+
           ms1:
             numberOrNull(row[16]),
 
@@ -577,6 +597,7 @@ function sameJson(a, b) {
 
 function sortMatches(matches) {
   return matches.sort((a, b) => {
+
     const da =
       String(a.date || '')
         .split('.');
@@ -610,16 +631,18 @@ function sortMatches(matches) {
 }
 
 /* =========================================================
-   ANALİZ JSON
+   ANALYSIS.JSON
 ========================================================= */
 
 function buildAnalysis(matches) {
+
   const stats =
     Object.create(null);
 
   let completedMatches = 0;
 
   for (const match of matches) {
+
     if (!isPlayed(match)) {
       continue;
     }
@@ -630,6 +653,7 @@ function buildAnalysis(matches) {
       match.openingOdds ?? {};
 
     for (const target of TARGETS) {
+
       const odd =
         numberOrNull(
           odds[target.source]
@@ -659,7 +683,9 @@ function buildAnalysis(matches) {
         );
 
       if (!stats[key]) {
+
         stats[key] = {
+
           source:
             target.source,
 
@@ -684,7 +710,11 @@ function buildAnalysis(matches) {
     }
   }
 
-  for (const stat of Object.values(stats)) {
+  for (
+    const stat
+    of Object.values(stats)
+  ) {
+
     stat.successRate =
       stat.sample > 0
         ? Number(
@@ -698,6 +728,7 @@ function buildAnalysis(matches) {
   }
 
   return {
+
     generatedAt:
       new Date().toISOString(),
 
@@ -727,13 +758,22 @@ function buildAnalysis(matches) {
 ========================================================= */
 
 let previous = {
-  source: PAGE,
-  week: null,
-  updatedAt: null,
-  matches: []
+
+  source:
+    PAGE,
+
+  week:
+    null,
+
+  updatedAt:
+    null,
+
+  matches:
+    []
 };
 
 try {
+
   const previousText =
     await fs.readFile(
       DATA_PATH,
@@ -742,12 +782,22 @@ try {
 
   previous =
     JSON.parse(previousText);
+
 } catch {
+
   previous = {
-    source: PAGE,
-    week: null,
-    updatedAt: null,
-    matches: []
+
+    source:
+      PAGE,
+
+    week:
+      null,
+
+    updatedAt:
+      null,
+
+    matches:
+      []
   };
 }
 
@@ -779,10 +829,12 @@ for (
   const match
   of previous.matches ?? []
 ) {
+
   const code =
     String(match.code ?? '');
 
   if (code) {
+
     previousByCode.set(
       code,
       match
@@ -799,21 +851,18 @@ for (
   const existing =
     previousByMatchKey.get(key);
 
-  /*
-   * Aynı maç için:
-   *
-   * gerçek kodlu kayıt
-   * OLD kodlu kayıttan öncelikli.
-   */
   if (!existing) {
+
     previousByMatchKey.set(
       key,
       match
     );
+
   } else if (
     isOldCode(existing.code) &&
     !isOldCode(match.code)
   ) {
+
     previousByMatchKey.set(
       key,
       match
@@ -827,31 +876,26 @@ for (
 
 let changed = false;
 
-/*
- * Yeni sonuç seti.
- */
 const resultByCode =
   new Map();
 
-/*
- * Hangi OLD kayıtların gerçek kayıtla
- * değiştirildiğini tutuyoruz.
- */
 const replacedOldCodes =
   new Set();
 
-/* ---------------------------------------------------------
+/* =========================================================
    ÖNCE ESKİ KAYITLARI KORU
---------------------------------------------------------- */
+========================================================= */
 
 for (
   const match
   of previous.matches ?? []
 ) {
+
   const code =
     String(match.code ?? '');
 
   if (code) {
+
     resultByCode.set(
       code,
       match
@@ -859,20 +903,21 @@ for (
   }
 }
 
-/* ---------------------------------------------------------
-   SONRA GÜNCEL MACKOLIK KAYITLARINI İŞLE
---------------------------------------------------------- */
+/* =========================================================
+   GÜNCEL MACKOLIK KAYITLARI
+========================================================= */
 
 for (
   const current
   of fetched
 ) {
+
   const currentCode =
     String(current.code);
 
   /*
-   * Öncelik 1:
-   * Aynı gerçek kod.
+   * 1. ÖNCELİK:
+   * AYNI KOD
    */
   let old =
     previousByCode.get(
@@ -880,16 +925,19 @@ for (
     );
 
   /*
-   * Öncelik 2:
-   * Kod değişmişse:
+   * 2. ÖNCELİK:
+   * MAÇ KEY
    *
-   * tarih + saat + ev sahibi + deplasman
+   * Tarih + saat +
+   * takım isimleri
    */
   if (!old) {
+
     const key =
       makeMatchKey(current);
 
     if (key) {
+
       old =
         previousByMatchKey.get(
           key
@@ -897,16 +945,17 @@ for (
     }
   }
 
-  /* -------------------------------------------------------
+  /* =======================================================
      ESKİ KAYIT BULUNDU
-  ------------------------------------------------------- */
+  ======================================================= */
 
   if (old) {
+
     const oldCode =
       String(old.code ?? '');
 
     /*
-     * Eski skor ile yeni skor karşılaştır.
+     * SKOR DEĞİŞTİ Mİ?
      */
     const scoreChanged =
       !sameJson(
@@ -914,34 +963,74 @@ for (
         current.score ?? {}
       );
 
+    /*
+     * İLK YARI DEĞİŞTİ Mİ?
+     */
     const halfTimeChanged =
       !sameJson(
         old.halfTimeScore ?? {},
         current.halfTimeScore ?? {}
       );
 
+    /*
+     * STATUS DEĞİŞTİ Mİ?
+     */
     const statusChanged =
       Number(old.status) !==
       Number(current.status);
 
     /*
-     * ÇOK ÖNEMLİ:
+     * =====================================================
+     * YENİ:
+     * TAKIM / TARİH / SAAT / LİG DEĞİŞTİ Mİ?
      *
-     * Eski açılış oranı varsa onu koruyoruz.
-     *
-     * Yeni maç kodu geldiğinde:
-     *
-     * OLD-xxxxx
-     *
-     * yerine
-     *
-     * 4537202
-     *
-     * kullanılıyor.
+     * Önceki kodda bu kontrol yoktu.
+     * Bu nedenle Mackolik'teki yeni isim JSON'a
+     * yazılmayabiliyordu.
+     * =====================================================
      */
+
+    const basicInfoChanged =
+      String(old.date ?? '') !==
+        String(current.date ?? '') ||
+
+      String(old.time ?? '') !==
+        String(current.time ?? '') ||
+
+      String(old.league ?? '') !==
+        String(current.league ?? '') ||
+
+      String(old.home ?? '') !==
+        String(current.home ?? '') ||
+
+      String(old.away ?? '') !==
+        String(current.away ?? '') ||
+
+      Number(old.mbs ?? 0) !==
+        Number(current.mbs ?? 0);
+
+    /*
+     * OPENING ODDS EKSİKSE TAMAMLA
+     *
+     * Eski openingOdds varsa ASLA üzerine yazılmaz.
+     */
+    const openingOddsChanged =
+      !old.openingOdds &&
+      current.openingOdds;
+
+    /*
+     * =====================================================
+     * MERGE
+     * =====================================================
+     */
+
     const merged = {
+
       ...old,
 
+      /*
+       * GÜNCEL KOD
+       */
       code:
         currentCode,
 
@@ -958,16 +1047,7 @@ for (
         current.league,
 
       /*
-       * Burada Mackolik'in güncel isimleri
-       * kullanılıyor.
-       *
-       * Böylece eski:
-       * SACRAMENTO R
-       *
-       * yerine güncel:
-       * Sacramento R
-       *
-       * gelir.
+       * MACKOLIK'TEN GELEN GÜNCEL TAKIM ADI
        */
       home:
         current.home,
@@ -979,13 +1059,13 @@ for (
         current.mbs,
 
       /*
-       * GÜNCEL DURUM
+       * GÜNCEL STATUS
        */
       status:
         current.status,
 
       /*
-       * GÜNCEL TAM SKOR
+       * GÜNCEL SKOR
        */
       score:
         current.score,
@@ -997,7 +1077,12 @@ for (
         current.halfTimeScore,
 
       /*
-       * AÇILIŞ ORANI ASLA DEĞİŞTİRİLMEZ.
+       * ===================================================
+       * AÇILIŞ ORANLARI
+       *
+       * ESKİ VARSA KORUNUR.
+       * YOKSA İLK VERİDEN ALINIR.
+       * ===================================================
        */
       openingOdds:
         old.openingOdds ??
@@ -1009,13 +1094,13 @@ for (
     };
 
     /*
-     * OLD kodu değiştiriliyorsa
-     * eski kaydı sonuçtan çıkar.
+     * OLD kodu değişiyorsa eski kaydı sil.
      */
     if (
       oldCode &&
       oldCode !== currentCode
     ) {
+
       resultByCode.delete(
         oldCode
       );
@@ -1023,36 +1108,49 @@ for (
       if (
         isOldCode(oldCode)
       ) {
+
         replacedOldCodes.add(
           oldCode
         );
       }
     }
 
+    /*
+     * Güncel kaydı ekle.
+     */
     resultByCode.set(
       currentCode,
       merged
     );
 
+    /*
+     * =====================================================
+     * DEĞİŞİKLİK KONTROLÜ
+     * =====================================================
+     */
     if (
       scoreChanged ||
       halfTimeChanged ||
       statusChanged ||
+      basicInfoChanged ||
+      openingOddsChanged ||
       oldCode !== currentCode
     ) {
+
       changed = true;
     }
 
     continue;
   }
 
-  /* -------------------------------------------------------
+  /* =======================================================
      TAMAMEN YENİ MAÇ
-  ------------------------------------------------------- */
+  ======================================================= */
 
   resultByCode.set(
     currentCode,
     {
+
       ...current,
 
       openingRecordedAt:
@@ -1067,14 +1165,11 @@ for (
    OLD DUPLICATE TEMİZLİĞİ
 ========================================================= */
 
-/*
- * Aynı maçın hem gerçek kodlu hem OLD kodlu kaydı
- * kalmışsa OLD kaydı silinir.
- */
 for (
   const [code, match]
   of resultByCode
 ) {
+
   if (
     !isOldCode(code)
   ) {
@@ -1088,9 +1183,6 @@ for (
     continue;
   }
 
-  /*
-   * Aynı key için gerçek kodlu kayıt var mı?
-   */
   let realMatchExists =
     false;
 
@@ -1098,6 +1190,7 @@ for (
     const [otherCode, otherMatch]
     of resultByCode
   ) {
+
     if (
       otherCode === code ||
       isOldCode(otherCode)
@@ -1109,12 +1202,14 @@ for (
       makeMatchKey(otherMatch) ===
       key
     ) {
+
       realMatchExists = true;
       break;
     }
   }
 
   if (realMatchExists) {
+
     resultByCode.delete(code);
 
     changed = true;
@@ -1132,7 +1227,8 @@ for (
 const finalByMatchKey =
   new Map();
 
-const finalWithoutKey = [];
+const finalWithoutKey =
+  [];
 
 /*
  * Gerçek kodlu kayıtları önceliklendir.
@@ -1141,13 +1237,16 @@ for (
   const match
   of resultByCode.values()
 ) {
+
   const key =
     makeMatchKey(match);
 
   if (!key) {
+
     finalWithoutKey.push(
       match
     );
+
     continue;
   }
 
@@ -1155,6 +1254,7 @@ for (
     finalByMatchKey.get(key);
 
   if (!existing) {
+
     finalByMatchKey.set(
       key,
       match
@@ -1170,6 +1270,7 @@ for (
     isOldCode(existing.code) &&
     !isOldCode(match.code)
   ) {
+
     finalByMatchKey.set(
       key,
       match
@@ -1181,11 +1282,12 @@ for (
   }
 
   /*
-   * İki gerçek kayıt varsa mevcut gerçek kaydı koru.
+   * İki gerçek kayıt varsa güncel olanı koru.
    */
   if (
     !isOldCode(match.code)
   ) {
+
     finalByMatchKey.set(
       key,
       match
@@ -1197,19 +1299,20 @@ for (
    SON MAÇ LİSTESİ
 ========================================================= */
 
-const matches = sortMatches([
-  ...finalByMatchKey.values(),
-  ...finalWithoutKey
-]);
+const matches =
+  sortMatches([
+    ...finalByMatchKey.values(),
+    ...finalWithoutKey
+  ]);
 
 /*
- * Eski kayıt sayısı ile final kayıt sayısı farklıysa
- * değişiklik vardır.
+ * Kayıt sayısı değiştiyse güncelle.
  */
 if (
   matches.length !==
   (previous.matches ?? []).length
 ) {
+
   changed = true;
 }
 
@@ -1218,7 +1321,9 @@ if (
 ========================================================= */
 
 const next = {
-  source: PAGE,
+
+  source:
+    PAGE,
 
   week,
 
@@ -1242,7 +1347,9 @@ if (
   !previous.matches ||
   previous.matches.length === 0
 ) {
+
   await fs.writeFile(
+
     DATA_PATH,
 
     JSON.stringify(
@@ -1257,7 +1364,9 @@ if (
   console.log(
     'matches.json güncellendi.'
   );
+
 } else {
+
   console.log(
     'Maç verilerinde değişiklik yok.'
   );
@@ -1271,6 +1380,7 @@ const analysis =
   buildAnalysis(matches);
 
 await fs.writeFile(
+
   ANALYSIS_PATH,
 
   JSON.stringify(
@@ -1301,31 +1411,31 @@ console.log(
 );
 
 console.log(
-  `Hafta       : ${week}`
+  `Hafta          : ${week}`
 );
 
 console.log(
-  `Çekilen     : ${fetched.length}`
+  `Çekilen        : ${fetched.length}`
 );
 
 console.log(
-  `Arşiv       : ${matches.length}`
+  `Arşiv          : ${matches.length}`
 );
 
 console.log(
-  `Biten       : ${analysis.completedMatches}`
+  `Biten          : ${analysis.completedMatches}`
 );
 
 console.log(
-  `Analiz      : ${Object.keys(analysis.stats).length}`
+  `Analiz         : ${Object.keys(analysis.stats).length}`
 );
 
 console.log(
-  `Değişti     : ${changed}`
+  `Değişti        : ${changed}`
 );
 
 console.log(
-  `OLD temizlendi : ${replacedOldCodes.size}`
+  `OLD temizlendi: ${replacedOldCodes.size}`
 );
 
 console.log(
