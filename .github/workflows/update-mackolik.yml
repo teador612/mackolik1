@@ -3,7 +3,9 @@ name: Mackolik skor güncelleme
 on:
   repository_dispatch:
     types: [run-script]
+
   workflow_dispatch:
+
   schedule:
     - cron: '*/15 * * * *'
 
@@ -13,12 +15,13 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: mackolik-update
+  cancel-in-progress: false
 
 jobs:
   update-and-deploy:
     runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -34,7 +37,7 @@ jobs:
         with:
           node-version: 20
 
-      - name: Skorları ve yeni maçları güncelle
+      - name: Skorları, yeni maçları ve analizi güncelle
         run: node scripts/update-mackolik.mjs
 
       - name: Değişiklikleri repoya kaydet
@@ -43,11 +46,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add data/matches.json
+          git add data/analysis.json
 
           if git diff --cached --quiet; then
-            echo "Yeni skor değişikliği yok."
+            echo "Yeni değişiklik yok."
           else
-            git commit -m "Güncel Mackolik skorları"
+            git commit -m "Güncel Mackolik skorları ve analiz"
             git push
           fi
 
@@ -57,8 +61,14 @@ jobs:
       - name: Site dosyalarını hazırla
         run: |
           mkdir -p _site/data
-          cp index.html skor.html app.js style.css _site/
+
+          cp index.html _site/
+          cp skor.html _site/
+          cp app.js _site/
+          cp style.css _site/
+
           cp data/matches.json _site/data/
+          cp data/analysis.json _site/data/
 
       - name: Site dosyalarını paketle
         uses: actions/upload-pages-artifact@v3
