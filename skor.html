@@ -68,6 +68,7 @@ header p{
     box-shadow:0 2px 8px rgba(0,0,0,.06);
 
     display:grid;
+
     grid-template-columns:
         minmax(180px,2fr)
         minmax(140px,1fr)
@@ -198,6 +199,11 @@ tbody tr:hover{
     margin-top:4px;
 }
 
+.code-old{
+    color:#64748b;
+    font-size:11px;
+}
+
 @media(max-width:800px){
 
     .filters{
@@ -257,9 +263,19 @@ tbody tr:hover{
         </select>
 
         <select id="playedFilter">
-            <option value="all">Tümü</option>
-            <option value="played">Oynananlar</option>
-            <option value="unplayed">Oynanmamışlar</option>
+
+            <option value="all">
+                Tümü
+            </option>
+
+            <option value="played">
+                Oynananlar
+            </option>
+
+            <option value="unplayed">
+                Oynanmamışlar
+            </option>
+
         </select>
 
         <button id="refresh">
@@ -273,6 +289,7 @@ tbody tr:hover{
         <table>
 
             <thead>
+
                 <tr>
                     <th>Tarih</th>
                     <th>Saat</th>
@@ -281,7 +298,7 @@ tbody tr:hover{
                     <th>Ev Sahibi</th>
                     <th>Misafir</th>
                     <th>İY</th>
-                    <th>Skor</th>
+                    <th>MS</th>
                     <th>MS 1</th>
                     <th>MS X</th>
                     <th>MS 2</th>
@@ -290,6 +307,7 @@ tbody tr:hover{
                     <th>Alt 2,5</th>
                     <th>Üst 2,5</th>
                 </tr>
+
             </thead>
 
             <tbody id="tbody">
@@ -324,7 +342,7 @@ const DATA_URL = "./data/matches.json";
 
 
 /* =========================================================
-   DURUM
+   VERİ
 ========================================================= */
 
 let allMatches = [];
@@ -360,7 +378,7 @@ const refreshBtn =
 
 
 /* =========================================================
-   YARDIMCI
+   METİN
 ========================================================= */
 
 function text(value){
@@ -376,6 +394,10 @@ function text(value){
 }
 
 
+/* =========================================================
+   HTML GÜVENLİĞİ
+========================================================= */
+
 function esc(value){
 
     return text(value)
@@ -386,6 +408,10 @@ function esc(value){
         .replace(/'/g,"&#039;");
 }
 
+
+/* =========================================================
+   ORAN
+========================================================= */
 
 function odd(value){
 
@@ -408,10 +434,69 @@ function odd(value){
 
 function getOdds(match){
 
-    return match &&
-           match.openingOdds
-        ? match.openingOdds
-        : {};
+    if(
+        match &&
+        match.openingOdds &&
+        typeof match.openingOdds === "object"
+    ){
+
+        return match.openingOdds;
+
+    }
+
+    return {};
+}
+
+
+/* =========================================================
+   SKOR NORMALİZASYONU
+========================================================= */
+
+function getScoreObject(match){
+
+    if(
+        !match ||
+        !match.score ||
+        typeof match.score !== "object"
+    ){
+        return null;
+    }
+
+    const home =
+        text(match.score.home).trim();
+
+    const away =
+        text(match.score.away).trim();
+
+    /*
+       0-0 dahil olmak üzere gerçek skorları
+       kabul ediyoruz.
+    */
+
+    if(
+        home === "" ||
+        away === ""
+    ){
+        return null;
+    }
+
+    /*
+       Skor sadece rakamlardan oluşmalı.
+       Böylece "-" veya "null" gibi değerler
+       oynanmış kabul edilmez.
+    */
+
+    if(
+        !/^\d+$/.test(home) ||
+        !/^\d+$/.test(away)
+    ){
+        return null;
+    }
+
+    return {
+        home,
+        away
+    };
 }
 
 
@@ -422,21 +507,9 @@ function getOdds(match){
 function getScore(match){
 
     const score =
-        match &&
-        match.score;
+        getScoreObject(match);
 
     if(!score){
-        return "";
-    }
-
-    if(
-        score.home === null ||
-        score.home === undefined ||
-        score.away === null ||
-        score.away === undefined ||
-        score.home === "" ||
-        score.away === ""
-    ){
         return "";
     }
 
@@ -444,28 +517,41 @@ function getScore(match){
 }
 
 
+/* =========================================================
+   İLK YARI SKORU
+========================================================= */
+
 function getHalfTimeScore(match){
 
-    const score =
-        match &&
-        match.halfTimeScore;
-
-    if(!score){
-        return "";
-    }
-
     if(
-        score.home === null ||
-        score.home === undefined ||
-        score.away === null ||
-        score.away === undefined ||
-        score.home === "" ||
-        score.away === ""
+        !match ||
+        !match.halfTimeScore ||
+        typeof match.halfTimeScore !== "object"
     ){
         return "";
     }
 
-    return `${score.home}-${score.away}`;
+    const home =
+        text(match.halfTimeScore.home).trim();
+
+    const away =
+        text(match.halfTimeScore.away).trim();
+
+    if(
+        home === "" ||
+        away === ""
+    ){
+        return "";
+    }
+
+    if(
+        !/^\d+$/.test(home) ||
+        !/^\d+$/.test(away)
+    ){
+        return "";
+    }
+
+    return `${home}-${away}`;
 }
 
 
@@ -475,12 +561,261 @@ function getHalfTimeScore(match){
 
 function isPlayed(match){
 
-    return getScore(match) !== "";
+    /*
+       EN ÖNEMLİ KONTROL:
+
+       Skor varsa maç oynanmıştır.
+
+       0-0 da geçerli skordur.
+    */
+
+    return getScoreObject(match) !== null;
 }
 
 
 /* =========================================================
-   TARİH SIRALAMA
+   OLD ID KONTROLÜ
+========================================================= */
+
+function isOldId(code){
+
+    return /^OLD-/i.test(
+        text(code).trim()
+    );
+}
+
+
+/* =========================================================
+   MAÇ ANAHTARI
+========================================================= */
+
+function matchKey(match){
+
+    const date =
+        text(match?.date)
+            .trim()
+            .toLowerCase();
+
+    const time =
+        text(match?.time)
+            .trim()
+            .toLowerCase();
+
+    const home =
+        text(match?.home)
+            .trim()
+            .toLocaleLowerCase("tr");
+
+    const away =
+        text(match?.away)
+            .trim()
+            .toLocaleLowerCase("tr");
+
+    /*
+       Aynı maçın OLD ve gerçek code kayıtlarını
+       aynı maç olarak kabul ediyoruz.
+    */
+
+    return [
+        date,
+        time,
+        home,
+        away
+    ].join("|");
+}
+
+
+/* =========================================================
+   KAYIT KALİTESİ
+========================================================= */
+
+function recordScore(match){
+
+    let score = 0;
+
+    const code =
+        text(match?.code).trim();
+
+    /*
+       Gerçek Mackolik kodu OLD kayıttan daha değerli.
+    */
+
+    if(
+        code &&
+        !isOldId(code)
+    ){
+        score += 100;
+    }
+
+    /*
+       Skor varsa kayıt günceldir.
+    */
+
+    if(
+        isPlayed(match)
+    ){
+        score += 50;
+    }
+
+    /*
+       Açılış oranları varsa veri daha değerlidir.
+    */
+
+    if(
+        match?.openingOdds &&
+        typeof match.openingOdds === "object"
+    ){
+        score += 20;
+    }
+
+    /*
+       Takım bilgileri
+    */
+
+    if(
+        text(match?.home).trim() &&
+        text(match?.away).trim()
+    ){
+        score += 10;
+    }
+
+    return score;
+}
+
+
+/* =========================================================
+   DUPLICATE TEMİZLE
+========================================================= */
+
+function deduplicateMatches(matches){
+
+    const map =
+        new Map();
+
+    for(
+        const match of matches
+    ){
+
+        if(!match){
+            continue;
+        }
+
+        const key =
+            matchKey(match);
+
+        /*
+           Anahtar oluşmuyorsa kaydı kaybetme.
+        */
+
+        if(
+            !key ||
+            key === "|||"
+        ){
+
+            const fallback =
+                text(match.code).trim();
+
+            if(fallback){
+
+                const old =
+                    map.get(fallback);
+
+                if(
+                    !old ||
+                    recordScore(match) >
+                    recordScore(old)
+                ){
+
+                    map.set(
+                        fallback,
+                        match
+                    );
+                }
+
+            }
+
+            continue;
+        }
+
+
+        const existing =
+            map.get(key);
+
+
+        if(!existing){
+
+            map.set(
+                key,
+                match
+            );
+
+            continue;
+        }
+
+
+        /*
+           Daha kaliteli kaydı seç.
+        */
+
+        if(
+            recordScore(match) >
+            recordScore(existing)
+        ){
+
+            map.set(
+                key,
+                match
+            );
+
+        }
+        else{
+
+            /*
+               Eski kayıtta oran olup yeni kayıtta
+               oran yoksa oranları koru.
+            */
+
+            if(
+                !existing.openingOdds &&
+                match.openingOdds
+            ){
+
+                existing.openingOdds =
+                    match.openingOdds;
+            }
+
+
+            /*
+               Yeni kayıtta skor varsa skoru koru.
+            */
+
+            if(
+                !isPlayed(existing) &&
+                isPlayed(match)
+            ){
+
+                existing.score =
+                    match.score;
+
+                existing.halfTimeScore =
+                    match.halfTimeScore;
+
+                existing.status =
+                    match.status;
+            }
+
+        }
+
+    }
+
+    return [
+        ...map.values()
+    ];
+}
+
+
+/* =========================================================
+   TARİH KEY
 ========================================================= */
 
 function dateKey(value){
@@ -511,37 +846,50 @@ function createDateList(){
     const dates = [
         ...new Set(
             allMatches
-                .map(m => text(m.date).trim())
+                .map(
+                    match =>
+                        text(match.date).trim()
+                )
                 .filter(Boolean)
         )
     ];
 
-    dates.sort((a,b) =>
-        dateKey(a).localeCompare(
-            dateKey(b)
-        )
+
+    dates.sort(
+        (a,b) =>
+            dateKey(a)
+            .localeCompare(
+                dateKey(b)
+            )
     );
 
+
     dateEl.innerHTML =
-        `<option value="">Tüm tarihler</option>` +
+        `<option value="">
+            Tüm tarihler
+        </option>` +
+
         dates
-            .map(date => `
-                <option value="${esc(date)}">
-                    ${esc(date)}
-                </option>
-            `)
+            .map(
+                date => `
+                    <option value="${esc(date)}">
+                        ${esc(date)}
+                    </option>
+                `
+            )
             .join("");
 }
 
 
 /* =========================================================
-   BUGÜNÜ OTOMATİK SEÇ
+   BUGÜNÜ SEÇ
 ========================================================= */
 
 function selectToday(){
 
     const now =
         new Date();
+
 
     const today =
         [
@@ -554,7 +902,9 @@ function selectToday(){
             ).padStart(2,"0"),
 
             now.getFullYear()
+
         ].join(".");
+
 
     const exists =
         [...dateEl.options]
@@ -563,6 +913,7 @@ function selectToday(){
                     option.value === today
             );
 
+
     if(exists){
 
         dateEl.value =
@@ -570,6 +921,7 @@ function selectToday(){
 
         return;
     }
+
 
     /*
        Bugün yoksa en yeni tarihi seç.
@@ -582,6 +934,7 @@ function selectToday(){
                     option.value
             );
 
+
     if(options.length){
 
         options.sort(
@@ -591,6 +944,7 @@ function selectToday(){
                     dateKey(a.value)
                 )
         );
+
 
         dateEl.value =
             options[0].value;
@@ -608,12 +962,13 @@ function createLeagueList(){
         ...new Set(
             allMatches
                 .map(
-                    m =>
-                        text(m.league).trim()
+                    match =>
+                        text(match.league).trim()
                 )
                 .filter(Boolean)
         )
     ];
+
 
     leagues.sort(
         (a,b) =>
@@ -623,6 +978,7 @@ function createLeagueList(){
             )
     );
 
+
     leagueEl.innerHTML =
         `<option value="">
             Tüm ligler
@@ -631,13 +987,52 @@ function createLeagueList(){
         leagues
             .map(
                 league => `
-                    <option
-                        value="${esc(league)}">
+                    <option value="${esc(league)}">
                         ${esc(league)}
                     </option>
                 `
             )
             .join("");
+}
+
+
+/* =========================================================
+   GÖSTERİLECEK KOD
+========================================================= */
+
+function displayCode(match){
+
+    const code =
+        text(match?.code).trim();
+
+    /*
+       OLD kodlarını kullanıcıya göstermiyoruz.
+    */
+
+    if(
+        isOldId(code)
+    ){
+
+        /*
+           Eğer başka yerde gerçek kod tutulmuşsa
+           onu kullan.
+        */
+
+        const realCode =
+            text(
+                match?.originalCode ??
+                match?.matchCode ??
+                match?.mackolikCode
+            ).trim();
+
+        if(realCode){
+            return realCode;
+        }
+
+        return "-";
+    }
+
+    return code || "-";
 }
 
 
@@ -652,11 +1047,14 @@ function render(){
             .trim()
             .toLocaleLowerCase("tr");
 
+
     const date =
         dateEl.value;
 
+
     const league =
         leagueEl.value;
+
 
     const played =
         playedEl.value;
@@ -670,36 +1068,56 @@ function render(){
                     text(match.home)
                     .toLocaleLowerCase("tr");
 
+
                 const away =
                     text(match.away)
                     .toLocaleLowerCase("tr");
 
+
                 const code =
+                    displayCode(match)
+                    .toLocaleLowerCase("tr");
+
+
+                const rawCode =
                     text(match.code)
                     .toLocaleLowerCase("tr");
+
 
                 const matchLeague =
                     text(match.league);
 
+
                 const matchDate =
                     text(match.date);
+
 
                 const playedState =
                     isPlayed(match);
 
+
+                /*
+                   ARAMA
+                */
 
                 if(search){
 
                     const found =
                         home.includes(search) ||
                         away.includes(search) ||
-                        code.includes(search);
+                        code.includes(search) ||
+                        rawCode.includes(search);
+
 
                     if(!found){
                         return false;
                     }
                 }
 
+
+                /*
+                   TARİH
+                */
 
                 if(
                     date &&
@@ -709,6 +1127,10 @@ function render(){
                 }
 
 
+                /*
+                   LİG
+                */
+
                 if(
                     league &&
                     matchLeague !== league
@@ -717,6 +1139,10 @@ function render(){
                 }
 
 
+                /*
+                   OYNANDI
+                */
+
                 if(
                     played === "played" &&
                     !playedState
@@ -724,6 +1150,10 @@ function render(){
                     return false;
                 }
 
+
+                /*
+                   OYNANMADI
+                */
 
                 if(
                     played === "unplayed" &&
@@ -734,9 +1164,14 @@ function render(){
 
 
                 return true;
+
             }
         );
 
+
+    /*
+       Sonuç yok
+    */
 
     if(!filtered.length){
 
@@ -745,7 +1180,9 @@ function render(){
                 <td
                     colspan="15"
                     class="empty">
+
                     Filtrelere uygun maç bulunamadı.
+
                 </td>
             </tr>
         `;
@@ -753,6 +1190,10 @@ function render(){
         return;
     }
 
+
+    /*
+       Tablo
+    */
 
     tbody.innerHTML =
         filtered
@@ -762,17 +1203,25 @@ function render(){
                     const odds =
                         getOdds(match);
 
+
                     const score =
                         getScore(match);
 
+
                     const half =
                         getHalfTimeScore(match);
+
 
                     const playedState =
                         isPlayed(match);
 
 
+                    const code =
+                        displayCode(match);
+
+
                     return `
+
                         <tr>
 
                             <td>
@@ -788,7 +1237,11 @@ function render(){
                             </td>
 
                             <td>
-                                ${esc(match.code)}
+                                ${
+                                    isOldId(match.code)
+                                    ? `<span class="code-old">${esc(code)}</span>`
+                                    : esc(code)
+                                }
                             </td>
 
                             <td class="home">
@@ -811,12 +1264,18 @@ function render(){
 
                                 ${
                                     playedState
-                                    ? esc(score)
+
+                                    ? `
+                                        <span class="badge played">
+                                            ${esc(score)}
+                                        </span>
+                                      `
+
                                     : `
                                         <span class="badge unplayed">
                                             Oynanmadı
                                         </span>
-                                    `
+                                      `
                                 }
 
                             </td>
@@ -850,28 +1309,59 @@ function render(){
                             </td>
 
                         </tr>
+
                     `;
+
                 }
             )
             .join("");
 
 
+    /*
+       Durum
+    */
+
+    const playedCount =
+        filtered.filter(
+            match =>
+                isPlayed(match)
+        ).length;
+
+
+    const unplayedCount =
+        filtered.length -
+        playedCount;
+
+
     statusEl.className =
         "status ok";
 
-    statusEl.innerHTML =
-        `
+
+    statusEl.innerHTML = `
+
         <strong>
             ${filtered.length.toLocaleString("tr-TR")}
             maç gösteriliyor.
         </strong>
 
         <div class="count">
+
+            Oynanan:
+            ${playedCount.toLocaleString("tr-TR")}
+
+            &nbsp; | &nbsp;
+
+            Oynanmayan:
+            ${unplayedCount.toLocaleString("tr-TR")}
+
+            &nbsp; | &nbsp;
+
             Toplam arşiv:
             ${allMatches.length.toLocaleString("tr-TR")}
-            maç
+
         </div>
-        `;
+
+    `;
 }
 
 
@@ -884,6 +1374,7 @@ async function loadData(){
     statusEl.className =
         "status";
 
+
     statusEl.textContent =
         "Veriler yükleniyor...";
 
@@ -893,7 +1384,9 @@ async function loadData(){
             <td
                 colspan="15"
                 class="loading">
+
                 Veri yükleniyor...
+
             </td>
         </tr>
     `;
@@ -906,6 +1399,7 @@ async function loadData(){
                 DATA_URL +
                 "?v=" +
                 Date.now(),
+
                 {
                     cache:"no-store"
                 }
@@ -938,11 +1432,15 @@ async function loadData(){
         }
 
 
-        allMatches =
+        /*
+           Ham veriyi al.
+        */
+
+        const rawMatches =
             data.matches;
 
 
-        if(!allMatches.length){
+        if(!rawMatches.length){
 
             throw new Error(
                 "matches.json boş."
@@ -950,11 +1448,35 @@ async function loadData(){
         }
 
 
+        /*
+           OLD + gerçek kayıtları temizle.
+        */
+
+        allMatches =
+            deduplicateMatches(
+                rawMatches
+            );
+
+
+        /*
+           Tarih ve lig filtreleri.
+        */
+
         createDateList();
 
         createLeagueList();
 
+
+        /*
+           Bugünü seç.
+        */
+
         selectToday();
+
+
+        /*
+           Tabloyu oluştur.
+        */
 
         render();
 
@@ -971,8 +1493,9 @@ async function loadData(){
         statusEl.className =
             "status error";
 
-        statusEl.innerHTML =
-            `
+
+        statusEl.innerHTML = `
+
             <strong>
                 Veri yüklenemedi.
             </strong>
@@ -987,12 +1510,14 @@ async function loadData(){
                 Kaynak:
                 ${esc(DATA_URL)}
             </small>
-            `;
+
+        `;
 
 
-        tbody.innerHTML =
-            `
+        tbody.innerHTML = `
+
             <tr>
+
                 <td
                     colspan="15"
                     class="empty">
@@ -1006,8 +1531,10 @@ async function loadData(){
                     </strong>
 
                 </td>
+
             </tr>
-            `;
+
+        `;
     }
 }
 
@@ -1021,20 +1548,24 @@ searchEl.addEventListener(
     render
 );
 
+
 dateEl.addEventListener(
     "change",
     render
 );
+
 
 leagueEl.addEventListener(
     "change",
     render
 );
 
+
 playedEl.addEventListener(
     "change",
     render
 );
+
 
 refreshBtn.addEventListener(
     "click",
