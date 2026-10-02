@@ -1,200 +1,153 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="tr">
+
 <head>
-    <meta charset="UTF-8">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<meta name="theme-color" content="#0b1020">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<title>Maçkolik - Açılış Oran Analizi</title>
 
-    <meta
-        name="theme-color"
-        content="#0f172a"
-    >
-
-    <title>Maçkolik Oran Analiz</title>
-
-    <link
-        rel="stylesheet"
-        href="styles.css?v=1"
-    >
+<link rel="stylesheet" href="styles.css?v=2">
 </head>
 
 <body>
 
 <div class="app">
 
-    <!-- =====================================================
-         BAŞLIK
-    ====================================================== -->
+    <div class="header">
 
-    <header class="header">
-
-        <div>
-            <h1 class="title">
-                Maçkolik Oran Analiz
-            </h1>
-
-            <div class="subtitle">
-                Geçmiş oranlara göre istatistiksel analiz
-            </div>
+        <div class="title">
+            ⚽ Maçkolik
         </div>
 
-        <button
-            id="refreshButton"
-            class="refresh"
-            type="button"
-        >
-            🔄 Yenile
-        </button>
-
-    </header>
+        <div class="subtitle">
+            Açılış oranlarından geçmiş sonuç analizi
+        </div>
 
 
-    <!-- =====================================================
-         TAKVİM
-    ====================================================== -->
+        <div class="controls">
 
-    <section class="calendar-wrapper">
-
-        <button
-            id="calendarButton"
-            class="calendar-button"
-            type="button"
-        >
-
-            <span class="calendar-icon">
-                📅
-            </span>
-
-            <span class="calendar-button-info">
-
-                <small>
-                    Tarih
-                </small>
-
-                <strong id="selectedDateText">
-                    Yükleniyor...
-                </strong>
-
-            </span>
-
-            <span class="calendar-arrow">
-                ⌄
-            </span>
-
-        </button>
-
-
-        <div
-            id="calendarPopup"
-            class="calendar-popup"
-            hidden
-        >
-
-            <div class="calendar-header">
+            <div class="calendar-wrapper">
 
                 <button
-                    id="prevMonth"
-                    class="month-button"
+                    id="calendarButton"
+                    class="calendar-button"
                     type="button"
                 >
-                    ‹
+
+                    <span class="calendar-icon">📅</span>
+
+                    <span class="calendar-button-info">
+                        <small>Tarih</small>
+                        <strong id="selectedDateText">
+                            Yükleniyor...
+                        </strong>
+                    </span>
+
+                    <span class="calendar-arrow">
+                        ⌄
+                    </span>
+
                 </button>
 
-                <strong id="calendarMonth">
-                    —
-                </strong>
 
-                <button
-                    id="nextMonth"
-                    class="month-button"
-                    type="button"
+                <div
+                    id="calendarPopup"
+                    class="calendar-popup"
+                    hidden
                 >
-                    ›
-                </button>
+
+                    <div class="calendar-header">
+
+                        <button
+                            id="prevMonth"
+                            class="month-button"
+                            type="button"
+                        >
+                            ‹
+                        </button>
+
+                        <strong id="calendarMonth">
+                            —
+                        </strong>
+
+                        <button
+                            id="nextMonth"
+                            class="month-button"
+                            type="button"
+                        >
+                            ›
+                        </button>
+
+                    </div>
+
+
+                    <div class="calendar-weekdays">
+
+                        <span>Pzt</span>
+                        <span>Sal</span>
+                        <span>Çar</span>
+                        <span>Per</span>
+                        <span>Cum</span>
+                        <span>Cmt</span>
+                        <span>Paz</span>
+
+                    </div>
+
+
+                    <div
+                        id="calendarDays"
+                        class="calendar-days"
+                    ></div>
+
+
+                    <button
+                        id="todayButton"
+                        class="today-button"
+                        type="button"
+                    >
+                        Bugüne Git
+                    </button>
+
+                </div>
 
             </div>
-
-
-            <div class="calendar-weekdays">
-
-                <span>Pzt</span>
-                <span>Sal</span>
-                <span>Çar</span>
-                <span>Per</span>
-                <span>Cum</span>
-                <span>Cmt</span>
-                <span>Paz</span>
-
-            </div>
-
-
-            <div
-                id="calendarDays"
-                class="calendar-days"
-            ></div>
 
 
             <button
-                id="todayButton"
-                class="today-button"
+                class="refresh"
+                id="refreshButton"
                 type="button"
             >
-                Bugüne Git
+                🔄 Yenile
             </button>
 
         </div>
 
-    </section>
+    </div>
 
 
-    <!-- =====================================================
-         ÖZET
-    ====================================================== -->
-
-    <section
-        id="summary"
-        class="summary"
-    ></section>
+    <div id="summary"></div>
 
 
-    <!-- =====================================================
-         MAÇLAR
-    ====================================================== -->
-
-    <main
-        id="content"
-        class="content"
-    >
+    <div id="content">
 
         <div class="loading">
-            Maç verileri yükleniyor...
+            Veriler yükleniyor...
         </div>
 
-    </main>
+    </div>
 
 
-    <!-- =====================================================
-         ALT BİLGİ
-    ====================================================== -->
-
-    <footer class="footer">
-
-        Geçmiş maç verileri üzerinden
-        istatistiksel oran analizi
-
-    </footer>
+    <div class="footer">
+        Açılış oranı analizi · Son 60 gün · Minimum %70 başarı
+    </div>
 
 </div>
 
 
-<!-- =========================================================
-     JAVASCRIPT
-========================================================== -->
-
-<script src="app.js?v=1"></script>
+<script src="app.js?v=2"></script>
 
 </body>
 </html>
