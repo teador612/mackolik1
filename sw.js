@@ -1,52 +1,69 @@
-const CACHE_NAME = 'mackolik-v1';
+const CACHE_NAME = "mackolik-v1";
 
 const FILES = [
-  './',
-  './index.html',
-  './manifest.json'
+    "./",
+    "./index.html",
+    "./style.css",
+    "./app.js",
+    "./manifest.json"
 ];
 
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(FILES))
-  );
+self.addEventListener(
+    "install",
+    event => {
 
-  self.skipWaiting();
-});
+        event.waitUntil(
+            caches.open(CACHE_NAME)
+                .then(cache =>
+                    cache.addAll(FILES)
+                )
+        );
 
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(key => key !== CACHE_NAME)
-          .map(key => caches.delete(key))
-      )
-    )
-  );
+        self.skipWaiting();
+    }
+);
 
-  self.clients.claim();
-});
 
-self.addEventListener('fetch', event => {
+self.addEventListener(
+    "activate",
+    event => {
 
-  const url = new URL(event.request.url);
+        event.waitUntil(
+            caches.keys().then(
+                keys =>
+                    Promise.all(
+                        keys
+                            .filter(
+                                key =>
+                                    key !== CACHE_NAME
+                            )
+                            .map(
+                                key =>
+                                    caches.delete(key)
+                            )
+                    )
+            )
+        );
 
-  /*
-    matches.json her zaman GitHub'dan güncel çekilsin.
-  */
-  if(url.pathname.endsWith('/data/matches.json')){
-    event.respondWith(
-      fetch(event.request, {
-        cache:'no-store'
-      })
-    );
-    return;
-  }
+        self.clients.claim();
+    }
+);
 
-  event.respondWith(
-    fetch(event.request)
-      .catch(() => caches.match(event.request))
-  );
-});
+
+self.addEventListener(
+    "fetch",
+    event => {
+
+        event.respondWith(
+
+            fetch(event.request)
+                .catch(
+                    () =>
+                        caches.match(
+                            event.request
+                        )
+                )
+
+        );
+    }
+);
