@@ -1188,9 +1188,14 @@ function recommendationHtml(
 
             <span class="recommendation-dot"></span>
 
+
             <div class="recommendation-main">
 
                 <div class="recommendation-line">
+
+                    <span class="recommendation-label">
+                        Örneklem
+                    </span>
 
                     <strong>
                         ${escapeHtml(
@@ -1204,8 +1209,14 @@ function recommendationHtml(
                         )}
                     </span>
 
+
                     <span class="arrow">
                         →
+                    </span>
+
+
+                    <span class="recommendation-label">
+                        Tahmin
                     </span>
 
                     <strong>
@@ -1213,6 +1224,12 @@ function recommendationHtml(
                             recommendation.targetTitle
                         )}
                     </strong>
+
+                    <span class="odd">
+                        ${escapeHtml(
+                            recommendation.targetOdds
+                        )}
+                    </span>
 
                 </div>
 
@@ -1235,7 +1252,6 @@ function recommendationHtml(
 
     `;
 }
-
 
 /* =========================================================
    SKOR
