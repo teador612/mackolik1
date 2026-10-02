@@ -1,12 +1,10 @@
 "use strict";
 
-
 /* =========================================================
    AYARLAR
 ========================================================= */
 
-const DATA_URL =
-    "./data/matches.json";
+const DATA_URL = "./data/matches.json";
 
 const HISTORY_DAYS = 60;
 
@@ -14,16 +12,14 @@ const MIN_SAMPLE = 5;
 
 const MIN_SUCCESS = 70;
 
-const MAX_COUPONS = 3;
+const MAX_COUPONS_PER_DAY = 3;
 
-const MAX_MATCHES =
-    5;
+const MAX_SELECTIONS = 5;
 
-const MIN_TOTAL_ODDS =
-    2.00;
+const MIN_TOTAL_ODDS = 2.00;
 
 const STORAGE_KEY =
-    "mackolik_coupon_history_v1";
+    "mackolik_coupon_history_v2";
 
 
 /* =========================================================
@@ -32,87 +28,45 @@ const STORAGE_KEY =
 
 let allMatches = [];
 
-let selectedDate =
-    new Date();
+let selectedDate = new Date();
 
-let calendarDate =
-    new Date();
+let calendarDate = new Date();
+
+const analysisCache = new Map();
 
 
 /* =========================================================
    DOM
 ========================================================= */
 
-const calendar =
-    document.getElementById(
-        "calendar"
-    );
+const calendarDays =
+    document.getElementById("calendarDays");
 
-const monthTitle =
-    document.getElementById(
-        "monthTitle"
-    );
+const calendarMonth =
+    document.getElementById("calendarMonth");
 
-const selectedDateBox =
-    document.getElementById(
-        "selectedDate"
-    );
+const selectedDateText =
+    document.getElementById("selectedDateText");
 
 const couponList =
-    document.getElementById(
-        "couponList"
-    );
+    document.getElementById("couponList");
 
-const statistics =
-    document.getElementById(
-        "statistics"
-    );
+const couponStats =
+    document.getElementById("couponStats");
 
 const prevMonth =
-    document.getElementById(
-        "prevMonth"
-    );
+    document.getElementById("prevMonth");
 
 const nextMonth =
-    document.getElementById(
-        "nextMonth"
-    );
+    document.getElementById("nextMonth");
 
 
 /* =========================================================
-   YARDIMCI
+   YARDIMCILAR
 ========================================================= */
 
-function escapeHtml(value) {
-
-    return String(value ?? "")
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-}
-
-
-function pad(number) {
-
-    return String(number)
-        .padStart(2, "0");
+function pad(n) {
+    return String(n).padStart(2, "0");
 }
 
 
@@ -120,32 +74,48 @@ function dateKey(date) {
 
     return [
         date.getFullYear(),
-        pad(
-            date.getMonth() + 1
-        ),
-        pad(
-            date.getDate()
-        )
+        pad(date.getMonth() + 1),
+        pad(date.getDate())
     ].join("-");
 }
 
 
-function addDays(
-    date,
-    days
-) {
+function addDays(date, days) {
 
     const result =
         new Date(date);
 
     result.setDate(
-        result.getDate() +
-        days
+        result.getDate() + days
     );
 
     return result;
 }
 
+
+function sameDate(a, b) {
+
+    return (
+        dateKey(a) ===
+        dateKey(b)
+    );
+}
+
+
+function escapeHtml(value) {
+
+    return String(value ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+/* =========================================================
+   TARİH
+========================================================= */
 
 function parseDate(value) {
 
@@ -154,15 +124,9 @@ function parseDate(value) {
     }
 
 
-    if (
-        value instanceof Date
-    ) {
+    if (value instanceof Date) {
 
-        if (
-            isNaN(
-                value.getTime()
-            )
-        ) {
+        if (isNaN(value.getTime())) {
             return null;
         }
 
@@ -175,8 +139,7 @@ function parseDate(value) {
 
 
     const text =
-        String(value)
-            .trim();
+        String(value).trim();
 
 
     let match =
@@ -215,77 +178,46 @@ function parseDate(value) {
         new Date(text);
 
 
-    if (
-        !isNaN(
-            parsed.getTime()
-        )
-    ) {
-
-        return new Date(
-            parsed.getFullYear(),
-            parsed.getMonth(),
-            parsed.getDate()
-        );
+    if (isNaN(parsed.getTime())) {
+        return null;
     }
 
 
-    return null;
+    return new Date(
+        parsed.getFullYear(),
+        parsed.getMonth(),
+        parsed.getDate()
+    );
 }
 
 
-function getValue(
-    object,
-    keys
-) {
+/* =========================================================
+   ALAN OKUMA
+========================================================= */
+
+function getValue(object, keys) {
 
     if (
         !object ||
-        typeof object !==
-            "object"
+        typeof object !== "object"
     ) {
-
         return undefined;
     }
 
 
-    for (
-        const key of keys
-    ) {
+    for (const key of keys) {
 
         if (
-            object[key] !==
-                undefined &&
-            object[key] !==
-                null &&
+            object[key] !== undefined &&
+            object[key] !== null &&
             object[key] !== ""
         ) {
-
             return object[key];
         }
     }
 
 
     return undefined;
-}
-
-
-/* =========================================================
-   MAÇ ALANLARI
-========================================================= */
-
-function getDate(match) {
-
-    return getValue(
-        match,
-        [
-            "date",
-            "Date",
-            "tarih",
-            "Tarih",
-            "matchDate",
-            "match_date"
-        ]
-    );
 }
 
 
@@ -322,21 +254,6 @@ function getAway(match) {
 }
 
 
-function getTime(match) {
-
-    return getValue(
-        match,
-        [
-            "time",
-            "Time",
-            "saat",
-            "Saat",
-            "matchTime"
-        ]
-    ) || "";
-}
-
-
 function getLeague(match) {
 
     return getValue(
@@ -348,6 +265,21 @@ function getLeague(match) {
             "Lig",
             "competition",
             "tournament"
+        ]
+    ) || "Lig belirtilmemiş";
+}
+
+
+function getTime(match) {
+
+    return getValue(
+        match,
+        [
+            "time",
+            "Time",
+            "saat",
+            "Saat",
+            "matchTime"
         ]
     ) || "";
 }
@@ -364,10 +296,7 @@ function parseScore(value) {
     }
 
 
-    if (
-        typeof value ===
-        "object"
-    ) {
+    if (typeof value === "object") {
 
         const home =
             getValue(
@@ -420,8 +349,7 @@ function parseScore(value) {
 
 
     const text =
-        String(value)
-            .trim();
+        String(value).trim();
 
 
     const match =
@@ -436,21 +364,15 @@ function parseScore(value) {
 
 
     return {
-
-        home:
-            Number(match[1]),
-
-        away:
-            Number(match[2])
+        home: Number(match[1]),
+        away: Number(match[2])
     };
 }
 
 
-function getFullTimeScore(
-    match
-) {
+function getFullTimeScore(match) {
 
-    const value =
+    return parseScore(
         getValue(
             match,
             [
@@ -468,18 +390,14 @@ function getFullTimeScore(
                 "macSonucu",
                 "MaçSonucu"
             ]
-        );
-
-
-    return parseScore(value);
+        )
+    );
 }
 
 
-function getHalfTimeScore(
-    match
-) {
+function getHalfTimeScore(match) {
 
-    const value =
+    return parseScore(
         getValue(
             match,
             [
@@ -496,23 +414,19 @@ function getHalfTimeScore(
                 "IY",
                 "ilkYari"
             ]
-        );
-
-
-    return parseScore(value);
+        )
+    );
 }
 
 
 function isPlayed(match) {
 
-    return !!getFullTimeScore(
-        match
-    );
+    return !!getFullTimeScore(match);
 }
 
 
 /* =========================================================
-   ORAN
+   ORANLAR
 ========================================================= */
 
 function normalizeOdds(value) {
@@ -522,7 +436,6 @@ function normalizeOdds(value) {
         value === null ||
         value === ""
     ) {
-
         return null;
     }
 
@@ -530,18 +443,12 @@ function normalizeOdds(value) {
     const number =
         Number(
             String(value)
-                .replace(
-                    ",",
-                    "."
-                )
+                .replace(",", ".")
                 .trim()
         );
 
 
-    if (
-        !Number.isFinite(number)
-    ) {
-
+    if (!Number.isFinite(number)) {
         return null;
     }
 
@@ -550,10 +457,7 @@ function normalizeOdds(value) {
 }
 
 
-function getOdds(
-    match,
-    names
-) {
+function getOdds(match, names) {
 
     const direct =
         getValue(
@@ -562,9 +466,7 @@ function getOdds(
         );
 
 
-    if (
-        direct !== undefined
-    ) {
+    if (direct !== undefined) {
 
         return normalizeOdds(
             direct
@@ -575,17 +477,11 @@ function getOdds(
     const containers = [
 
         match.openingOdds,
-
         match.opening_odds,
-
         match.opening,
-
         match.odds,
-
         match.Odds,
-
         match.oranlar,
-
         match.Oranlar
 
     ];
@@ -609,8 +505,7 @@ function getOdds(
 
 
         if (
-            value !==
-            undefined
+            value !== undefined
         ) {
 
             return normalizeOdds(
@@ -632,7 +527,6 @@ const MARKETS = [
 
     {
         id: "MS1",
-
         title: "MS 1",
 
         odds: match =>
@@ -650,7 +544,6 @@ const MARKETS = [
 
     {
         id: "MSX",
-
         title: "MS X",
 
         odds: match =>
@@ -670,7 +563,6 @@ const MARKETS = [
 
     {
         id: "MS2",
-
         title: "MS 2",
 
         odds: match =>
@@ -688,7 +580,6 @@ const MARKETS = [
 
     {
         id: "IY1",
-
         title: "İY 1",
 
         odds: match =>
@@ -706,7 +597,6 @@ const MARKETS = [
 
     {
         id: "IYX",
-
         title: "İY X",
 
         odds: match =>
@@ -726,7 +616,6 @@ const MARKETS = [
 
     {
         id: "IY2",
-
         title: "İY 2",
 
         odds: match =>
@@ -743,10 +632,32 @@ const MARKETS = [
 
 
     {
-        id: "IY15U",
+        id: "IY05U",
+        title: "İY 0.5 Üst",
 
-        title:
-            "İY 1.5 Üst",
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "iy05U",
+                    "IY05U",
+                    "iy05u",
+                    "iy0_5U",
+                    "iy0_5Over",
+                    "iy05Over",
+                    "IY0.5U",
+                    "İY0.5Ü",
+                    "iy05ust",
+                    "iy0.5ust",
+                    "iy05üst"
+                ]
+            )
+    },
+
+
+    {
+        id: "IY15U",
+        title: "İY 1.5 Üst",
 
         odds: match =>
             getOdds(
@@ -754,13 +665,83 @@ const MARKETS = [
                 [
                     "iy15U",
                     "IY15U",
+                    "iy15u",
                     "iy1_5U",
                     "iy1_5Over",
                     "iy15Over",
                     "IY1.5U",
                     "İY1.5Ü",
                     "iy1.5ust",
-                    "iy15ust"
+                    "iy15ust",
+                    "iy1.5üst",
+                    "iy15üst"
+                ]
+            )
+    },
+
+
+    {
+        id: "MS25U",
+        title: "2.5 Üst",
+
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "ms25U",
+                    "MS25U",
+                    "ms25u",
+                    "ms2_5U",
+                    "ms2_5Over",
+                    "ms25Over",
+                    "MS2.5U",
+                    "2.5U",
+                    "2_5U",
+                    "25U",
+                    "25ust",
+                    "25üst",
+                    "2.5ust",
+                    "2.5üst"
+                ]
+            )
+    },
+
+
+    {
+        id: "KG",
+        title: "KG Var",
+
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "kg",
+                    "KG",
+                    "kgVar",
+                    "KGVar",
+                    "kgvar",
+                    "kg1",
+                    "KG1"
+                ]
+            )
+    },
+
+
+    {
+        id: "KGY",
+        title: "KG Yok",
+
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "kgy",
+                    "KGY",
+                    "kgYok",
+                    "KGYok",
+                    "kgyok",
+                    "kg0",
+                    "KG0"
                 ]
             )
     }
@@ -784,9 +765,7 @@ function getMarketOutcome(
     ) {
 
         const score =
-            getFullTimeScore(
-                match
-            );
+            getFullTimeScore(match);
 
 
         if (!score) {
@@ -794,87 +773,116 @@ function getMarketOutcome(
         }
 
 
-        if (
-            marketId === "MS1"
-        ) {
-
-            return (
-                score.home >
-                score.away
-            );
+        if (marketId === "MS1") {
+            return score.home > score.away;
         }
 
 
-        if (
-            marketId === "MSX"
-        ) {
-
-            return (
-                score.home ===
-                score.away
-            );
+        if (marketId === "MSX") {
+            return score.home === score.away;
         }
 
 
-        return (
-            score.away >
-            score.home
-        );
-    }
-
-
-    const score =
-        getHalfTimeScore(
-            match
-        );
-
-
-    if (!score) {
-        return null;
+        return score.away > score.home;
     }
 
 
     if (
-        marketId === "IY1"
-    ) {
-
-        return (
-            score.home >
-            score.away
-        );
-    }
-
-
-    if (
-        marketId === "IYX"
-    ) {
-
-        return (
-            score.home ===
-            score.away
-        );
-    }
-
-
-    if (
-        marketId === "IY2"
-    ) {
-
-        return (
-            score.away >
-            score.home
-        );
-    }
-
-
-    if (
+        marketId === "IY1" ||
+        marketId === "IYX" ||
+        marketId === "IY2" ||
+        marketId === "IY05U" ||
         marketId === "IY15U"
     ) {
+
+        const score =
+            getHalfTimeScore(match);
+
+
+        if (!score) {
+            return null;
+        }
+
+
+        if (marketId === "IY1") {
+            return score.home > score.away;
+        }
+
+
+        if (marketId === "IYX") {
+            return score.home === score.away;
+        }
+
+
+        if (marketId === "IY2") {
+            return score.away > score.home;
+        }
+
+
+        const total =
+            score.home +
+            score.away;
+
+
+        if (marketId === "IY05U") {
+            return total >= 1;
+        }
+
+
+        if (marketId === "IY15U") {
+            return total >= 2;
+        }
+    }
+
+
+    if (
+        marketId === "MS25U"
+    ) {
+
+        const score =
+            getFullTimeScore(match);
+
+
+        if (!score) {
+            return null;
+        }
+
 
         return (
             score.home +
             score.away
-        ) >= 2;
+        ) >= 3;
+    }
+
+
+    if (
+        marketId === "KG" ||
+        marketId === "KGY"
+    ) {
+
+        const score =
+            getFullTimeScore(match);
+
+
+        if (!score) {
+            return null;
+        }
+
+
+        const bothScored =
+            score.home > 0 &&
+            score.away > 0;
+
+
+        if (
+            marketId === "KG"
+        ) {
+
+            return bothScored;
+        }
+
+
+        return !bothScored;
     }
 
 
@@ -883,7 +891,7 @@ function getMarketOutcome(
 
 
 /* =========================================================
-   TARİHİN GEÇMİŞİ
+   GEÇMİŞ
 ========================================================= */
 
 function getHistoryMatches(
@@ -891,9 +899,8 @@ function getHistoryMatches(
 ) {
 
     const end =
-        new Date(
-            targetDate
-        );
+        new Date(targetDate);
+
 
     end.setHours(
         0,
@@ -915,7 +922,17 @@ function getHistoryMatches(
 
             const date =
                 parseDate(
-                    getDate(match)
+                    getValue(
+                        match,
+                        [
+                            "date",
+                            "Date",
+                            "tarih",
+                            "Tarih",
+                            "matchDate",
+                            "match_date"
+                        ]
+                    )
                 );
 
 
@@ -933,13 +950,9 @@ function getHistoryMatches(
 
 
             return (
-
                 date >= start &&
-
                 date < end &&
-
                 isPlayed(match)
-
             );
         }
     );
@@ -950,10 +963,23 @@ function getHistoryMatches(
    ANALİZ
 ========================================================= */
 
-function getRecommendations(
-    match,
+function buildAnalysisIndex(
     targetDate
 ) {
+
+    const key =
+        dateKey(targetDate);
+
+
+    if (
+        analysisCache.has(key)
+    ) {
+
+        return analysisCache.get(
+            key
+        );
+    }
+
 
     const history =
         getHistoryMatches(
@@ -961,7 +987,77 @@ function getRecommendations(
         );
 
 
-    const recommendations = [];
+    const index =
+        new Map();
+
+
+    for (
+        const match
+        of history
+    ) {
+
+        for (
+            const market
+            of MARKETS
+        ) {
+
+            const odds =
+                market.odds(match);
+
+
+            if (!odds) {
+                continue;
+            }
+
+
+            const key =
+                `${market.id}|${odds}`;
+
+
+            if (
+                !index.has(key)
+            ) {
+
+                index.set(
+                    key,
+                    []
+                );
+            }
+
+
+            index.get(key).push(
+                match
+            );
+        }
+    }
+
+
+    analysisCache.set(
+        dateKey(targetDate),
+        index
+    );
+
+
+    return index;
+}
+
+
+/* =========================================================
+   UYGUN TAHMİNLER
+========================================================= */
+
+function getRecommendations(
+    match,
+    targetDate
+) {
+
+    const index =
+        buildAnalysisIndex(
+            targetDate
+        );
+
+
+    const result = [];
 
 
     for (
@@ -970,9 +1066,7 @@ function getRecommendations(
     ) {
 
         const sourceOdds =
-            source.odds(
-                match
-            );
+            source.odds(match);
 
 
         if (!sourceOdds) {
@@ -980,21 +1074,18 @@ function getRecommendations(
         }
 
 
+        const key =
+            `${source.id}|${sourceOdds}`;
+
+
         const historical =
-            history.filter(
-                item =>
-                    source.odds(
-                        item
-                    ) ===
-                    sourceOdds
-            );
+            index.get(key) || [];
 
 
         if (
             historical.length <
             MIN_SAMPLE
         ) {
-
             continue;
         }
 
@@ -1008,32 +1099,39 @@ function getRecommendations(
                 source.id ===
                 target.id
             ) {
-
                 continue;
             }
 
 
-            let total = 0;
+            const targetOdds =
+                target.odds(match);
+
+
+            if (!targetOdds) {
+                continue;
+            }
+
 
             let success = 0;
 
+            let total = 0;
+
 
             for (
-                const item
+                const oldMatch
                 of historical
             ) {
 
-                const result =
+                const outcome =
                     getMarketOutcome(
-                        item,
+                        oldMatch,
                         target.id
                     );
 
 
                 if (
-                    result === null
+                    outcome === null
                 ) {
-
                     continue;
                 }
 
@@ -1042,9 +1140,8 @@ function getRecommendations(
 
 
                 if (
-                    result === true
+                    outcome === true
                 ) {
-
                     success++;
                 }
             }
@@ -1054,7 +1151,6 @@ function getRecommendations(
                 total <
                 MIN_SAMPLE
             ) {
-
                 continue;
             }
 
@@ -1070,23 +1166,11 @@ function getRecommendations(
                 percentage <
                 MIN_SUCCESS
             ) {
-
                 continue;
             }
 
 
-            const targetOdds =
-                target.odds(
-                    match
-                );
-
-
-            if (!targetOdds) {
-                continue;
-            }
-
-
-            recommendations.push({
+            result.push({
 
                 sourceMarket:
                     source.id,
@@ -1115,75 +1199,43 @@ function getRecommendations(
     }
 
 
-    recommendations.sort(
+    result.sort(
         (a, b) => {
 
             if (
-                b.total !==
-                a.total
+                b.percentage !==
+                a.percentage
             ) {
 
                 return (
-                    b.total -
-                    a.total
+                    b.percentage -
+                    a.percentage
                 );
             }
 
 
             return (
-                b.percentage -
-                a.percentage
+                b.total -
+                a.total
             );
         }
     );
 
 
-    return recommendations;
+    return result;
 }
 
 
 /* =========================================================
-   MAÇ ANAHTARI
+   KUPON ADAYLARI
 ========================================================= */
 
-function matchKey(match) {
-
-    const date =
-        parseDate(
-            getDate(match)
-        );
-
-
-    return [
-
-        date
-            ? dateKey(date)
-            : "",
-
-        getTime(match),
-
-        getHome(match),
-
-        getAway(match)
-
-    ]
-        .join("|")
-        .toLowerCase();
-}
-
-
-/* =========================================================
-   ADAYLAR
-========================================================= */
-
-function getCandidates(
+function getCouponCandidates(
     targetDate
 ) {
 
-    const targetKey =
-        dateKey(
-            targetDate
-        );
+    const dayKey =
+        dateKey(targetDate);
 
 
     const matches =
@@ -1192,14 +1244,24 @@ function getCandidates(
 
                 const date =
                     parseDate(
-                        getDate(match)
+                        getValue(
+                            match,
+                            [
+                                "date",
+                                "Date",
+                                "tarih",
+                                "Tarih",
+                                "matchDate",
+                                "match_date"
+                            ]
+                        )
                     );
 
 
                 return (
                     date &&
                     dateKey(date) ===
-                    targetKey
+                    dayKey
                 );
             }
         );
@@ -1223,89 +1285,50 @@ function getCandidates(
         if (
             !recommendations.length
         ) {
-
             continue;
         }
 
 
         /*
-           Her maç için en yüksek
-           örneklemli öneriyi seç.
+           Aynı maç için tek seçim.
+
+           En yüksek başarı oranı,
+           eşitse daha büyük örneklem.
         */
 
-        recommendations.sort(
-            (a, b) => {
-
-                if (
-                    b.total !==
-                    a.total
-                ) {
-
-                    return (
-                        b.total -
-                        a.total
-                    );
-                }
-
-
-                return (
-                    b.percentage -
-                    a.percentage
-                );
-            }
-        );
-
-
-        const recommendation =
+        const best =
             recommendations[0];
 
 
         candidates.push({
 
-            key:
-                matchKey(match),
-
             match,
 
-            recommendation,
-
-            sample:
-                recommendation.total,
-
-            percentage:
-                recommendation.percentage,
-
-            odds:
-                Number(
-                    recommendation.targetOdds
-                )
+            recommendation:
+                best
 
         });
     }
 
 
-    /*
-       En yüksek örneklem önce.
-    */
-
     candidates.sort(
         (a, b) => {
 
             if (
-                b.sample !==
-                a.sample
+                b.recommendation.percentage !==
+                a.recommendation.percentage
             ) {
 
                 return (
-                    b.sample -
-                    a.sample
+                    b.recommendation.percentage -
+                    a.recommendation.percentage
                 );
             }
 
 
             return (
-                b.percentage -
-                a.percentage
+                b.recommendation.total -
+                a.recommendation.total
             );
         }
     );
@@ -1324,24 +1347,22 @@ function createCoupons(
 ) {
 
     const candidates =
-        getCandidates(
+        getCouponCandidates(
             targetDate
         );
 
 
     const coupons = [];
 
-    const used =
+    const usedMatches =
         new Set();
 
 
     for (
-        let couponNumber = 1;
-
-        couponNumber <=
-        MAX_COUPONS;
-
-        couponNumber++
+        let couponIndex = 0;
+        couponIndex <
+        MAX_COUPONS_PER_DAY;
+        couponIndex++
     ) {
 
         const selections = [];
@@ -1354,52 +1375,107 @@ function createCoupons(
             of candidates
         ) {
 
+            const match =
+                candidate.match;
+
+
+            const recommendation =
+                candidate.recommendation;
+
+
+            const matchId =
+                getMatchId(
+                    match
+                );
+
+
             if (
-                used.has(
-                    candidate.key
+                usedMatches.has(
+                    matchId
                 )
             ) {
+                continue;
+            }
 
+
+            const odds =
+                Number(
+                    recommendation.targetOdds
+                );
+
+
+            if (
+                !Number.isFinite(odds)
+            ) {
                 continue;
             }
 
 
             if (
                 selections.length >=
-                MAX_MATCHES
+                MAX_SELECTIONS
             ) {
-
                 break;
             }
 
 
-            selections.push(
-                candidate
-            );
+            selections.push({
+
+                matchId,
+
+                home:
+                    getHome(match),
+
+                away:
+                    getAway(match),
+
+                time:
+                    getTime(match),
+
+                league:
+                    getLeague(match),
+
+                market:
+                    recommendation.targetMarket,
+
+                title:
+                    recommendation.targetTitle,
+
+                odds:
+                    recommendation.targetOdds,
+
+                sourceTitle:
+                    recommendation.sourceTitle,
+
+                sourceOdds:
+                    recommendation.sourceOdds,
+
+                success:
+                    recommendation.success,
+
+                sample:
+                    recommendation.total,
+
+                percentage:
+                    recommendation.percentage
+
+            });
 
 
-            used.add(
-                candidate.key
-            );
+            totalOdds *= odds;
+        }
 
 
-            totalOdds *=
-                candidate.odds;
-
-
-            if (
-                totalOdds >=
-                MIN_TOTAL_ODDS
-            ) {
-
-                break;
-            }
+        if (
+            selections.length === 0
+        ) {
+            break;
         }
 
 
         /*
-           2.00'ye ulaşmıyorsa
-           kupon oluşturma.
+           2.00 altındaysa,
+           yeni seçimlerle tamamlamaya çalış.
         */
 
         if (
@@ -1407,83 +1483,171 @@ function createCoupons(
             MIN_TOTAL_ODDS
         ) {
 
+            for (
+                const candidate
+                of candidates
+            ) {
+
+                if (
+                    selections.length >=
+                    MAX_SELECTIONS
+                ) {
+                    break;
+                }
+
+
+                const id =
+                    getMatchId(
+                        candidate.match
+                    );
+
+
+                if (
+                    usedMatches.has(id) ||
+                    selections.some(
+                        selection =>
+                            selection.matchId ===
+                            id
+                    )
+                ) {
+                    continue;
+                }
+
+
+                const odds =
+                    Number(
+                        candidate
+                            .recommendation
+                            .targetOdds
+                    );
+
+
+                if (
+                    !Number.isFinite(odds)
+                ) {
+                    continue;
+                }
+
+
+                selections.push({
+
+                    matchId: id,
+
+                    home:
+                        getHome(
+                            candidate.match
+                        ),
+
+                    away:
+                        getAway(
+                            candidate.match
+                        ),
+
+                    time:
+                        getTime(
+                            candidate.match
+                        ),
+
+                    league:
+                        getLeague(
+                            candidate.match
+                        ),
+
+                    market:
+                        candidate
+                            .recommendation
+                            .targetMarket,
+
+                    title:
+                        candidate
+                            .recommendation
+                            .targetTitle,
+
+                    odds:
+                        candidate
+                            .recommendation
+                            .targetOdds,
+
+                    sourceTitle:
+                        candidate
+                            .recommendation
+                            .sourceTitle,
+
+                    sourceOdds:
+                        candidate
+                            .recommendation
+                            .sourceOdds,
+
+                    success:
+                        candidate
+                            .recommendation
+                            .success,
+
+                    sample:
+                        candidate
+                            .recommendation
+                            .total,
+
+                    percentage:
+                        candidate
+                            .recommendation
+                            .percentage
+
+                });
+
+
+                totalOdds *= odds;
+
+
+                if (
+                    totalOdds >=
+                    MIN_TOTAL_ODDS
+                ) {
+                    break;
+                }
+            }
+        }
+
+
+        /*
+           2.00'a ulaşmadıysa
+           zayıf kupon oluşturma.
+        */
+
+        if (
+            totalOdds <
+            MIN_TOTAL_ODDS
+        ) {
             break;
+        }
+
+
+        for (
+            const selection
+            of selections
+        ) {
+
+            usedMatches.add(
+                selection.matchId
+            );
         }
 
 
         coupons.push({
 
-            number:
-                couponNumber,
+            id:
+                `${dateKey(targetDate)}-${couponIndex + 1}`,
 
             date:
-                dateKey(
-                    targetDate
-                ),
+                dateKey(targetDate),
+
+            selections,
 
             totalOdds:
                 Number(
                     totalOdds.toFixed(2)
-                ),
-
-            selections:
-                selections.map(
-                    candidate => ({
-
-                        key:
-                            candidate.key,
-
-                        home:
-                            getHome(
-                                candidate.match
-                            ),
-
-                        away:
-                            getAway(
-                                candidate.match
-                            ),
-
-                        time:
-                            getTime(
-                                candidate.match
-                            ),
-
-                        league:
-                            getLeague(
-                                candidate.match
-                            ),
-
-                        targetMarket:
-                            candidate
-                                .recommendation
-                                .targetMarket,
-
-                        targetTitle:
-                            candidate
-                                .recommendation
-                                .targetTitle,
-
-                        targetOdds:
-                            candidate.odds,
-
-                        sourceTitle:
-                            candidate
-                                .recommendation
-                                .sourceTitle,
-
-                        sourceOdds:
-                            candidate
-                                .recommendation
-                                .sourceOdds,
-
-                        sample:
-                            candidate.sample,
-
-                        percentage:
-                            candidate.percentage
-
-                    })
                 )
+
         });
     }
 
@@ -1493,83 +1657,76 @@ function createCoupons(
 
 
 /* =========================================================
-   KUPON SONUCU
+   MAÇ ID
 ========================================================= */
 
-function couponResult(
-    coupon
-) {
+function getMatchId(match) {
 
-    let pending = false;
+    const direct =
+        getValue(
+            match,
+            [
+                "id",
+                "ID",
+                "matchId",
+                "match_id",
+                "fixtureId",
+                "fixture_id"
+            ]
+        );
 
 
-    for (
-        const selection
-        of coupon.selections
+    if (
+        direct !== undefined
     ) {
 
-        const match =
-            allMatches.find(
-                item =>
-                    matchKey(item) ===
-                    selection.key
-            );
-
-
-        if (!match) {
-
-            pending = true;
-
-            continue;
-        }
-
-
-        const result =
-            getMarketOutcome(
-                match,
-                selection.targetMarket
-            );
-
-
-        if (
-            result === false
-        ) {
-
-            return "loss";
-        }
-
-
-        if (
-            result === null
-        ) {
-
-            pending = true;
-        }
+        return String(direct);
     }
 
 
-    if (pending) {
+    return [
 
-        return "pending";
-    }
+        getHome(match),
 
+        getAway(match),
 
-    return "win";
+        getTime(match),
+
+        getValue(
+            match,
+            [
+                "date",
+                "Date",
+                "tarih",
+                "Tarih"
+            ]
+        )
+
+    ].join("|");
 }
 
 
 /* =========================================================
-   KUPON KAYIT
+   LOCAL STORAGE
 ========================================================= */
 
-function getHistory() {
+function loadCouponHistory() {
 
     try {
 
-        return JSON.parse(
+        const data =
             localStorage.getItem(
                 STORAGE_KEY
-            ) || "{}"
+            );
+
+
+        if (!data) {
+            return {};
+        }
+
+
+        return JSON.parse(
+            data
         );
 
     } catch {
@@ -1579,39 +1736,581 @@ function getHistory() {
 }
 
 
-function saveCoupons(
-    date,
-    coupons
+function saveCouponHistory(
+    history
 ) {
-
-    const history =
-        getHistory();
-
-
-    history[date] =
-        coupons;
-
 
     localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify(
-            history
-        )
+        JSON.stringify(history)
     );
 }
 
 
-function getSavedCoupons(
+/* =========================================================
+   KUPON GETİR
+========================================================= */
+
+function getCouponsForDate(
     date
 ) {
 
+    const key =
+        dateKey(date);
+
+
     const history =
-        getHistory();
+        loadCouponHistory();
 
 
-    return (
-        history[date] || []
+    if (
+        history[key]
+    ) {
+
+        return history[key];
+    }
+
+
+    /*
+       Sadece bugün için otomatik
+       kupon oluştur.
+
+       Geçmiş tarihlerde kayıt yoksa
+       yeni kupon üretme.
+    */
+
+    const today =
+        new Date();
+
+
+    if (
+        !sameDate(
+            date,
+            today
+        )
+    ) {
+
+        return [];
+    }
+
+
+    const coupons =
+        createCoupons(
+            date
+        );
+
+
+    history[key] =
+        coupons;
+
+
+    saveCouponHistory(
+        history
     );
+
+
+    return coupons;
+}
+
+
+/* =========================================================
+   KUPON DURUMU
+========================================================= */
+
+function getSelectionStatus(
+    selection,
+    match
+) {
+
+    const outcome =
+        getMarketOutcome(
+            match,
+            selection.market
+        );
+
+
+    if (
+        outcome === null
+    ) {
+
+        return "pending";
+    }
+
+
+    return outcome
+        ? "success"
+        : "failed";
+}
+
+
+/* =========================================================
+   KUPON DURUMU
+========================================================= */
+
+function getCouponStatus(
+    coupon
+) {
+
+    let pending = false;
+
+    let failed = false;
+
+
+    for (
+        const selection
+        of coupon.selections
+    ) {
+
+        const match =
+            findMatchById(
+                selection.matchId
+            );
+
+
+        if (!match) {
+            pending = true;
+            continue;
+        }
+
+
+        const status =
+            getSelectionStatus(
+                selection,
+                match
+            );
+
+
+        if (
+            status === "failed"
+        ) {
+
+            failed = true;
+        }
+
+
+        if (
+            status === "pending"
+        ) {
+
+            pending = true;
+        }
+    }
+
+
+    if (failed) {
+        return "failed";
+    }
+
+
+    if (pending) {
+        return "pending";
+    }
+
+
+    return "success";
+}
+
+
+/* =========================================================
+   MAÇ BUL
+========================================================= */
+
+function findMatchById(
+    id
+) {
+
+    return allMatches.find(
+        match =>
+            getMatchId(match) ===
+            id
+    );
+}
+
+
+/* =========================================================
+   KUPON HTML
+========================================================= */
+
+function renderCoupon(
+    coupon,
+    number
+) {
+
+    const status =
+        getCouponStatus(
+            coupon
+        );
+
+
+    let statusText =
+        "🟡 Bekliyor";
+
+
+    if (
+        status === "success"
+    ) {
+
+        statusText =
+            "🟢 Tuttu";
+    }
+
+
+    if (
+        status === "failed"
+    ) {
+
+        statusText =
+            "🔴 Tutmadı";
+    }
+
+
+    return `
+
+        <article
+            class="coupon-card ${status}"
+        >
+
+            <div class="coupon-header">
+
+                <div>
+
+                    <span class="coupon-number">
+                        Kupon ${number}
+                    </span>
+
+                    <strong>
+                        ${statusText}
+                    </strong>
+
+                </div>
+
+
+                <div class="coupon-total">
+
+                    <small>
+                        Toplam Oran
+                    </small>
+
+                    <b>
+                        ${coupon.totalOdds.toFixed(2)}
+                    </b>
+
+                </div>
+
+            </div>
+
+
+            <div class="coupon-selections">
+
+                ${coupon.selections.map(
+                    selection => {
+
+                        const match =
+                            findMatchById(
+                                selection.matchId
+                            );
+
+
+                        const selectionStatus =
+                            match
+                                ? getSelectionStatus(
+                                    selection,
+                                    match
+                                )
+                                : "pending";
+
+
+                        const icon =
+                            selectionStatus ===
+                            "success"
+                                ? "🟢"
+                                : selectionStatus ===
+                                  "failed"
+                                    ? "🔴"
+                                    : "🟡";
+
+
+                        return `
+
+                            <div class="coupon-selection">
+
+                                <div class="selection-top">
+
+                                    <span>
+                                        ${icon}
+                                    </span>
+
+                                    <span>
+                                        ${escapeHtml(
+                                            selection.time
+                                        )}
+                                    </span>
+
+                                    <span class="selection-league">
+                                        ${escapeHtml(
+                                            selection.league
+                                        )}
+                                    </span>
+
+                                </div>
+
+
+                                <div class="selection-match">
+
+                                    ${escapeHtml(
+                                        selection.home
+                                    )}
+
+                                    <span>
+                                        -
+                                    </span>
+
+                                    ${escapeHtml(
+                                        selection.away
+                                    )}
+
+                                </div>
+
+
+                                <div class="selection-pick">
+
+                                    <strong>
+                                        ${escapeHtml(
+                                            selection.title
+                                        )}
+                                    </strong>
+
+                                    <b>
+                                        ${escapeHtml(
+                                            selection.odds
+                                        )}
+                                    </b>
+
+                                </div>
+
+
+                                <div class="selection-analysis">
+
+                                    Örneklem:
+
+                                    ${escapeHtml(
+                                        selection.sourceTitle
+                                    )}
+
+                                    ${escapeHtml(
+                                        selection.sourceOdds
+                                    )}
+
+                                    →
+
+                                    ${selection.sample}
+                                    örnek
+
+                                    ·
+
+                                    %${Number(
+                                        selection.percentage
+                                    ).toFixed(1)}
+
+                                </div>
+
+                            </div>
+
+                        `;
+                    }
+                ).join("")}
+
+            </div>
+
+        </article>
+
+    `;
+}
+
+
+/* =========================================================
+   İSTATİSTİK
+========================================================= */
+
+function renderStats(
+    coupons
+) {
+
+    if (!couponStats) {
+        return;
+    }
+
+
+    let won = 0;
+
+    let lost = 0;
+
+    let pending = 0;
+
+
+    for (
+        const coupon
+        of coupons
+    ) {
+
+        const status =
+            getCouponStatus(
+                coupon
+            );
+
+
+        if (
+            status === "success"
+        ) {
+
+            won++;
+
+        } else if (
+            status === "failed"
+        ) {
+
+            lost++;
+
+        } else {
+
+            pending++;
+        }
+    }
+
+
+    const resolved =
+        won + lost;
+
+
+    const percentage =
+        resolved
+            ? (
+                won /
+                resolved
+            ) * 100
+            : null;
+
+
+    couponStats.innerHTML = `
+
+        <div class="coupon-stat">
+
+            <span>
+                Toplam
+            </span>
+
+            <strong>
+                ${coupons.length}
+            </strong>
+
+        </div>
+
+
+        <div class="coupon-stat">
+
+            <span>
+                🟢 Tuttu
+            </span>
+
+            <strong>
+                ${won}
+            </strong>
+
+        </div>
+
+
+        <div class="coupon-stat">
+
+            <span>
+                🔴 Tutmadı
+            </span>
+
+            <strong>
+                ${lost}
+            </strong>
+
+        </div>
+
+
+        <div class="coupon-stat">
+
+            <span>
+                🟡 Bekliyor
+            </span>
+
+            <strong>
+                ${pending}
+            </strong>
+
+        </div>
+
+
+        <div class="coupon-stat">
+
+            <span>
+                Başarı
+            </span>
+
+            <strong>
+                ${
+                    percentage === null
+                        ? "-"
+                        : `%${percentage.toFixed(1)}`
+                }
+            </strong>
+
+        </div>
+
+    `;
+}
+
+
+/* =========================================================
+   KUPONLARI RENDER
+========================================================= */
+
+function renderCoupons() {
+
+    if (!couponList) {
+        return;
+    }
+
+
+    const coupons =
+        getCouponsForDate(
+            selectedDate
+        );
+
+
+    renderStats(
+        coupons
+    );
+
+
+    if (!coupons.length) {
+
+        couponList.innerHTML = `
+
+            <div class="empty-coupon">
+
+                Bu tarih için kayıtlı kupon bulunmuyor.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    couponList.innerHTML =
+        coupons.map(
+            (coupon, index) =>
+                renderCoupon(
+                    coupon,
+                    index + 1
+                )
+        ).join("");
 }
 
 
@@ -1621,22 +2320,24 @@ function getSavedCoupons(
 
 function renderCalendar() {
 
+    if (
+        !calendarDays ||
+        !calendarMonth
+    ) {
+        return;
+    }
+
+
     const year =
-        calendarDate
-            .getFullYear();
+        calendarDate.getFullYear();
 
 
     const month =
-        calendarDate
-            .getMonth();
+        calendarDate.getMonth();
 
 
-    monthTitle.textContent =
-        new Date(
-            year,
-            month,
-            1
-        ).toLocaleDateString(
+    calendarMonth.textContent =
+        calendarDate.toLocaleDateString(
             "tr-TR",
             {
                 month: "long",
@@ -1645,11 +2346,10 @@ function renderCalendar() {
         );
 
 
-    calendar.innerHTML =
-        "";
+    calendarDays.innerHTML = "";
 
 
-    const firstDay =
+    const first =
         new Date(
             year,
             month,
@@ -1657,21 +2357,17 @@ function renderCalendar() {
         );
 
 
-    let startDay =
-        firstDay.getDay();
+    let start =
+        first.getDay();
 
 
-    /*
-       Pazartesi = 0
-    */
-
-    startDay =
-        startDay === 0
+    start =
+        start === 0
             ? 6
-            : startDay - 1;
+            : start - 1;
 
 
-    const daysInMonth =
+    const days =
         new Date(
             year,
             month + 1,
@@ -1681,7 +2377,7 @@ function renderCalendar() {
 
     for (
         let i = 0;
-        i < startDay;
+        i < start;
         i++
     ) {
 
@@ -1690,18 +2386,24 @@ function renderCalendar() {
                 "div"
             );
 
+
         empty.className =
             "calendar-day empty";
 
-        calendar.appendChild(
+
+        calendarDays.appendChild(
             empty
         );
     }
 
 
+    const today =
+        new Date();
+
+
     for (
         let day = 1;
-        day <= daysInMonth;
+        day <= days;
         day++
     ) {
 
@@ -1711,10 +2413,6 @@ function renderCalendar() {
                 month,
                 day
             );
-
-
-        const key =
-            dateKey(date);
 
 
         const button =
@@ -1731,14 +2429,11 @@ function renderCalendar() {
             "calendar-day";
 
 
-        button.textContent =
-            day;
-
-
         if (
-            dateKey(
+            sameDate(
+                date,
                 selectedDate
-            ) === key
+            )
         ) {
 
             button.classList.add(
@@ -1747,34 +2442,21 @@ function renderCalendar() {
         }
 
 
-        const hasMatches =
-            allMatches.some(
-                match => {
-
-                    const matchDate =
-                        parseDate(
-                            getDate(
-                                match
-                            )
-                        );
-
-
-                    return (
-                        matchDate &&
-                        dateKey(
-                            matchDate
-                        ) === key
-                    );
-                }
-            );
-
-
-        if (hasMatches) {
+        if (
+            sameDate(
+                date,
+                today
+            )
+        ) {
 
             button.classList.add(
-                "has-data"
+                "today"
             );
         }
+
+
+        button.textContent =
+            day;
 
 
         button.addEventListener(
@@ -1782,30 +2464,38 @@ function renderCalendar() {
             () => {
 
                 selectedDate =
-                    new Date(
-                        date
-                    );
+                    new Date(date);
 
 
-                /*
-                   O günün kuponlarını
-                   otomatik oluştur/kaydet.
-                */
+                calendarDate =
+                    new Date(date);
 
-                ensureCoupons(
-                    selectedDate
-                );
+
+                if (
+                    selectedDateText
+                ) {
+
+                    selectedDateText.textContent =
+                        selectedDate.toLocaleDateString(
+                            "tr-TR",
+                            {
+                                weekday: "long",
+                                day: "2-digit",
+                                month: "long",
+                                year: "numeric"
+                            }
+                        );
+                }
 
 
                 renderCalendar();
 
-                renderSelectedDate();
-
+                renderCoupons();
             }
         );
 
 
-        calendar.appendChild(
+        calendarDays.appendChild(
             button
         );
     }
@@ -1813,473 +2503,7 @@ function renderCalendar() {
 
 
 /* =========================================================
-   KUPONU GARANTİ ET
-========================================================= */
-
-function ensureCoupons(
-    date
-) {
-
-    const key =
-        dateKey(date);
-
-
-    const existing =
-        getSavedCoupons(
-            key
-        );
-
-
-    if (
-        existing.length
-    ) {
-
-        return existing;
-    }
-
-
-    const coupons =
-        createCoupons(
-            date
-        );
-
-
-    saveCoupons(
-        key,
-        coupons
-    );
-
-
-    return coupons;
-}
-
-
-/* =========================================================
-   SEÇİLİ TARİH
-========================================================= */
-
-function renderSelectedDate() {
-
-    const key =
-        dateKey(
-            selectedDate
-        );
-
-
-    const coupons =
-        ensureCoupons(
-            selectedDate
-        );
-
-
-    const dateText =
-        selectedDate.toLocaleDateString(
-            "tr-TR",
-            {
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-            }
-        );
-
-
-    selectedDateBox.textContent =
-        dateText;
-
-
-    renderStatistics(
-        coupons
-    );
-
-
-    renderCoupons(
-        coupons
-    );
-}
-
-
-/* =========================================================
-   İSTATİSTİK
-========================================================= */
-
-function renderStatistics(
-    selectedCoupons
-) {
-
-    const history =
-        getHistory();
-
-
-    let total = 0;
-
-    let win = 0;
-
-    let loss = 0;
-
-    let pending = 0;
-
-
-    Object.values(history)
-        .flat()
-        .forEach(
-            coupon => {
-
-                total++;
-
-
-                const result =
-                    couponResult(
-                        coupon
-                    );
-
-
-                if (
-                    result ===
-                    "win"
-                ) {
-
-                    win++;
-
-                } else if (
-                    result ===
-                    "loss"
-                ) {
-
-                    loss++;
-
-                } else {
-
-                    pending++;
-                }
-            }
-        );
-
-
-    const finished =
-        win + loss;
-
-
-    const successRate =
-        finished > 0
-            ? (
-                win /
-                finished
-            ) * 100
-            : 0;
-
-
-    statistics.innerHTML = `
-
-        <div class="stat">
-
-            <span class="stat-label">
-                BUGÜN
-            </span>
-
-            <strong class="stat-value">
-                ${selectedCoupons.length}
-            </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-            <span class="stat-label">
-                TOPLAM KUPON
-            </span>
-
-            <strong class="stat-value">
-                ${total}
-            </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-            <span class="stat-label">
-                KAZANAN
-            </span>
-
-            <strong class="stat-value green">
-                ${win}
-            </strong>
-
-        </div>
-
-
-        <div class="stat">
-
-            <span class="stat-label">
-                BAŞARI
-            </span>
-
-            <strong class="stat-value">
-                %${successRate.toFixed(1)}
-            </strong>
-
-        </div>
-
-    `;
-}
-
-
-/* =========================================================
-   KUPON HTML
-========================================================= */
-
-function renderCoupons(
-    coupons
-) {
-
-    couponList.innerHTML =
-        "";
-
-
-    if (
-        !coupons.length
-    ) {
-
-        couponList.innerHTML = `
-
-            <div class="empty">
-
-                Bu tarih için şartları
-                sağlayan kupon bulunamadı.
-
-                <br><br>
-
-                En az
-                <strong>
-                    ${MIN_SAMPLE}
-                </strong>
-                örneklem,
-
-                <strong>
-                    %${MIN_SUCCESS}
-                </strong>
-                başarı ve
-
-                <strong>
-                    ${MIN_TOTAL_ODDS.toFixed(2)}
-                </strong>
-                toplam oran gerekiyor.
-
-            </div>
-
-        `;
-
-        return;
-    }
-
-
-    coupons.forEach(
-        coupon => {
-
-            const result =
-                couponResult(
-                    coupon
-                );
-
-
-            let statusText =
-                "BEKLİYOR";
-
-
-            let statusClass =
-                "pending";
-
-
-            if (
-                result ===
-                "win"
-            ) {
-
-                statusText =
-                    "TUTTU";
-
-                statusClass =
-                    "win";
-
-            } else if (
-                result ===
-                "loss"
-            ) {
-
-                statusText =
-                    "TUTMADI";
-
-                statusClass =
-                    "loss";
-            }
-
-
-            let html = `
-
-                <article class="coupon">
-
-                    <div class="coupon-header">
-
-                        <span class="coupon-title">
-                            Kupon ${coupon.number}
-                        </span>
-
-
-                        <span class="coupon-status ${statusClass}">
-                            ${statusText}
-                        </span>
-
-
-                        <span class="coupon-odds">
-                            ${coupon.totalOdds.toFixed(2)}
-                        </span>
-
-                    </div>
-
-            `;
-
-
-            coupon.selections.forEach(
-                selection => {
-
-                    html += `
-
-                        <div class="coupon-match">
-
-                            <div class="match-top">
-
-                                <div class="teams">
-
-                                    ${escapeHtml(
-                                        selection.home
-                                    )}
-
-                                    -
-
-                                    ${escapeHtml(
-                                        selection.away
-                                    )}
-
-                                </div>
-
-
-                                <span class="match-time">
-
-                                    ${escapeHtml(
-                                        selection.time
-                                    )}
-
-                                </span>
-
-                            </div>
-
-
-                            <div class="pick">
-
-                                <span class="pick-name">
-
-                                    ${escapeHtml(
-                                        selection.targetTitle
-                                    )}
-
-                                </span>
-
-
-                                <span class="pick-odd">
-
-                                    ${Number(
-                                        selection.targetOdds
-                                    ).toFixed(2)}
-
-                                </span>
-
-
-                                <span class="arrow">
-                                    →
-                                </span>
-
-
-                                <span>
-
-                                    ${escapeHtml(
-                                        selection.sourceTitle
-                                    )}
-
-                                    ${escapeHtml(
-                                        selection.sourceOdds
-                                    )}
-
-                                </span>
-
-
-                                <span class="sample">
-
-                                    · Örneklem:
-                                    ${selection.sample}
-
-                                    ·
-                                    %${selection.percentage.toFixed(1)}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    `;
-                }
-            );
-
-
-            html += `
-
-                </article>
-
-            `;
-
-
-            couponList.insertAdjacentHTML(
-                "beforeend",
-                html
-            );
-        }
-    );
-}
-
-
-/* =========================================================
-   AY DEĞİŞTİR
-========================================================= */
-
-prevMonth.addEventListener(
-    "click",
-    () => {
-
-        calendarDate.setMonth(
-            calendarDate.getMonth() - 1
-        );
-
-        renderCalendar();
-    }
-);
-
-
-nextMonth.addEventListener(
-    "click",
-    () => {
-
-        calendarDate.setMonth(
-            calendarDate.getMonth() + 1
-        );
-
-        renderCalendar();
-    }
-);
-
-
-/* =========================================================
-   VERİYİ YÜKLE
+   VERİ YÜKLE
 ========================================================= */
 
 async function loadData() {
@@ -2288,19 +2512,18 @@ async function loadData() {
 
         const response =
             await fetch(
-                DATA_URL,
+                `${DATA_URL}?v=${Date.now()}`,
                 {
-                    cache: "no-store"
+                    cache:
+                        "no-store"
                 }
             );
 
 
-        if (
-            !response.ok
-        ) {
+        if (!response.ok) {
 
             throw new Error(
-                "Veri alınamadı."
+                "Veri dosyası yüklenemedi."
             );
         }
 
@@ -2317,6 +2540,7 @@ async function loadData() {
                 data;
 
         } else if (
+            data &&
             Array.isArray(
                 data.matches
             )
@@ -2328,97 +2552,41 @@ async function loadData() {
         } else {
 
             throw new Error(
-                "Maç verisi bulunamadı."
+                "matches.json formatı geçersiz."
             );
         }
 
 
-        /*
-           Veri içerisindeki ilk tarihi
-           takvim için başlangıç yap.
-        */
-
-        const dates =
-            allMatches
-                .map(
-                    match =>
-                        parseDate(
-                            getDate(
-                                match
-                            )
-                        )
-                )
-                .filter(Boolean)
-                .sort(
-                    (a, b) =>
-                        a - b
-                );
-
-
-        if (dates.length) {
-
-            /*
-               Bugün varsa bugün,
-               yoksa verideki son tarih.
-            */
-
-            const today =
-                new Date();
-
-
-            const todayExists =
-                dates.some(
-                    date =>
-                        dateKey(date) ===
-                        dateKey(today)
-                );
-
-
-            if (
-                todayExists
-            ) {
-
-                selectedDate =
-                    new Date(today);
-
-            } else {
-
-                selectedDate =
-                    new Date(
-                        dates[
-                            dates.length - 1
-                        ]
-                    );
-            }
-
-            calendarDate =
-                new Date(
-                    selectedDate
-                );
-        }
+        analysisCache.clear();
 
 
         renderCalendar();
 
-        renderSelectedDate();
+        renderCoupons();
 
     } catch (error) {
 
-        couponList.innerHTML = `
+        console.error(error);
 
-            <div class="empty">
 
-                Veriler yüklenemedi.
+        if (couponList) {
 
-                <br><br>
+            couponList.innerHTML = `
 
-                ${escapeHtml(
-                    error.message
-                )}
+                <div class="empty-coupon">
 
-            </div>
+                    Veri yüklenemedi.
 
-        `;
+                    <br><br>
+
+                    ${escapeHtml(
+                        error.message
+                    )}
+
+                </div>
+
+            `;
+        }
     }
 }
 
@@ -2427,4 +2595,74 @@ async function loadData() {
    BAŞLAT
 ========================================================= */
 
-loadData();
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const today =
+            new Date();
+
+
+        selectedDate =
+            new Date(today);
+
+
+        calendarDate =
+            new Date(today);
+
+
+        if (
+            selectedDateText
+        ) {
+
+            selectedDateText.textContent =
+                today.toLocaleDateString(
+                    "tr-TR",
+                    {
+                        weekday: "long",
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric"
+                    }
+                );
+        }
+
+
+        if (prevMonth) {
+
+            prevMonth.addEventListener(
+                "click",
+                () => {
+
+                    calendarDate.setMonth(
+                        calendarDate.getMonth() - 1
+                    );
+
+
+                    renderCalendar();
+                }
+            );
+        }
+
+
+        if (nextMonth) {
+
+            nextMonth.addEventListener(
+                "click",
+                () => {
+
+                    calendarDate.setMonth(
+                        calendarDate.getMonth() + 1
+                    );
+
+
+                    renderCalendar();
+                }
+            );
+        }
+
+
+        loadData();
+
+    }
+);
