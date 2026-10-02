@@ -25,21 +25,21 @@ body{
   min-height:100vh;
 }
 
-button,
-select{
-  font:inherit;
-}
-
 button{
+  font:inherit;
   cursor:pointer;
 }
 
 .app{
   width:100%;
   max-width:900px;
-  margin:0 auto;
+  margin:auto;
   padding:14px;
 }
+
+/* =========================
+   HEADER
+========================= */
 
 .header{
   background:linear-gradient(135deg,#151d35,#0f162b);
@@ -64,22 +64,15 @@ button{
   margin-top:5px;
 }
 
+/* =========================
+   CONTROLS
+========================= */
+
 .controls{
   display:grid;
   grid-template-columns:1fr auto;
   gap:8px;
   margin-top:15px;
-}
-
-select{
-  width:100%;
-  min-height:44px;
-  padding:0 12px;
-  border-radius:12px;
-  border:1px solid #303b59;
-  background:#0b1020;
-  color:#fff;
-  outline:none;
 }
 
 .refresh{
@@ -95,6 +88,198 @@ select{
 .refresh:active{
   transform:scale(.98);
 }
+
+/* =========================
+   TAKVİM
+========================= */
+
+.calendar-wrapper{
+  position:relative;
+}
+
+.calendar-button{
+  width:100%;
+  min-height:44px;
+  padding:7px 12px;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  border:1px solid #303b59;
+  border-radius:12px;
+
+  background:#0b1020;
+  color:#fff;
+
+  text-align:left;
+}
+
+.calendar-icon{
+  font-size:20px;
+}
+
+.calendar-button-info{
+  flex:1;
+  min-width:0;
+}
+
+.calendar-button-info small{
+  display:block;
+  color:#7f8ba8;
+  font-size:10px;
+  margin-bottom:2px;
+}
+
+.calendar-button-info strong{
+  display:block;
+  font-size:14px;
+  font-weight:800;
+}
+
+.calendar-arrow{
+  color:#8995b2;
+  font-size:18px;
+}
+
+.calendar-popup{
+  position:absolute;
+  z-index:1000;
+
+  top:calc(100% + 8px);
+  left:0;
+
+  width:310px;
+
+  padding:14px;
+
+  background:#11182b;
+  border:1px solid #303b59;
+  border-radius:16px;
+
+  box-shadow:0 18px 45px rgba(0,0,0,.45);
+}
+
+.calendar-popup[hidden]{
+  display:none;
+}
+
+.calendar-header{
+  display:grid;
+  grid-template-columns:40px 1fr 40px;
+  align-items:center;
+  margin-bottom:12px;
+  text-align:center;
+}
+
+.calendar-header strong{
+  font-size:15px;
+}
+
+.month-button{
+  width:36px;
+  height:36px;
+
+  border:1px solid #303b59;
+  border-radius:9px;
+
+  background:#0d1426;
+  color:#fff;
+
+  font-size:23px;
+}
+
+.calendar-weekdays{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+
+  margin-bottom:5px;
+
+  color:#697590;
+  font-size:10px;
+  font-weight:700;
+  text-align:center;
+}
+
+.calendar-days{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:4px;
+}
+
+.calendar-day{
+  position:relative;
+
+  aspect-ratio:1;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  border:0;
+  border-radius:9px;
+
+  background:transparent;
+  color:#dce3f5;
+
+  font-size:12px;
+  font-weight:600;
+}
+
+.calendar-day:hover{
+  background:#1c2946;
+}
+
+.calendar-day.other-month{
+  color:#3f4a64;
+}
+
+.calendar-day.today{
+  border:1px solid #2563eb;
+  color:#60a5fa;
+}
+
+.calendar-day.selected{
+  background:#2563eb;
+  color:#fff;
+  font-weight:900;
+}
+
+.calendar-day.has-data::after{
+  content:"";
+
+  position:absolute;
+  bottom:4px;
+
+  width:4px;
+  height:4px;
+
+  border-radius:50%;
+  background:#4ade80;
+}
+
+.calendar-day.selected.has-data::after{
+  background:#fff;
+}
+
+.today-button{
+  width:100%;
+  margin-top:12px;
+  padding:9px;
+
+  border:1px solid #303b59;
+  border-radius:9px;
+
+  background:#0d1426;
+  color:#60a5fa;
+
+  font-size:12px;
+  font-weight:800;
+}
+
+/* =========================
+   ÖZET
+========================= */
 
 .summary{
   display:grid;
@@ -120,6 +305,10 @@ select{
   font-weight:800;
   margin-top:4px;
 }
+
+/* =========================
+   MAÇLAR
+========================= */
 
 .matches{
   display:flex;
@@ -149,7 +338,6 @@ select{
 .time{
   font-size:14px;
   font-weight:800;
-  color:#fff;
 }
 
 .league{
@@ -157,6 +345,7 @@ select{
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
+
   color:#7f8ba8;
   font-size:11px;
   text-align:right;
@@ -190,6 +379,10 @@ select{
   font-size:13px;
   color:#9da8c1;
 }
+
+/* =========================
+   ÖNERİ
+========================= */
 
 .recommendation{
   margin-top:12px;
@@ -261,13 +454,19 @@ select{
   color:#aeb7ca;
 }
 
+/* =========================
+   DETAY
+========================= */
+
 .details-button{
   width:100%;
   margin-top:9px;
   min-height:38px;
+
   border:1px solid #303b59;
   background:#0d1426;
   color:#dce3f5;
+
   border-radius:10px;
   font-size:12px;
   font-weight:700;
@@ -318,12 +517,18 @@ select{
   margin-top:4px;
 }
 
+/* =========================
+   DURUMLAR
+========================= */
+
 .empty{
   text-align:center;
   padding:40px 20px;
+
   background:#11182b;
   border:1px solid #26314d;
   border-radius:16px;
+
   color:#8995b2;
 }
 
@@ -336,8 +541,10 @@ select{
 .error{
   padding:20px;
   border-radius:15px;
+
   background:#3b1218;
   border:1px solid #66202b;
+
   color:#ffb4bf;
   line-height:1.5;
 }
@@ -349,7 +556,12 @@ select{
   padding:20px 0 10px;
 }
 
+/* =========================
+   MOBİL
+========================= */
+
 @media(max-width:520px){
+
   .app{
     padding:10px;
   }
@@ -368,6 +580,10 @@ select{
   }
 
   .refresh{
+    width:100%;
+  }
+
+  .calendar-popup{
     width:100%;
   }
 
@@ -402,9 +618,86 @@ select{
 
     <div class="controls">
 
-      <select id="dateFilter">
-        <option value="">Yükleniyor...</option>
-      </select>
+      <!-- TAKVİM -->
+
+      <div class="calendar-wrapper">
+
+        <button
+          id="calendarButton"
+          class="calendar-button"
+          type="button">
+
+          <span class="calendar-icon">
+            📅
+          </span>
+
+          <span class="calendar-button-info">
+            <small>Tarih</small>
+            <strong id="selectedDateText">
+              Yükleniyor...
+            </strong>
+          </span>
+
+          <span class="calendar-arrow">
+            ⌄
+          </span>
+
+        </button>
+
+        <div
+          id="calendarPopup"
+          class="calendar-popup"
+          hidden>
+
+          <div class="calendar-header">
+
+            <button
+              id="prevMonth"
+              class="month-button"
+              type="button">
+              ‹
+            </button>
+
+            <strong id="calendarMonth">
+              —
+            </strong>
+
+            <button
+              id="nextMonth"
+              class="month-button"
+              type="button">
+              ›
+            </button>
+
+          </div>
+
+          <div class="calendar-weekdays">
+
+            <span>Pzt</span>
+            <span>Sal</span>
+            <span>Çar</span>
+            <span>Per</span>
+            <span>Cum</span>
+            <span>Cmt</span>
+            <span>Paz</span>
+
+          </div>
+
+          <div
+            id="calendarDays"
+            class="calendar-days">
+          </div>
+
+          <button
+            id="todayButton"
+            class="today-button"
+            type="button">
+            Bugüne Git
+          </button>
+
+        </div>
+
+      </div>
 
       <button
         class="refresh"
@@ -417,19 +710,25 @@ select{
 
   </div>
 
+
   <div id="summary"></div>
 
+
   <div id="content">
+
     <div class="loading">
       Veriler yükleniyor...
     </div>
+
   </div>
+
 
   <div class="footer">
     Açılış oranı analizi · Son 30 gün · Minimum %70 başarı
   </div>
 
 </div>
+
 
 <script>
 'use strict';
@@ -438,7 +737,8 @@ select{
    AYARLAR
 ========================================================= */
 
-const DATA_URL = './data/matches.json';
+const DATA_URL =
+  './data/matches.json';
 
 const MIN_SUCCESS = 70;
 const MIN_SAMPLE = 5;
@@ -450,12 +750,26 @@ const HISTORY_DAYS = 30;
 ========================================================= */
 
 const state = {
+
   matches: [],
+
   byDate: new Map(),
+
   oddsIndex: new Map(),
+
   selectedDate: '',
+
   cache: new Map()
+
 };
+
+
+/* =========================================================
+   TAKVİM DURUMU
+========================================================= */
+
+let calendarMonth;
+let calendarYear;
 
 
 /* =========================================================
@@ -466,8 +780,12 @@ function $(id){
   return document.getElementById(id);
 }
 
+
 function esc(value){
-  return String(value ?? '').replace(
+
+  return String(
+    value ?? ''
+  ).replace(
     /[&<>"']/g,
     c => ({
       '&':'&amp;',
@@ -477,7 +795,9 @@ function esc(value){
       "'":'&#39;'
     }[c])
   );
+
 }
+
 
 function num(value){
 
@@ -489,12 +809,17 @@ function num(value){
     return null;
   }
 
-  const n = Number(
-    String(value).replace(',', '.')
-  );
+  const n =
+    Number(
+      String(value)
+        .replace(',','.')
+    );
 
-  return Number.isFinite(n) ? n : null;
+  return Number.isFinite(n)
+    ? n
+    : null;
 }
+
 
 function dateNumber(date){
 
@@ -502,7 +827,8 @@ function dateNumber(date){
     return 0;
   }
 
-  const p = String(date).split('.');
+  const p =
+    String(date).split('.');
 
   if(p.length !== 3){
     return 0;
@@ -515,9 +841,11 @@ function dateNumber(date){
   );
 }
 
+
 function dateTimestamp(date){
 
-  const p = String(date).split('.');
+  const p =
+    String(date).split('.');
 
   if(p.length !== 3){
     return 0;
@@ -525,10 +853,12 @@ function dateTimestamp(date){
 
   return new Date(
     Number(p[2]),
-    Number(p[1])-1,
+    Number(p[1]) - 1,
     Number(p[0])
   ).getTime();
+
 }
+
 
 function today(){
 
@@ -539,20 +869,27 @@ function today(){
     String(d.getMonth()+1).padStart(2,'0'),
     d.getFullYear()
   ].join('.');
+
 }
+
 
 function getOdd(match,key){
 
-  const value = num(
-    match?.openingOdds?.[key]
-  );
+  const value =
+    num(
+      match?.openingOdds?.[key]
+    );
 
-  if(value === null || value <= 0){
+  if(
+    value === null ||
+    value <= 0
+  ){
     return null;
   }
 
   return value;
 }
+
 
 function scoreOf(obj){
 
@@ -560,8 +897,11 @@ function scoreOf(obj){
     return null;
   }
 
-  const home = num(obj.home);
-  const away = num(obj.away);
+  const home =
+    num(obj.home);
+
+  const away =
+    num(obj.away);
 
   if(
     home === null ||
@@ -572,19 +912,36 @@ function scoreOf(obj){
     return null;
   }
 
-  return {home,away};
+  return {
+    home,
+    away
+  };
+
 }
+
 
 function getScore(match){
-  return scoreOf(match?.score);
+
+  return scoreOf(
+    match?.score
+  );
+
 }
+
 
 function getHalf(match){
-  return scoreOf(match?.halfTimeScore);
+
+  return scoreOf(
+    match?.halfTimeScore
+  );
+
 }
 
+
 function isPlayed(match){
+
   return getScore(match) !== null;
+
 }
 
 
@@ -593,6 +950,7 @@ function isPlayed(match){
 ========================================================= */
 
 const SOURCES = [
+
   {key:'ms1',name:'MS 1'},
   {key:'msX',name:'MS X'},
   {key:'ms2',name:'MS 2'},
@@ -615,10 +973,12 @@ const SOURCES = [
   {key:'iy1',name:'İY 1'},
   {key:'iyX',name:'İY X'},
   {key:'iy2',name:'İY 2'}
+
 ];
 
 
 const TARGETS = [
+
   {key:'ms1',name:'MS 1'},
   {key:'msX',name:'MS X'},
   {key:'ms2',name:'MS 2'},
@@ -644,6 +1004,7 @@ const TARGETS = [
   {key:'iy1',name:'İY 1'},
   {key:'iyX',name:'İY X'},
   {key:'iy2',name:'İY 2'}
+
 ];
 
 
@@ -653,8 +1014,11 @@ const TARGETS = [
 
 function result(match,key){
 
-  const score = getScore(match);
-  const half = getHalf(match);
+  const score =
+    getScore(match);
+
+  const half =
+    getHalf(match);
 
   switch(key){
 
@@ -672,11 +1036,13 @@ function result(match,key){
 
     case 'kgVar':
       if(!score) return null;
-      return score.home > 0 && score.away > 0;
+      return score.home > 0 &&
+             score.away > 0;
 
     case 'kgYok':
       if(!score) return null;
-      return score.home === 0 || score.away === 0;
+      return score.home === 0 ||
+             score.away === 0;
 
     case 'over15':
       if(!score) return null;
@@ -732,7 +1098,9 @@ function result(match,key){
 
     default:
       return null;
+
   }
+
 }
 
 
@@ -746,61 +1114,92 @@ function buildIndex(){
   state.oddsIndex.clear();
   state.cache.clear();
 
-  for(const match of state.matches){
+  for(
+    const match of state.matches
+  ){
 
-    if(!match || !match.date){
+    if(
+      !match ||
+      !match.date
+    ){
       continue;
     }
 
-    if(!state.byDate.has(match.date)){
+
+    if(
+      !state.byDate.has(
+        match.date
+      )
+    ){
+
       state.byDate.set(
         match.date,
         []
       );
+
     }
+
 
     state.byDate
       .get(match.date)
       .push(match);
 
 
-    for(const source of SOURCES){
+    for(
+      const source of SOURCES
+    ){
 
-      const odd = getOdd(
-        match,
-        source.key
-      );
+      const odd =
+        getOdd(
+          match,
+          source.key
+        );
 
       if(odd === null){
         continue;
       }
+
 
       const key =
         source.key +
         '|' +
         odd.toFixed(2);
 
-      if(!state.oddsIndex.has(key)){
+
+      if(
+        !state.oddsIndex.has(key)
+      ){
+
         state.oddsIndex.set(
           key,
           []
         );
+
       }
+
 
       state.oddsIndex
         .get(key)
         .push(match);
+
     }
+
   }
 
-  for(const list of state.oddsIndex.values()){
+
+  for(
+    const list of
+    state.oddsIndex.values()
+  ){
 
     list.sort(
       (a,b) =>
         dateNumber(a.date) -
         dateNumber(b.date)
     );
+
   }
+
 }
 
 
@@ -851,7 +1250,9 @@ function getHistory(
 
   const resultList = [];
 
-  for(const old of list){
+  for(
+    const old of list
+  ){
 
     const oldDate =
       dateNumber(old.date);
@@ -869,9 +1270,11 @@ function getHistory(
     }
 
     resultList.push(old);
+
   }
 
   return resultList;
+
 }
 
 
@@ -886,13 +1289,21 @@ function analyze(match){
     '_' +
     String(match.date || '');
 
-  if(state.cache.has(cacheKey)){
-    return state.cache.get(cacheKey);
+  if(
+    state.cache.has(cacheKey)
+  ){
+    return state.cache.get(
+      cacheKey
+    );
   }
+
 
   const list = [];
 
-  for(const source of SOURCES){
+
+  for(
+    const source of SOURCES
+  ){
 
     const currentOdd =
       getOdd(
@@ -904,6 +1315,7 @@ function analyze(match){
       continue;
     }
 
+
     const same =
       getHistory(
         match.date,
@@ -911,12 +1323,18 @@ function analyze(match){
         currentOdd
       );
 
-    for(const target of TARGETS){
+
+    for(
+      const target of TARGETS
+    ){
 
       let success = 0;
       let total = 0;
 
-      for(const old of same){
+
+      for(
+        const old of same
+      ){
 
         const r =
           result(
@@ -933,119 +1351,667 @@ function analyze(match){
         if(r === true){
           success++;
         }
+
       }
 
-      if(total < MIN_SAMPLE){
+
+      if(
+        total < MIN_SAMPLE
+      ){
         continue;
       }
+
 
       const percent =
-        success / total * 100;
+        success /
+        total *
+        100;
 
-      if(percent < MIN_SUCCESS){
+
+      if(
+        percent < MIN_SUCCESS
+      ){
         continue;
       }
 
+
       list.push({
+
         source:source.name,
+
         sourceKey:source.key,
+
         target:target.name,
+
         targetKey:target.key,
+
         odd:currentOdd,
+
         success,
+
         total,
+
         percent
+
       });
+
     }
+
   }
 
-  list.sort((a,b)=>{
 
-    if(b.percent !== a.percent){
-      return b.percent-a.percent;
+  list.sort(
+    (a,b) => {
+
+      if(
+        b.percent !==
+        a.percent
+      ){
+        return (
+          b.percent -
+          a.percent
+        );
+      }
+
+      if(
+        b.total !==
+        a.total
+      ){
+        return (
+          b.total -
+          a.total
+        );
+      }
+
+      return (
+        b.success -
+        a.success
+      );
+
     }
+  );
 
-    if(b.total !== a.total){
-      return b.total-a.total;
-    }
-
-    return b.success-a.success;
-  });
 
   const data = {
+
     list,
-    best:list.length
-      ? list[0]
-      : null
+
+    best:
+      list.length
+        ? list[0]
+        : null
+
   };
+
 
   state.cache.set(
     cacheKey,
     data
   );
 
+
   return data;
+
 }
 
 
 /* =========================================================
-   TARİHLER
+   TAKVİM
 ========================================================= */
 
-function setupDates(){
+function parseDate(date){
 
-  const select =
-    $('dateFilter');
+  const p =
+    String(date).split('.');
+
+  if(p.length !== 3){
+    return null;
+  }
+
+  return {
+
+    day:Number(p[0]),
+
+    month:
+      Number(p[1]) - 1,
+
+    year:Number(p[2])
+
+  };
+
+}
+
+
+function formatDate(
+  day,
+  month,
+  year
+){
+
+  return [
+    String(day).padStart(2,'0'),
+    String(month + 1).padStart(2,'0'),
+    year
+  ].join('.');
+
+}
+
+
+function monthName(month){
+
+  const names = [
+
+    'Ocak',
+    'Şubat',
+    'Mart',
+    'Nisan',
+    'Mayıs',
+    'Haziran',
+    'Temmuz',
+    'Ağustos',
+    'Eylül',
+    'Ekim',
+    'Kasım',
+    'Aralık'
+
+  ];
+
+  return names[month];
+
+}
+
+
+function setupCalendar(){
 
   const dates =
     Array.from(
       state.byDate.keys()
-    ).sort(
-      (a,b) =>
-        dateNumber(b) -
-        dateNumber(a)
     );
 
-  select.innerHTML = '';
-
-  if(!dates.length){
-
-    select.innerHTML =
-      '<option value="">Tarih yok</option>';
-
-    state.selectedDate = '';
-
-    return;
-  }
 
   const currentToday =
     today();
 
-  const selected =
+
+  let selected =
     dates.includes(currentToday)
       ? currentToday
-      : dates[0];
+      : dates.sort(
+          (a,b) =>
+            dateNumber(b) -
+            dateNumber(a)
+        )[0];
 
-  for(const date of dates){
 
-    const option =
-      document.createElement('option');
+  /*
+     Veri içinde bugün yoksa
+     yine de takvim BUGÜNÜ açar.
+  */
 
-    option.value = date;
-    option.textContent =
-      date === currentToday
-        ? 'Bugün - ' + date
-        : date;
-
-    if(date === selected){
-      option.selected = true;
-    }
-
-    select.appendChild(option);
+  if(!selected){
+    selected =
+      currentToday;
   }
+
 
   state.selectedDate =
     selected;
+
+
+  const parts =
+    parseDate(selected);
+
+
+  calendarMonth =
+    parts.month;
+
+  calendarYear =
+    parts.year;
+
+
+  renderCalendar();
+
+}
+
+
+function renderCalendar(){
+
+  const monthElement =
+    $('calendarMonth');
+
+  const daysElement =
+    $('calendarDays');
+
+  const textElement =
+    $('selectedDateText');
+
+
+  if(
+    !monthElement ||
+    !daysElement
+  ){
+    return;
+  }
+
+
+  monthElement.textContent =
+    `${monthName(calendarMonth)} ${calendarYear}`;
+
+
+  const selected =
+    parseDate(
+      state.selectedDate
+    );
+
+
+  if(
+    textElement &&
+    selected
+  ){
+
+    textElement.textContent =
+      `${String(selected.day).padStart(2,'0')}.` +
+      `${String(selected.month + 1).padStart(2,'0')}.` +
+      `${selected.year}`;
+
+  }
+
+
+  const firstDay =
+    new Date(
+      calendarYear,
+      calendarMonth,
+      1
+    );
+
+
+  let startDay =
+    firstDay.getDay();
+
+
+  startDay =
+    startDay === 0
+      ? 6
+      : startDay - 1;
+
+
+  const daysInMonth =
+    new Date(
+      calendarYear,
+      calendarMonth + 1,
+      0
+    ).getDate();
+
+
+  const daysInPreviousMonth =
+    new Date(
+      calendarYear,
+      calendarMonth,
+      0
+    ).getDate();
+
+
+  const fragment =
+    document.createDocumentFragment();
+
+
+  for(
+    let i = startDay - 1;
+    i >= 0;
+    i--
+  ){
+
+    const day =
+      daysInPreviousMonth - i;
+
+
+    fragment.appendChild(
+      createCalendarDay(
+        day,
+        calendarMonth - 1,
+        calendarYear,
+        true
+      )
+    );
+
+  }
+
+
+  for(
+    let day = 1;
+    day <= daysInMonth;
+    day++
+  ){
+
+    fragment.appendChild(
+      createCalendarDay(
+        day,
+        calendarMonth,
+        calendarYear,
+        false
+      )
+    );
+
+  }
+
+
+  const totalCells =
+    startDay +
+    daysInMonth;
+
+
+  const remaining =
+    totalCells % 7 === 0
+      ? 0
+      : 7 - (
+          totalCells % 7
+        );
+
+
+  for(
+    let day = 1;
+    day <= remaining;
+    day++
+  ){
+
+    fragment.appendChild(
+      createCalendarDay(
+        day,
+        calendarMonth + 1,
+        calendarYear,
+        true
+      )
+    );
+
+  }
+
+
+  daysElement.innerHTML = '';
+
+  daysElement.appendChild(
+    fragment
+  );
+
+}
+
+
+function createCalendarDay(
+  day,
+  month,
+  year,
+  otherMonth
+){
+
+  if(month < 0){
+
+    month = 11;
+    year--;
+
+  }
+
+
+  if(month > 11){
+
+    month = 0;
+    year++;
+
+  }
+
+
+  const date =
+    formatDate(
+      day,
+      month,
+      year
+    );
+
+
+  const button =
+    document.createElement(
+      'button'
+    );
+
+
+  button.type = 'button';
+
+  button.className =
+    'calendar-day';
+
+
+  if(otherMonth){
+
+    button.classList.add(
+      'other-month'
+    );
+
+  }
+
+
+  if(date === today()){
+
+    button.classList.add(
+      'today'
+    );
+
+  }
+
+
+  if(
+    date ===
+    state.selectedDate
+  ){
+
+    button.classList.add(
+      'selected'
+    );
+
+  }
+
+
+  if(
+    state.byDate.has(date)
+  ){
+
+    button.classList.add(
+      'has-data'
+    );
+
+  }
+
+
+  button.textContent =
+    day;
+
+
+  button.addEventListener(
+    'click',
+    () => {
+
+      state.selectedDate =
+        date;
+
+
+      const parts =
+        parseDate(date);
+
+
+      calendarMonth =
+        parts.month;
+
+      calendarYear =
+        parts.year;
+
+
+      renderCalendar();
+
+      render();
+
+      closeCalendar();
+
+    }
+  );
+
+
+  return button;
+
+}
+
+
+function openCalendar(){
+
+  const popup =
+    $('calendarPopup');
+
+  if(!popup){
+    return;
+  }
+
+  popup.hidden = false;
+
+  renderCalendar();
+
+}
+
+
+function closeCalendar(){
+
+  const popup =
+    $('calendarPopup');
+
+  if(!popup){
+    return;
+  }
+
+  popup.hidden = true;
+
+}
+
+
+function setupCalendarEvents(){
+
+  $('calendarButton')
+    ?.addEventListener(
+      'click',
+      event => {
+
+        event.stopPropagation();
+
+        const popup =
+          $('calendarPopup');
+
+        if(!popup){
+          return;
+        }
+
+        popup.hidden
+          ? openCalendar()
+          : closeCalendar();
+
+      }
+    );
+
+
+  $('prevMonth')
+    ?.addEventListener(
+      'click',
+      event => {
+
+        event.stopPropagation();
+
+        calendarMonth--;
+
+        if(calendarMonth < 0){
+
+          calendarMonth = 11;
+          calendarYear--;
+
+        }
+
+        renderCalendar();
+
+      }
+    );
+
+
+  $('nextMonth')
+    ?.addEventListener(
+      'click',
+      event => {
+
+        event.stopPropagation();
+
+        calendarMonth++;
+
+        if(calendarMonth > 11){
+
+          calendarMonth = 0;
+          calendarYear++;
+
+        }
+
+        renderCalendar();
+
+      }
+    );
+
+
+  $('todayButton')
+    ?.addEventListener(
+      'click',
+      event => {
+
+        event.stopPropagation();
+
+        const current =
+          parseDate(
+            today()
+          );
+
+
+        state.selectedDate =
+          today();
+
+
+        calendarMonth =
+          current.month;
+
+        calendarYear =
+          current.year;
+
+
+        renderCalendar();
+
+        render();
+
+        closeCalendar();
+
+      }
+    );
+
+
+  document.addEventListener(
+    'click',
+    event => {
+
+      const wrapper =
+        document.querySelector(
+          '.calendar-wrapper'
+        );
+
+      if(
+        wrapper &&
+        !wrapper.contains(
+          event.target
+        )
+      ){
+
+        closeCalendar();
+
+      }
+
+    }
+  );
+
 }
 
 
@@ -1059,11 +2025,17 @@ function getStatus(
 ){
 
   if(!best){
+
     return {
+
       cls:'pending',
+
       text:'Yeterli veri yok'
+
     };
+
   }
+
 
   const r =
     result(
@@ -1071,24 +2043,41 @@ function getStatus(
       best.targetKey
     );
 
+
   if(r === true){
+
     return {
+
       cls:'success',
+
       text:'✓ Öneri tuttu'
+
     };
+
   }
+
 
   if(r === false){
+
     return {
+
       cls:'fail',
+
       text:'✕ Öneri tutmadı'
+
     };
+
   }
 
+
   return {
+
     cls:'pending',
+
     text:'⏳ Maç oynanmadı'
+
   };
+
 }
 
 
@@ -1096,23 +2085,28 @@ function getStatus(
    DETAYLAR
 ========================================================= */
 
-function detailHtml(
-  list
-){
+function detailHtml(list){
 
   if(!list.length){
+
     return `
       <div class="empty">
         %${MIN_SUCCESS} ve üzerinde yeterli
         örnek bulunamadı.
       </div>
     `;
+
   }
 
+
   return `
+
     <div class="detail-grid">
+
       ${
-        list.map(item=>`
+
+        list.map(item => `
+
           <div class="detail">
 
             <div class="detail-top">
@@ -1128,16 +2122,27 @@ function detailHtml(
             </div>
 
             <div class="detail-bottom">
+
               ${esc(item.source)}
-              · Oran ${item.odd.toFixed(2)}
-              · ${item.success}/${item.total}
+
+              · Oran
+              ${item.odd.toFixed(2)}
+
+              ·
+              ${item.success}/${item.total}
+
             </div>
 
           </div>
+
         `).join('')
+
       }
+
     </div>
+
   `;
+
 }
 
 
@@ -1153,8 +2158,10 @@ function matchHtml(
   const analysis =
     analyze(match);
 
+
   const best =
     analysis.best;
+
 
   const status =
     getStatus(
@@ -1162,20 +2169,28 @@ function matchHtml(
       best
     );
 
+
   const score =
     getScore(match);
+
 
   let scoreText =
     'Henüz oynanmadı';
 
+
   if(score){
+
     scoreText =
       `${score.home} - ${score.away}`;
+
   }
+
 
   const bestHtml =
     best
+
       ? `
+
         <div class="rec-row">
 
           <div class="rec-left">
@@ -1189,6 +2204,7 @@ function matchHtml(
             </div>
 
           </div>
+
 
           <div class="rec-right">
 
@@ -1205,11 +2221,15 @@ function matchHtml(
 
         </div>
 
+
         <div class="status ${status.cls}">
           ${status.text}
         </div>
+
       `
+
       : `
+
         <div class="rec-row">
 
           <div class="rec-left">
@@ -1225,9 +2245,12 @@ function matchHtml(
           </div>
 
         </div>
+
       `;
 
+
   return `
+
     <div class="match">
 
       <div class="match-main">
@@ -1268,9 +2291,7 @@ function matchHtml(
 
 
         <div class="recommendation">
-
           ${bestHtml}
-
         </div>
 
 
@@ -1288,12 +2309,16 @@ function matchHtml(
         class="details"
         id="details-${index}">
 
-        ${detailHtml(analysis.list)}
+        ${detailHtml(
+          analysis.list
+        )}
 
       </div>
 
     </div>
+
   `;
+
 }
 
 
@@ -1306,21 +2331,29 @@ function renderSummary(matches){
   let available = 0;
   let played = 0;
 
-  for(const match of matches){
+
+  for(
+    const match of matches
+  ){
 
     const analysis =
       analyze(match);
+
 
     if(analysis.best){
       available++;
     }
 
+
     if(isPlayed(match)){
       played++;
     }
+
   }
 
+
   $('summary').innerHTML = `
+
     <div class="summary">
 
       <div class="summary-card">
@@ -1339,6 +2372,7 @@ function renderSummary(matches){
 
       </div>
 
+
       <div class="summary-card">
 
         <div class="summary-label">
@@ -1356,7 +2390,9 @@ function renderSummary(matches){
       </div>
 
     </div>
+
   `;
+
 }
 
 
@@ -1369,72 +2405,95 @@ function render(){
   const date =
     state.selectedDate;
 
+
   const matches =
     state.byDate.get(date) || [];
 
+
   renderSummary(matches);
+
 
   if(!matches.length){
 
     $('content').innerHTML = `
+
       <div class="empty">
+
         Bu tarihte maç bulunamadı.
+
       </div>
+
     `;
 
     return;
+
   }
 
+
   $('content').innerHTML = `
+
     <div class="matches">
 
       ${
-        matches.map(
-          (match,index) =>
-            matchHtml(
-              match,
-              index
-            )
-        ).join('')
+
+        matches
+          .map(
+            (match,index) =>
+              matchHtml(
+                match,
+                index
+              )
+          )
+          .join('')
+
       }
 
     </div>
+
   `;
+
 
   document
     .querySelectorAll(
       '[data-detail]'
     )
-    .forEach(button=>{
+    .forEach(button => {
 
       button.addEventListener(
         'click',
-        ()=>{
+        () => {
 
           const index =
             button.dataset.detail;
+
 
           const box =
             document.getElementById(
               'details-' + index
             );
 
+
           if(!box){
             return;
           }
+
 
           const open =
             box.classList.toggle(
               'open'
             );
 
+
           button.textContent =
             open
               ? '− Önerileri gizle'
               : '＋ Diğer öneriler';
+
         }
       );
+
     });
+
 }
 
 
@@ -1445,10 +2504,13 @@ function render(){
 async function load(){
 
   $('content').innerHTML = `
+
     <div class="loading">
       Maç verileri yükleniyor...
     </div>
+
   `;
+
 
   try{
 
@@ -1462,44 +2524,100 @@ async function load(){
         }
       );
 
+
     if(!response.ok){
+
       throw new Error(
         'Veri dosyası alınamadı. HTTP ' +
         response.status
       );
+
     }
+
 
     const data =
       await response.json();
 
+
     if(
       !data ||
-      !Array.isArray(data.matches)
+      !Array.isArray(
+        data.matches
+      )
     ){
+
       throw new Error(
         'matches.json formatı geçersiz.'
       );
+
     }
+
 
     state.matches =
       data.matches;
 
+
     buildIndex();
 
-    setupDates();
+
+    /*
+       İlk açılışta BUGÜN.
+       Veri içinde bugün yoksa
+       yine bugünün tarihi seçilir.
+    */
+
+    if(!state.selectedDate){
+
+      setupCalendar();
+
+    }else{
+
+      const oldDate =
+        state.selectedDate;
+
+      setupCalendar();
+
+      if(
+        state.byDate.has(oldDate)
+      ){
+
+        state.selectedDate =
+          oldDate;
+
+        const parts =
+          parseDate(oldDate);
+
+        calendarMonth =
+          parts.month;
+
+        calendarYear =
+          parts.year;
+
+        renderCalendar();
+
+      }
+
+    }
+
 
     render();
+
 
   }catch(error){
 
     console.error(error);
 
+
     $('summary').innerHTML = '';
 
+
     $('content').innerHTML = `
+
       <div class="error">
 
-        <strong>Veri yüklenemedi.</strong>
+        <strong>
+          Veri yüklenemedi.
+        </strong>
 
         <br><br>
 
@@ -1511,51 +2629,51 @@ async function load(){
           class="refresh"
           type="button"
           onclick="location.reload()">
+
           🔄 Tekrar dene
+
         </button>
 
       </div>
+
     `;
+
   }
+
 }
 
 
 /* =========================================================
-   OLAYLAR
+   YENİLE
 ========================================================= */
 
-$('dateFilter').addEventListener(
-  'change',
-  function(){
-
-    state.selectedDate =
-      this.value;
-
-    render();
-  }
-);
-
-
-$('refreshButton').addEventListener(
-  'click',
-  function(){
-
-    this.textContent =
-      '⏳ Yükleniyor...';
-
-    load().finally(()=>{
+$('refreshButton')
+  .addEventListener(
+    'click',
+    function(){
 
       this.textContent =
-        '🔄 Yenile';
+        '⏳ Yükleniyor...';
 
-    });
-  }
-);
+
+      load().finally(
+        () => {
+
+          this.textContent =
+            '🔄 Yenile';
+
+        }
+      );
+
+    }
+  );
 
 
 /* =========================================================
    BAŞLAT
 ========================================================= */
+
+setupCalendarEvents();
 
 load();
 
