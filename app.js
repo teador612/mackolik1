@@ -861,10 +861,13 @@ function getRecommendations(
             }
             const targetOdds =
                 target.odds(match);
-            // İY 0.5 Üst için Mackolik bazı bültenlerde oran vermiyor;
-            // sonuç yine de devre skoru üzerinden hesaplanabildiği için
-            // oranı olmayan bu marketi öneri hedefi olarak gösterebiliriz.
-            if (!targetOdds && target.id !== "IY05U") {
+            // İY 0.5 Üst oranı veri kaynağında bulunmadığı için
+            // önerilerde kullanılmaz. Oranı olan İY 1.5 Üst ve
+            // MS 2.5 Üst marketleri kullanılmaya devam eder.
+            if (
+                target.id === "IY05U" ||
+                !targetOdds
+            ) {
                 continue;
             }
             let total = 0;
@@ -1028,7 +1031,7 @@ function recommendationHtml(
                     </strong>
                     <span class="odd">
                         ${escapeHtml(
-                            recommendation.targetOdds || "—"
+                            recommendation.targetOdds
                         )}
                     </span>
                 </div>
