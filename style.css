@@ -986,3 +986,55 @@ footer {
     }
 
 }
+/* =========================================================
+   ÜST MENÜ
+========================================================= */
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+
+.coupon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px 12px;
+
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-radius: 8px;
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+.coupon-btn:hover {
+    background: var(--panel2);
+}
+
+
+@media (max-width: 700px) {
+
+    .top-actions {
+        gap: 5px;
+    }
+
+    .coupon-btn {
+        padding: 7px 9px;
+        font-size: 10px;
+    }
+
+}
