@@ -1,153 +1,166 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="tr">
-
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="theme-color" content="#0b1020">
-
-<title>Maçkolik - Açılış Oran Analizi</title>
-
-<link rel="stylesheet" href="styles.css?v=2">
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
+    >
+    <meta
+        name="theme-color"
+        content="#07111f"
+    >
+    <meta
+        name="description"
+        content="Maçkolik açılış oranları ve geçmiş maç analiz sistemi"
+    >
+    <title>Maçkolik | Oran Analiz</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-<div class="app">
-
-    <div class="header">
-
-        <div class="title">
-            ⚽ Maçkolik
-        </div>
-
-        <div class="subtitle">
-            Açılış oranlarından geçmiş sonuç analizi
-        </div>
-
-
-        <div class="controls">
-
-            <div class="calendar-wrapper">
-
-                <button
-                    id="calendarButton"
-                    class="calendar-button"
-                    type="button"
-                >
-
-                    <span class="calendar-icon">📅</span>
-
-                    <span class="calendar-button-info">
-                        <small>Tarih</small>
-                        <strong id="selectedDateText">
-                            Yükleniyor...
-                        </strong>
-                    </span>
-
-                    <span class="calendar-arrow">
-                        ⌄
-                    </span>
-
-                </button>
-
-
-                <div
-                    id="calendarPopup"
-                    class="calendar-popup"
-                    hidden
-                >
-
-                    <div class="calendar-header">
-
-                        <button
-                            id="prevMonth"
-                            class="month-button"
-                            type="button"
-                        >
-                            ‹
-                        </button>
-
-                        <strong id="calendarMonth">
-                            —
-                        </strong>
-
-                        <button
-                            id="nextMonth"
-                            class="month-button"
-                            type="button"
-                        >
-                            ›
-                        </button>
-
-                    </div>
-
-
-                    <div class="calendar-weekdays">
-
-                        <span>Pzt</span>
-                        <span>Sal</span>
-                        <span>Çar</span>
-                        <span>Per</span>
-                        <span>Cum</span>
-                        <span>Cmt</span>
-                        <span>Paz</span>
-
-                    </div>
-
-
-                    <div
-                        id="calendarDays"
-                        class="calendar-days"
-                    ></div>
-
-
-                    <button
-                        id="todayButton"
-                        class="today-button"
-                        type="button"
-                    >
-                        Bugüne Git
-                    </button>
-
-                </div>
-
+<div class="page">
+    <!-- HEADER -->
+    <header class="header">
+        <div class="brand">
+            <div class="brand-icon">
+                ⚽
             </div>
-
-
+            <div>
+                <h1>Maçkolik</h1>
+                <p>Oran Analiz Merkezi</p>
+            </div>
+        </div>
+        <div class="header-badge">
+            <span class="live-dot"></span>
+            CANLI VERİ
+        </div>
+    </header>
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-label">
+                📊 GEÇMİŞ ORAN ANALİZİ
+            </div>
+            <h2>
+                Açılış oranlarını<br>
+                <span>geçmiş sonuçlarla karşılaştır.</span>
+            </h2>
+            <p>
+                Aynı oranların geçmiş maçlarda nasıl sonuçlandığını
+                hızlı ve sade şekilde incele.
+            </p>
+        </div>
+        <div class="hero-ball">
+            ⚽
+        </div>
+    </section>
+    <!-- FILTERS -->
+    <section class="filter-panel">
+        <div class="section-title">
+            <div>
+                <span class="section-icon">🔎</span>
+                Maçları Filtrele
+            </div>
+            <span class="filter-count" id="message">
+                Veriler yükleniyor...
+            </span>
+        </div>
+        <div class="filters">
+            <!-- SEARCH -->
+            <div class="input-box search-box">
+                <span>🔍</span>
+                <input
+                    type="search"
+                    id="search"
+                    placeholder="Takım veya maç kodu ara..."
+                    autocomplete="off"
+                >
+            </div>
+            <!-- DATE -->
+            <div class="input-box">
+                <span>📅</span>
+                <select id="dateFilter">
+                    <option value="">
+                        Tüm tarihler
+                    </option>
+                </select>
+            </div>
+            <!-- LEAGUE -->
+            <div class="input-box">
+                <span>🏆</span>
+                <select id="leagueFilter">
+                    <option value="">
+                        Tüm ligler
+                    </option>
+                </select>
+            </div>
+            <!-- REFRESH -->
             <button
-                class="refresh"
+                class="refresh-button"
                 id="refreshButton"
                 type="button"
             >
-                🔄 Yenile
+                <span>↻</span>
+                Yenile
             </button>
-
         </div>
-
-    </div>
-
-
-    <div id="summary"></div>
-
-
-    <div id="content">
-
-        <div class="loading">
-            Veriler yükleniyor...
+        <label class="check-filter">
+            <input
+                type="checkbox"
+                id="unplayedOnly"
+            >
+            <span class="custom-check"></span>
+            Sadece oynanmamış maçları göster
+        </label>
+    </section>
+    <!-- STATUS -->
+    <section class="status-bar">
+        <div class="status-item">
+            <span class="status-icon blue">
+                📅
+            </span>
+            <div>
+                <small>Durum</small>
+                <strong id="updatedAt">
+                    Veri yükleniyor...
+                </strong>
+            </div>
         </div>
-
-    </div>
-
-
-    <div class="footer">
-        Açılış oranı analizi · Son 60 gün · Minimum %70 başarı
-    </div>
-
+        <div class="status-item">
+            <span class="status-icon green">
+                ✓
+            </span>
+            <div>
+                <small>Analiz</small>
+                <strong>
+                    Açılış Oranları
+                </strong>
+            </div>
+        </div>
+    </section>
+    <!-- CONTENT -->
+    <main id="content">
+        <div class="loading-card">
+            <div class="loading-spinner"></div>
+            <h3>Maçlar yükleniyor</h3>
+            <p>
+                Güncel veriler hazırlanıyor...
+            </p>
+        </div>
+    </main>
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-logo">
+            ⚽ Maçkolik
+        </div>
+        <p>
+            Açılış oranları ve geçmiş maç istatistikleri
+        </p>
+        <span>
+            Veri kaynağı otomatik olarak güncellenmektedir.
+        </span>
+    </footer>
 </div>
-
-
-<script src="app.js?v=2"></script>
-
+<script type="module" src="app.js"></script>
 </body>
 </html>
