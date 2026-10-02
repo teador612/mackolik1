@@ -1038,3 +1038,183 @@ footer {
     }
 
 }
+/* =========================================================
+   YENİ ÜST MENÜ
+========================================================= */
+
+.top-actions {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+
+.coupon-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    min-height: 36px;
+
+    padding: 0 11px;
+
+    background: var(--panel);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 8px;
+
+    color: var(--text);
+
+    text-decoration: none;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+}
+
+
+.coupon-btn:hover {
+
+    background: var(--panel2);
+
+}
+
+
+/* =========================================================
+   TAKIM + SKOR
+========================================================= */
+
+.team {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+
+.team.home {
+
+    justify-content: flex-start;
+
+}
+
+
+.team.away {
+
+    justify-content: flex-end;
+
+}
+
+
+.team-name {
+
+    line-height: 1.25;
+
+}
+
+
+.team-score {
+
+    min-width: 24px;
+
+    height: 24px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: var(--panel2);
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 6px;
+
+    font-size: 14px;
+
+    font-weight: 900;
+
+}
+
+
+.half-score {
+
+    margin-top: 7px;
+
+    text-align: center;
+
+    color: var(--muted);
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+}
+
+
+/* =========================================================
+   TAHMİN YAZISI
+========================================================= */
+
+.recommendation-line {
+
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+}
+
+
+.recommendation-label {
+
+    color: var(--muted);
+
+    font-size: 9px;
+
+    font-weight: 700;
+
+}
+
+
+.recommendation-line strong {
+
+    font-weight: 800;
+
+}
+
+
+.recommendation-line .odd {
+
+    color: var(--accent);
+
+    font-weight: 900;
+
+}
+
+
+.recommendation-line .arrow {
+
+    color: var(--muted);
+
+    padding: 0 2px;
+
+}
