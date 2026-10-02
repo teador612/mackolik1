@@ -12,6 +12,36 @@
 
     <title>Maç Oran Analizi</title>
 
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+
+    <meta
+        name="theme-color"
+        content="#0b0f14"
+    >
+
+    <!-- iPhone / iOS -->
+    <meta
+        name="apple-mobile-web-app-capable"
+        content="yes"
+    >
+
+    <meta
+        name="apple-mobile-web-app-status-bar-style"
+        content="black-translucent"
+    >
+
+    <meta
+        name="apple-mobile-web-app-title"
+        content="Maç Analiz"
+    >
+
+    <link
+        rel="apple-touch-icon"
+        href="icon-180.png"
+    >
+
+    <!-- CSS -->
     <link
         rel="stylesheet"
         href="style.css"
@@ -24,6 +54,7 @@
 
 
 <header class="topbar">
+
 
     <div class="brand">
 
@@ -46,24 +77,28 @@
     </div>
 
 
-<div class="top-actions">
+    <div class="top-actions">
 
-    <a
-        href="kupon.html"
-        class="coupon-btn"
-    >
-        🎟️ Kuponlar
-    </a>
 
-    <button
-        id="refreshButton"
-        class="refresh-btn"
-        type="button"
-    >
-        ↻ Yenile
-    </button>
+        <a
+            href="kupon.html"
+            class="coupon-btn"
+        >
+            🎟️ Kuponlar
+        </a>
 
-</div>
+
+        <button
+            id="refreshButton"
+            class="refresh-btn"
+            type="button"
+        >
+            ↻ Yenile
+        </button>
+
+
+    </div>
+
 
 </header>
 
@@ -82,11 +117,9 @@
                 ORAN ANALİZ SİSTEMİ
             </div>
 
-
             <h2 id="pageTitle">
                 Bugünün Maçları
             </h2>
-
 
             <p id="pageDescription">
                 Geçmiş 60 gündeki birebir aynı oranların sonuçları analiz ediliyor.
@@ -102,6 +135,7 @@
 
     <section class="calendar-section">
 
+
         <button
             id="calendarToggle"
             class="calendar-button"
@@ -112,11 +146,9 @@
                 📅
             </span>
 
-
             <span id="selectedDateText">
                 Tarih seç
             </span>
-
 
             <span class="calendar-arrow">
                 ⌄
@@ -131,7 +163,9 @@
             class="calendar-popup hidden"
         >
 
+
             <div class="calendar-header">
+
 
                 <button
                     id="prevMonth"
@@ -154,6 +188,7 @@
                 >
                     ›
                 </button>
+
 
             </div>
 
@@ -178,7 +213,9 @@
                 class="calendar-days"
             ></div>
 
+
         </div>
+
 
     </section>
 
@@ -194,7 +231,6 @@
             <label for="search">
                 Maç / Takım
             </label>
-
 
             <input
                 id="search"
@@ -212,7 +248,6 @@
             <label for="leagueFilter">
                 Lig
             </label>
-
 
             <select id="leagueFilter">
 
@@ -252,7 +287,6 @@
             Veriler yükleniyor...
         </div>
 
-
         <div id="updatedAt">
             -
         </div>
@@ -280,12 +314,16 @@
 
     Geçmiş analiz:
     son 60 gün
+
     ·
+
     Birebir oran eşleşmesi
 
 </footer>
 
 
+
+<!-- JAVASCRIPT -->
 
 <script src="app.js"></script>
 
