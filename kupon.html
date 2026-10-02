@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Kuponlar - Maç Oran Analizi</title>
+
+    <link
+        rel="stylesheet"
+        href="kupon.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="topbar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            🎟️
+        </div>
+
+        <div>
+
+            <h1>
+                Kuponlar
+            </h1>
+
+            <span>
+                Geçmiş oran analizlerinden oluşturulan kuponlar
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <a
+        href="index.html"
+        class="back-button"
+    >
+        ⚽ Maçlar
+    </a>
+
+</header>
+
+
+
+<main class="container">
+
+
+    <section class="page-header">
+
+        <div class="eyebrow">
+            KUPON ANALİZİ
+        </div>
+
+        <h2>
+            Kuponlar
+        </h2>
+
+        <p>
+            Tarih seçerek o gün oluşturulan kuponları görebilirsin.
+        </p>
+
+    </section>
+
+
+
+    <!-- TARİH -->
+
+    <section class="date-section">
+
+        <button
+            id="prevMonth"
+            class="month-button"
+            type="button"
+        >
+            ‹
+        </button>
+
+
+        <div
+            id="monthTitle"
+            class="month-title"
+        >
+            -
+        </div>
+
+
+        <button
+            id="nextMonth"
+            class="month-button"
+            type="button"
+        >
+            ›
+        </button>
+
+    </section>
+
+
+
+    <section class="weekdays">
+
+        <div>Pzt</div>
+        <div>Sal</div>
+        <div>Çar</div>
+        <div>Per</div>
+        <div>Cum</div>
+        <div>Cmt</div>
+        <div>Paz</div>
+
+    </section>
+
+
+    <section
+        id="calendar"
+        class="calendar"
+    ></section>
+
+
+
+    <!-- SEÇİLİ TARİH -->
+
+    <section
+        id="selectedDate"
+        class="selected-date"
+    >
+        -
+    </section>
+
+
+
+    <!-- İSTATİSTİK -->
+
+    <section
+        id="statistics"
+        class="statistics"
+    ></section>
+
+
+
+    <!-- KUPONLAR -->
+
+    <section
+        id="couponList"
+        class="coupon-list"
+    ></section>
+
+
+</main>
+
+
+
+<footer>
+
+    Geçmiş 60 gün · Birebir oran eşleşmesi
+
+</footer>
+
+
+
+<script src="kupon.js"></script>
+
+</body>
+
+</html>
