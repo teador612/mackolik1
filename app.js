@@ -1115,15 +1115,11 @@ function matchHtml(
 
     if (recommendations.length === 0) {
 
-        recommendationsHtml = `
-            <div class="empty">
-                <strong>Yeterli eşleşme bulunamadı</strong>
-                Son 60 günde bu oran için en az
-                ${MIN_SAMPLE} geçmiş maç ve
-                %${MIN_SUCCESS * 100}
-                başarı şartı sağlanmadı.
-            </div>
-        `;
+     recommendationsHtml = `
+    <div class="no-prediction">
+        Tahmin yok
+    </div>
+`;
 
     } else {
 
