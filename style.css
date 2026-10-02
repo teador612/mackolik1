@@ -776,3 +776,81 @@ footer {
     font-size: 11px;
     text-align: center;
 }
+/* =========================================================
+   BAŞARI ÖZETİ
+========================================================= */
+
+.summary-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 10px;
+
+    margin-top: 14px;
+}
+
+
+.summary-card {
+    background: var(--panel);
+
+    border: 1px solid var(--border);
+
+    border-radius: 12px;
+
+    padding: 12px 14px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+.summary-label {
+    color: var(--muted);
+
+    font-size: 10px;
+
+    font-weight: 700;
+
+    letter-spacing: .08em;
+}
+
+
+.summary-card strong {
+    font-size: 22px;
+
+    line-height: 1.1;
+}
+
+
+.summary-card small {
+    color: var(--muted);
+
+    font-size: 10px;
+}
+
+
+@media (max-width: 600px) {
+
+    .summary-grid {
+        gap: 7px;
+
+        margin-top: 10px;
+    }
+
+
+    .summary-card {
+        padding: 9px 11px;
+
+        border-radius: 10px;
+    }
+
+
+    .summary-card strong {
+        font-size: 18px;
+    }
+
+}
