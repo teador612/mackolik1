@@ -1,21 +1,1001 @@
-:root { color-scheme: light; font-family: Arial, sans-serif; color: #172033; background: #f4f7fb; }
-* { box-sizing: border-box; }
-body { margin: 0; }
-.container { max-width: 1600px; margin: 0 auto; padding: 28px 18px 48px; }
-header { display: flex; justify-content: space-between; gap: 24px; align-items: end; margin-bottom: 22px; }
-.eyebrow { color: #2b6cb0; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 6px; }
-h1 { margin: 0; font-size: 30px; }
-.muted, .updated { color: #667085; font-size: 14px; }
-.updated { white-space: nowrap; }
-.controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 14px; background: white; border: 1px solid #dbe3ee; border-radius: 10px; margin-bottom: 14px; }
-input, select { border: 1px solid #c7d2e0; border-radius: 7px; padding: 9px 11px; background: #fff; color: inherit; }
-input[type="search"] { min-width: 260px; }
-.checkbox { display: flex; align-items: center; gap: 7px; padding: 0 4px; font-size: 14px; }
-.message { color: #667085; font-size: 14px; margin: 12px 2px; }
-.table-wrap { overflow: auto; background: white; border: 1px solid #dbe3ee; border-radius: 10px; }
-table { width: 100%; min-width: 1250px; border-collapse: collapse; font-size: 13px; }
-th { position: sticky; top: 0; background: #1f4e78; color: white; text-align: left; padding: 10px 9px; white-space: nowrap; }
-td { padding: 9px; border-bottom: 1px solid #edf1f6; white-space: nowrap; }
-tbody tr:hover { background: #f5f9ff; }
-.score { font-weight: 700; color: #1f4e78; }
-@media (max-width: 700px) { header { display: block; } .updated { margin-top: 10px; } input[type="search"] { min-width: 0; width: 100%; } }
+/* =========================================================
+   TEMEL
+========================================================= */
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+
+  background: #0b1020;
+  color: #f5f7ff;
+
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Arial,
+    sans-serif;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+
+/* =========================================================
+   ANA KAP
+========================================================= */
+
+.app {
+  width: 100%;
+  max-width: 920px;
+
+  margin: 0 auto;
+  padding: 14px;
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.header {
+  background:
+    linear-gradient(
+      135deg,
+      #151d35,
+      #0f162b
+    );
+
+  border: 1px solid #26314d;
+  border-radius: 18px;
+
+  padding: 18px;
+  margin-bottom: 12px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.subtitle {
+  margin-top: 5px;
+
+  color: #8f9ab5;
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   KONTROLLER
+========================================================= */
+
+.controls {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto;
+
+  gap: 8px;
+
+  margin-top: 15px;
+}
+
+
+/* =========================================================
+   YENİLE BUTONU
+========================================================= */
+
+.refresh {
+  min-height: 44px;
+
+  padding: 0 16px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: #2563eb;
+  color: #fff;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+
+  transition:
+    background 0.2s ease,
+    transform 0.1s ease;
+}
+
+.refresh:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================================
+   TAKVİM BUTONU
+========================================================= */
+
+.calendar-wrapper {
+  position: relative;
+  min-width: 0;
+}
+
+.calendar-button {
+  width: 100%;
+  min-height: 44px;
+
+  padding: 7px 12px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 10px;
+
+  border: 1px solid #303b59;
+  border-radius: 12px;
+
+  background: #0b1020;
+  color: #fff;
+
+  text-align: left;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.calendar-button:hover {
+  border-color: #405175;
+  background: #0d1426;
+}
+
+.calendar-icon {
+  flex: 0 0 auto;
+
+  font-size: 20px;
+  line-height: 1;
+}
+
+.calendar-button-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.calendar-button-info small {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #7f8ba8;
+
+  font-size: 10px;
+  line-height: 1;
+}
+
+.calendar-button-info strong {
+  display: block;
+
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  line-height: 1.2;
+}
+
+.calendar-arrow {
+  flex: 0 0 auto;
+
+  color: #8995b2;
+
+  font-size: 18px;
+  line-height: 1;
+}
+
+
+/* =========================================================
+   TAKVİM PENCERESİ
+========================================================= */
+
+.calendar-popup {
+  position: absolute;
+
+  z-index: 9999;
+
+  top: calc(100% + 8px);
+  left: 0;
+
+  width: 310px;
+
+  padding: 14px;
+
+  background: #11182b;
+
+  border: 1px solid #303b59;
+  border-radius: 16px;
+
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.45);
+
+  animation:
+    calendarOpen 0.15s ease;
+}
+
+.calendar-popup[hidden] {
+  display: none;
+}
+
+@keyframes calendarOpen {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+/* =========================================================
+   TAKVİM BAŞLIK
+========================================================= */
+
+.calendar-header {
+  display: grid;
+
+  grid-template-columns:
+    40px
+    minmax(0, 1fr)
+    40px;
+
+  align-items: center;
+
+  margin-bottom: 12px;
+
+  text-align: center;
+}
+
+.calendar-header strong {
+  color: #fff;
+
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.month-button {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #303b59;
+  border-radius: 9px;
+
+  background: #0d1426;
+  color: #fff;
+
+  font-size: 23px;
+  line-height: 1;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.month-button:hover {
+  background: #18223a;
+  border-color: #405175;
+}
+
+
+/* =========================================================
+   HAFTANIN GÜNLERİ
+========================================================= */
+
+.calendar-weekdays {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, 1fr);
+
+  margin-bottom: 5px;
+
+  color: #697590;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-align: center;
+}
+
+.calendar-weekdays span {
+  padding: 4px 0;
+}
+
+
+/* =========================================================
+   TAKVİM GÜNLERİ
+========================================================= */
+
+.calendar-days {
+  display: grid;
+
+  grid-template-columns:
+    repeat(7, 1fr);
+
+  gap: 4px;
+}
+
+.calendar-day {
+  position: relative;
+
+  width: 100%;
+  aspect-ratio: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
+
+  background: transparent;
+  color: #dce3f5;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.calendar-day:hover {
+  background: #1c2946;
+}
+
+.calendar-day.other-month {
+  color: #3f4a64;
+}
+
+.calendar-day.other-month:hover {
+  color: #697590;
+}
+
+
+/* =========================================================
+   BUGÜN
+========================================================= */
+
+.calendar-day.today {
+  border-color: #2563eb;
+
+  color: #60a5fa;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   SEÇİLİ TARİH
+========================================================= */
+
+.calendar-day.selected {
+  background: #2563eb;
+  border-color: #2563eb;
+
+  color: #fff;
+
+  font-weight: 900;
+
+  box-shadow:
+    0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+
+/* =========================================================
+   VERİ BULUNAN GÜNLER
+========================================================= */
+
+.calendar-day.has-data::after {
+  content: "";
+
+  position: absolute;
+
+  bottom: 4px;
+
+  width: 4px;
+  height: 4px;
+
+  border-radius: 50%;
+
+  background: #4ade80;
+}
+
+.calendar-day.selected.has-data::after {
+  background: #fff;
+}
+
+
+/* =========================================================
+   BUGÜNE GİT
+========================================================= */
+
+.today-button {
+  width: 100%;
+
+  margin-top: 12px;
+
+  padding: 9px 10px;
+
+  border: 1px solid #303b59;
+  border-radius: 9px;
+
+  background: #0d1426;
+  color: #60a5fa;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.today-button:hover {
+  background: #18223a;
+  border-color: #405175;
+}
+
+
+/* =========================================================
+   ÖZET
+========================================================= */
+
+.summary {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 8px;
+
+  margin-bottom: 12px;
+}
+
+.summary-card {
+  background: #11182b;
+
+  border: 1px solid #26314d;
+  border-radius: 15px;
+
+  padding: 13px;
+}
+
+.summary-label {
+  color: #8995b2;
+
+  font-size: 11px;
+}
+
+.summary-value {
+  margin-top: 4px;
+
+  color: #fff;
+
+  font-size: 20px;
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   MAÇ LİSTESİ
+========================================================= */
+
+.matches {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 9px;
+}
+
+
+/* =========================================================
+   MAÇ KARTI
+========================================================= */
+
+.match {
+  background: #11182b;
+
+  border: 1px solid #26314d;
+  border-radius: 16px;
+
+  overflow: hidden;
+
+  transition:
+    border-color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.match:hover {
+  border-color: #344363;
+}
+
+.match-main {
+  padding: 13px;
+}
+
+
+/* =========================================================
+   MAÇ ÜST BİLGİ
+========================================================= */
+
+.match-top {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 8px;
+
+  margin-bottom: 8px;
+}
+
+.time {
+  color: #fff;
+
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.league {
+  min-width: 0;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #7f8ba8;
+
+  font-size: 11px;
+
+  text-align: right;
+}
+
+
+/* =========================================================
+   TAKIMLAR
+========================================================= */
+
+.teams {
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.team {
+  min-width: 0;
+
+  color: #f5f7ff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  line-height: 1.25;
+
+  overflow-wrap: anywhere;
+}
+
+.team.away {
+  text-align: right;
+}
+
+.vs {
+  color: #697590;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   SKOR
+========================================================= */
+
+.score {
+  margin-top: 10px;
+
+  color: #9da8c1;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   ÖNERİ
+========================================================= */
+
+.recommendation {
+  margin-top: 12px;
+
+  padding: 12px;
+
+  background: #17213a;
+
+  border: 1px solid #2b395b;
+  border-radius: 13px;
+}
+
+.rec-row {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+}
+
+.rec-left {
+  min-width: 0;
+}
+
+.rec-label {
+  color: #8d99b4;
+
+  font-size: 11px;
+}
+
+.rec-target {
+  margin-top: 2px;
+
+  color: #fff;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.rec-right {
+  flex-shrink: 0;
+
+  text-align: right;
+}
+
+.percent {
+  color: #fff;
+
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.sample {
+  margin-top: 2px;
+
+  color: #8d99b4;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   DURUM
+========================================================= */
+
+.status {
+  display: inline-flex;
+
+  margin-top: 8px;
+
+  padding: 4px 8px;
+
+  border-radius: 7px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.status.success {
+  background: #063d2a;
+  color: #4ade80;
+}
+
+.status.fail {
+  background: #46151b;
+  color: #fb7185;
+}
+
+.status.pending {
+  background: #2b3040;
+  color: #aeb7ca;
+}
+
+
+/* =========================================================
+   DETAY BUTONU
+========================================================= */
+
+.details-button {
+  width: 100%;
+
+  margin-top: 9px;
+
+  min-height: 38px;
+
+  border: 1px solid #303b59;
+  border-radius: 10px;
+
+  background: #0d1426;
+  color: #dce3f5;
+
+  font-size: 12px;
+  font-weight: 700;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.details-button:hover {
+  background: #18223a;
+  border-color: #405175;
+}
+
+
+/* =========================================================
+   DETAYLAR
+========================================================= */
+
+.details {
+  display: none;
+
+  padding: 10px 12px 12px;
+
+  border-top: 1px solid #26314d;
+}
+
+.details.open {
+  display: block;
+}
+
+.detail-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 7px;
+}
+
+.detail {
+  padding: 9px;
+
+  background: #0d1426;
+
+  border: 1px solid #202b45;
+  border-radius: 10px;
+}
+
+.detail-top {
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 5px;
+}
+
+.detail-name {
+  min-width: 0;
+
+  color: #e5eaf5;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.detail-percent {
+  flex-shrink: 0;
+
+  color: #4ade80;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.detail-bottom {
+  margin-top: 4px;
+
+  color: #7f8ba8;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   BOŞ
+========================================================= */
+
+.empty {
+  padding: 40px 20px;
+
+  background: #11182b;
+
+  border: 1px solid #26314d;
+  border-radius: 16px;
+
+  color: #8995b2;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.loading {
+  padding: 40px 20px;
+
+  color: #8995b2;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   HATA
+========================================================= */
+
+.error {
+  padding: 20px;
+
+  background: #3b1218;
+
+  border: 1px solid #66202b;
+  border-radius: 15px;
+
+  color: #ffb4bf;
+
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  padding: 20px 0 10px;
+
+  color: #59657f;
+
+  font-size: 10px;
+
+  text-align: center;
+}
+
+
+/* =========================================================
+   MOBİL
+========================================================= */
+
+@media (max-width: 520px) {
+
+  .app {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 15px;
+
+    border-radius: 15px;
+  }
+
+  .title {
+    font-size: 19px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .refresh {
+    width: 100%;
+  }
+
+  .calendar-popup {
+    width: 100%;
+  }
+
+  .team {
+    font-size: 14px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+/* =========================================================
+   ÇOK KÜÇÜK EKRAN
+========================================================= */
+
+@media (max-width: 360px) {
+
+  .app {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 13px;
+  }
+
+  .calendar-popup {
+    padding: 11px;
+  }
+
+  .calendar-days {
+    gap: 2px;
+  }
+
+  .calendar-day {
+    font-size: 11px;
+  }
+
+  .summary-card {
+    padding: 11px;
+  }
+
+  .team {
+    font-size: 13px;
+  }
+
+}
