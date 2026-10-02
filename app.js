@@ -514,7 +514,11 @@ const MARKETS = [
                     "İY0.5Ü",
                     "iy05ust",
                     "iy0.5ust",
-                    "iy05üst"
+                    "iy05üst",
+                    "iy05Ust",
+                    "IY05_Ust",
+                    "IY05_Üst",
+                    "iy05_over"
                 ]
             )
     },
@@ -539,7 +543,11 @@ const MARKETS = [
                     "iy1.5ust",
                     "iy15ust",
                     "iy1.5üst",
-                    "iy15üst"
+                    "iy15üst",
+                    "iy15Ust",
+                    "IY15_Ust",
+                    "IY15_Üst",
+                    "iy15_over"
                 ]
             )
     },
@@ -853,7 +861,10 @@ function getRecommendations(
             }
             const targetOdds =
                 target.odds(match);
-            if (!targetOdds) {
+            // İY 0.5 Üst için Mackolik bazı bültenlerde oran vermiyor;
+            // sonuç yine de devre skoru üzerinden hesaplanabildiği için
+            // oranı olmayan bu marketi öneri hedefi olarak gösterebiliriz.
+            if (!targetOdds && target.id !== "IY05U") {
                 continue;
             }
             let total = 0;
@@ -1017,7 +1028,7 @@ function recommendationHtml(
                     </strong>
                     <span class="odd">
                         ${escapeHtml(
-                            recommendation.targetOdds
+                            recommendation.targetOdds || "—"
                         )}
                     </span>
                 </div>
