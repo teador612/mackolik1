@@ -1,79 +1,151 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>Maç Oran Analizi</title>
 
-    <link rel="stylesheet" href="style.css">
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
 </head>
+
 
 <body>
 
+
 <header class="topbar">
+
     <div class="brand">
-        <div class="brand-icon">⚽</div>
+
+        <div class="brand-icon">
+            ⚽
+        </div>
 
         <div>
-            <h1>Maç Oran Analizi</h1>
-            <span>Son 60 gün geçmiş oran istatistikleri</span>
+
+            <h1>
+                Maç Oran Analizi
+            </h1>
+
+            <span>
+                Son 60 gün geçmiş oran istatistikleri
+            </span>
+
         </div>
+
     </div>
 
-    <button id="refreshButton" class="refresh-btn">
+
+    <button
+        id="refreshButton"
+        class="refresh-btn"
+        type="button"
+    >
         ↻ Yenile
     </button>
+
 </header>
+
 
 
 <main class="container">
 
+
+    <!-- BAŞLIK -->
+
     <section class="hero">
 
         <div>
-            <div class="eyebrow">ORAN ANALİZ SİSTEMİ</div>
+
+            <div class="eyebrow">
+                ORAN ANALİZ SİSTEMİ
+            </div>
+
 
             <h2 id="pageTitle">
                 Bugünün Maçları
             </h2>
 
+
             <p id="pageDescription">
                 Geçmiş 60 gündeki birebir aynı oranların sonuçları analiz ediliyor.
             </p>
+
         </div>
 
     </section>
+
 
 
     <!-- TAKVİM -->
 
     <section class="calendar-section">
 
-        <button id="calendarToggle" class="calendar-button">
-            <span>📅</span>
-            <span id="selectedDateText">Tarih seç</span>
-            <span class="calendar-arrow">⌄</span>
+        <button
+            id="calendarToggle"
+            class="calendar-button"
+            type="button"
+        >
+
+            <span>
+                📅
+            </span>
+
+
+            <span id="selectedDateText">
+                Tarih seç
+            </span>
+
+
+            <span class="calendar-arrow">
+                ⌄
+            </span>
+
         </button>
 
 
-        <div id="calendarPopup" class="calendar-popup hidden">
+
+        <div
+            id="calendarPopup"
+            class="calendar-popup hidden"
+        >
 
             <div class="calendar-header">
 
-                <button id="prevMonth" class="month-btn">
+                <button
+                    id="prevMonth"
+                    class="month-btn"
+                    type="button"
+                >
                     ‹
                 </button>
+
 
                 <strong id="calendarMonth">
                     -
                 </strong>
 
-                <button id="nextMonth" class="month-btn">
+
+                <button
+                    id="nextMonth"
+                    class="month-btn"
+                    type="button"
+                >
                     ›
                 </button>
 
             </div>
+
 
 
             <div class="weekdays">
@@ -89,16 +161,22 @@
             </div>
 
 
-            <div id="calendarDays" class="calendar-days"></div>
+
+            <div
+                id="calendarDays"
+                class="calendar-days"
+            ></div>
 
         </div>
 
     </section>
 
 
+
     <!-- FİLTRELER -->
 
     <section class="filters">
+
 
         <div class="filter-box">
 
@@ -106,13 +184,16 @@
                 Maç / Takım
             </label>
 
+
             <input
                 id="search"
                 type="text"
                 placeholder="Takım ara..."
+                autocomplete="off"
             >
 
         </div>
+
 
 
         <div class="filter-box">
@@ -120,6 +201,7 @@
             <label for="leagueFilter">
                 Lig
             </label>
+
 
             <select id="leagueFilter">
 
@@ -130,6 +212,7 @@
             </select>
 
         </div>
+
 
 
         <label class="check-box">
@@ -145,7 +228,9 @@
 
         </label>
 
+
     </section>
+
 
 
     <!-- DURUM -->
@@ -156,6 +241,7 @@
             Veriler yükleniyor...
         </div>
 
+
         <div id="updatedAt">
             -
         </div>
@@ -163,19 +249,36 @@
     </section>
 
 
+
+    <!-- BAŞARI ORANLARI -->
+
+    <div id="summary"></div>
+
+
+
     <!-- MAÇLAR -->
 
     <section id="content"></section>
 
+
 </main>
 
 
+
 <footer>
-    Geçmiş analiz: son 60 gün · Birebir oran eşleşmesi
+
+    Geçmiş analiz:
+    son 60 gün
+    ·
+    Birebir oran eşleşmesi
+
 </footer>
+
 
 
 <script src="app.js"></script>
 
+
 </body>
+
 </html>
