@@ -1,4 +1,4 @@
-name: Mackolik ve Spor Toto Güncelleme
+name: Mackolik skor güncelleme
 
 on:
   repository_dispatch:
@@ -7,16 +7,19 @@ on:
   workflow_dispatch:
 
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: '*/15 * * * *'
+
 
 permissions:
   contents: write
   pages: write
   id-token: write
 
+
 concurrency:
   group: pages
   cancel-in-progress: true
+
 
 jobs:
 
@@ -28,160 +31,127 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
+
     steps:
 
-      # =====================================================
-      # REPO
-      # =====================================================
 
       - name: Depoyu al
+
         uses: actions/checkout@v4
+
         with:
           fetch-depth: 0
 
 
-      # =====================================================
-      # NODE
-      # =====================================================
 
       - name: Node.js kur
+
         uses: actions/setup-node@v4
+
         with:
           node-version: 20
 
 
-      # =====================================================
-      # MACKOLIK
-      # =====================================================
 
-      - name: Mackolik verilerini güncelle
-        run: |
-          node scripts/update-mackolik.mjs
+      - name: Skorları ve yeni maçları güncelle
+
+        run: node scripts/update-mackolik.mjs
 
 
-      # =====================================================
-      # SPOR TOTO
-      # =====================================================
 
-      - name: Spor Toto verilerini güncelle
-        run: |
-          node scripts/update-spor-toto.mjs
+      - name: Değişiklikleri repoya kaydet
 
-
-      # =====================================================
-      # DEĞİŞİKLİKLERİ GITHUB'A KAYDET
-      # =====================================================
-
-      - name: Verileri repoya kaydet
         run: |
 
           git config user.name "github-actions[bot]"
+
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+
           git add data/matches.json
-          git add data/spor-toto.json
+
 
           if git diff --cached --quiet; then
 
-            echo "Yeni veri değişikliği yok."
+            echo "Yeni skor değişikliği yok."
 
           else
 
-            git commit -m "Mackolik ve Spor Toto verilerini güncelle"
+            git commit -m "Güncel Mackolik skorları"
 
             git push
 
           fi
 
 
-      # =====================================================
-      # GITHUB PAGES
-      # =====================================================
 
       - name: Pages ayarını hazırla
+
         uses: actions/configure-pages@v5
 
 
-      # =====================================================
-      # SITE DOSYALARINI HAZIRLA
-      # =====================================================
 
       - name: Site dosyalarını hazırla
-        run: |
 
-          rm -rf _site
+        run: |
 
           mkdir -p _site/data
 
 
-          # -------------------------------------------------
-          # ANA SİTE
-          # -------------------------------------------------
-
+          # Ana sayfa
           cp index.html _site/
+
+
+          # Skor sayfası
           cp skor.html _site/
+
+
+          # Kupon sayfası
           cp kupon.html _site/
 
+
+          # CSS
           cp style.css _site/
           cp kupon.css _site/
 
+
+          # JavaScript
           cp app.js _site/
           cp kupon.js _site/
 
+
+          # PWA
           cp manifest.json _site/
           cp sw.js _site/
 
 
-          # -------------------------------------------------
-          # SPOR TOTO
-          # -------------------------------------------------
-
-          cp spor-toto.html _site/
-          cp spor-toto.css _site/
-          cp spor-toto.js _site/
-
-
-          # -------------------------------------------------
-          # MACKOLIK DATA
-          # -------------------------------------------------
-
+          # Veriler
           cp data/matches.json _site/data/
 
 
-          # -------------------------------------------------
-          # SPOR TOTO DATA
-          # -------------------------------------------------
-
-          cp data/spor-toto.json _site/data/
-
-
-          # -------------------------------------------------
-          # ICONLAR
-          # -------------------------------------------------
-
+          # İkonlar varsa yayınla
           if [ -f icon-180.png ]; then
             cp icon-180.png _site/
           fi
+
 
           if [ -f icon-192.png ]; then
             cp icon-192.png _site/
           fi
 
 
-      # =====================================================
-      # PAGES ARTIFACT
-      # =====================================================
 
       - name: Site dosyalarını paketle
+
         uses: actions/upload-pages-artifact@v3
+
         with:
           path: _site
 
 
-      # =====================================================
-      # DEPLOY
-      # =====================================================
 
       - name: GitHub Pages'e yayınla
+
         id: deployment
+
         uses: actions/deploy-pages@v4
