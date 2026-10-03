@@ -1,351 +1,2546 @@
-/*
-===========================================================
- SPOR TOTO VERİ DOSYASI
- Sezon: 2026/2027
- Haftalar: 1 - 8
- result:
-   1 = Ev sahibi
-   X = Beraberlik
-   2 = Deplasman
- score:
-   Maç skoru biliniyorsa "2-1"
-   Bilinmiyorsa null
- ÖNEMLİ:
- Backtest sırasında hafta N tahmin edilirken
- hafta N'nin sonucu kullanılmamalıdır.
- Tahmin motoru yalnızca önceki haftaları kullanmalıdır.
-===========================================================
-*/
-/* =========================================================
-   SPOR TOTO VERİ DOSYASI
-   Sezon: 2026/2027
-   ÖNEMLİ:
-   - 1-7. haftalar tamamlanmış sonuçlardır.
-   - 8. hafta mevcut programdır.
-   - 8. hafta sonuçları tahmin motoruna verilmez.
-   - Backtest yapılırken hafta N için yalnızca N'den
-     önceki haftalar kullanılmalıdır.
-========================================================= */
-window.SPORT_TOTO_DATA = {
-seasons: {
-    "2026/2027": {
-    "2026-2027": {
-weeks: {
-/* =================================================
-          1. HAFTA
-       ================================================= */
-1: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Galatasaray", away: "Çorum FK", score: "2-2", result: "X" },
-            { no: 2,  home: "Kasımpaşa", away: "Trabzonspor", score: "1-1", result: "X" },
-            { no: 3,  home: "Konyaspor", away: "Çaykur Rizespor", score: "0-1", result: "2" },
-            { no: 4,  home: "Gaziantep FK", away: "Corendon Alanyaspor", score: "1-1", result: "X" },
-            { no: 5,  home: "Gençlerbirliği", away: "Fenerbahçe", score: "2-1", result: "1" },
-            { no: 6,  home: "Rams Başakşehir", away: "Kocaelispor", score: "2-0", result: "1" },
-            { no: 7,  home: "Amed Sportif Faaliyetler", away: "Erzurumspor FK", score: "3-0", result: "1" },
-            { no: 8,  home: "Beşiktaş", away: "Eyüpspor", score: "1-0", result: "1" },
-            { no: 9,  home: "Samsunspor", away: "Göztepe", score: "3-3", result: "X" },
-            { no: 1, home: "Galatasaray", away: "Çorum FK", score: "2-2", result: "X" },
-            { no: 2, home: "Kasımpaşa", away: "Trabzonspor", score: "1-1", result: "X" },
-            { no: 3, home: "Konyaspor", away: "Çaykur Rizespor", score: "0-1", result: "2" },
-            { no: 4, home: "Gaziantep FK", away: "Corendon Alanyaspor", score: "1-1", result: "X" },
-            { no: 5, home: "Gençlerbirliği", away: "Fenerbahçe", score: "2-1", result: "1" },
-            { no: 6, home: "Rams Başakşehir", away: "Kocaelispor", score: "2-0", result: "1" },
-            { no: 7, home: "Amed Sportif Faaliyetler", away: "Erzurumspor FK", score: "3-0", result: "1" },
-            { no: 8, home: "Beşiktaş", away: "Eyüpspor", score: "1-0", result: "1" },
-            { no: 9, home: "Samsunspor", away: "Göztepe", score: "3-3", result: "X" },
-{ no: 10, home: "Arsenal", away: "Manchester City", score: "3-0", result: "1" },
-{ no: 11, home: "Lens", away: "Paris St Germain", score: "1-0", result: "1" },
-{ no: 12, home: "Sevilla", away: "Rayo Vallecano", score: "2-1", result: "1" },
-{ no: 13, home: "Racing Santander", away: "Villarreal", score: "2-2", result: "X" },
-{ no: 14, home: "Espanyol", away: "Levante", score: "3-0", result: "1" },
-            // Kaynakta skor boş görünmesine rağmen MS 1 olarak kayıtlı.
-            /* Kaynakta skor bulunmadığı için skor uydurulmuyor. */
-{ no: 15, home: "Celta Vigo", away: "Osasuna", score: null, result: "1" }
-]
-},
-@@ -50,15 +42,15 @@ window.SPORT_TOTO_DATA = {
-2: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Erzurumspor FK", away: "Galatasaray", score: "0-4", result: "2" },
-            { no: 2,  home: "Çaykur Rizespor", away: "Samsunspor", score: "0-2", result: "2" },
-            { no: 3,  home: "Arca Çorum FK", away: "Kasımpaşa", score: "0-1", result: "2" },
-            { no: 4,  home: "Fenerbahçe", away: "Tümosan Konyaspor", score: "4-2", result: "1" },
-            { no: 5,  home: "Eyüpspor", away: "Gaziantep FK", score: "0-1", result: "2" },
-            { no: 6,  home: "Trabzonspor", away: "İstanbul Başakşehir", score: "2-1", result: "1" },
-            { no: 7,  home: "Corendon Alanyaspor", away: "Beşiktaş", score: "1-0", result: "1" },
-            { no: 8,  home: "Göztepe", away: "Gençlerbirliği", score: "0-1", result: "2" },
-            { no: 9,  home: "Kocaelispor", away: "Amed Sportif Faaliyetler", score: "2-0", result: "1" },
-            { no: 1, home: "Erzurumspor FK", away: "Galatasaray", score: "0-4", result: "2" },
-            { no: 2, home: "Çaykur Rizespor", away: "Samsunspor", score: "0-2", result: "2" },
-            { no: 3, home: "Arca Çorum FK", away: "Kasımpaşa", score: "0-1", result: "2" },
-            { no: 4, home: "Fenerbahçe", away: "Tümosan Konyaspor", score: "4-2", result: "1" },
-            { no: 5, home: "Eyüpspor", away: "Gaziantep FK", score: "0-1", result: "2" },
-            { no: 6, home: "Trabzonspor", away: "İstanbul Başakşehir", score: "2-1", result: "1" },
-            { no: 7, home: "Corendon Alanyaspor", away: "Beşiktaş", score: "1-0", result: "1" },
-            { no: 8, home: "Göztepe", away: "Gençlerbirliği", score: "0-1", result: "2" },
-            { no: 9, home: "Kocaelispor", away: "Amed Sportif Faaliyetler", score: "2-0", result: "1" },
-{ no: 10, home: "Borussia Dortmund", away: "Bayern Münih", score: "1-2", result: "2" },
-{ no: 11, home: "Marsilya", away: "Strasbourg", score: "4-0", result: "1" },
-{ no: 12, home: "Newcastle Utd.", away: "Liverpool", score: "2-2", result: "X" },
-@@ -73,15 +65,15 @@ window.SPORT_TOTO_DATA = {
-3: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Gençlerbirliği", away: "Erzurumspor FK", score: "1-1", result: "X" },
-            { no: 2,  home: "Tümosan Konyaspor", away: "Kocaelispor", score: "1-2", result: "2" },
-            { no: 3,  home: "Galatasaray", away: "Göztepe", score: "3-2", result: "1" },
-            { no: 4,  home: "Gaziantep FK", away: "Çaykur Rizespor", score: "1-2", result: "2" },
-            { no: 5,  home: "Eyüpspor", away: "Corendon Alanyaspor", score: "2-1", result: "1" },
-            { no: 6,  home: "İstanbul Başakşehir", away: "Kasımpaşa", score: "1-1", result: "X" },
-            { no: 7,  home: "Samsunspor", away: "Fenerbahçe", score: "0-2", result: "2" },
-            { no: 8,  home: "Amed Sportif Faaliyetler", away: "Trabzonspor", score: "2-1", result: "1" },
-            { no: 9,  home: "Beşiktaş", away: "Arca Çorum FK", score: "6-2", result: "1" },
-            { no: 1, home: "Gençlerbirliği", away: "Erzurumspor FK", score: "1-1", result: "X" },
-            { no: 2, home: "Tümosan Konyaspor", away: "Kocaelispor", score: "1-2", result: "2" },
-            { no: 3, home: "Galatasaray", away: "Göztepe", score: "3-2", result: "1" },
-            { no: 4, home: "Gaziantep FK", away: "Çaykur Rizespor", score: "1-2", result: "2" },
-            { no: 5, home: "Eyüpspor", away: "Corendon Alanyaspor", score: "2-1", result: "1" },
-            { no: 6, home: "İstanbul Başakşehir", away: "Kasımpaşa", score: "1-1", result: "X" },
-            { no: 7, home: "Samsunspor", away: "Fenerbahçe", score: "0-2", result: "2" },
-            { no: 8, home: "Amed Sportif Faaliyetler", away: "Trabzonspor", score: "2-1", result: "1" },
-            { no: 9, home: "Beşiktaş", away: "Arca Çorum FK", score: "6-2", result: "1" },
-{ no: 10, home: "Borussia Dortmund", away: "Hamburger SV", score: "2-0", result: "1" },
-{ no: 11, home: "Lille", away: "Paris St Germain", score: "2-2", result: "X" },
-{ no: 12, home: "Monaco", away: "Marsilya", score: "2-0", result: "1" },
-@@ -96,15 +88,15 @@ window.SPORT_TOTO_DATA = {
-4: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Erzurumspor FK", away: "Tümosan Konyaspor", score: "1-0", result: "1" },
-            { no: 2,  home: "Kasımpaşa", away: "Amed Sportif Faaliyetler", score: "2-2", result: "X" },
-            { no: 3,  home: "Arca Çorum FK", away: "Eyüpspor", score: "3-0", result: "1" },
-            { no: 4,  home: "Fenerbahçe", away: "Beşiktaş", score: "1-2", result: "2" },
-            { no: 5,  home: "İstanbul Başakşehir", away: "Galatasaray", score: "2-3", result: "2" },
-            { no: 6,  home: "Kocaelispor", away: "Samsunspor", score: "1-0", result: "1" },
-            { no: 7,  home: "Trabzonspor", away: "Gençlerbirliği", score: "5-0", result: "1" },
-            { no: 8,  home: "Çaykur Rizespor", away: "Corendon Alanyaspor", score: "0-1", result: "2" },
-            { no: 9,  home: "Göztepe", away: "Gaziantep FK", score: "2-4", result: "2" },
-            { no: 1, home: "Erzurumspor FK", away: "Tümosan Konyaspor", score: "1-0", result: "1" },
-            { no: 2, home: "Kasımpaşa", away: "Amed Sportif Faaliyetler", score: "2-2", result: "X" },
-            { no: 3, home: "Arca Çorum FK", away: "Eyüpspor", score: "3-0", result: "1" },
-            { no: 4, home: "Fenerbahçe", away: "Beşiktaş", score: "1-2", result: "2" },
-            { no: 5, home: "İstanbul Başakşehir", away: "Galatasaray", score: "2-3", result: "2" },
-            { no: 6, home: "Kocaelispor", away: "Samsunspor", score: "1-0", result: "1" },
-            { no: 7, home: "Trabzonspor", away: "Gençlerbirliği", score: "5-0", result: "1" },
-            { no: 8, home: "Çaykur Rizespor", away: "Corendon Alanyaspor", score: "0-1", result: "2" },
-            { no: 9, home: "Göztepe", away: "Gaziantep FK", score: "2-4", result: "2" },
-{ no: 10, home: "Everton", away: "Manchester Utd.", score: "2-2", result: "X" },
-{ no: 11, home: "Arsenal", away: "Chelsea", score: "2-1", result: "1" },
-{ no: 12, home: "Athletic Bilbao", away: "Atletico Madrid", score: "3-0", result: "1" },
-@@ -119,15 +111,15 @@ window.SPORT_TOTO_DATA = {
-5: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Beşiktaş", away: "Erzurumspor FK", score: "3-0", result: "1" },
-            { no: 2,  home: "Eyüpspor", away: "Çaykur Rizespor", score: "0-2", result: "2" },
-            { no: 3,  home: "Samsunspor", away: "Arca Çorum FK", score: "1-5", result: "2" },
-            { no: 4,  home: "Corendon Alanyaspor", away: "Göztepe", score: "2-2", result: "X" },
-            { no: 5,  home: "Tümosan Konyaspor", away: "Trabzonspor", score: "1-0", result: "1" },
-            { no: 6,  home: "Gençlerbirliği", away: "Kasımpaşa", score: "1-2", result: "2" },
-            { no: 7,  home: "Amed Sportif Faaliyetler", away: "İstanbul Başakşehir", score: "5-0", result: "1" },
-            { no: 8,  home: "Galatasaray", away: "Kocaelispor", score: "1-0", result: "1" },
-            { no: 9,  home: "Gaziantep FK", away: "Fenerbahçe", score: "0-0", result: "X" },
-            { no: 1, home: "Beşiktaş", away: "Erzurumspor FK", score: "3-0", result: "1" },
-            { no: 2, home: "Eyüpspor", away: "Çaykur Rizespor", score: "0-2", result: "2" },
-            { no: 3, home: "Samsunspor", away: "Arca Çorum FK", score: "1-5", result: "2" },
-            { no: 4, home: "Corendon Alanyaspor", away: "Göztepe", score: "2-2", result: "X" },
-            { no: 5, home: "Tümosan Konyaspor", away: "Trabzonspor", score: "1-0", result: "1" },
-            { no: 6, home: "Gençlerbirliği", away: "Kasımpaşa", score: "1-2", result: "2" },
-            { no: 7, home: "Amed Sportif Faaliyetler", away: "İstanbul Başakşehir", score: "5-0", result: "1" },
-            { no: 8, home: "Galatasaray", away: "Kocaelispor", score: "1-0", result: "1" },
-            { no: 9, home: "Gaziantep FK", away: "Fenerbahçe", score: "0-0", result: "X" },
-{ no: 10, home: "Augsburg", away: "Bayer Leverkusen", score: "2-2", result: "X" },
-{ no: 11, home: "Rennes", away: "Marsilya", score: "1-0", result: "1" },
-{ no: 12, home: "Chelsea", away: "Hull City", score: "2-2", result: "X" },
-@@ -142,15 +134,15 @@ window.SPORT_TOTO_DATA = {
-6: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Kasımpaşa", away: "Tümosan Konyaspor", score: "0-0", result: "X" },
-            { no: 2,  home: "Kocaelispor", away: "Gaziantep FK", score: "2-0", result: "1" },
-            { no: 3,  home: "Arca Çorum FK", away: "Corendon Alanyaspor", score: "1-2", result: "2" },
-            { no: 4,  home: "İstanbul Başakşehir", away: "Gençlerbirliği", score: "4-0", result: "1" },
-            { no: 5,  home: "Trabzonspor", away: "Galatasaray", score: "4-0", result: "1" },
-            { no: 6,  home: "Erzurumspor FK", away: "Samsunspor", score: "1-0", result: "1" },
-            { no: 7,  home: "Fenerbahçe", away: "Eyüpspor", score: "8-0", result: "1" },
-            { no: 8,  home: "Amed Sportif Faaliyetler", away: "Beşiktaş", score: "3-2", result: "1" },
-            { no: 9,  home: "Göztepe", away: "Çaykur Rizespor", score: "2-2", result: "X" },
-            { no: 1, home: "Kasımpaşa", away: "Tümosan Konyaspor", score: "0-0", result: "X" },
-            { no: 2, home: "Kocaelispor", away: "Gaziantep FK", score: "2-0", result: "1" },
-            { no: 3, home: "Arca Çorum FK", away: "Corendon Alanyaspor", score: "1-2", result: "2" },
-            { no: 4, home: "İstanbul Başakşehir", away: "Gençlerbirliği", score: "4-0", result: "1" },
-            { no: 5, home: "Trabzonspor", away: "Galatasaray", score: "4-0", result: "1" },
-            { no: 6, home: "Erzurumspor FK", away: "Samsunspor", score: "1-0", result: "1" },
-            { no: 7, home: "Fenerbahçe", away: "Eyüpspor", score: "8-0", result: "1" },
-            { no: 8, home: "Amed Sportif Faaliyetler", away: "Beşiktaş", score: "3-2", result: "1" },
-            { no: 9, home: "Göztepe", away: "Çaykur Rizespor", score: "2-2", result: "X" },
-{ no: 10, home: "Vfb Stuttgart", away: "Borussia Dortmund", score: "0-1", result: "2" },
-{ no: 11, home: "Bayer Leverkusen", away: "RB Leipzig", score: "2-0", result: "1" },
-{ no: 12, home: "Tottenham Hotspur", away: "Aston Villa", score: "2-3", result: "2" },
-@@ -165,39 +157,42 @@ window.SPORT_TOTO_DATA = {
-7: {
-status: "finished",
-matches: [
-            { no: 1,  home: "Türkiye", away: "Fransa", score: "0-1", result: "2" },
-            { no: 2,  home: "Türkiye", away: "İtalya", score: "1-4", result: "2" },
-            { no: 3,  home: "İsveç", away: "Romanya", score: "2-1", result: "1" },
-            { no: 4,  home: "İtalya", away: "Belçika", score: "0-2", result: "2" },
-            { no: 5,  home: "Slovenya", away: "İskoçya", score: "0-0", result: "X" },
-            { no: 6,  home: "Bulgaristan", away: "Lüksemburg", score: "1-2", result: "2" },
-            { no: 7,  home: "Kuzey Makedonya Cumhuriyeti", away: "İsviçre", score: "0-3", result: "2" },
-            { no: 8,  home: "Çekya", away: "Hırvatistan", score: "1-2", result: "2" },
-            { no: 9,  home: "İngiltere", away: "İspanya", score: "2-3", result: "2" },
-            { no: 10, home: "Litvanya", away: "Azerbaycan", score: "1-1", result: "X" },
-            { no: 11, home: "Avusturya", away: "Kosova", score: "3-1", result: "1" },
-            { no: 12, home: "Danimarka", away: "Galler", score: "2-0", result: "1" },
-            { no: 13, home: "Sırbistan", away: "Hollanda", score: "1-2", result: "2" },
-            { no: 14, home: "Almanya", away: "Yunanistan", score: "0-1", result: "2" },
-            { no: 15, home: "Norveç", away: "Portekiz", score: "1-2", result: "2" }
-            { no: 1, home: "Türkiye", away: "Fransa", score: null, result: "2" },
-            { no: 2, home: "Türkiye", away: "İtalya", score: null, result: "2" },
-            { no: 3, home: "İsveç", away: "Romanya", score: null, result: "1" },
-            { no: 4, home: "İtalya", away: "Belçika", score: null, result: "2" },
-            { no: 5, home: "Slovenya", away: "İskoçya", score: null, result: "X" },
-            { no: 6, home: "Bulgaristan", away: "Lüksemburg", score: null, result: "2" },
-            { no: 7, home: "Kuzey Makedonya", away: "İsviçre", score: null, result: "2" },
-            { no: 8, home: "Çekya", away: "Hırvatistan", score: null, result: "2" },
-            { no: 9, home: "İngiltere", away: "İspanya", score: null, result: "2" },
-            { no: 10, home: "Litvanya", away: "Azerbaycan", score: null, result: "X" },
-            { no: 11, home: "Avusturya", away: "Kosova", score: null, result: "1" },
-            { no: 12, home: "Danimarka", away: "Galler", score: null, result: "1" },
-            { no: 13, home: "Sırbistan", away: "Hollanda", score: null, result: "2" },
-            { no: 14, home: "Almanya", away: "Yunanistan", score: null, result: "2" },
-            { no: 15, home: "Norveç", away: "Portekiz", score: null, result: "2" }
-]
-},
-/* =================================================
-          8. HAFTA
-           GÜNCEL PROGRAM / KISMİ SONUÇLAR
-           GÜNCEL PROGRAM
-           SONUÇLAR BİLİNÇLİ OLARAK NULL.
-           Tahmin/backtest motoru 8. haftayı geçmiş veri
-           olarak kullanmamalıdır.
-       ================================================= */
-8: {
-          status: "ongoing",
-          status: "current",
-matches: [
-            { no: 1,  home: "Belçika", away: "Türkiye", score: "3-0", result: "1" },
-            { no: 2,  home: "İtalya", away: "Türkiye", score: null, result: null },
-            { no: 3,  home: "Bosna Hersek", away: "İsveç", score: "1-1", result: "X" },
-            { no: 4,  home: "Fransa", away: "İtalya", score: "1-1", result: "X" },
-            { no: 5,  home: "Macaristan", away: "Gürcistan", score: "1-0", result: "1" },
-            { no: 6,  home: "Polonya", away: "Romanya", score: "6-0", result: "1" },
-            { no: 7,  home: "Hırvatistan", away: "İngiltere", score: null, result: null },
-            { no: 8,  home: "Kuzey Makedonya Cumhuriyeti", away: "İskoçya", score: null, result: null },
-            { no: 9,  home: "İspanya", away: "Çekya", score: null, result: null },
-            { no: 1, home: "Belçika", away: "Türkiye", score: null, result: null },
-            { no: 2, home: "İtalya", away: "Türkiye", score: null, result: null },
-            { no: 3, home: "Bosna Hersek", away: "İsveç", score: null, result: null },
-            { no: 4, home: "Fransa", away: "İtalya", score: null, result: null },
-            { no: 5, home: "Macaristan", away: "Gürcistan", score: null, result: null },
-            { no: 6, home: "Polonya", away: "Romanya", score: null, result: null },
-            { no: 7, home: "Hırvatistan", away: "İngiltere", score: null, result: null },
-            { no: 8, home: "Kuzey Makedonya Cumhuriyeti", away: "İskoçya", score: null, result: null },
-            { no: 9, home: "İspanya", away: "Çekya", score: null, result: null },
-{ no: 10, home: "İsviçre", away: "Slovenya", score: null, result: null },
-{ no: 11, home: "Galler", away: "Danimarka", score: null, result: null },
-{ no: 12, home: "Hollanda", away: "Sırbistan", score: null, result: null },
-@@ -210,75 +205,18 @@ window.SPORT_TOTO_DATA = {
+{
+  "currentWeek": "2026-2027-8",
+  "updatedAt": "2026-10-03T18:36:14.342Z",
+  "weeks": [
+    {
+      "id": "2026-2027-8",
+      "season": "2026-2027",
+      "week": 8,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Belçika",
+          "away": "Türkiye",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "İtalya",
+          "away": "Türkiye",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 3,
+          "home": "Bosna Hersek",
+          "away": "İsveç",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Fransa",
+          "away": "İtalya",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Macaristan",
+          "away": "Gürcistan",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Polonya",
+          "away": "Romanya",
+          "score": "6-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Hırvatistan",
+          "away": "İngiltere",
+          "score": "0-7",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Kuzey Makedonya Cumhuriyeti",
+          "away": "İskoçya",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 9,
+          "home": "İspanya",
+          "away": "Çekya",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 10,
+          "home": "İsviçre",
+          "away": "Slovenya",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 11,
+          "home": "Galler",
+          "away": "Danimarka",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 12,
+          "home": "Hollanda",
+          "away": "Sırbistan",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 13,
+          "home": "Portekiz",
+          "away": "Norveç",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 14,
+          "home": "Yunanistan",
+          "away": "Almanya",
+          "score": null,
+          "result": null,
+          "played": false
+        },
+        {
+          "no": 15,
+          "home": "Fransa",
+          "away": "Belçika",
+          "score": null,
+          "result": null,
+          "played": false
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-7",
+      "season": "2026-2027",
+      "week": 7,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Türkiye",
+          "away": "Fransa",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Türkiye",
+          "away": "İtalya",
+          "score": "1-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "İsveç",
+          "away": "Romanya",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "İtalya",
+          "away": "Belçika",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Slovenya",
+          "away": "İskoçya",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Bulgaristan",
+          "away": "Lüksemburg",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Kuzey Makedonya Cumhuriyeti",
+          "away": "İsviçre",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Çekya",
+          "away": "Hırvatistan",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "İngiltere",
+          "away": "İspanya",
+          "score": "2-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Litvanya",
+          "away": "Azerbaycan",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Avusturya",
+          "away": "Kosova",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Danimarka",
+          "away": "Galler",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Sırbistan",
+          "away": "Hollanda",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Almanya",
+          "away": "Yunanistan",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Norveç",
+          "away": "Portekiz",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-6",
+      "season": "2026-2027",
+      "week": 6,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Kasımpaşa",
+          "away": "Tümosan Konyaspor",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Kocaelispor",
+          "away": "Gaziantep FK",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Arca Çorum FK",
+          "away": "Corendon Alanyaspor",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "İstanbul Başakşehir",
+          "away": "Gençlerbirliği",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Trabzonspor",
+          "away": "Galatasaray",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Erzurumspor FK",
+          "away": "Samsunspor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Fenerbahçe",
+          "away": "Eyüpspor",
+          "score": "8-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Amed Sportif Faaliyetler",
+          "away": "Beşiktaş",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Göztepe",
+          "away": "Çaykur Rizespor",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Vfb Stuttgart",
+          "away": "Borussia Dortmund",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Bayer Leverkusen",
+          "away": "RB Leipzig",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Tottenham Hotspur",
+          "away": "Aston Villa",
+          "score": "2-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Newcastle Utd.",
+          "away": "H. City",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Atletico Madrid",
+          "away": "Real Madrid",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Roma",
+          "away": "Inter",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-5",
+      "season": "2026-2027",
+      "week": 5,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Beşiktaş",
+          "away": "Erzurumspor FK",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Eyüpspor",
+          "away": "Çaykur Rizespor",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Samsunspor",
+          "away": "Arca Çorum FK",
+          "score": "1-5",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Corendon Alanyaspor",
+          "away": "Göztepe",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Tümosan Konyaspor",
+          "away": "Trabzonspor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Gençlerbirliği",
+          "away": "Kasımpaşa",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Amed Sportif Faaliyetler",
+          "away": "İstanbul Başakşehir",
+          "score": "5-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Galatasaray",
+          "away": "Kocaelispor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Gaziantep FK",
+          "away": "Fenerbahçe",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Augsburg",
+          "away": "Bayer Leverkusen",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Rennes",
+          "away": "Marsilya",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Chelsea",
+          "away": "Hull City",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Manchester Utd.",
+          "away": "M. City",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Levante",
+          "away": "Barcelona",
+          "score": "2-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Lazio",
+          "away": "Milan",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-4",
+      "season": "2026-2027",
+      "week": 4,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Erzurumspor FK",
+          "away": "Tümosan Konyaspor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Kasımpaşa",
+          "away": "Amed Sportif Faaliyetler",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Arca Çorum FK",
+          "away": "Eyüpspor",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Fenerbahçe",
+          "away": "Beşiktaş",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "İstanbul Başakşehir",
+          "away": "Galatasaray",
+          "score": "2-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Kocaelispor",
+          "away": "Samsunspor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Trabzonspor",
+          "away": "Gençlerbirliği",
+          "score": "5-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Çaykur Rizespor",
+          "away": "Corendon Alanyaspor",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Göztepe",
+          "away": "Gaziantep FK",
+          "score": "2-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Everton",
+          "away": "Manchester Utd.",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Arsenal",
+          "away": "Chelsea",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Athletic Bilbao",
+          "away": "Atletico Madrid",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Inter",
+          "away": "Napoli",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Roma",
+          "away": "Atalanta",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Juventus",
+          "away": "Milan",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-3",
+      "season": "2026-2027",
+      "week": 3,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Gençlerbirliği",
+          "away": "Erzurumspor FK",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Tümosan Konyaspor",
+          "away": "Kocaelispor",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Galatasaray",
+          "away": "Göztepe",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Gaziantep FK",
+          "away": "Çaykur Rizespor",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Eyüpspor",
+          "away": "Corendon Alanyaspor",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "İstanbul Başakşehir",
+          "away": "Kasımpaşa",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Samsunspor",
+          "away": "Fenerbahçe",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Amed Sportif Faaliyetler",
+          "away": "Trabzonspor",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Beşiktaş",
+          "away": "Arca Çorum FK",
+          "score": "6-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Borussia Dortmund",
+          "away": "Hamburger SV",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Lille",
+          "away": "Paris St Germain",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Monaco",
+          "away": "Marsilya",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "T. Hotspur",
+          "away": "Newcastle Utd.",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Sevilla",
+          "away": "Atletico Madrid",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Cagliari",
+          "away": "Inter",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-2",
+      "season": "2026-2027",
+      "week": 2,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Erzurumspor FK",
+          "away": "Galatasaray",
+          "score": "0-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Çaykur Rizespor",
+          "away": "Samsunspor",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Arca Çorum FK",
+          "away": "Kasımpaşa",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Fenerbahçe",
+          "away": "Tümosan Konyaspor",
+          "score": "4-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Eyüpspor",
+          "away": "Gaziantep FK",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Trabzonspor",
+          "away": "İstanbul Başakşehir",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Corendon Alanyaspor",
+          "away": "Beşiktaş",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Göztepe",
+          "away": "Gençlerbirliği",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Kocaelispor",
+          "away": "Amed Sportif Faaliyetler",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Borussia Dortmund",
+          "away": "Bayern Münih",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Marsilya",
+          "away": "Strasbourg",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Newcastle Utd.",
+          "away": "Liverpool",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Real Betis",
+          "away": "Real Sociedad",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Atletico Madrid",
+          "away": "Villarreal",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Torino",
+          "away": "Milan",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2026-2027-1",
+      "season": "2026-2027",
+      "week": 1,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Galatasaray",
+          "away": "Çorum FK",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Kasımpaşa",
+          "away": "Trabzonspor",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Konyaspor",
+          "away": "Çaykur Rizespor",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Gaziantep FK",
+          "away": "Corendon Alanyaspor",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Gençlerbirliği",
+          "away": "Fenerbahçe",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Rams Başakşehir",
+          "away": "Kocaelispor",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Amed Sportif Faaliyetler",
+          "away": "Erzurumspor FK",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Beşiktaş",
+          "away": "Eyüpspor",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Samsunspor",
+          "away": "Göztepe",
+          "score": "3-3",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Arsenal",
+          "away": "Manchester City",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Lens",
+          "away": "Paris St Germain",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Sevilla",
+          "away": "Rayo Vallecano",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Racing Santander",
+          "away": "Villarreal",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Espanyol",
+          "away": "Levante",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Celta Vigo",
+          "away": "Osasuna",
+          "score": null,
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-53",
+      "season": "2025-2026",
+      "week": 53,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Randers",
+          "away": "Lyngby",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Horsens",
+          "away": "Brondby",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Arsenal",
+          "away": "Borussia Dortmund",
+          "score": "2-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Oulu",
+          "away": "Helsinki",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Inter Turku",
+          "away": "Lahti",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Mjallby",
+          "away": "Elfsborg",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Hammarby",
+          "away": "Hacken",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Göteborg",
+          "away": "Kalmar",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Viking",
+          "away": "Sarpsborg 08",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Lillestrom",
+          "away": "Rosenborg",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Ham Kam",
+          "away": "Aalesunds",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Lech Poznan",
+          "away": "Piast Gliwice",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Korona Kielce",
+          "away": "Legia Varşova",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Rakow Czestochowa",
+          "away": "KGHM Zaglebie Lubin",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Jagiellonia Bialystok",
+          "away": "Widzew Lodz",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-52",
+      "season": "2025-2026",
+      "week": 52,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Club Brugge",
+          "away": "Union St.Gilloise",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Brondby",
+          "away": "Viborg",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Odense",
+          "away": "SonderjyskE",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "PSV Eindhoven",
+          "away": "AZ Alkmaar",
+          "score": "0-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Hacken",
+          "away": "Kalmar",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Brommapojkarna",
+          "away": "Malmö",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "AIK Stockholm",
+          "away": "Örgryte IS",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Djurgarden",
+          "away": "Vasteras SK",
+          "score": "6-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Valerenga",
+          "away": "Ham Kam",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Bodo Glimt",
+          "away": "Lillestrom",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Fredrikstad",
+          "away": "Sandefjord",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "KFUM",
+          "away": "Kristiansund BK",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Molde",
+          "away": "Sarpsborg 08",
+          "score": "3-3",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Porto",
+          "away": "Uniao Torreense",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Legia Varşova",
+          "away": "KGHM Zaglebie Lubin",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-51",
+      "season": "2025-2026",
+      "week": 51,
+      "matches": [
+        {
+          "no": 1,
+          "home": "A. Aarhus",
+          "away": "Brondby",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Horsens",
+          "away": "F. Nordsjaelland",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Randers",
+          "away": "Silkeborg",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Ilves",
+          "away": "Lahti",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Helsinki",
+          "away": "T. Turku",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Vasteras SK",
+          "away": "Ö. IS",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Sirius",
+          "away": "Göteborg",
+          "score": "4-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Malmö",
+          "away": "Elfsborg",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "KFUM",
+          "away": "Molde",
+          "score": "2-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Sandefjord",
+          "away": "B. Glimt",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Rosenborg",
+          "away": "Fredrikstad",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "P. Szczecin",
+          "away": "L. Varşova",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "L. Poznan",
+          "away": "Cracovia",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "W. Krakow",
+          "away": "G. Katowice",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "K.Z. Lubin",
+          "away": "P. Gliwice",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-50",
+      "season": "2025-2026",
+      "week": 50,
+      "matches": [
+        {
+          "no": 1,
+          "home": "A. Stockholm",
+          "away": "Gais",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Göteborg",
+          "away": "Brommapojkarna",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "H. BK",
+          "away": "Hacken",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Hammarby",
+          "away": "Degerfors",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Elfsborg",
+          "away": "Sirius",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Kalmar",
+          "away": "Malmö",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Helsinki",
+          "away": "V. Vaasa",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Oulu",
+          "away": "Gnistan",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Incheon Utd.",
+          "away": "J. FC",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Jeju Utd.",
+          "away": "P. Steelers",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "C.T. Long",
+          "away": "Z. Professional",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Q.W. Coast",
+          "away": "C.R. FC",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "D. Yingbo",
+          "away": "S. Taishan",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "S. Shenhua",
+          "away": "T.J. Tiger",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "W.T.T. FC",
+          "away": "S.P. City",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-49",
+      "season": "2025-2026",
+      "week": 49,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Mjallby",
+          "away": "A. Stockholm",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Hammarby",
+          "away": "Kalmar",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Malmö",
+          "away": "Göteborg",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Gais",
+          "away": "Elfsborg",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Djurgarden",
+          "away": "H. BK",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Lahti",
+          "away": "Helsinki",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "T. Turku",
+          "away": "Oulu",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "U. HD",
+          "away": "J. FC",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "F. Seoul",
+          "away": "Gangwon",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Jeju Utd.",
+          "away": "D.H. Citizen",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "W.T.T. FC",
+          "away": "H.S. Longmen",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Z. Professional",
+          "away": "Q. Hainiu",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "S. Shenhua",
+          "away": "B. Guoan",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "S.P. City",
+          "away": "Q.W. Coast",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "C.R. FC",
+          "away": "C.T. Long",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-48",
+      "season": "2025-2026",
+      "week": 48,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Sirius",
+          "away": "Mjallby",
+          "score": "4-4",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Degerfors",
+          "away": "Malmö",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Göteborg",
+          "away": "A. Stockholm",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Elfsborg",
+          "away": "Hammarby",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Hacken",
+          "away": "Djurgarden",
+          "score": "2-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Brommapojkarna",
+          "away": "Gais",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Anyang",
+          "away": "P. Steelers",
+          "score": "2-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "J. FC",
+          "away": "Gangwon",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "F. Seoul",
+          "away": "Incheon Utd.",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Q.W. Coast",
+          "away": "S.P. FC",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "B. Guoan",
+          "away": "S. Taishan",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "S. Shenhua",
+          "away": "Z. Professional",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "S. Patricks",
+          "away": "Galway Utd.",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Shelbourne",
+          "away": "Dundalk",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "S. Rovers",
+          "away": "S. Rovers",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-47",
+      "season": "2025-2026",
+      "week": 47,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Türkiye",
+          "away": "A.B.D.",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Japonya",
+          "away": "İsveç",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Paraguay",
+          "away": "Avustralya",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Norveç",
+          "away": "Fransa",
+          "score": "1-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Senegal",
+          "away": "Irak",
+          "score": "5-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Uruguay",
+          "away": "İspanya",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Y.B. Adaları",
+          "away": "S. Arabistan",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Mısır",
+          "away": "İran",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Y. Zelanda",
+          "away": "Belçika",
+          "score": "1-5",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Hırvatistan",
+          "away": "Gana",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Panama",
+          "away": "İngiltere",
+          "score": "0-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "D. Kongo",
+          "away": "Özbekistan",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Kolombiya",
+          "away": "Portekiz",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Cezayir",
+          "away": "Avusturya",
+          "score": "3-3",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Ürdün",
+          "away": "Arjantin",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-46",
+      "season": "2025-2026",
+      "week": 46,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Türkiye",
+          "away": "Paraguay",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "A.B.D.",
+          "away": "Avustralya",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "İskoçya",
+          "away": "Fas",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Brezilya",
+          "away": "Haiti",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Hollanda",
+          "away": "İsveç",
+          "score": "5-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Almanya",
+          "away": "F. Sahili",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Ekvador",
+          "away": "Curaçao",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Tunus",
+          "away": "Japonya",
+          "score": "0-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "İspanya",
+          "away": "S. Arabistan",
+          "score": "4-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Uruguay",
+          "away": "Y.B. Adaları",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Y. Zelanda",
+          "away": "Mısır",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Arjantin",
+          "away": "Avusturya",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Fransa",
+          "away": "Irak",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Norveç",
+          "away": "Senegal",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Ürdün",
+          "away": "Cezayir",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-45",
+      "season": "2025-2026",
+      "week": 45,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Avustralya",
+          "away": "Türkiye",
+          "score": "2-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Kanada",
+          "away": "B. Hersek",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "A.B.D.",
+          "away": "Paraguay",
+          "score": "4-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Katar",
+          "away": "İsviçre",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Brezilya",
+          "away": "Fas",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Haiti",
+          "away": "İskoçya",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "Almanya",
+          "away": "Curaçao",
+          "score": "7-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Hollanda",
+          "away": "Japonya",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "F. Sahili",
+          "away": "Ekvador",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "İsveç",
+          "away": "Tunus",
+          "score": "5-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "İspanya",
+          "away": "Y.B. Adaları",
+          "score": "0-0",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Belçika",
+          "away": "Mısır",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "S. Arabistan",
+          "away": "Uruguay",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "İran",
+          "away": "Y. Zelanda",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Fransa",
+          "away": "Senegal",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-44",
+      "season": "2025-2026",
+      "week": 44,
+      "matches": [
+        {
+          "no": 1,
+          "home": "B.B. Duong",
+          "away": "H.A.G. Lai",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "Brabrand",
+          "away": "F. Amager",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "F. Roskilde",
+          "away": "H. (Hellerup)",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Skive",
+          "away": "Ishøj",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Haka",
+          "away": "JäPS",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "Aegir",
+          "away": "L. R.",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "H. Kopavogs",
+          "away": "Afturelding",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Njardvik",
+          "away": "I. Reykjavik",
+          "score": "5-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Vestri",
+          "away": "Volsungur",
+          "score": "5-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Fylkir",
+          "away": "T. Reykjavik",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Grótta",
+          "away": "Grindavik",
+          "score": null,
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "G. FC",
+          "away": "Y. FC",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "H. FC",
+          "away": "S. Bluewings",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "C. City",
+          "away": "S. FC",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Ekranas",
+          "away": "N. Klaipeda",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-43",
+      "season": "2025-2026",
+      "week": 43,
+      "matches": [
+        {
+          "no": 1,
+          "home": "Nice",
+          "away": "S. Etienne",
+          "score": "4-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "P.S. Germain",
+          "away": "Arsenal",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "Flamengo",
+          "away": "Coritiba",
+          "score": "3-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Bahia",
+          "away": "B. FR",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "Gremio",
+          "away": "Corinthians",
+          "score": "1-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "R. Bragantino",
+          "away": "Internacional",
+          "score": "3-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "A. Stockholm",
+          "away": "Sirius",
+          "score": "0-3",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Malmö",
+          "away": "H. BK",
+          "score": "5-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Hacken",
+          "away": "Hammarby",
+          "score": "3-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "Mjallby",
+          "away": "Djurgarden",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "Rosenborg",
+          "away": "B. Glimt",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Lillestrom",
+          "away": "Viking",
+          "score": "0-1",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Helsinki",
+          "away": "Mariehamn",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "KuPS",
+          "away": "I. Turku",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Lahti",
+          "away": "Ilves",
+          "score": "5-0",
+          "result": "1",
+          "played": true
+        }
+      ]
+    },
+    {
+      "id": "2025-2026-42",
+      "season": "2025-2026",
+      "week": 42,
+      "matches": [
+        {
+          "no": 1,
+          "home": "C. Brugge",
+          "away": "K. Gent",
+          "score": "5-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 2,
+          "home": "U. St.Gilloise",
+          "away": "Anderlecht",
+          "score": "5-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 3,
+          "home": "C. Palace",
+          "away": "Arsenal",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 4,
+          "home": "Liverpool",
+          "away": "Brentford",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 5,
+          "home": "M. City",
+          "away": "A. Villa",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 6,
+          "home": "T. Hotspur",
+          "away": "Everton",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 7,
+          "home": "C. Vigo",
+          "away": "Sevilla",
+          "score": "1-0",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 8,
+          "home": "Espanyol",
+          "away": "R. Sociedad",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 9,
+          "home": "Girona",
+          "away": "Elche",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 10,
+          "home": "R. Betis",
+          "away": "Levante",
+          "score": "2-1",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 11,
+          "home": "R. Madrid",
+          "away": "A. Bilbao",
+          "score": "4-2",
+          "result": "1",
+          "played": true
+        },
+        {
+          "no": 12,
+          "home": "Milan",
+          "away": "Cagliari",
+          "score": "1-2",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 13,
+          "home": "Cremonese",
+          "away": "Como",
+          "score": "1-4",
+          "result": "2",
+          "played": true
+        },
+        {
+          "no": 14,
+          "home": "Fiorentina",
+          "away": "Atalanta",
+          "score": "1-1",
+          "result": "X",
+          "played": true
+        },
+        {
+          "no": 15,
+          "home": "Torino",
+          "away": "Juventus",
+          "score": "2-2",
+          "result": "X",
+          "played": true
+        }
+      ]
+    }
+  ]
 }
-}
-};
-/*
-===========================================================
- YARDIMCI FONKSİYONLAR
-===========================================================
-*/
-window.SPORT_TOTO_DATA.getSeason = function (season) {
-  return window.SPORT_TOTO_DATA.seasons[season] || null;
-};
-window.SPORT_TOTO_DATA.getWeek = function (season, week) {
-  const s = window.SPORT_TOTO_DATA.getSeason(season);
-  if (!s) return null;
-  return s.weeks[String(week)] ||
-         s.weeks[week] ||
-         null;
-};
-window.SPORT_TOTO_DATA.getFinishedWeeks = function (season) {
-  const s = window.SPORT_TOTO_DATA.getSeason(season);
-  if (!s) return [];
-  return Object.keys(s.weeks)
-    .map(Number)
-    .filter(w => s.weeks[w] && s.weeks[w].status === "finished")
-    .sort((a, b) => a - b);
-};
-window.SPORT_TOTO_DATA.getLatestWeek = function (season) {
-  const s = window.SPORT_TOTO_DATA.getSeason(season);
-  if (!s) return null;
-  const weeks = Object.keys(s.weeks)
-    .map(Number)
-    .sort((a, b) => a - b);
-  return weeks.length ? weeks[weeks.length - 1] : null;
-};
-window.SPORT_TOTO_DATA.getLatestFinishedWeek = function (season) {
-  const weeks = window.SPORT_TOTO_DATA.getFinishedWeeks(season);
-  return weeks.length ? weeks[weeks.length - 1] : null;
-};
-window.SPORT_TOTO_DATA.getPreviousWeeks = function (season, beforeWeek) {
-  const s = window.SPORT_TOTO_DATA.getSeason(season);
-  if (!s) return [];
-  return Object.keys(s.weeks)
-    .map(Number)
-    .filter(w =>
-      w < Number(beforeWeek) &&
-      s.weeks[w] &&
-      s.weeks[w].status === "finished"
-    )
-    .sort((a, b) => a - b);
-};
-window.SPORT_TOTO_DATA.getAllFinishedMatches = function (season, beforeWeek) {
-  const s = window.SPORT_TOTO_DATA.getSeason(season);
-  if (!s) return [];
-  const weeks = window.SPORT_TOTO_DATA.getPreviousWeeks(
-    season,
-    beforeWeek
-  );
-  const result = [];
-  weeks.forEach(weekNo => {
-    const week = s.weeks[weekNo];
-    (week.matches || []).forEach(match => {
-      if (
-        match.result === "1" ||
-        match.result === "X" ||
-        match.result === "2"
-      ) {
-        result.push({
-          ...match,
-          week: weekNo
-        });
-      }
-    });
-  });
-  return result;
-/* =========================================================
-   YARDIMCI BİLGİLER
-========================================================= */
-window.SPORT_TOTO_META = {
-  season: "2026-2027",
-  currentWeek: 8,
-  totalMatchesPerWeek: 15,
-  /*
-    Backtest kuralı:
-    Hafta N tahmin edilirken yalnızca hafta < N
-    olan veriler kullanılmalıdır.
-  */
-  leakageSafe: true,
-  resultTypes: ["1", "X", "2"]
-};
