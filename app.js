@@ -416,225 +416,244 @@ function getOdds(match, names) {
 /* =========================================================
    MARKETLER
 =========================================================
-
-   SADECE İSTENEN MARKETLER:
-
-   1. İY 1.5 Alt
-   2. İY 1.5 Üst
-   3. KG Var
-   4. KG Yok
-   5. İlk Yarı KG Var
-   6. İlk Yarı KG Yok
-   7. 2.5 Üst
-
-   İY 0.5 Üst YOK.
+/* =========================================================
+   ÖRNEKLEM MARKETLERİ
+   SADECE BUNLAR GEÇMİŞ MAÇLARI BULMAK İÇİN KULLANILIR
 ========================================================= */
 
-const MARKETS = [
-
-    /* =====================================================
-       İY 1.5 ALT
-    ===================================================== */
-
-    {
-        id: "IY15A",
-        title: "İY 1.5 Alt",
-
-        odds: match =>
-            getOdds(match, [
-                "iy15Alt",
-                "IY15Alt",
-                "iy15alt",
-                "iy1_5Alt",
-                "iy1_5Under",
-                "iy15Under",
-                "IY1.5A",
-                "İY1.5A",
-                "iy1.5alt",
-                "iy15_alt",
-                "iy15Alt"
-            ])
-    },
-
-    /* =====================================================
-       İY 1.5 ÜST
-    ===================================================== */
+const SOURCE_MARKETS = [
 
     {
         id: "IY15U",
         title: "İY 1.5 Üst",
-
         odds: match =>
             getOdds(match, [
+                "iy15Ust",
+                "iy15üst",
                 "iy15U",
                 "IY15U",
-                "iy15u",
                 "iy1_5U",
                 "iy1_5Over",
-                "iy15Over",
-                "IY1.5U",
-                "İY1.5Ü",
-                "iy1.5ust",
-                "iy15ust",
-                "iy1.5üst",
-                "iy15üst",
-                "iy15Ust",
-                "IY15_Ust",
-                "IY15_Üst",
-                "iy15_over"
+                "iy15Over"
             ])
     },
 
-    /* =====================================================
-       NORMAL KG VAR
-    ===================================================== */
+    {
+        id: "IY1",
+        title: "İY 1",
+        odds: match =>
+            getOdds(match, [
+                "iy1",
+                "IY1",
+                "İY1",
+                "iy_1"
+            ])
+    },
+
+    {
+        id: "IY2",
+        title: "İY 2",
+        odds: match =>
+            getOdds(match, [
+                "iy2",
+                "IY2",
+                "İY2",
+                "iy_2"
+            ])
+    },
+
+    {
+        id: "MS15A",
+        title: "1.5 Alt",
+        odds: match =>
+            getOdds(match, [
+                "au15Alt",
+                "au15alt",
+                "15Alt",
+                "1.5Alt",
+                "1_5Alt",
+                "under15"
+            ])
+    },
+
+    {
+        id: "MS15U",
+        title: "1.5 Üst",
+        odds: match =>
+            getOdds(match, [
+                "au15Ust",
+                "au15üst",
+                "au15U",
+                "15Ust",
+                "1.5Ust",
+                "1.5Üst",
+                "1_5Ust",
+                "over15"
+            ])
+    }
+
+];
+
+
+/* =========================================================
+   TAHMİN MARKETLERİ
+   ÖRNEKLEMLERDEN SONRA SONUÇ OLARAK BUNLAR ÜRETİLİR
+========================================================= */
+
+const TARGET_MARKETS = [
+
+    {
+        id: "IY15A",
+        title: "İY 1.5 Alt",
+        odds: match =>
+            getOdds(match, [
+                "iy15Alt",
+                "iy15alt",
+                "iy1_5Alt",
+                "iy1.5Alt",
+                "IY15A"
+            ])
+    },
+
+    {
+        id: "IY15U",
+        title: "İY 1.5 Üst",
+        odds: match =>
+            getOdds(match, [
+                "iy15Ust",
+                "iy15üst",
+                "iy15U",
+                "IY15U",
+                "iy1_5U",
+                "iy1_5Over",
+                "iy15Over"
+            ])
+    },
 
     {
         id: "KG",
         title: "KG Var",
-
         odds: match =>
             getOdds(match, [
-                "kg",
-                "KG",
                 "kgVar",
                 "KGVar",
                 "kgvar",
-                "kg1",
-                "KG1"
+                "kg",
+                "KG"
             ])
     },
-
-    /* =====================================================
-       NORMAL KG YOK
-    ===================================================== */
 
     {
         id: "KGY",
         title: "KG Yok",
-
         odds: match =>
             getOdds(match, [
-                "kgy",
-                "KGY",
                 "kgYok",
                 "KGYok",
                 "kgyok",
-                "kg0",
-                "KG0"
+                "kgy",
+                "KGY"
             ])
     },
-
-    /* =====================================================
-       İLK YARI KG VAR
-       
-       ORAN OLMASA DA MARKET ÇALIŞIR.
-    ===================================================== */
 
     {
         id: "IYKG",
         title: "İlk Yarı KG Var",
-
         odds: match =>
             getOdds(match, [
                 "iyKgVar",
-                "IYKgVar",
                 "iyKGVar",
-                "iykgvar",
-                "iyKg1",
-                "IYKG1",
-                "ilkYariKgVar",
-                "ilkYariKGVar",
-                "ilkYariKg1",
-                "IYKG",
-                "IYKGVar"
+                "iykgVar",
+                "iyKg",
+                "IYKG"
             ])
     },
-
-    /* =====================================================
-       İLK YARI KG YOK
-       
-       ORAN OLMASA DA MARKET ÇALIŞIR.
-    ===================================================== */
 
     {
         id: "IYKGY",
         title: "İlk Yarı KG Yok",
-
         odds: match =>
             getOdds(match, [
                 "iyKgYok",
-                "IYKgYok",
                 "iyKGYok",
                 "iykgyok",
-                "iyKg0",
-                "IYKG0",
-                "ilkYariKgYok",
-                "ilkYariKGYok",
-                "ilkYariKg0",
-                "IYKGY",
-                "IYKGYok"
+                "iyKgy",
+                "IYKGY"
             ])
     },
-
-    /* =====================================================
-       2.5 ÜST
-       
-       Mackolik verisindeki doğru alan:
-       au25Ust
-    ===================================================== */
 
     {
         id: "MS25U",
         title: "2.5 Üst",
-
         odds: match =>
             getOdds(match, [
                 "au25Ust",
                 "au25üst",
-                "au25ust",
-                "AU25Ust",
-                "AU25Üst",
-
+                "au25U",
                 "ms25U",
                 "MS25U",
                 "ms25u",
                 "ms2_5U",
                 "ms2_5Over",
                 "ms25Over",
-                "MS2.5U",
-                "2.5U",
-                "2_5U",
-                "25U",
-                "25ust",
-                "25üst",
-                "2.5ust",
-                "2.5üst"
+                "2.5Ust",
+                "2.5Üst",
+                "25Ust",
+                "25üst"
             ])
     }
 
 ];
 
+
+/* =========================================================
+   ESKİ KODLA UYUMLULUK
+========================================================= */
+
+const MARKETS = SOURCE_MARKETS;
+
+
 /* =========================================================
    MARKET SONUCU
 ========================================================= */
 
-function getMarketOutcome(
-    match,
-    marketId
-) {
+function getMarketOutcome(match, marketId) {
 
-    /* =====================================================
-       İY 1.5 ALT / ÜST
-    ===================================================== */
+    /* -----------------------------------------
+       İLK YARI SONUÇLARI
+    ----------------------------------------- */
+
+    if (
+        marketId === "IY1" ||
+        marketId === "IY2"
+    ) {
+
+        const score = getHalfTimeScore(match);
+
+        if (!score) {
+            return null;
+        }
+
+        if (marketId === "IY1") {
+            return score.home > score.away;
+        }
+
+        if (marketId === "IY2") {
+            return score.away > score.home;
+        }
+    }
+
+
+    /* -----------------------------------------
+       İLK YARI 1.5 ALT / ÜST
+    ----------------------------------------- */
 
     if (
         marketId === "IY15A" ||
         marketId === "IY15U"
     ) {
 
-        const score =
-            getHalfTimeScore(match);
+        const score = getHalfTimeScore(match);
 
         if (!score) {
             return null;
@@ -653,44 +672,46 @@ function getMarketOutcome(
         }
     }
 
-    /* =====================================================
-       İLK YARI KG VAR / YOK
-    ===================================================== */
+
+    /* -----------------------------------------
+       MAÇ 1.5 ALT / ÜST
+    ----------------------------------------- */
 
     if (
-        marketId === "IYKG" ||
-        marketId === "IYKGY"
+        marketId === "MS15A" ||
+        marketId === "MS15U"
     ) {
 
-        const score =
-            getHalfTimeScore(match);
+        const score = getFullTimeScore(match);
 
         if (!score) {
             return null;
         }
 
-        const bothScored =
-            score.home > 0 &&
-            score.away > 0;
+        const total =
+            score.home +
+            score.away;
 
-        if (marketId === "IYKG") {
-            return bothScored;
+        if (marketId === "MS15A") {
+            return total <= 1;
         }
 
-        return !bothScored;
+        if (marketId === "MS15U") {
+            return total >= 2;
+        }
     }
 
-    /* =====================================================
-       NORMAL KG VAR / YOK
-    ===================================================== */
+
+    /* -----------------------------------------
+       KG VAR / KG YOK
+    ----------------------------------------- */
 
     if (
         marketId === "KG" ||
         marketId === "KGY"
     ) {
 
-        const score =
-            getFullTimeScore(match);
+        const score = getFullTimeScore(match);
 
         if (!score) {
             return null;
@@ -707,14 +728,41 @@ function getMarketOutcome(
         return !bothScored;
     }
 
-    /* =====================================================
+
+    /* -----------------------------------------
+       İLK YARI KG VAR / YOK
+    ----------------------------------------- */
+
+    if (
+        marketId === "IYKG" ||
+        marketId === "IYKGY"
+    ) {
+
+        const score = getHalfTimeScore(match);
+
+        if (!score) {
+            return null;
+        }
+
+        const bothScored =
+            score.home > 0 &&
+            score.away > 0;
+
+        if (marketId === "IYKG") {
+            return bothScored;
+        }
+
+        return !bothScored;
+    }
+
+
+    /* -----------------------------------------
        2.5 ÜST
-    ===================================================== */
+    ----------------------------------------- */
 
     if (marketId === "MS25U") {
 
-        const score =
-            getFullTimeScore(match);
+        const score = getFullTimeScore(match);
 
         if (!score) {
             return null;
@@ -726,8 +774,10 @@ function getMarketOutcome(
         ) >= 3;
     }
 
+
     return null;
 }
+
 
 /* =========================================================
    60 GÜNLÜK GEÇMİŞ
@@ -735,8 +785,7 @@ function getMarketOutcome(
 
 function getHistoryMatches(targetDate) {
 
-    const end =
-        new Date(targetDate);
+    const end = new Date(targetDate);
 
     end.setHours(
         0,
@@ -751,41 +800,41 @@ function getHistoryMatches(targetDate) {
             -HISTORY_DAYS
         );
 
-    return allMatches.filter(
-        match => {
+    return allMatches.filter(match => {
 
-            const date =
-                parseDate(
-                    getDate(match)
-                );
-
-            if (!date) {
-                return false;
-            }
-
-            date.setHours(
-                0,
-                0,
-                0,
-                0
+        const date =
+            parseDate(
+                getDate(match)
             );
 
-            return (
-                date >= start &&
-                date < end &&
-                isPlayed(match)
-            );
+        if (!date) {
+            return false;
         }
-    );
+
+        date.setHours(
+            0,
+            0,
+            0,
+            0
+        );
+
+        return (
+            date >= start &&
+            date < end &&
+            isPlayed(match)
+        );
+
+    });
 }
+
 
 /* =========================================================
    ANALİZ İNDEKSİ
+
+   SADECE SOURCE_MARKETS KULLANILIR.
 ========================================================= */
 
-function buildAnalysisIndex(
-    targetDate
-) {
+function buildAnalysisIndex(targetDate) {
 
     const key =
         dateKey(targetDate);
@@ -811,7 +860,7 @@ function buildAnalysisIndex(
 
         for (
             const source
-            of MARKETS
+            of SOURCE_MARKETS
         ) {
 
             const odds =
@@ -820,11 +869,9 @@ function buildAnalysisIndex(
                 );
 
             /*
-               Kaynak oranı yoksa
-               o market kaynak olarak
-               kullanılamaz.
+              Kaynak oranı yoksa bu maç
+              örnekleme dahil edilmez.
             */
-
             if (!odds) {
                 continue;
             }
@@ -859,8 +906,14 @@ function buildAnalysisIndex(
     return index;
 }
 
+
 /* =========================================================
    TAHMİNLER
+
+   ÖNEMLİ:
+   - Örneklem = SOURCE_MARKETS
+   - Tahmin = TARGET_MARKETS
+   - Tahmin oranı yoksa yine gösterilir.
 ========================================================= */
 
 function getRecommendations(
@@ -875,20 +928,23 @@ function getRecommendations(
 
     const recommendations = [];
 
+
+    /* -----------------------------------------
+       5 ADET ÖRNEKLEM MARKETİ
+    ----------------------------------------- */
+
     for (
         const source
-        of MARKETS
+        of SOURCE_MARKETS
     ) {
 
         const sourceOdds =
             source.odds(match);
 
         /*
-           Kaynak markette oran yoksa
-           geçmişte birebir oran
-           eşleştiremeyiz.
+          Güncel maçta kaynak oranı yoksa
+          o kaynak üzerinden örneklem yapılamaz.
         */
-
         if (!sourceOdds) {
             continue;
         }
@@ -901,6 +957,10 @@ function getRecommendations(
                 sourceKey
             ) || [];
 
+
+        /*
+          Minimum 5 geçmiş maç
+        */
         if (
             historicalMatches.length <
             MIN_SAMPLE
@@ -908,17 +968,20 @@ function getRecommendations(
             continue;
         }
 
+
+        /* -----------------------------------------
+           7 ADET TAHMİN MARKETİ
+        ----------------------------------------- */
+
         for (
             const target
-            of MARKETS
+            of TARGET_MARKETS
         ) {
 
             /*
-               Aynı market:
-               örneğin KG Var → KG Var
-               yapılmaz.
+              Kaynak ve hedef aynı market ise
+              tahmin üretme.
             */
-
             if (
                 source.id ===
                 target.id
@@ -926,19 +989,14 @@ function getRecommendations(
                 continue;
             }
 
-            /*
-               DİKKAT:
-               Hedef oranın bulunması ARTIK
-               şart değil.
-
-               Yoksa "-" gösterilecek.
-            */
-
-            const targetOdds =
-                target.odds(match);
 
             let total = 0;
             let success = 0;
+
+
+            /* -------------------------------------
+               GEÇMİŞ MAÇLARI KONTROL ET
+            ------------------------------------- */
 
             for (
                 const historical
@@ -966,6 +1024,11 @@ function getRecommendations(
                 }
             }
 
+
+            /*
+              Sonucu hesaplayabildiğimiz
+              geçmiş maç sayısı en az 5 olmalı.
+            */
             if (
                 total <
                 MIN_SAMPLE
@@ -973,18 +1036,32 @@ function getRecommendations(
                 continue;
             }
 
+
             const percentage =
                 (
                     success /
                     total
                 ) * 100;
 
+
+            /*
+              Minimum başarı oranı %70
+            */
             if (
                 percentage <
                 MIN_SUCCESS
             ) {
                 continue;
             }
+
+
+            /*
+              Hedef oranı VARSA gösterilir.
+              YOKSA DA öneri silinmez.
+            */
+            const targetOdds =
+                target.odds(match);
+
 
             recommendations.push({
 
@@ -994,7 +1071,8 @@ function getRecommendations(
                 sourceTitle:
                     source.title,
 
-                sourceOdds,
+                sourceOdds:
+                    sourceOdds,
 
                 targetMarket:
                     target.id,
@@ -1003,19 +1081,26 @@ function getRecommendations(
                     target.title,
 
                 targetOdds:
-                    targetOdds || null,
+                    targetOdds || "-",
 
-                success,
+                success:
+                    success,
 
-                total,
+                total:
+                    total,
 
-                percentage
+                percentage:
+                    percentage
+
             });
         }
     }
 
+
     /* =====================================================
        SIRALAMA
+       Önce başarı yüzdesi,
+       eşitse örneklem sayısı
     ===================================================== */
 
     recommendations.sort(
@@ -1025,6 +1110,7 @@ function getRecommendations(
                 b.percentage !==
                 a.percentage
             ) {
+
                 return (
                     b.percentage -
                     a.percentage
@@ -1038,6 +1124,7 @@ function getRecommendations(
         }
     );
 
+
     /* =====================================================
        AYNI TAHMİNİ TEKRARLAMA
     ===================================================== */
@@ -1050,11 +1137,13 @@ function getRecommendations(
         of recommendations
     ) {
 
-        const key = [
-            item.sourceMarket,
-            item.sourceOdds,
-            item.targetMarket
-        ].join("|");
+        const key =
+            [
+                item.sourceMarket,
+                item.sourceOdds,
+                item.targetMarket
+            ].join("|");
+
 
         if (
             seen.has(key)
@@ -1063,12 +1152,13 @@ function getRecommendations(
         }
 
         seen.add(key);
+
         unique.push(item);
     }
 
+
     return unique;
 }
-
 /* =========================================================
    TAHMİN DURUMU
 ========================================================= */
