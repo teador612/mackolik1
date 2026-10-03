@@ -1512,6 +1512,593 @@ async function init(){
 init();
 
 </script>
+```html
+<script>
+/* =========================================================
+   SPOR TOTO - TUTTU / TUTMADI SİSTEMİ
+   Mevcut tahmin motoruna dokunmaz.
+========================================================= */
+
+(function () {
+    "use strict";
+
+    function getMatchResult(match) {
+        if (!match) return null;
+
+        const score = match.score;
+
+        if (!score) return null;
+
+        const home = Number(score.home);
+        const away = Number(score.away);
+
+        if (!Number.isFinite(home) || !Number.isFinite(away)) {
+            return null;
+        }
+
+        /*
+         * Mackolik'te maçın sonucu henüz oluşmadıysa
+         * status değerine göre bekleyen kabul ediyoruz.
+         */
+        const status = String(match.status ?? "").toLowerCase();
+
+        const finishedStatuses = [
+            "4",
+            "finished",
+            "ft",
+            "ended",
+            "completed"
+        ];
+
+        if (
+            status &&
+            !finishedStatuses.includes(status)
+        ) {
+            return null;
+        }
+
+        if (home > away) return "1";
+        if (home < away) return "2";
+
+        return "X";
+    }
+
+
+    function predictionHit(prediction, result) {
+
+        if (!prediction || prediction === "?") {
+            return false;
+        }
+
+        if (!result) {
+            return false;
+        }
+
+        /*
+         * Sistem:
+         *
+         * 1   -> sadece 1
+         * X   -> sadece X
+         * 2   -> sadece 2
+         * 1X  -> 1 veya X
+         * X2  -> X veya 2
+         * 12  -> 1 veya 2
+         * 1X2 -> herhangi biri
+         */
+
+        return prediction.includes(result);
+    }
+
+
+    function createResultBadge(state) {
+
+        if (state === "hit") {
+            return `
+                <span class="prediction-result prediction-hit"
+                      title="Tahmin tuttu">
+                    ✓
+                </span>
+            `;
+        }
+
+        if (state === "miss") {
+            return `
+                <span class="prediction-result prediction-miss"
+                      title="Tahmin tutmadı">
+                    ✕
+                </span>
+            `;
+        }
+
+        return `
+            <span class="prediction-result prediction-wait"
+                  title="Maç henüz sonuçlanmadı">
+                •
+            </span>
+        `;
+    }
+
+
+    function updateSummary(total, hit, miss, waiting) {
+
+        const old = document.getElementById(
+            "predictionResultSummary"
+        );
+
+        if (old) {
+            old.remove();
+        }
+
+        const finished = hit + miss;
+
+        let success = 0;
+
+        if (finished > 0) {
+            success = (hit / finished) * 100;
+        }
+
+        const summary = document.createElement("div");
+
+        summary.id = "predictionResultSummary";
+
+        summary.innerHTML = `
+            <div class="result-summary-title">
+                📊 Tahmin Sonuçları
+            </div>
+
+            <div class="result-summary-items">
+
+                <div class="result-summary-item hit">
+                    <span>✓</span>
+                    <strong>${hit}</strong>
+                    <small>Tuttu</small>
+                </div>
+
+                <div class="result-summary-item miss">
+                    <span>✕</span>
+                    <strong>${miss}</strong>
+                    <small>Tutmadı</small>
+                </div>
+
+                <div class="result-summary-item waiting">
+                    <span>•</span>
+                    <strong>${waiting}</strong>
+                    <small>Bekliyor</small>
+                </div>
+
+                <div class="result-summary-item success">
+                    <span>%</span>
+                    <strong>${success.toFixed(1)}</strong>
+                    <small>Başarı</small>
+                </div>
+
+            </div>
+        `;
+
+        const content = document.getElementById("content");
+
+        if (content) {
+            content.prepend(summary);
+        }
+    }
+
+
+    function updatePredictionResults() {
+
+        if (
+            typeof selectedWeek === "undefined" ||
+            !window.SPORT_TOTO_DATA ||
+            typeof findMackolikMatch !== "function"
+        ) {
+            return;
+        }
+
+        const weekData =
+            window.SPORT_TOTO_DATA?.weeks?.[selectedWeek];
+
+        if (!weekData) {
+            return;
+        }
+
+        const matches =
+            Array.isArray(weekData)
+                ? weekData
+                : weekData.matches || [];
+
+        const matchElements =
+            document.querySelectorAll(".match");
+
+        let hit = 0;
+        let miss = 0;
+        let waiting = 0;
+
+        matches.forEach((sportMatch, index) => {
+
+            const element = matchElements[index];
+
+            if (!element) {
+                return;
+            }
+
+            /*
+             * Daha önce eklenmiş sonucu temizle
+             */
+            const oldBadge =
+                element.querySelector(".prediction-result");
+
+            if (oldBadge) {
+                oldBadge.remove();
+            }
+
+            const mackolikMatch =
+                findMackolikMatch(sportMatch);
+
+            if (!mackolikMatch) {
+                waiting++;
+                return;
+            }
+
+            const actualResult =
+                getMatchResult(mackolikMatch);
+
+            /*
+             * Tahmin kutusunu bul
+             */
+            const predictionElement =
+                element.querySelector(".main-pred");
+
+            const systemElement =
+                element.querySelector(".system");
+
+            if (!predictionElement) {
+                waiting++;
+                return;
+            }
+
+            /*
+             * Öncelikle sistem tahminini kullanıyoruz.
+             *
+             * Örneğin:
+             * 1
+             * X
+             * 2
+             * 1X
+             * X2
+             * 12
+             * 1X2
+             */
+
+            const system =
+                systemElement
+                    ? systemElement.textContent.trim()
+                    : predictionElement.textContent.trim();
+
+            /*
+             * Maç henüz sonuçlanmadı
+             */
+            if (!actualResult) {
+
+                predictionElement.insertAdjacentHTML(
+                    "afterend",
+                    createResultBadge("waiting")
+                );
+
+                waiting++;
+
+                return;
+            }
+
+            /*
+             * Sistem tahminini gerçek sonuçla karşılaştır
+             */
+            const isHit =
+                predictionHit(
+                    system,
+                    actualResult
+                );
+
+            if (isHit) {
+
+                predictionElement.insertAdjacentHTML(
+                    "afterend",
+                    createResultBadge("hit")
+                );
+
+                hit++;
+
+            } else {
+
+                predictionElement.insertAdjacentHTML(
+                    "afterend",
+                    createResultBadge("miss")
+                );
+
+                miss++;
+            }
+
+        });
+
+        updateSummary(
+            matches.length,
+            hit,
+            miss,
+            waiting
+        );
+    }
+
+
+    /*
+     * CSS
+     */
+    const style = document.createElement("style");
+
+    style.textContent = `
+
+        /* =========================================
+           TAHMİN SONUCU
+        ========================================= */
+
+        .prediction-result {
+            width: 28px;
+            height: 28px;
+
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            font-size: 18px;
+            font-weight: 900;
+
+            flex:none;
+
+            margin-left: 2px;
+
+            line-height: 1;
+        }
+
+
+        .prediction-hit {
+            background: #dcfce7;
+            color: #15803d;
+
+            border: 2px solid #22c55e;
+
+            box-shadow:
+                0 2px 6px rgba(34,197,94,.18);
+        }
+
+
+        .prediction-miss {
+            background: #fee2e2;
+            color: #dc2626;
+
+            border: 2px solid #ef4444;
+
+            box-shadow:
+                0 2px 6px rgba(239,68,68,.18);
+        }
+
+
+        .prediction-wait {
+            background: #f1f5f9;
+            color: #94a3b8;
+
+            border: 2px solid #cbd5e1;
+
+            font-size: 20px;
+        }
+
+
+        /* =========================================
+           ÖZET
+        ========================================= */
+
+        #predictionResultSummary {
+
+            background: #ffffff;
+
+            border-radius: 14px;
+
+            padding: 12px;
+
+            margin-bottom: 12px;
+
+            box-shadow:
+                0 2px 8px rgba(0,0,0,.06);
+        }
+
+
+        .result-summary-title {
+
+            font-size: 14px;
+
+            font-weight: 900;
+
+            margin-bottom: 9px;
+
+            color: #111827;
+        }
+
+
+        .result-summary-items {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 7px;
+        }
+
+
+        .result-summary-item {
+
+            min-width: 0;
+
+            padding: 8px 5px;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+            background: #f8fafc;
+        }
+
+
+        .result-summary-item span {
+
+            display: block;
+
+            font-size: 16px;
+
+            font-weight: 900;
+
+            line-height: 1;
+        }
+
+
+        .result-summary-item strong {
+
+            display: block;
+
+            margin-top: 3px;
+
+            font-size: 16px;
+
+            color: #111827;
+        }
+
+
+        .result-summary-item small {
+
+            display: block;
+
+            margin-top: 2px;
+
+            font-size: 10px;
+
+            color: #64748b;
+
+            font-weight: 700;
+        }
+
+
+        .result-summary-item.hit span {
+            color: #16a34a;
+        }
+
+
+        .result-summary-item.miss span {
+            color: #dc2626;
+        }
+
+
+        .result-summary-item.waiting span {
+            color: #64748b;
+        }
+
+
+        .result-summary-item.success span {
+            color: #2563eb;
+        }
+
+
+        /* =========================================
+           MOBİL
+        ========================================= */
+
+        @media(max-width:600px) {
+
+            .prediction-result {
+
+                width: 25px;
+                height: 25px;
+
+                font-size: 16px;
+            }
+
+
+            .result-summary-items {
+
+                grid-template-columns:
+                    repeat(4, 1fr);
+
+                gap: 5px;
+            }
+
+
+            .result-summary-item {
+
+                padding: 7px 3px;
+            }
+
+
+            .result-summary-item strong {
+
+                font-size: 14px;
+            }
+
+
+            .result-summary-item small {
+
+                font-size: 9px;
+            }
+
+        }
+
+    `;
+
+    document.head.appendChild(style);
+
+
+    /*
+     * Sayfa ilk açıldığında mevcut render'ın
+     * tamamlanmasını bekle.
+     */
+    let lastWeek = null;
+    let lastMatchCount = 0;
+
+    function watcher() {
+
+        const matchCount =
+            document.querySelectorAll(".match").length;
+
+        if (
+            matchCount > 0 &&
+            (
+                lastWeek !== selectedWeek ||
+                lastMatchCount !== matchCount
+            )
+        ) {
+
+            lastWeek = selectedWeek;
+            lastMatchCount = matchCount;
+
+            updatePredictionResults();
+        }
+    }
+
+
+    /*
+     * Mevcut Spor Toto render sistemi çalıştıktan
+     * sonra sonucu kontrol eder.
+     */
+    setInterval(watcher, 500);
+
+
+    /*
+     * Sayfa ilk açılış kontrolü
+     */
+    setTimeout(
+        updatePredictionResults,
+        1500
+    );
+
+})();
+</script>
+```
 
 </body>
 </html>
