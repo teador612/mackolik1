@@ -1,4 +1,4 @@
-```javascript
+
 /*
 =========================================================
  SPOR TOTO VERİSİ
@@ -210,4 +210,4 @@ window.SPORT_TOTO_META = {
     exactOdds: true,
     minimumSample: 5
 };
-```
+
