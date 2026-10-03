@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Spor Toto Tahmin</title>
+<title>Spor Toto</title>
 
 <style>
 * {
@@ -20,7 +20,7 @@ body {
 }
 
 .container {
-    max-width: 1000px;
+    max-width: 900px;
     margin: auto;
     padding: 15px;
 }
@@ -39,7 +39,7 @@ h1 {
 select,
 button {
     border: 1px solid #d1d5db;
-    background: #fff;
+    background: white;
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;
@@ -50,17 +50,17 @@ button {
 }
 
 .info {
-    background: #fff;
-    border: 1px solid #e5e7eb;
+    background: white;
     border-radius: 10px;
     padding: 12px 15px;
     margin-bottom: 15px;
+    border: 1px solid #e5e7eb;
 }
 
 #status {
-    margin-top: 5px;
     color: #6b7280;
     font-size: 13px;
+    margin-top: 5px;
 }
 
 .matches {
@@ -70,23 +70,21 @@ button {
 }
 
 .match {
-    background: #fff;
+    background: white;
     border: 1px solid #e5e7eb;
     border-radius: 12px;
     padding: 14px;
+
     display: grid;
-    grid-template-columns: 1fr 55px 55px;
+    grid-template-columns: 1fr 55px 45px;
+
     gap: 10px;
     align-items: center;
 }
 
-.teams {
-    min-width: 0;
-}
-
 .team {
-    font-weight: 700;
     font-size: 15px;
+    font-weight: 700;
 }
 
 .team + .team {
@@ -94,7 +92,7 @@ button {
 }
 
 .score {
-    margin-top: 7px;
+    margin-top: 8px;
     color: #6b7280;
     font-size: 12px;
 }
@@ -102,13 +100,15 @@ button {
 .prediction {
     width: 46px;
     height: 46px;
+
     border-radius: 50%;
-    background: #eef2ff;
-    color: #3730a3;
 
     display: flex;
     align-items: center;
     justify-content: center;
+
+    background: #eef2ff;
+    color: #3730a3;
 
     font-size: 20px;
     font-weight: 800;
@@ -135,16 +135,16 @@ button {
 .loading,
 .error,
 .empty {
-    background: #fff;
-    border-radius: 10px;
+    background: white;
     padding: 20px;
     text-align: center;
+    border-radius: 10px;
 }
 
 @media (max-width: 600px) {
 
     .match {
-        grid-template-columns: 1fr 48px 38px;
+        grid-template-columns: 1fr 50px 35px;
     }
 
     .team {
@@ -192,34 +192,17 @@ button {
 
 </div>
 
+
 <script src="data/spor-toto-data.js"></script>
 
 <script>
 
 "use strict";
 
+
 /*
 ==========================================================
- SPOR TOTO
-
- HESAPLAMA:
-
- 1. Son 60 gün
- 2. Exact opening odds
- 3. Minimum N = 5
- 4. Bayesian
- 5. Ağırlık = √N × N/(N+20)
- 6. Bütün marketler birleştirilir
- 7. En yüksek olasılık:
-       1
-       X
-       2
-
- ÖNEMLİ:
-
- 1'E SABİT FALLBACK YOKTUR.
-
- X veya 2 daha yüksek çıkarsa X veya 2 çıkar.
+ AYARLAR
 ==========================================================
 */
 
@@ -236,58 +219,34 @@ const MIN_SAMPLE =
     5;
 
 
-const BAYES_ALPHA =
+const BAYES =
     0.5;
 
 
-const CONFIDENCE_K =
+const CONFIDENCE =
     20;
 
 
 /*
 ==========================================================
- GERÇEK openingOdds MARKETLERİ
+ SADECE 2 MARKET
+==========================================================
+
+ iy2
+ İY 2
+
+ iy15Ust
+ İY 1,5 Üst
 ==========================================================
 */
 
+
 const MARKETS = [
 
-    "ms1",
-    "msX",
-    "ms2",
+    "iy2",
 
-    "cs1X",
-    "cs12",
-    "csX2",
+    "iy15Ust"
 
-    "au25Alt",
-    "au25Ust",
-
-    "handicap",
-    "handicap1",
-    "handicapX",
-    "handicap2",
-
-    "kgVar",
-    "kgYok",
-
-    "iy15Alt",
-    "iy15Ust",
-
-    "au15Alt",
-    "au15Ust",
-
-    "au35Alt",
-    "au35Ust",
-
-    "gol01",
-    "gol23",
-    "gol46",
-    "gol7",
-
-    "iy1",
-    "iyX",
-    "iy2"
 ];
 
 
@@ -297,13 +256,14 @@ const MARKETS = [
 ==========================================================
 */
 
+
 let allMatches = [];
 
 let historicalMatches = [];
 
 let pairIndex = new Map();
 
-let selectedWeek = null;
+let selectedWeek;
 
 
 /*
@@ -312,41 +272,81 @@ let selectedWeek = null;
 ==========================================================
 */
 
+
 const weekSelect =
-    document.getElementById("weekSelect");
+    document.getElementById(
+        "weekSelect"
+    );
+
 
 const refreshButton =
-    document.getElementById("refresh");
+    document.getElementById(
+        "refresh"
+    );
+
 
 const matchesContainer =
-    document.getElementById("matches");
+    document.getElementById(
+        "matches"
+    );
+
 
 const weekTitle =
-    document.getElementById("weekTitle");
+    document.getElementById(
+        "weekTitle"
+    );
+
 
 const statusText =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
 
 
 /*
 ==========================================================
- METİN NORMALİZASYONU
+ NORMALIZE
 ==========================================================
 */
+
 
 function normalizeText(value) {
 
     return String(value || "")
         .toLocaleLowerCase("tr-TR")
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/ı/g, "i")
-        .replace(/ğ/g, "g")
-        .replace(/ü/g, "u")
-        .replace(/ş/g, "s")
-        .replace(/ö/g, "o")
-        .replace(/ç/g, "c")
-        .replace(/[^a-z0-9]/g, "");
+        .replace(
+            /[\u0300-\u036f]/g,
+            ""
+        )
+        .replace(
+            /ı/g,
+            "i"
+        )
+        .replace(
+            /ğ/g,
+            "g"
+        )
+        .replace(
+            /ü/g,
+            "u"
+        )
+        .replace(
+            /ş/g,
+            "s"
+        )
+        .replace(
+            /ö/g,
+            "o"
+        )
+        .replace(
+            /ç/g,
+            "c"
+        )
+        .replace(
+            /[^a-z0-9]/g,
+            ""
+        );
 }
 
 
@@ -355,6 +355,7 @@ function normalizeText(value) {
  TAKIM ALIAS
 ==========================================================
 */
+
 
 const TEAM_ALIASES = {
 
@@ -400,23 +401,12 @@ const TEAM_ALIASES = {
     "manchestercity":
         "manchestercity",
 
-    "hcity":
-        "hullcity",
-
-    "hullcity":
-        "hullcity",
-
     "newcastleutd":
         "newcastleunited",
 
     "newcastleunited":
-        "newcastleunited",
+        "newcastleunited"
 
-    "vfbstuttgart":
-        "stuttgart",
-
-    "stuttgart":
-        "stuttgart"
 };
 
 
@@ -444,9 +434,10 @@ function pairKey(home, away) {
 
 /*
 ==========================================================
- ORAN OKUMA
+ ORAN
 ==========================================================
 */
+
 
 function parseOdd(value) {
 
@@ -458,61 +449,48 @@ function parseOdd(value) {
         return null;
     }
 
+
     if (
         typeof value === "number"
     ) {
 
-        if (
-            Number.isFinite(value)
-        ) {
-            return value;
-        }
-
-        return null;
+        return Number.isFinite(value)
+            ? value
+            : null;
     }
 
-    let text =
-        String(value).trim();
-
-    if (!text) {
-        return null;
-    }
-
-    text =
-        text.replace(",", ".");
 
     const number =
-        Number(text);
+        Number(
+            String(value)
+                .trim()
+                .replace(",", ".")
+        );
 
-    if (
-        !Number.isFinite(number)
-    ) {
-        return null;
-    }
 
-    return number;
+    return Number.isFinite(number)
+        ? number
+        : null;
 }
 
 
 /*
 ==========================================================
- EXACT ODDS KEY
-
- 1.85 -> 1.85
- 1.86 -> 1.86
-
- TOLERANS YOK.
+ EXACT ORAN
 ==========================================================
 */
+
 
 function oddKey(value) {
 
     const odd =
         parseOdd(value);
 
+
     if (odd === null) {
         return null;
     }
+
 
     return String(odd);
 }
@@ -524,19 +502,17 @@ function oddKey(value) {
 ==========================================================
 */
 
+
 function parseDate(value) {
 
     if (!value) {
         return null;
     }
 
+
     const text =
         String(value).trim();
 
-
-    /*
-    29.05.2026
-    */
 
     let match =
         text.match(
@@ -553,10 +529,6 @@ function parseDate(value) {
         );
     }
 
-
-    /*
-    2026-05-29
-    */
 
     match =
         text.match(
@@ -577,6 +549,7 @@ function parseDate(value) {
     const date =
         new Date(text);
 
+
     if (
         Number.isNaN(
             date.getTime()
@@ -584,6 +557,7 @@ function parseDate(value) {
     ) {
         return null;
     }
+
 
     return date;
 }
@@ -594,9 +568,11 @@ function dateOnly(value) {
     const date =
         parseDate(value);
 
+
     if (!date) {
         return null;
     }
+
 
     return new Date(
         date.getFullYear(),
@@ -612,6 +588,7 @@ function dateOnly(value) {
 ==========================================================
 */
 
+
 function getMSResult(match) {
 
     if (!match) {
@@ -620,7 +597,7 @@ function getMSResult(match) {
 
 
     /*
-    Spor Toto data result alanı
+    Spor Toto verisi
     */
 
     if (
@@ -655,6 +632,7 @@ function getMSResult(match) {
     const home =
         Number(match.score.home);
 
+
     const away =
         Number(match.score.away);
 
@@ -671,9 +649,11 @@ function getMSResult(match) {
         return "1";
     }
 
+
     if (home < away) {
         return "2";
     }
+
 
     return "X";
 }
@@ -681,9 +661,10 @@ function getMSResult(match) {
 
 /*
 ==========================================================
- INDEX
+ PAIR INDEX
 ==========================================================
 */
+
 
 function buildPairIndex() {
 
@@ -729,27 +710,14 @@ function buildPairIndex() {
 
 /*
 ==========================================================
- HEDEF MAÇI BUL
-==========================================================
-
- Aynı iki takımın birden fazla maçı olabilir.
-
- Hata değildir.
-
- Geçmiş maçlarda hedef sonucu kullanılarak
- eşleşme yapılmaz.
-
- Böylece tahmin sonucunu önceden kullanıp
- tahmini etkilemiyoruz.
-
- Açılış oranı bulunan adaylar önceliklidir.
+ HEDEF MAÇ
 ==========================================================
 */
 
+
 function findTargetMatch(
     home,
-    away,
-    isCurrentWeek
+    away
 ) {
 
     const candidates =
@@ -766,126 +734,92 @@ function findTargetMatch(
 
 
     /*
-    Opening odds bulunanlar
+    openingOdds bulunan kayıtları
+    tercih ediyoruz.
     */
 
     const withOdds =
         candidates.filter(
             match =>
-                match &&
                 match.openingOdds &&
-                Object.keys(
-                    match.openingOdds
-                ).some(
-                    market =>
-                        parseOdd(
-                            match.openingOdds[market]
-                        ) !== null
+                (
+                    parseOdd(
+                        match.openingOdds.iy2
+                    ) !== null ||
+
+                    parseOdd(
+                        match.openingOdds.iy15Ust
+                    ) !== null
                 )
         );
 
 
-    let list =
+    const list =
         withOdds.length
-            ? withOdds.slice()
-            : candidates.slice();
+            ? withOdds
+            : candidates;
 
 
     /*
-    Tarihe göre sırala.
-
-    Güncel haftada en yeni/future kayıt tercih edilir.
-
-    Geçmiş haftada ise yine en yakın kayıt alınır.
+    En güncel kayıt.
     */
 
-    list.sort(
-        (a, b) => {
+    return list
+        .slice()
+        .sort(
+            (a, b) => {
 
-            const da =
-                parseDate(a.date);
+                const da =
+                    parseDate(a.date);
 
-            const db =
-                parseDate(b.date);
+                const db =
+                    parseDate(b.date);
 
 
-            if (!da && !db) {
-                return 0;
+                if (!da && !db) {
+                    return 0;
+                }
+
+
+                if (!da) {
+                    return 1;
+                }
+
+
+                if (!db) {
+                    return -1;
+                }
+
+
+                return (
+                    db.getTime() -
+                    da.getTime()
+                );
             }
-
-            if (!da) {
-                return 1;
-            }
-
-            if (!db) {
-                return -1;
-            }
-
-
-            return (
-                db.getTime() -
-                da.getTime()
-            );
-        }
-    );
-
-
-    return list[0] || null;
+        )[0] || null;
 }
 
 
 /*
 ==========================================================
- TARİHSEL 60 GÜN
+ SON 60 GÜN
 ==========================================================
 */
 
-function getHistory(targetMatch) {
+
+function getHistory(
+    target
+) {
 
     const targetDate =
         dateOnly(
-            targetMatch.date
+            target.date
         );
 
-
-    /*
-    Hedef tarih yoksa son 60 gün.
-    */
 
     if (!targetDate) {
 
-        const today =
-            new Date();
-
-        const start =
-            new Date(today);
-
-        start.setDate(
-            start.getDate() -
-            HISTORY_DAYS
-        );
-
-
-        return historicalMatches.filter(
-            match => {
-
-                const date =
-                    dateOnly(
-                        match.date
-                    );
-
-
-                if (!date) {
-                    return false;
-                }
-
-
-                return (
-                    date >= start &&
-                    date <= today
-                );
-            }
-        );
+        return [];
     }
 
 
@@ -898,11 +832,6 @@ function getHistory(targetMatch) {
         HISTORY_DAYS
     );
 
-
-    /*
-    Hedef maçın kendisini
-    geçmişten çıkarıyoruz.
-    */
 
     return historicalMatches.filter(
         match => {
@@ -917,6 +846,10 @@ function getHistory(targetMatch) {
                 return false;
             }
 
+
+            /*
+            Hedef maç dahil değil.
+            */
 
             if (
                 date < start ||
@@ -936,163 +869,169 @@ function getHistory(targetMatch) {
 
 /*
 ==========================================================
- ODDS INDEX
-
- market + exact odd
-
- Örnek:
-
- ms1|1.85
-
- au25Ust|1.85
-
- kgVar|1.85
-
- Her biri ayrı tutulur.
+ MARKET HESAPLAMA
 ==========================================================
 */
 
-function buildOddsIndex(history) {
 
-    const index =
-        new Map();
+function calculateMarket(
+    history,
+    market,
+    targetOdd
+) {
+
+    const targetKey =
+        oddKey(targetOdd);
+
+
+    if (!targetKey) {
+        return null;
+    }
+
+
+    let count1 = 0;
+
+    let countX = 0;
+
+    let count2 = 0;
 
 
     for (
         const match of history
     ) {
 
-        const result =
-            getMSResult(match);
+        const odds =
+            match.openingOdds;
 
 
-        if (!result) {
+        if (!odds) {
             continue;
         }
 
 
-        const odds =
-            match.openingOdds || {};
+        const historicalOdd =
+            parseOdd(
+                odds[market]
+            );
 
 
-        for (
-            const market of MARKETS
+        if (
+            historicalOdd === null
+        ) {
+            continue;
+        }
+
+
+        /*
+        SADECE TAM AYNI ORAN
+        */
+
+        if (
+            oddKey(historicalOdd) !==
+            targetKey
+        ) {
+            continue;
+        }
+
+
+        const result =
+            getMSResult(match);
+
+
+        if (
+            result === "1"
         ) {
 
-            const odd =
-                parseOdd(
-                    odds[market]
-                );
+            count1++;
 
+        } else if (
+            result === "X"
+        ) {
 
-            if (
-                odd === null
-            ) {
-                continue;
-            }
+            countX++;
 
+        } else if (
+            result === "2"
+        ) {
 
-            const key =
-                market +
-                "|" +
-                oddKey(odd);
-
-
-            let bucket =
-                index.get(key);
-
-
-            if (!bucket) {
-
-                bucket = {
-
-                    "1": 0,
-
-                    "X": 0,
-
-                    "2": 0,
-
-                    n: 0
-                };
-
-
-                index.set(
-                    key,
-                    bucket
-                );
-            }
-
-
-            bucket[result]++;
-
-            bucket.n++;
+            count2++;
         }
     }
 
 
-    return index;
-}
-
-
-/*
-==========================================================
- BAYESIAN
-==========================================================
-
- P = (sonuç sayısı + 0.5)
-     ---------------------
-          N + 1.5
-==========================================================
-*/
-
-function calculateBayesian(bucket) {
-
-    if (!bucket) {
-        return null;
-    }
-
-
     const N =
-        bucket.n;
+        count1 +
+        countX +
+        count2;
 
+
+    /*
+    Minimum 5 örnek.
+    */
 
     if (
         N < MIN_SAMPLE
     ) {
+
         return null;
     }
 
 
+    /*
+    Bayesian
+    */
+
     const denominator =
-        N +
-        (BAYES_ALPHA * 3);
+        N + 1.5;
 
 
     const p1 =
         (
-            bucket["1"] +
-            BAYES_ALPHA
+            count1 +
+            BAYES
         ) /
         denominator;
 
 
     const px =
         (
-            bucket["X"] +
-            BAYES_ALPHA
+            countX +
+            BAYES
         ) /
         denominator;
 
 
     const p2 =
         (
-            bucket["2"] +
-            BAYES_ALPHA
+            count2 +
+            BAYES
         ) /
         denominator;
 
 
+    /*
+    √N × N/(N+20)
+    */
+
+    const weight =
+        Math.sqrt(N) *
+        (
+            N /
+            (N + CONFIDENCE)
+        );
+
+
     return {
+
+        market,
+
+        N,
+
+        count1,
+
+        countX,
+
+        count2,
 
         p1,
 
@@ -1100,87 +1039,45 @@ function calculateBayesian(bucket) {
 
         p2,
 
-        N
+        weight
+
     };
 }
 
 
 /*
 ==========================================================
- AĞIRLIK
-==========================================================
-
- √N × N/(N+20)
+ ANA TAHMİN
 ==========================================================
 */
 
-function calculateWeight(N) {
-
-    return (
-        Math.sqrt(N) *
-        (
-            N /
-            (N + CONFIDENCE_K)
-        )
-    );
-}
-
-
-/*
-==========================================================
- ANA HESAPLAMA
-==========================================================
-*/
 
 function calculatePrediction(
-    targetMatch
+    target
 ) {
 
     if (
-        !targetMatch ||
-        !targetMatch.openingOdds
+        !target ||
+        !target.openingOdds
     ) {
 
-        return {
-            prediction: null,
-            p1: 0,
-            px: 0,
-            p2: 0
-        };
+        return null;
     }
 
-
-    /*
-    Hedef maçın tarihine göre
-    son 60 gün.
-    */
 
     const history =
-        getHistory(
-            targetMatch
-        );
+        getHistory(target);
 
 
-    if (!history.length) {
+    if (
+        !history.length
+    ) {
 
-        return {
-            prediction: null,
-            p1: 0,
-            px: 0,
-            p2: 0
-        };
+        return null;
     }
 
 
-    /*
-    Tarihsel oran indexi.
-    */
-
-    const oddsIndex =
-        buildOddsIndex(
-            history
-        );
-
+    let totalWeight = 0;
 
     let weighted1 = 0;
 
@@ -1188,30 +1085,23 @@ function calculatePrediction(
 
     let weighted2 = 0;
 
-    let totalWeight = 0;
-
 
     /*
-    ======================================================
-    TÜM MARKETLER
-    ======================================================
+    SADECE:
+
+    iy2
+    iy15Ust
     */
-
-    const targetOdds =
-        targetMatch.openingOdds;
-
 
     for (
         const market of MARKETS
     ) {
 
-        /*
-        Hedef maçın opening odd'u
-        */
-
         const targetOdd =
             parseOdd(
-                targetOdds[market]
+                target
+                    .openingOdds
+                    [market]
             );
 
 
@@ -1222,152 +1112,76 @@ function calculatePrediction(
         }
 
 
-        /*
-        Exact eşleşme.
-        */
-
-        const key =
-            market +
-            "|" +
-            oddKey(targetOdd);
-
-
-        const bucket =
-            oddsIndex.get(key);
-
-
-        if (!bucket) {
-            continue;
-        }
-
-
-        /*
-        Minimum N = 5
-        */
-
-        if (
-            bucket.n <
-            MIN_SAMPLE
-        ) {
-            continue;
-        }
-
-
-        /*
-        Bayesian
-        */
-
-        const probability =
-            calculateBayesian(
-                bucket
+        const result =
+            calculateMarket(
+                history,
+                market,
+                targetOdd
             );
 
 
-        if (!probability) {
+        if (!result) {
             continue;
         }
 
-
-        /*
-        √N × N/(N+20)
-        */
-
-        const weight =
-            calculateWeight(
-                probability.N
-            );
-
-
-        /*
-        AĞIRLIKLI TOPLAM
-        */
 
         weighted1 +=
-            probability.p1 *
-            weight;
+            result.p1 *
+            result.weight;
 
 
         weightedX +=
-            probability.px *
-            weight;
+            result.px *
+            result.weight;
 
 
         weighted2 +=
-            probability.p2 *
-            weight;
+            result.p2 *
+            result.weight;
 
 
         totalWeight +=
-            weight;
+            result.weight;
     }
 
 
     /*
-    Hiçbir markette N >= 5 yoksa
-    tahmin uydurmuyoruz.
+    Yeterli örnek yok.
     */
 
     if (
         totalWeight <= 0
     ) {
 
-        return {
-            prediction: null,
-            p1: 0,
-            px: 0,
-            p2: 0
-        };
+        return null;
     }
 
 
     /*
-    Final olasılıklar
+    Final
     */
 
-    let p1 =
+    const p1 =
         weighted1 /
         totalWeight;
 
 
-    let px =
+    const px =
         weightedX /
         totalWeight;
 
 
-    let p2 =
+    const p2 =
         weighted2 /
         totalWeight;
 
 
     /*
-    Normalize
-    */
-
-    const total =
-        p1 + px + p2;
-
-
-    if (
-        total > 0
-    ) {
-
-        p1 /= total;
-
-        px /= total;
-
-        p2 /= total;
-    }
-
-
-    /*
-    ======================================================
-    EN YÜKSEK SONUÇ
-    ======================================================
-
-    Burada 1'e özel bir avantaj yok.
+    Kesinlikle 1'e sabitleme yok.
     */
 
     let prediction;
+
 
     if (
         p1 >= px &&
@@ -1404,9 +1218,10 @@ function calculatePrediction(
 
 /*
 ==========================================================
- HTML ESCAPE
+ ESCAPE
 ==========================================================
 */
+
 
 function escapeHtml(value) {
 
@@ -1438,68 +1253,36 @@ function escapeHtml(value) {
 
 /*
 ==========================================================
- MAÇI GÖSTER
+ MAÇ KARTI
 ==========================================================
 */
 
+
 function renderMatch(
-    sportTotoMatch
+    sportMatch
 ) {
-
-    /*
-    Güncel haftanın 8. hafta olduğunu
-    data dosyasından alıyoruz.
-    */
-
-    const currentWeek =
-        Number(
-            window
-                .SPORT_TOTO_DATA
-                ?.currentWeek
-        );
-
-
-    const isCurrentWeek =
-        Number(selectedWeek) ===
-        currentWeek;
-
-
-    /*
-    Mackolik karşılığı.
-    */
 
     const target =
         findTargetMatch(
-            sportTotoMatch.home,
-            sportTotoMatch.away,
-            isCurrentWeek
+            sportMatch.home,
+            sportMatch.away
         );
 
 
-    let prediction = null;
+    const calculation =
+        calculatePrediction(
+            target
+        );
 
 
-    if (target) {
+    const prediction =
+        calculation
+            ?.prediction ||
+        "—";
 
-        const calculation =
-            calculatePrediction(
-                target
-            );
-
-
-        prediction =
-            calculation.prediction;
-    }
-
-
-    /*
-    Geçmiş sonuç:
-    Spor Toto data dosyasındaki
-    result alanı.
-    */
 
     const actual =
-        sportTotoMatch.result ||
+        sportMatch.result ||
         null;
 
 
@@ -1509,14 +1292,10 @@ function renderMatch(
         "pending";
 
 
-    /*
-    Oynanmış maç
-    */
-
     if (actual) {
 
         if (
-            prediction &&
+            prediction !== "—" &&
             prediction === actual
         ) {
 
@@ -1533,16 +1312,6 @@ function renderMatch(
                 "wrong";
         }
     }
-
-
-    const card =
-        document.createElement(
-            "div"
-        );
-
-
-    card.className =
-        "match";
 
 
     let scoreHTML = "";
@@ -1563,9 +1332,7 @@ function renderMatch(
                 ${escapeHtml(
                     target.score.home
                 )}
-
                 -
-
                 ${escapeHtml(
                     target.score.away
                 )}
@@ -1575,14 +1342,24 @@ function renderMatch(
     }
 
 
+    const card =
+        document.createElement(
+            "div"
+        );
+
+
+    card.className =
+        "match";
+
+
     card.innerHTML = `
 
-        <div class="teams">
+        <div>
 
             <div class="team">
 
                 ${escapeHtml(
-                    sportTotoMatch.home
+                    sportMatch.home
                 )}
 
             </div>
@@ -1590,7 +1367,7 @@ function renderMatch(
             <div class="team">
 
                 ${escapeHtml(
-                    sportTotoMatch.away
+                    sportMatch.away
                 )}
 
             </div>
@@ -1602,7 +1379,7 @@ function renderMatch(
 
         <div class="prediction">
 
-            ${prediction || "—"}
+            ${prediction}
 
         </div>
 
@@ -1622,9 +1399,10 @@ function renderMatch(
 
 /*
 ==========================================================
- HAFTA GÖSTER
+ HAFTA
 ==========================================================
 */
+
 
 function renderWeek() {
 
@@ -1654,7 +1432,7 @@ function renderWeek() {
 
             <div class="empty">
 
-                Bu haftada maç bulunamadı.
+                Maç bulunamadı.
 
             </div>
 
@@ -1674,7 +1452,6 @@ function renderWeek() {
         if (
             match.result
         ) {
-
             played++;
         }
 
@@ -1699,9 +1476,10 @@ function renderWeek() {
 
 /*
 ==========================================================
- HAFTALARI OLUŞTUR
+ HAFTALAR
 ==========================================================
 */
+
 
 function buildWeeks() {
 
@@ -1779,9 +1557,10 @@ function buildWeeks() {
 
 /*
 ==========================================================
- VERİLERİ YÜKLE
+ VERİ
 ==========================================================
 */
+
 
 async function loadData() {
 
@@ -1794,10 +1573,6 @@ async function loadData() {
         </div>
 
     `;
-
-
-    statusText.textContent =
-        "Veriler hazırlanıyor...";
 
 
     try {
@@ -1833,12 +1608,9 @@ async function loadData() {
 
 
         /*
-        Tarihsel hesaplamaya sadece:
-
-        - openingOdds bulunan
-        - MS sonucu belli
-
-        maçlar girer.
+        Sadece sonucu belli ve
+        openingOdds bulunan maçlar
+        tarihsel örneklem olur.
         */
 
         historicalMatches =
@@ -1854,7 +1626,8 @@ async function loadData() {
 
 
         statusText.textContent =
-            `${allMatches.length} Mackolik maçı yüklendi.`;
+            `${allMatches.length} Mackolik maçı yüklendi. ` +
+            `${historicalMatches.length} tarihsel örneklem hazır.`;
 
 
         renderWeek();
@@ -1883,7 +1656,6 @@ async function loadData() {
 
         `;
 
-
         statusText.textContent =
             "Veri yükleme hatası.";
     }
@@ -1895,6 +1667,7 @@ async function loadData() {
  EVENTS
 ==========================================================
 */
+
 
 weekSelect.addEventListener(
     "change",
@@ -1924,6 +1697,7 @@ refreshButton.addEventListener(
  BAŞLAT
 ==========================================================
 */
+
 
 buildWeeks();
 
