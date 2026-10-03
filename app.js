@@ -569,18 +569,6 @@ const TARGET_MARKETS = [
             ])
     },
 
-    {
-        id: "IYKGY",
-        title: "İlk Yarı KG Yok",
-        odds: match =>
-            getOdds(match, [
-                "iyKgYok",
-                "iyKGYok",
-                "iykgyok",
-                "iyKgy",
-                "IYKGY"
-            ])
-    },
 
     {
         id: "MS25U",
