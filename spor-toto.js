@@ -1,875 +1,351 @@
-"use strict";
 /*
-=========================================================
-SPOR TOTO HESAPLAMA MOTORU
-Mantık:
-1. Spor Toto maçını Mackolik'te bul
-2. Açılış oranlarını al
-3. Son 60 güne bak
-4. Oranı birebir eşleştir
-5. Şu 5 marketi kullan:
-   iy15Ust
-   iy1
-   iy2
-   au15Alt
-   au15Ust
-6. En az 5 örnek
-7. Geçmiş maçların MS sonucunu hesapla
-8. Tüm geçerli marketleri ortak hesapla
-9. Yüzdeleri oluştur
-10. Tek / çift / üçlü sistem belirle
-=========================================================
+===========================================================
+ SPOR TOTO VERİ DOSYASI
+ Sezon: 2026/2027
+ Haftalar: 1 - 8
+ result:
+   1 = Ev sahibi
+   X = Beraberlik
+   2 = Deplasman
+ score:
+   Maç skoru biliniyorsa "2-1"
+   Bilinmiyorsa null
+ ÖNEMLİ:
+ Backtest sırasında hafta N tahmin edilirken
+ hafta N'nin sonucu kullanılmamalıdır.
+ Tahmin motoru yalnızca önceki haftaları kullanmalıdır.
+===========================================================
 */
-const MACKOLIK_URL = "./data/matches.json";
-const HISTORY_DAYS = 60;
-const MINIMUM_SAMPLE = 5;
 /* =========================================================
-   GLOBAL
+   SPOR TOTO VERİ DOSYASI
+   Sezon: 2026/2027
+   ÖNEMLİ:
+   - 1-7. haftalar tamamlanmış sonuçlardır.
+   - 8. hafta mevcut programdır.
+   - 8. hafta sonuçları tahmin motoruna verilmez.
+   - Backtest yapılırken hafta N için yalnızca N'den
+     önceki haftalar kullanılmalıdır.
 ========================================================= */
-let allMatches = [];
-let totoMatches = [];
-/* =========================================================
-   GENEL YARDIMCILAR
-========================================================= */
-function getValue(object, keys) {
-    if (!object || typeof object !== "object") {
-        return undefined;
-    }
-    for (const key of keys) {
-        if (
-            object[key] !== undefined &&
-            object[key] !== null &&
-            object[key] !== ""
-        ) {
-            return object[key];
-        }
-    }
-    return undefined;
+window.SPORT_TOTO_DATA = {
+seasons: {
+    "2026/2027": {
+    "2026-2027": {
+weeks: {
+/* =================================================
+          1. HAFTA
+       ================================================= */
+1: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Galatasaray", away: "Çorum FK", score: "2-2", result: "X" },
+            { no: 2,  home: "Kasımpaşa", away: "Trabzonspor", score: "1-1", result: "X" },
+            { no: 3,  home: "Konyaspor", away: "Çaykur Rizespor", score: "0-1", result: "2" },
+            { no: 4,  home: "Gaziantep FK", away: "Corendon Alanyaspor", score: "1-1", result: "X" },
+            { no: 5,  home: "Gençlerbirliği", away: "Fenerbahçe", score: "2-1", result: "1" },
+            { no: 6,  home: "Rams Başakşehir", away: "Kocaelispor", score: "2-0", result: "1" },
+            { no: 7,  home: "Amed Sportif Faaliyetler", away: "Erzurumspor FK", score: "3-0", result: "1" },
+            { no: 8,  home: "Beşiktaş", away: "Eyüpspor", score: "1-0", result: "1" },
+            { no: 9,  home: "Samsunspor", away: "Göztepe", score: "3-3", result: "X" },
+            { no: 1, home: "Galatasaray", away: "Çorum FK", score: "2-2", result: "X" },
+            { no: 2, home: "Kasımpaşa", away: "Trabzonspor", score: "1-1", result: "X" },
+            { no: 3, home: "Konyaspor", away: "Çaykur Rizespor", score: "0-1", result: "2" },
+            { no: 4, home: "Gaziantep FK", away: "Corendon Alanyaspor", score: "1-1", result: "X" },
+            { no: 5, home: "Gençlerbirliği", away: "Fenerbahçe", score: "2-1", result: "1" },
+            { no: 6, home: "Rams Başakşehir", away: "Kocaelispor", score: "2-0", result: "1" },
+            { no: 7, home: "Amed Sportif Faaliyetler", away: "Erzurumspor FK", score: "3-0", result: "1" },
+            { no: 8, home: "Beşiktaş", away: "Eyüpspor", score: "1-0", result: "1" },
+            { no: 9, home: "Samsunspor", away: "Göztepe", score: "3-3", result: "X" },
+{ no: 10, home: "Arsenal", away: "Manchester City", score: "3-0", result: "1" },
+{ no: 11, home: "Lens", away: "Paris St Germain", score: "1-0", result: "1" },
+{ no: 12, home: "Sevilla", away: "Rayo Vallecano", score: "2-1", result: "1" },
+{ no: 13, home: "Racing Santander", away: "Villarreal", score: "2-2", result: "X" },
+{ no: 14, home: "Espanyol", away: "Levante", score: "3-0", result: "1" },
+            // Kaynakta skor boş görünmesine rağmen MS 1 olarak kayıtlı.
+            /* Kaynakta skor bulunmadığı için skor uydurulmuyor. */
+{ no: 15, home: "Celta Vigo", away: "Osasuna", score: null, result: "1" }
+]
+},
+@@ -50,15 +42,15 @@ window.SPORT_TOTO_DATA = {
+2: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Erzurumspor FK", away: "Galatasaray", score: "0-4", result: "2" },
+            { no: 2,  home: "Çaykur Rizespor", away: "Samsunspor", score: "0-2", result: "2" },
+            { no: 3,  home: "Arca Çorum FK", away: "Kasımpaşa", score: "0-1", result: "2" },
+            { no: 4,  home: "Fenerbahçe", away: "Tümosan Konyaspor", score: "4-2", result: "1" },
+            { no: 5,  home: "Eyüpspor", away: "Gaziantep FK", score: "0-1", result: "2" },
+            { no: 6,  home: "Trabzonspor", away: "İstanbul Başakşehir", score: "2-1", result: "1" },
+            { no: 7,  home: "Corendon Alanyaspor", away: "Beşiktaş", score: "1-0", result: "1" },
+            { no: 8,  home: "Göztepe", away: "Gençlerbirliği", score: "0-1", result: "2" },
+            { no: 9,  home: "Kocaelispor", away: "Amed Sportif Faaliyetler", score: "2-0", result: "1" },
+            { no: 1, home: "Erzurumspor FK", away: "Galatasaray", score: "0-4", result: "2" },
+            { no: 2, home: "Çaykur Rizespor", away: "Samsunspor", score: "0-2", result: "2" },
+            { no: 3, home: "Arca Çorum FK", away: "Kasımpaşa", score: "0-1", result: "2" },
+            { no: 4, home: "Fenerbahçe", away: "Tümosan Konyaspor", score: "4-2", result: "1" },
+            { no: 5, home: "Eyüpspor", away: "Gaziantep FK", score: "0-1", result: "2" },
+            { no: 6, home: "Trabzonspor", away: "İstanbul Başakşehir", score: "2-1", result: "1" },
+            { no: 7, home: "Corendon Alanyaspor", away: "Beşiktaş", score: "1-0", result: "1" },
+            { no: 8, home: "Göztepe", away: "Gençlerbirliği", score: "0-1", result: "2" },
+            { no: 9, home: "Kocaelispor", away: "Amed Sportif Faaliyetler", score: "2-0", result: "1" },
+{ no: 10, home: "Borussia Dortmund", away: "Bayern Münih", score: "1-2", result: "2" },
+{ no: 11, home: "Marsilya", away: "Strasbourg", score: "4-0", result: "1" },
+{ no: 12, home: "Newcastle Utd.", away: "Liverpool", score: "2-2", result: "X" },
+@@ -73,15 +65,15 @@ window.SPORT_TOTO_DATA = {
+3: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Gençlerbirliği", away: "Erzurumspor FK", score: "1-1", result: "X" },
+            { no: 2,  home: "Tümosan Konyaspor", away: "Kocaelispor", score: "1-2", result: "2" },
+            { no: 3,  home: "Galatasaray", away: "Göztepe", score: "3-2", result: "1" },
+            { no: 4,  home: "Gaziantep FK", away: "Çaykur Rizespor", score: "1-2", result: "2" },
+            { no: 5,  home: "Eyüpspor", away: "Corendon Alanyaspor", score: "2-1", result: "1" },
+            { no: 6,  home: "İstanbul Başakşehir", away: "Kasımpaşa", score: "1-1", result: "X" },
+            { no: 7,  home: "Samsunspor", away: "Fenerbahçe", score: "0-2", result: "2" },
+            { no: 8,  home: "Amed Sportif Faaliyetler", away: "Trabzonspor", score: "2-1", result: "1" },
+            { no: 9,  home: "Beşiktaş", away: "Arca Çorum FK", score: "6-2", result: "1" },
+            { no: 1, home: "Gençlerbirliği", away: "Erzurumspor FK", score: "1-1", result: "X" },
+            { no: 2, home: "Tümosan Konyaspor", away: "Kocaelispor", score: "1-2", result: "2" },
+            { no: 3, home: "Galatasaray", away: "Göztepe", score: "3-2", result: "1" },
+            { no: 4, home: "Gaziantep FK", away: "Çaykur Rizespor", score: "1-2", result: "2" },
+            { no: 5, home: "Eyüpspor", away: "Corendon Alanyaspor", score: "2-1", result: "1" },
+            { no: 6, home: "İstanbul Başakşehir", away: "Kasımpaşa", score: "1-1", result: "X" },
+            { no: 7, home: "Samsunspor", away: "Fenerbahçe", score: "0-2", result: "2" },
+            { no: 8, home: "Amed Sportif Faaliyetler", away: "Trabzonspor", score: "2-1", result: "1" },
+            { no: 9, home: "Beşiktaş", away: "Arca Çorum FK", score: "6-2", result: "1" },
+{ no: 10, home: "Borussia Dortmund", away: "Hamburger SV", score: "2-0", result: "1" },
+{ no: 11, home: "Lille", away: "Paris St Germain", score: "2-2", result: "X" },
+{ no: 12, home: "Monaco", away: "Marsilya", score: "2-0", result: "1" },
+@@ -96,15 +88,15 @@ window.SPORT_TOTO_DATA = {
+4: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Erzurumspor FK", away: "Tümosan Konyaspor", score: "1-0", result: "1" },
+            { no: 2,  home: "Kasımpaşa", away: "Amed Sportif Faaliyetler", score: "2-2", result: "X" },
+            { no: 3,  home: "Arca Çorum FK", away: "Eyüpspor", score: "3-0", result: "1" },
+            { no: 4,  home: "Fenerbahçe", away: "Beşiktaş", score: "1-2", result: "2" },
+            { no: 5,  home: "İstanbul Başakşehir", away: "Galatasaray", score: "2-3", result: "2" },
+            { no: 6,  home: "Kocaelispor", away: "Samsunspor", score: "1-0", result: "1" },
+            { no: 7,  home: "Trabzonspor", away: "Gençlerbirliği", score: "5-0", result: "1" },
+            { no: 8,  home: "Çaykur Rizespor", away: "Corendon Alanyaspor", score: "0-1", result: "2" },
+            { no: 9,  home: "Göztepe", away: "Gaziantep FK", score: "2-4", result: "2" },
+            { no: 1, home: "Erzurumspor FK", away: "Tümosan Konyaspor", score: "1-0", result: "1" },
+            { no: 2, home: "Kasımpaşa", away: "Amed Sportif Faaliyetler", score: "2-2", result: "X" },
+            { no: 3, home: "Arca Çorum FK", away: "Eyüpspor", score: "3-0", result: "1" },
+            { no: 4, home: "Fenerbahçe", away: "Beşiktaş", score: "1-2", result: "2" },
+            { no: 5, home: "İstanbul Başakşehir", away: "Galatasaray", score: "2-3", result: "2" },
+            { no: 6, home: "Kocaelispor", away: "Samsunspor", score: "1-0", result: "1" },
+            { no: 7, home: "Trabzonspor", away: "Gençlerbirliği", score: "5-0", result: "1" },
+            { no: 8, home: "Çaykur Rizespor", away: "Corendon Alanyaspor", score: "0-1", result: "2" },
+            { no: 9, home: "Göztepe", away: "Gaziantep FK", score: "2-4", result: "2" },
+{ no: 10, home: "Everton", away: "Manchester Utd.", score: "2-2", result: "X" },
+{ no: 11, home: "Arsenal", away: "Chelsea", score: "2-1", result: "1" },
+{ no: 12, home: "Athletic Bilbao", away: "Atletico Madrid", score: "3-0", result: "1" },
+@@ -119,15 +111,15 @@ window.SPORT_TOTO_DATA = {
+5: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Beşiktaş", away: "Erzurumspor FK", score: "3-0", result: "1" },
+            { no: 2,  home: "Eyüpspor", away: "Çaykur Rizespor", score: "0-2", result: "2" },
+            { no: 3,  home: "Samsunspor", away: "Arca Çorum FK", score: "1-5", result: "2" },
+            { no: 4,  home: "Corendon Alanyaspor", away: "Göztepe", score: "2-2", result: "X" },
+            { no: 5,  home: "Tümosan Konyaspor", away: "Trabzonspor", score: "1-0", result: "1" },
+            { no: 6,  home: "Gençlerbirliği", away: "Kasımpaşa", score: "1-2", result: "2" },
+            { no: 7,  home: "Amed Sportif Faaliyetler", away: "İstanbul Başakşehir", score: "5-0", result: "1" },
+            { no: 8,  home: "Galatasaray", away: "Kocaelispor", score: "1-0", result: "1" },
+            { no: 9,  home: "Gaziantep FK", away: "Fenerbahçe", score: "0-0", result: "X" },
+            { no: 1, home: "Beşiktaş", away: "Erzurumspor FK", score: "3-0", result: "1" },
+            { no: 2, home: "Eyüpspor", away: "Çaykur Rizespor", score: "0-2", result: "2" },
+            { no: 3, home: "Samsunspor", away: "Arca Çorum FK", score: "1-5", result: "2" },
+            { no: 4, home: "Corendon Alanyaspor", away: "Göztepe", score: "2-2", result: "X" },
+            { no: 5, home: "Tümosan Konyaspor", away: "Trabzonspor", score: "1-0", result: "1" },
+            { no: 6, home: "Gençlerbirliği", away: "Kasımpaşa", score: "1-2", result: "2" },
+            { no: 7, home: "Amed Sportif Faaliyetler", away: "İstanbul Başakşehir", score: "5-0", result: "1" },
+            { no: 8, home: "Galatasaray", away: "Kocaelispor", score: "1-0", result: "1" },
+            { no: 9, home: "Gaziantep FK", away: "Fenerbahçe", score: "0-0", result: "X" },
+{ no: 10, home: "Augsburg", away: "Bayer Leverkusen", score: "2-2", result: "X" },
+{ no: 11, home: "Rennes", away: "Marsilya", score: "1-0", result: "1" },
+{ no: 12, home: "Chelsea", away: "Hull City", score: "2-2", result: "X" },
+@@ -142,15 +134,15 @@ window.SPORT_TOTO_DATA = {
+6: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Kasımpaşa", away: "Tümosan Konyaspor", score: "0-0", result: "X" },
+            { no: 2,  home: "Kocaelispor", away: "Gaziantep FK", score: "2-0", result: "1" },
+            { no: 3,  home: "Arca Çorum FK", away: "Corendon Alanyaspor", score: "1-2", result: "2" },
+            { no: 4,  home: "İstanbul Başakşehir", away: "Gençlerbirliği", score: "4-0", result: "1" },
+            { no: 5,  home: "Trabzonspor", away: "Galatasaray", score: "4-0", result: "1" },
+            { no: 6,  home: "Erzurumspor FK", away: "Samsunspor", score: "1-0", result: "1" },
+            { no: 7,  home: "Fenerbahçe", away: "Eyüpspor", score: "8-0", result: "1" },
+            { no: 8,  home: "Amed Sportif Faaliyetler", away: "Beşiktaş", score: "3-2", result: "1" },
+            { no: 9,  home: "Göztepe", away: "Çaykur Rizespor", score: "2-2", result: "X" },
+            { no: 1, home: "Kasımpaşa", away: "Tümosan Konyaspor", score: "0-0", result: "X" },
+            { no: 2, home: "Kocaelispor", away: "Gaziantep FK", score: "2-0", result: "1" },
+            { no: 3, home: "Arca Çorum FK", away: "Corendon Alanyaspor", score: "1-2", result: "2" },
+            { no: 4, home: "İstanbul Başakşehir", away: "Gençlerbirliği", score: "4-0", result: "1" },
+            { no: 5, home: "Trabzonspor", away: "Galatasaray", score: "4-0", result: "1" },
+            { no: 6, home: "Erzurumspor FK", away: "Samsunspor", score: "1-0", result: "1" },
+            { no: 7, home: "Fenerbahçe", away: "Eyüpspor", score: "8-0", result: "1" },
+            { no: 8, home: "Amed Sportif Faaliyetler", away: "Beşiktaş", score: "3-2", result: "1" },
+            { no: 9, home: "Göztepe", away: "Çaykur Rizespor", score: "2-2", result: "X" },
+{ no: 10, home: "Vfb Stuttgart", away: "Borussia Dortmund", score: "0-1", result: "2" },
+{ no: 11, home: "Bayer Leverkusen", away: "RB Leipzig", score: "2-0", result: "1" },
+{ no: 12, home: "Tottenham Hotspur", away: "Aston Villa", score: "2-3", result: "2" },
+@@ -165,39 +157,42 @@ window.SPORT_TOTO_DATA = {
+7: {
+status: "finished",
+matches: [
+            { no: 1,  home: "Türkiye", away: "Fransa", score: "0-1", result: "2" },
+            { no: 2,  home: "Türkiye", away: "İtalya", score: "1-4", result: "2" },
+            { no: 3,  home: "İsveç", away: "Romanya", score: "2-1", result: "1" },
+            { no: 4,  home: "İtalya", away: "Belçika", score: "0-2", result: "2" },
+            { no: 5,  home: "Slovenya", away: "İskoçya", score: "0-0", result: "X" },
+            { no: 6,  home: "Bulgaristan", away: "Lüksemburg", score: "1-2", result: "2" },
+            { no: 7,  home: "Kuzey Makedonya Cumhuriyeti", away: "İsviçre", score: "0-3", result: "2" },
+            { no: 8,  home: "Çekya", away: "Hırvatistan", score: "1-2", result: "2" },
+            { no: 9,  home: "İngiltere", away: "İspanya", score: "2-3", result: "2" },
+            { no: 10, home: "Litvanya", away: "Azerbaycan", score: "1-1", result: "X" },
+            { no: 11, home: "Avusturya", away: "Kosova", score: "3-1", result: "1" },
+            { no: 12, home: "Danimarka", away: "Galler", score: "2-0", result: "1" },
+            { no: 13, home: "Sırbistan", away: "Hollanda", score: "1-2", result: "2" },
+            { no: 14, home: "Almanya", away: "Yunanistan", score: "0-1", result: "2" },
+            { no: 15, home: "Norveç", away: "Portekiz", score: "1-2", result: "2" }
+            { no: 1, home: "Türkiye", away: "Fransa", score: null, result: "2" },
+            { no: 2, home: "Türkiye", away: "İtalya", score: null, result: "2" },
+            { no: 3, home: "İsveç", away: "Romanya", score: null, result: "1" },
+            { no: 4, home: "İtalya", away: "Belçika", score: null, result: "2" },
+            { no: 5, home: "Slovenya", away: "İskoçya", score: null, result: "X" },
+            { no: 6, home: "Bulgaristan", away: "Lüksemburg", score: null, result: "2" },
+            { no: 7, home: "Kuzey Makedonya", away: "İsviçre", score: null, result: "2" },
+            { no: 8, home: "Çekya", away: "Hırvatistan", score: null, result: "2" },
+            { no: 9, home: "İngiltere", away: "İspanya", score: null, result: "2" },
+            { no: 10, home: "Litvanya", away: "Azerbaycan", score: null, result: "X" },
+            { no: 11, home: "Avusturya", away: "Kosova", score: null, result: "1" },
+            { no: 12, home: "Danimarka", away: "Galler", score: null, result: "1" },
+            { no: 13, home: "Sırbistan", away: "Hollanda", score: null, result: "2" },
+            { no: 14, home: "Almanya", away: "Yunanistan", score: null, result: "2" },
+            { no: 15, home: "Norveç", away: "Portekiz", score: null, result: "2" }
+]
+},
+/* =================================================
+          8. HAFTA
+           GÜNCEL PROGRAM / KISMİ SONUÇLAR
+           GÜNCEL PROGRAM
+           SONUÇLAR BİLİNÇLİ OLARAK NULL.
+           Tahmin/backtest motoru 8. haftayı geçmiş veri
+           olarak kullanmamalıdır.
+       ================================================= */
+8: {
+          status: "ongoing",
+          status: "current",
+matches: [
+            { no: 1,  home: "Belçika", away: "Türkiye", score: "3-0", result: "1" },
+            { no: 2,  home: "İtalya", away: "Türkiye", score: null, result: null },
+            { no: 3,  home: "Bosna Hersek", away: "İsveç", score: "1-1", result: "X" },
+            { no: 4,  home: "Fransa", away: "İtalya", score: "1-1", result: "X" },
+            { no: 5,  home: "Macaristan", away: "Gürcistan", score: "1-0", result: "1" },
+            { no: 6,  home: "Polonya", away: "Romanya", score: "6-0", result: "1" },
+            { no: 7,  home: "Hırvatistan", away: "İngiltere", score: null, result: null },
+            { no: 8,  home: "Kuzey Makedonya Cumhuriyeti", away: "İskoçya", score: null, result: null },
+            { no: 9,  home: "İspanya", away: "Çekya", score: null, result: null },
+            { no: 1, home: "Belçika", away: "Türkiye", score: null, result: null },
+            { no: 2, home: "İtalya", away: "Türkiye", score: null, result: null },
+            { no: 3, home: "Bosna Hersek", away: "İsveç", score: null, result: null },
+            { no: 4, home: "Fransa", away: "İtalya", score: null, result: null },
+            { no: 5, home: "Macaristan", away: "Gürcistan", score: null, result: null },
+            { no: 6, home: "Polonya", away: "Romanya", score: null, result: null },
+            { no: 7, home: "Hırvatistan", away: "İngiltere", score: null, result: null },
+            { no: 8, home: "Kuzey Makedonya Cumhuriyeti", away: "İskoçya", score: null, result: null },
+            { no: 9, home: "İspanya", away: "Çekya", score: null, result: null },
+{ no: 10, home: "İsviçre", away: "Slovenya", score: null, result: null },
+{ no: 11, home: "Galler", away: "Danimarka", score: null, result: null },
+{ no: 12, home: "Hollanda", away: "Sırbistan", score: null, result: null },
+@@ -210,75 +205,18 @@ window.SPORT_TOTO_DATA = {
 }
-/* =========================================================
-   TAKIM İSMİ
-========================================================= */
-function normalizeTeam(value) {
-    return String(value ?? "")
-        .toLocaleLowerCase("tr-TR")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/ı/g, "i")
-        .replace(/[^a-z0-9]/g, "");
 }
-function getHome(match) {
-    return getValue(match, [
-        "home",
-        "Home",
-        "homeTeam",
-        "home_team",
-        "ev",
-        "Ev",
-        "evSahibi"
-    ]) || "";
-}
-function getAway(match) {
-    return getValue(match, [
-        "away",
-        "Away",
-        "awayTeam",
-        "away_team",
-        "deplasman",
-        "Deplasman"
-    ]) || "";
-}
-/* =========================================================
-   TARİH
-========================================================= */
-function parseDate(value) {
-    if (!value) {
-        return null;
-    }
-    const text = String(value).trim();
-    let match = text.match(
-        /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
-    );
-    if (match) {
-        return new Date(
-            Number(match[3]),
-            Number(match[2]) - 1,
-            Number(match[1])
-        );
-    }
-    match = text.match(
-        /^(\d{4})[-./](\d{1,2})[-./](\d{1,2})/
-    );
-    if (match) {
-        return new Date(
-            Number(match[1]),
-            Number(match[2]) - 1,
-            Number(match[3])
-        );
-    }
-    const date = new Date(text);
-    if (Number.isNaN(date.getTime())) {
-        return null;
-    }
-    return new Date(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate()
-    );
-}
-function addDays(date, days) {
-    const result = new Date(date);
-    result.setDate(
-        result.getDate() + days
-    );
-    return result;
-}
-/* =========================================================
-   SKOR
-========================================================= */
-function parseScore(value) {
-    if (!value) {
-        return null;
-    }
-    if (typeof value === "object") {
-        const home = getValue(value, [
-            "home",
-            "Home",
-            "ev",
-            "h"
-        ]);
-        const away = getValue(value, [
-            "away",
-            "Away",
-            "deplasman",
-            "a"
-        ]);
-        if (
-            home !== undefined &&
-            away !== undefined
-        ) {
-            const h = Number(home);
-            const a = Number(away);
-            if (
-                Number.isFinite(h) &&
-                Number.isFinite(a)
-            ) {
-                return {
-                    home: h,
-                    away: a
-                };
-            }
-        }
-    }
-    const text = String(value).trim();
-    const match = text.match(
-        /(\d+)\s*[-:]\s*(\d+)/
-    );
-    if (!match) {
-        return null;
-    }
-    return {
-        home: Number(match[1]),
-        away: Number(match[2])
-    };
-}
-function getFullTimeScore(match) {
-    const value = getValue(match, [
-        "score",
-        "Score",
-        "fullTimeScore",
-        "fulltimeScore",
-        "ftScore",
-        "ft",
-        "FT",
-        "fullTime",
-        "FullTime",
-        "ms",
-        "MS",
-        "macSonucu",
-        "MaçSonucu"
-    ]);
-    return parseScore(value);
-}
-function getMSResult(match) {
-    const score = getFullTimeScore(match);
-    if (!score) {
-        return null;
-    }
-    if (score.home > score.away) {
-        return "1";
-    }
-    if (score.home < score.away) {
-        return "2";
-    }
-    return "X";
-}
-/* =========================================================
-   ORAN
-========================================================= */
-function normalizeOdds(value) {
-    if (
-        value === undefined ||
-        value === null ||
-        value === ""
-    ) {
-        return null;
-    }
-    const number = Number(
-        String(value)
-            .replace(",", ".")
-            .trim()
-    );
-    if (!Number.isFinite(number)) {
-        return null;
-    }
-    return number.toFixed(2);
-}
-function getOdds(match, names) {
-    const direct = getValue(
-        match,
-        names
-    );
-    if (direct !== undefined) {
-        return normalizeOdds(direct);
-    }
-    const containers = [
-        match.openingOdds,
-        match.opening_odds,
-        match.opening,
-        match.odds,
-        match.Odds,
-        match.oranlar,
-        match.Oranlar
-    ];
-    for (const container of containers) {
-        if (!container) {
-            continue;
-        }
-        const value = getValue(
-            container,
-            names
-        );
-        if (value !== undefined) {
-            return normalizeOdds(value);
-        }
-    }
-    return null;
-}
-/* =========================================================
-   KULLANILAN 5 MARKET
-========================================================= */
-const SOURCE_MARKETS = [
-    {
-        id: "IY15U",
-        title: "İY 1.5 Üst",
-        odds: match =>
-            getOdds(match, [
-                "iy15Ust",
-                "iy15üst",
-                "iy15U",
-                "IY15U",
-                "iy1_5U",
-                "iy1_5Over",
-                "iy15Over"
-            ])
-    },
-    {
-        id: "IY1",
-        title: "İY 1",
-        odds: match =>
-            getOdds(match, [
-                "iy1",
-                "IY1",
-                "İY1",
-                "iy_1"
-            ])
-    },
-    {
-        id: "IY2",
-        title: "İY 2",
-        odds: match =>
-            getOdds(match, [
-                "iy2",
-                "IY2",
-                "İY2",
-                "iy_2"
-            ])
-    },
-    {
-        id: "MS15A",
-        title: "1.5 Alt",
-        odds: match =>
-            getOdds(match, [
-                "au15Alt",
-                "au15alt",
-                "15Alt",
-                "1.5Alt",
-                "1_5Alt",
-                "under15"
-            ])
-    },
-    {
-        id: "MS15U",
-        title: "1.5 Üst",
-        odds: match =>
-            getOdds(match, [
-                "au15Ust",
-                "au15üst",
-                "au15U",
-                "15Ust",
-                "1.5Ust",
-                "1.5Üst",
-                "1_5Ust",
-                "over15"
-            ])
-    }
-];
-/* =========================================================
-   SON 60 GÜN
-========================================================= */
-function getHistory(targetDate) {
-    const end = parseDate(targetDate);
-    if (!end) {
-        return [];
-    }
-    const start = addDays(
-        end,
-        -HISTORY_DAYS
-    );
-    return allMatches.filter(match => {
-        const date = parseDate(
-            getValue(match, [
-                "date",
-                "Date",
-                "tarih",
-                "Tarih",
-                "matchDate",
-                "match_date"
-            ])
-        );
-        if (!date) {
-            return false;
-        }
-        return (
-            date >= start &&
-            date < end &&
-            getMSResult(match) !== null
-        );
-    });
-}
-/* =========================================================
-   AYNI MAÇ
-========================================================= */
-function sameMatch(a, b) {
-    if (!a || !b) {
-        return false;
-    }
-    const aHome = normalizeTeam(
-        getHome(a)
-    );
-    const aAway = normalizeTeam(
-        getAway(a)
-    );
-    const bHome = normalizeTeam(
-        getHome(b)
-    );
-    const bAway = normalizeTeam(
-        getAway(b)
-    );
-    return (
-        aHome &&
-        aAway &&
-        aHome === bHome &&
-        aAway === bAway
-    );
-}
-/* =========================================================
-   BİR MARKETİ HESAPLA
-========================================================= */
-function analyzeSource(
-    targetMatch,
-    targetDate,
-    source
-) {
-    const targetOdd = source.odds(
-        targetMatch
-    );
-    if (!targetOdd) {
-        return null;
-    }
-    const history = getHistory(
-        targetDate
-    );
-    const counts = {
-        "1": 0,
-        "X": 0,
-        "2": 0
-    };
-    const samples = [];
-    for (const historical of history) {
-        /*
-        Hedef maçın kendisini tekrar
-        örnekleme sokma
-        */
-        if (
-            sameMatch(
-                historical,
-                targetMatch
-            )
-        ) {
-            continue;
-        }
-        const historicalOdd =
-            source.odds(
-                historical
-            );
-        if (!historicalOdd) {
-            continue;
-        }
-        /*
-        ORAN TAM EŞLEŞMESİ
-        Örneğin:
-        1.72 = 1.72  -> eşleşir
-        1.72 = 1.73  -> eşleşmez
-        */
-        if (
-            historicalOdd !==
-            targetOdd
-        ) {
-            continue;
-        }
-        const result =
-            getMSResult(
-                historical
-            );
-        if (!result) {
-            continue;
-        }
-        counts[result]++;
-        samples.push({
-            result,
-            date: getValue(
-                historical,
-                [
-                    "date",
-                    "Date",
-                    "tarih",
-                    "Tarih"
-                ]
-            ),
-            home: getHome(
-                historical
-            ),
-            away: getAway(
-                historical
-            )
+};
+/*
+===========================================================
+ YARDIMCI FONKSİYONLAR
+===========================================================
+*/
+window.SPORT_TOTO_DATA.getSeason = function (season) {
+  return window.SPORT_TOTO_DATA.seasons[season] || null;
+};
+window.SPORT_TOTO_DATA.getWeek = function (season, week) {
+  const s = window.SPORT_TOTO_DATA.getSeason(season);
+  if (!s) return null;
+  return s.weeks[String(week)] ||
+         s.weeks[week] ||
+         null;
+};
+window.SPORT_TOTO_DATA.getFinishedWeeks = function (season) {
+  const s = window.SPORT_TOTO_DATA.getSeason(season);
+  if (!s) return [];
+  return Object.keys(s.weeks)
+    .map(Number)
+    .filter(w => s.weeks[w] && s.weeks[w].status === "finished")
+    .sort((a, b) => a - b);
+};
+window.SPORT_TOTO_DATA.getLatestWeek = function (season) {
+  const s = window.SPORT_TOTO_DATA.getSeason(season);
+  if (!s) return null;
+  const weeks = Object.keys(s.weeks)
+    .map(Number)
+    .sort((a, b) => a - b);
+  return weeks.length ? weeks[weeks.length - 1] : null;
+};
+window.SPORT_TOTO_DATA.getLatestFinishedWeek = function (season) {
+  const weeks = window.SPORT_TOTO_DATA.getFinishedWeeks(season);
+  return weeks.length ? weeks[weeks.length - 1] : null;
+};
+window.SPORT_TOTO_DATA.getPreviousWeeks = function (season, beforeWeek) {
+  const s = window.SPORT_TOTO_DATA.getSeason(season);
+  if (!s) return [];
+  return Object.keys(s.weeks)
+    .map(Number)
+    .filter(w =>
+      w < Number(beforeWeek) &&
+      s.weeks[w] &&
+      s.weeks[w].status === "finished"
+    )
+    .sort((a, b) => a - b);
+};
+window.SPORT_TOTO_DATA.getAllFinishedMatches = function (season, beforeWeek) {
+  const s = window.SPORT_TOTO_DATA.getSeason(season);
+  if (!s) return [];
+  const weeks = window.SPORT_TOTO_DATA.getPreviousWeeks(
+    season,
+    beforeWeek
+  );
+  const result = [];
+  weeks.forEach(weekNo => {
+    const week = s.weeks[weekNo];
+    (week.matches || []).forEach(match => {
+      if (
+        match.result === "1" ||
+        match.result === "X" ||
+        match.result === "2"
+      ) {
+        result.push({
+          ...match,
+          week: weekNo
         });
-    }
-    const total =
-        samples.length;
-    /*
-    Minimum 5 örnek şartı
-    */
-    if (
-        total < MINIMUM_SAMPLE
-    ) {
-        return null;
-    }
-    /*
-    En fazla çıkan sonuç
-    */
-    let bestResult = "1";
-    if (
-        counts["X"] >
-        counts[bestResult]
-    ) {
-        bestResult = "X";
-    }
-    if (
-        counts["2"] >
-        counts[bestResult]
-    ) {
-        bestResult = "2";
-    }
-    const bestCount =
-        counts[bestResult];
-    const percentage =
-        bestCount /
-        total *
-        100;
-    return {
-        source,
-        targetOdd,
-        samples,
-        counts,
-        total,
-        bestResult,
-        percentage
-    };
-}
+      }
+    });
+  });
+  return result;
 /* =========================================================
-   ANA HESAPLAMA
+   YARDIMCI BİLGİLER
 ========================================================= */
-function calculatePrediction(
-    targetMatch
-) {
-    const targetDate =
-        getValue(
-            targetMatch,
-            [
-                "date",
-                "Date",
-                "tarih",
-                "Tarih",
-                "matchDate",
-                "match_date"
-            ]
-        );
-    /*
-    5 marketin tamamını hesapla
-    */
-    const analyses =
-        SOURCE_MARKETS
-            .map(source =>
-                analyzeSource(
-                    targetMatch,
-                    targetDate,
-                    source
-                )
-            )
-            .filter(Boolean);
-    /*
-    Hiçbir markette yeterli
-    örnek yoksa tahmin yok
-    */
-    if (!analyses.length) {
-        return {
-            prediction: null,
-            percentages: {
-                "1": 0,
-                "X": 0,
-                "2": 0
-            },
-            analyses: [],
-            totalSamples: 0,
-            validMarkets: 0
-        };
-    }
-    /*
-    =====================================================
-    TÜM MARKETLERİN ORTAK SONUCUNU HESAPLA
-    Ağırlık:
-        sqrt(örnek sayısı)
-    Örneğin:
-        Market A = 5 örnek
-        ağırlık = sqrt(5)
-        Market B = 16 örnek
-        ağırlık = sqrt(16) = 4
-    =====================================================
-    */
-    const totals = {
-        "1": 0,
-        "X": 0,
-        "2": 0
-    };
-    let totalWeight = 0;
-    for (
-        const analysis
-        of analyses
-    ) {
-        const weight =
-            Math.sqrt(
-                analysis.total
-            );
-        totalWeight += weight;
-        /*
-        Marketin kendi dağılımı
-        */
-        totals["1"] +=
-            (
-                analysis.counts["1"] /
-                analysis.total
-            ) * weight;
-        totals["X"] +=
-            (
-                analysis.counts["X"] /
-                analysis.total
-            ) * weight;
-        totals["2"] +=
-            (
-                analysis.counts["2"] /
-                analysis.total
-            ) * weight;
-    }
-    /*
-    =====================================================
-    YÜZDEYE ÇEVİR
-    =====================================================
-    */
-    const percentages = {
-        "1":
-            totalWeight
-                ? totals["1"] /
-                  totalWeight *
-                  100
-                : 0,
-        "X":
-            totalWeight
-                ? totals["X"] /
-                  totalWeight *
-                  100
-                : 0,
-        "2":
-            totalWeight
-                ? totals["2"] /
-                  totalWeight *
-                  100
-                : 0
-    };
-    /*
-    =====================================================
-    EN YÜKSEK SONUCU BUL
-    =====================================================
-    */
-    const sorted = [
-        {
-            result: "1",
-            percentage:
-                percentages["1"]
-        },
-        {
-            result: "X",
-            percentage:
-                percentages["X"]
-        },
-        {
-            result: "2",
-            percentage:
-                percentages["2"]
-        }
-    ].sort(
-        (a, b) =>
-            b.percentage -
-            a.percentage
-    );
-    const first = sorted[0];
-    const second = sorted[1];
-    /*
-    =====================================================
-    SİSTEM HESABI
-    =====================================================
-    TEK:
-    en yüksek >= %50
-    ve fark >= 15
-    ÇİFT:
-    en yüksek >= %40
-    ve fark >= 7
-    DİĞER:
-    1X2
-    =====================================================
-    */
-    let system = "1X2";
-    let prediction = "1X2";
-    const gap =
-        first.percentage -
-        second.percentage;
-    /*
-    TEK
-    */
-    if (
-        first.percentage >= 50 &&
-        gap >= 15
-    ) {
-        system =
-            first.result;
-        prediction =
-            first.result;
-    }
-    /*
-    ÇİFT
-    */
-    else if (
-        first.percentage >= 40 &&
-        gap >= 7
-    ) {
-        const double =
-            [first.result, second.result]
-                .sort()
-                .join("");
-        system = double;
-        prediction = double;
-    }
-    /*
-    ÜÇLÜ
-    */
-    else {
-        system = "1X2";
-        prediction = "1X2";
-    }
-    return {
-        prediction,
-        system,
-        percentages,
-        analyses,
-        totalSamples:
-            analyses.reduce(
-                (sum, item) =>
-                    sum + item.total,
-                0
-            ),
-        validMarkets:
-            analyses.length,
-        gap,
-        strongest: first
-    };
-}
-/* =========================================================
-   MACKOLIK'TE SPOR TOTO MAÇINI BUL
-========================================================= */
-function findMatch(totoMatch) {
-    const home =
-        normalizeTeam(
-            getHome(totoMatch)
-        );
-    const away =
-        normalizeTeam(
-            getAway(totoMatch)
-        );
-    if (!home || !away) {
-        return null;
-    }
-    const candidates =
-        allMatches.filter(
-            match => {
-                return (
-                    normalizeTeam(
-                        getHome(match)
-                    ) === home
-                    &&
-                    normalizeTeam(
-                        getAway(match)
-                    ) === away
-                );
-            }
-        );
-    if (!candidates.length) {
-        return null;
-    }
-    return candidates[
-        candidates.length - 1
-    ];
-}
-/* =========================================================
-   VERİLERİ YÜKLE
-========================================================= */
-async function loadData() {
-    /*
-    Mackolik verisi
-    */
-    const response =
-        await fetch(
-            MACKOLIK_URL
-        );
-    if (!response.ok) {
-        throw new Error(
-            "Mackolik verisi yüklenemedi."
-        );
-    }
-    const data =
-        await response.json();
-    /*
-    matches.json yapısı:
-    {
-        matches: [...]
-    }
-    */
-    allMatches =
-        Array.isArray(data)
-            ? data
-            : data.matches || [];
-    /*
-    Spor Toto verisi
-    */
-    if (
-        !window.SPORT_TOTO_DATA
-    ) {
-        throw new Error(
-            "Spor Toto verisi bulunamadı."
-        );
-    }
-    const weeks =
-        window.SPORT_TOTO_DATA.weeks;
-    /*
-    Güncel haftayı al
-    */
-    const currentWeek =
-        String(
-            window.SPORT_TOTO_DATA.currentWeek
-        );
-    totoMatches =
-        weeks[currentWeek] || [];
-    return {
-        allMatches,
-        totoMatches
-    };
-}
-/* =========================================================
-   TEST
-========================================================= */
-async function start() {
-    try {
-        await loadData();
-        console.log(
-            "Mackolik maç sayısı:",
-            allMatches.length
-        );
-        console.log(
-            "Spor Toto maç sayısı:",
-            totoMatches.length
-        );
-        /*
-        Her Spor Toto maçını hesapla
-        */
-        totoMatches.forEach(
-            (totoMatch, index) => {
-                const mackolikMatch =
-                    findMatch(
-                        totoMatch
-                    );
-                if (!mackolikMatch) {
-                    console.log(
-                        index + 1,
-                        totoMatch.home,
-                        "-",
-                        totoMatch.away,
-                        "→ Mackolik maçı bulunamadı"
-                    );
-                    return;
-                }
-                const prediction =
-                    calculatePrediction(
-                        mackolikMatch
-                    );
-                console.log(
-                    index + 1,
-                    totoMatch.home,
-                    "-",
-                    totoMatch.away
-                );
-                console.log(
-                    "Oranlar:",
-                    mackolikMatch.openingOdds
-                );
-                console.log(
-                    "Tahmin:",
-                    prediction
-                );
-            }
-        );
-    } catch (error) {
-        console.error(
-            error
-        );
-    }
-}
-start();
+window.SPORT_TOTO_META = {
+  season: "2026-2027",
+  currentWeek: 8,
+  totalMatchesPerWeek: 15,
+  /*
+    Backtest kuralı:
+    Hafta N tahmin edilirken yalnızca hafta < N
+    olan veriler kullanılmalıdır.
+  */
+  leakageSafe: true,
+  resultTypes: ["1", "X", "2"]
+};
