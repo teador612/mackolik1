@@ -1,45 +1,112 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#111827">
-
-    <title>Spor Toto Analiz</title>
-
-    <link rel="stylesheet" href="spor-toto.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spor Toto Analiz</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    background: #f3f4f6;
+    font-family: Arial, sans-serif;
+    color: #111827;
+}
+.container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 20px;
+}
+h1 {
+    margin-bottom: 5px;
+}
+.subtitle {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+.panel {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+}
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 16px;
+}
+.match {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 12px;
+}
+.match-title {
+    font-weight: bold;
+    font-size: 17px;
+    margin-bottom: 12px;
+}
+.percentages {
+    display: flex;
+    gap: 8px;
+}
+.percent {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+    background: #f3f4f6;
+}
+.percent strong {
+    display: block;
+    font-size: 18px;
+}
+.prediction {
+    margin-top: 12px;
+    padding: 10px;
+    background: #111827;
+    color: white;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: bold;
+}
+.samples {
+    margin-top: 8px;
+    color: #6b7280;
+    font-size: 13px;
+}
+.no-data {
+    color: #dc2626;
+    padding: 10px 0;
+}
+.loading {
+    padding: 30px;
+    text-align: center;
+}
+</style>
 </head>
-
 <body>
-
-<header class="header">
-    <div class="title">⚽ SPOR TOTO</div>
+<div class="container">
+    <h1>⚽ Spor Toto Analiz</h1>
     <div class="subtitle">
-        15 maç • birebir örneklem • tek sonuç
+        Mackolik açılış oranları ile geçmiş örneklem analizi
     </div>
-</header>
-
-<main class="container">
-
     <div class="panel">
-        <div class="panel-title">Hafta</div>
-
         <select id="weekSelect">
             <option value="">Hafta seçiliyor...</option>
         </select>
     </div>
-
-    <div id="summary"></div>
-
     <div id="matches">
         <div class="loading">
             Veriler yükleniyor...
         </div>
     </div>
-
-</main>
-
+</div>
+<script src="spor-toto-data.js"></script>
 <script src="spor-toto.js"></script>
-
 </body>
 </html>
