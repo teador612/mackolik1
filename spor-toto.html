@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#111827">
 
     <title>Spor Toto Analiz</title>
@@ -12,34 +12,33 @@
 
 <body>
 
-<header class="topbar">
-    <div class="topbar-title">⚽ Spor Toto</div>
-    <div class="topbar-subtitle">
-        15 maç • ortak örneklem • birebir oran eşleşmesi
+<header class="header">
+    <div class="title">⚽ SPOR TOTO</div>
+    <div class="subtitle">
+        15 maç • birebir örneklem • tek sonuç
     </div>
 </header>
 
 <main class="container">
 
-    <section class="week-selector">
-        <div class="section-title">Hafta Seç</div>
+    <div class="panel">
+        <div class="panel-title">Hafta</div>
 
-        <div id="weeks" class="weeks">
-            <div class="loading-small">Haftalar yükleniyor...</div>
-        </div>
-    </section>
+        <select id="weekSelect">
+            <option value="">Hafta seçiliyor...</option>
+        </select>
+    </div>
 
-    <section id="summary"></section>
+    <div id="summary"></div>
 
-    <section id="content">
+    <div id="matches">
         <div class="loading">
             Veriler yükleniyor...
         </div>
-    </section>
+    </div>
 
 </main>
 
-<script src="data/spor-toto-data.js"></script>
 <script src="spor-toto.js"></script>
 
 </body>
