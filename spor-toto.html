@@ -3,12 +3,11 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 
 <title>Spor Toto Analiz</title>
 
 <style>
-
 *{
     box-sizing:border-box;
 }
@@ -21,15 +20,16 @@ body{
         -apple-system,
         BlinkMacSystemFont,
         "Segoe UI",
+        Roboto,
         Arial,
         sans-serif;
 }
 
 header{
     background:#111827;
-    color:white;
-    padding:18px 12px;
+    color:#fff;
     text-align:center;
+    padding:18px 12px;
 }
 
 header h1{
@@ -44,7 +44,6 @@ header p{
 }
 
 .container{
-    width:100%;
     max-width:1000px;
     margin:auto;
     padding:12px;
@@ -59,8 +58,8 @@ header p{
 
 .week-btn{
     border:0;
-    padding:9px 14px;
     border-radius:10px;
+    padding:9px 13px;
     background:#e5e7eb;
     color:#111827;
     font-weight:800;
@@ -70,11 +69,11 @@ header p{
 
 .week-btn.active{
     background:#111827;
-    color:white;
+    color:#fff;
 }
 
 .info{
-    background:white;
+    background:#fff;
     border-radius:14px;
     padding:14px;
     margin-bottom:12px;
@@ -82,105 +81,104 @@ header p{
 }
 
 .info-title{
-    font-size:17px;
     font-weight:900;
+    font-size:17px;
 }
 
 .info-text{
     margin-top:6px;
-    color:#64748b;
+    color:#6b7280;
     font-size:12px;
-    line-height:1.5;
+    line-height:1.55;
 }
 
-.summary{
-    background:white;
+.result-summary{
+    background:#fff;
     border-radius:14px;
     padding:12px;
     margin-bottom:12px;
     box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
 
-.summary-title{
+.result-summary-title{
     font-size:14px;
     font-weight:900;
     margin-bottom:9px;
 }
 
-.summary-grid{
+.result-summary-grid{
     display:grid;
     grid-template-columns:repeat(4,1fr);
     gap:7px;
 }
 
-.summary-box{
+.result-box{
     background:#f8fafc;
     border-radius:10px;
-    padding:8px 5px;
+    padding:9px 5px;
     text-align:center;
 }
 
-.summary-box .icon{
-    font-size:18px;
+.result-box .icon{
+    font-size:17px;
     font-weight:900;
 }
 
-.summary-box strong{
+.result-box strong{
     display:block;
     margin-top:3px;
     font-size:16px;
 }
 
-.summary-box small{
+.result-box small{
     display:block;
     margin-top:2px;
-    color:#64748b;
     font-size:10px;
+    color:#64748b;
     font-weight:700;
 }
 
-.summary-hit .icon{
+.result-box.hit .icon{
     color:#16a34a;
 }
 
-.summary-miss .icon{
+.result-box.miss .icon{
     color:#dc2626;
 }
 
-.summary-wait .icon{
+.result-box.wait .icon{
     color:#64748b;
 }
 
-.summary-rate .icon{
+.result-box.rate .icon{
     color:#2563eb;
 }
 
-.matches{
-    background:white;
+.coupon{
+    background:#fff;
     border-radius:14px;
     overflow:hidden;
     box-shadow:0 2px 8px rgba(0,0,0,.06);
 }
 
-.matches-header{
+.coupon-head{
     background:#111827;
-    color:white;
+    color:#fff;
     padding:14px;
 }
 
-.matches-header-title{
+.coupon-head strong{
     font-size:17px;
-    font-weight:900;
 }
 
-.matches-header-info{
-    margin-top:7px;
+.summary{
     display:flex;
     flex-wrap:wrap;
-    gap:6px;
+    gap:7px;
+    margin-top:8px;
 }
 
-.header-badge{
+.badge{
     background:#374151;
     border-radius:8px;
     padding:5px 9px;
@@ -189,24 +187,24 @@ header p{
 }
 
 .match{
-    padding:13px;
     border-top:1px solid #e5e7eb;
+    padding:13px;
 }
 
-.match-main{
+.match-top{
     display:flex;
     align-items:center;
     gap:8px;
 }
 
-.match-number{
+.number{
     width:28px;
     height:28px;
     border-radius:8px;
     background:#e5e7eb;
     display:flex;
-    align-items:center;
     justify-content:center;
+    align-items:center;
     font-size:12px;
     font-weight:900;
     flex:none;
@@ -217,26 +215,40 @@ header p{
     min-width:0;
     font-size:14px;
     font-weight:800;
-    line-height:1.3;
 }
 
 .prediction{
-    width:42px;
+    min-width:48px;
     height:42px;
     border-radius:10px;
-    background:#111827;
-    color:white;
     display:flex;
     align-items:center;
     justify-content:center;
+    background:#111827;
+    color:#fff;
     font-size:18px;
     font-weight:900;
-    flex:none;
 }
 
-.result{
-    width:29px;
-    height:29px;
+.prediction.one{
+    background:#166534;
+}
+
+.prediction.x{
+    background:#92400e;
+}
+
+.prediction.two{
+    background:#1d4ed8;
+}
+
+.prediction.none{
+    background:#6b7280;
+}
+
+.result-badge{
+    width:30px;
+    height:30px;
     border-radius:50%;
     display:flex;
     align-items:center;
@@ -264,36 +276,44 @@ header p{
     border:2px solid #cbd5e1;
 }
 
-.percentages{
+.score{
+    margin-top:8px;
+    font-size:12px;
+    color:#475569;
+    font-weight:800;
+}
+
+.probabilities{
     display:grid;
     grid-template-columns:repeat(3,1fr);
     gap:6px;
     margin-top:9px;
 }
 
-.percent{
+.prob{
+    padding:8px 5px;
+    text-align:center;
     background:#f8fafc;
     border-radius:8px;
-    padding:7px 4px;
-    text-align:center;
-    color:#64748b;
     font-size:11px;
+    color:#64748b;
 }
 
-.percent strong{
+.prob b{
     display:block;
     margin-top:2px;
     color:#111827;
-    font-size:15px;
+    font-size:16px;
 }
 
 .details{
     margin-top:8px;
-    padding:8px 9px;
-    border-radius:8px;
+    padding:9px;
+    border-radius:9px;
     background:#f8fafc;
+    font-size:10px;
     color:#64748b;
-    font-size:11px;
+    line-height:1.55;
 }
 
 .details strong{
@@ -302,28 +322,29 @@ header p{
 
 .no-data{
     margin-top:8px;
-    padding:8px 9px;
+    padding:9px;
+    border-radius:9px;
     background:#fff7ed;
     color:#9a3412;
-    border-radius:8px;
     font-size:11px;
+    line-height:1.5;
 }
 
 .loading{
-    background:white;
+    padding:25px;
+    background:#fff;
     border-radius:14px;
-    padding:30px;
     text-align:center;
     font-weight:800;
 }
 
 .error{
+    padding:15px;
+    border-radius:12px;
     background:#fee2e2;
     color:#991b1b;
-    border-radius:12px;
-    padding:15px;
-    line-height:1.5;
     font-size:13px;
+    line-height:1.5;
 }
 
 @media(max-width:600px){
@@ -337,69 +358,53 @@ header p{
     }
 
     .prediction{
-        width:38px;
-        height:38px;
-        font-size:17px;
+        min-width:42px;
     }
 
-    .summary-grid{
-        grid-template-columns:repeat(4,1fr);
+    .result-summary-grid{
         gap:5px;
     }
 
-    .summary-box{
+    .result-box{
         padding:7px 3px;
     }
 
-    .summary-box strong{
+    .result-box strong{
         font-size:14px;
     }
 
-    .summary-box small{
+    .result-box small{
         font-size:9px;
     }
-
 }
-
 </style>
 </head>
-
 
 <body>
 
 <header>
-
     <h1>⚽ Spor Toto Analiz</h1>
-
     <p>
-        Geçmiş örneklemlerden ortak sonuç • Tek tahmin
+        Mackolik açılış oranları • Son 60 gün • Tüm marketler • Tek sonuç
     </p>
-
 </header>
-
 
 <div class="container">
 
     <div id="weeks" class="weeks"></div>
 
     <div id="content">
-
         <div class="loading">
             Veriler yükleniyor...
         </div>
-
     </div>
 
 </div>
 
-
 <script src="data/spor-toto-data.js"></script>
 
-
 <script>
-
 "use strict";
-
 
 /* =========================================================
    AYARLAR
@@ -410,7 +415,58 @@ const MACKOLIK_URL =
 
 const HISTORY_DAYS = 60;
 
+/*
+   Bir marketin hesaba girebilmesi için
+   son 60 günde birebir aynı açılış oranından
+   en az bu kadar örnek bulunması gerekir.
+*/
 const MIN_SAMPLE = 5;
+
+/*
+   Bütün açılış marketleri.
+   Burada sadece openingOdds kullanılır.
+   Güncel/kapanış oranları kullanılmaz.
+*/
+const MARKETS = [
+
+    { key:"ms1",       name:"MS 1" },
+    { key:"msX",       name:"MS X" },
+    { key:"ms2",       name:"MS 2" },
+
+    { key:"iy1",       name:"İY 1" },
+    { key:"iyX",       name:"İY X" },
+    { key:"iy2",       name:"İY 2" },
+
+    { key:"cs1X",      name:"ÇS 1X" },
+    { key:"cs12",      name:"ÇS 12" },
+    { key:"csX2",      name:"ÇS X2" },
+
+    { key:"au25Alt",   name:"2.5 Alt" },
+    { key:"au25Ust",   name:"2.5 Üst" },
+
+    { key:"kgVar",     name:"KG Var" },
+    { key:"kgYok",     name:"KG Yok" },
+
+    { key:"iy15Alt",   name:"İY 1.5 Alt" },
+    { key:"iy15Ust",   name:"İY 1.5 Üst" },
+
+    { key:"au15Alt",   name:"1.5 Alt" },
+    { key:"au15Ust",   name:"1.5 Üst" },
+
+    { key:"au35Alt",   name:"3.5 Alt" },
+    { key:"au35Ust",   name:"3.5 Üst" },
+
+    { key:"gol01",     name:"Gol 0-1" },
+    { key:"gol23",     name:"Gol 2-3" },
+    { key:"gol46",     name:"Gol 4-6" },
+    { key:"gol7",      name:"Gol 7+" },
+
+    { key:"handicap",  name:"Handikap" },
+    { key:"handicap1", name:"Handikap 1" },
+    { key:"handicapX", name:"Handikap X" },
+    { key:"handicap2", name:"Handikap 2" }
+
+];
 
 
 /* =========================================================
@@ -418,17 +474,16 @@ const MIN_SAMPLE = 5;
 ========================================================= */
 
 let mackolikMatches = [];
-
 let selectedWeek = null;
 
 
 /* =========================================================
-   TAKIM NORMALİZASYONU
+   METİN NORMALİZASYONU
 ========================================================= */
 
-function normalizeTeam(value){
+function normalizeText(value){
 
-    return String(value || "")
+    return String(value ?? "")
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g,"")
@@ -444,124 +499,168 @@ function normalizeTeam(value){
 
 
 /* =========================================================
-   TAKIM İSİM EŞLEŞMESİ
+   TAKIM ALIASLARI
 ========================================================= */
 
-const ALIASES = {
+const TEAM_ALIASES = {
 
-    corumfk:[
+    "corumfk":[
         "corumfk",
         "arcacorumfk",
         "corum"
     ],
 
-    basaksehir:[
+    "istanbulbasaksehir":[
         "istanbulbasaksehir",
         "ramsbasaksehir",
         "basaksehir"
     ],
 
-    alanyaspor:[
-        "alanyaspor",
-        "corendonalanyaspor"
-    ],
-
-    konyaspor:[
-        "konyaspor",
-        "tumosankonyaspor"
-    ],
-
-    rizespor:[
-        "rizespor",
-        "caykurrizespor"
-    ],
-
-    amedspor:[
-        "amedspor",
-        "amedsportiffaaliyetler"
-    ],
-
-    erzurumspor:[
-        "erzurumspor",
-        "erzurumsporfk"
-    ],
-
-    tottenham:[
-        "tottenham",
+    "tottenhamhotspur":[
         "tottenhamhotspur",
-        "thotspur"
+        "thotspur",
+        "tottenham"
     ],
 
-    manchestercity:[
+    "hullcity":[
+        "hullcity",
+        "hcity"
+    ],
+
+    "manchestercity":[
         "manchestercity",
         "mcity"
     ],
 
-    manchesterunited:[
+    "manchesterunited":[
         "manchesterunited",
         "manchesterutd",
         "manutd"
     ],
 
-    psg:[
-        "psg",
+    "parissaintgermain":[
         "parissaintgermain",
-        "parisstgermain"
+        "parisstgermain",
+        "psg"
     ],
 
-    stuttgart:[
-        "stuttgart",
-        "vfbstuttgart"
+    "kuzeymakedonya":[
+        "kuzeymakonyacumhuriyeti",
+        "kuzeymakedonya",
+        "makedonya",
+        "northmacedonia"
     ],
 
-    leverkusen:[
-        "leverkusen",
-        "bayerleverkusen"
+    "vfbstuttgart":[
+        "vfbstuttgart",
+        "stuttgart"
     ],
 
-    leipzig:[
-        "leipzig",
-        "rbleipzig"
+    "bayerleverkusen":[
+        "bayerleverkusen",
+        "leverkusen"
+    ],
+
+    "rbleipzig":[
+        "rbleipzig",
+        "leipzig"
+    ],
+
+    "galatasaray":[
+        "galatasaray"
+    ],
+
+    "fenerbahce":[
+        "fenerbahce"
+    ],
+
+    "besiktas":[
+        "besiktas"
+    ],
+
+    "trabzonspor":[
+        "trabzonspor"
+    ],
+
+    "samsunspor":[
+        "samsunspor"
+    ],
+
+    "goztepe":[
+        "goztepe"
+    ],
+
+    "kocaelispor":[
+        "kocaelispor"
+    ],
+
+    "amedspor":[
+        "amedsportiffaaliyetler",
+        "amedspor",
+        "amed"
+    ],
+
+    "erzurumspor":[
+        "erzurumsporfk",
+        "erzurumspor"
+    ],
+
+    "gaziantepfk":[
+        "gaziantepfk",
+        "gaziantep"
+    ],
+
+    "alanyaspor":[
+        "corendonalanyaspor",
+        "alanyaspor"
+    ],
+
+    "kasimpasa":[
+        "kasimpasa"
+    ],
+
+    "eyupspor":[
+        "eyupspor"
+    ],
+
+    "rizespor":[
+        "caykurrizespor",
+        "rizespor"
+    ],
+
+    "konyaspor":[
+        "tumosankonyaspor",
+        "konyaspor"
+    ],
+
+    "genclerbirligi":[
+        "genclerbirligi"
     ]
 
 };
 
 
-function sameTeam(a,b){
+function canonicalTeam(name){
 
-    const aa =
-        normalizeTeam(a);
+    const n = normalizeText(name);
 
-    const bb =
-        normalizeTeam(b);
-
-
-    if(aa === bb){
-        return true;
-    }
-
-
-    for(
-        const key in ALIASES
-    ){
-
-        const list =
-            ALIASES[key];
-
+    for(const canonical in TEAM_ALIASES){
 
         if(
-            list.includes(aa) &&
-            list.includes(bb)
+            TEAM_ALIASES[canonical].includes(n)
         ){
-
-            return true;
-
+            return canonical;
         }
 
     }
 
+    return n;
+}
 
-    return false;
+
+function sameTeam(a,b){
+
+    return canonicalTeam(a) === canonicalTeam(b);
 
 }
 
@@ -576,59 +675,40 @@ function parseDate(value){
         return null;
     }
 
+    const s = String(value).trim();
 
-    const text =
-        String(value).trim();
+    let d = null;
 
+    if(/^\d{2}\.\d{2}\.\d{4}$/.test(s)){
 
-    if(
-        /^\d{2}\.\d{2}\.\d{4}$/
-            .test(text)
-    ){
+        const [
+            day,
+            month,
+            year
+        ] = s.split(".");
 
-        const parts =
-            text.split(".");
-
-
-        const date =
-            new Date(
-                Number(parts[2]),
-                Number(parts[1])-1,
-                Number(parts[0])
-            );
-
-
-        date.setHours(
-            0,0,0,0
+        d = new Date(
+            Number(year),
+            Number(month)-1,
+            Number(day)
         );
 
+    }else{
 
-        return date;
+        d = new Date(s);
 
     }
-
-
-    const date =
-        new Date(text);
-
 
     if(
-        Number.isNaN(
-            date.getTime()
-        )
+        !d ||
+        Number.isNaN(d.getTime())
     ){
-
         return null;
-
     }
 
+    d.setHours(0,0,0,0);
 
-    date.setHours(
-        0,0,0,0
-    );
-
-
-    return date;
+    return d;
 
 }
 
@@ -637,33 +717,23 @@ function parseDate(value){
    SKOR
 ========================================================= */
 
-function getScore(match){
+function getFullScore(match){
 
-    const score =
-        match?.score;
-
+    const score = match?.score;
 
     if(!score){
         return null;
     }
 
-
-    const home =
-        Number(score.home);
-
-    const away =
-        Number(score.away);
-
+    const home = Number(score.home);
+    const away = Number(score.away);
 
     if(
         !Number.isFinite(home) ||
         !Number.isFinite(away)
     ){
-
         return null;
-
     }
-
 
     return {
         home,
@@ -673,40 +743,21 @@ function getScore(match){
 }
 
 
-/* =========================================================
-   SONUÇ
-========================================================= */
-
 function getResult(match){
 
-    const score =
-        getScore(match);
-
+    const score = getFullScore(match);
 
     if(!score){
         return null;
     }
 
-
-    if(
-        score.home >
-        score.away
-    ){
-
+    if(score.home > score.away){
         return "1";
-
     }
 
-
-    if(
-        score.home <
-        score.away
-    ){
-
+    if(score.home < score.away){
         return "2";
-
     }
-
 
     return "X";
 
@@ -717,38 +768,25 @@ function getResult(match){
    AÇILIŞ ORANI
 ========================================================= */
 
-function getOpeningOdd(
-    match,
-    market
-){
+function getOpeningOdd(match,key){
 
-    const odds =
-        match?.openingOdds;
-
+    const odds = match?.openingOdds;
 
     if(!odds){
         return null;
     }
 
-
-    const value =
-        odds[market];
-
+    const value = odds[key];
 
     if(
         value === null ||
         value === undefined ||
         value === ""
     ){
-
         return null;
-
     }
 
-
-    const number =
-        Number(value);
-
+    const number = Number(value);
 
     return Number.isFinite(number)
         ? number
@@ -758,105 +796,141 @@ function getOpeningOdd(
 
 
 /* =========================================================
-   MACKOLIK MAÇ BUL
+   BİREBİR ORAN
 ========================================================= */
 
-function findMackolikMatch(
-    sportMatch
-){
-
-    const candidates =
-        mackolikMatches.filter(
-            match =>
-
-                sameTeam(
-                    match.home,
-                    sportMatch.home
-                )
-
-                &&
-
-                sameTeam(
-                    match.away,
-                    sportMatch.away
-                )
-        );
-
+function exactOdds(a,b){
 
     if(
-        !candidates.length
+        a === null ||
+        b === null
     ){
-
-        return null;
-
+        return false;
     }
-
-
-    if(
-        candidates.length === 1
-    ){
-
-        return candidates[0];
-
-    }
-
 
     /*
-       Birden fazla aynı eşleşme varsa
-       Spor Toto maçının tarihine en yakın
-       Mackolik kaydını seç.
+       TOLERANS YOK.
+       1.85 sadece 1.85 ile eşleşir.
+       1.86 eşleşmez.
     */
+    return Number(a) === Number(b);
 
-    const targetDate =
-        parseDate(
-            sportMatch.date
-        );
+}
 
 
-    if(!targetDate){
+/* =========================================================
+   SON 60 GÜN
+========================================================= */
 
-        return candidates
-            .sort(
-                (a,b)=>{
+function getHistory(targetDate){
 
-                    const da =
-                        parseDate(a.date);
+    const target = parseDate(targetDate);
 
-                    const db =
-                        parseDate(b.date);
-
-
-                    if(!da) return 1;
-
-                    if(!db) return -1;
-
-
-                    return (
-                        db.getTime() -
-                        da.getTime()
-                    );
-
-                }
-            )[0];
-
+    if(!target){
+        return [];
     }
 
+    const start = new Date(target);
 
-    return candidates
-        .sort(
-            (a,b)=>{
+    start.setDate(
+        start.getDate() - HISTORY_DAYS
+    );
 
-                const da =
-                    parseDate(a.date);
+    return mackolikMatches.filter(match => {
 
-                const db =
-                    parseDate(b.date);
+        const date = parseDate(match.date);
+
+        if(!date){
+            return false;
+        }
+
+        if(date < start){
+            return false;
+        }
+
+        if(date >= target){
+            return false;
+        }
+
+        /*
+           Sadece MS skoru bulunan maçlar
+           geçmiş örnekleme girer.
+        */
+        if(!getFullScore(match)){
+            return false;
+        }
+
+        /*
+           Açılış oranı olmayan kayıt
+           örnekleme girmez.
+        */
+        return true;
+
+    });
+
+}
 
 
-                if(!da) return 1;
+/* =========================================================
+   SPOR TOTO MAÇINI MACKOLIK'TE BUL
+========================================================= */
 
-                if(!db) return -1;
+function findMackolikCandidates(stMatch){
 
+    return mackolikMatches.filter(match => {
+
+        return (
+            sameTeam(match.home,stMatch.home) &&
+            sameTeam(match.away,stMatch.away)
+        );
+
+    });
+
+}
+
+
+function findMackolikMatch(stMatch){
+
+    const candidates =
+        findMackolikCandidates(stMatch);
+
+    if(!candidates.length){
+        return null;
+    }
+
+    /*
+       Eğer tek kayıt varsa doğrudan kullan.
+    */
+    if(candidates.length === 1){
+        return candidates[0];
+    }
+
+    /*
+       Spor Toto verisinde tarih varsa
+       tarihe en yakın Mackolik kaydını seç.
+    */
+    const targetDate =
+        parseDate(stMatch.date);
+
+    if(targetDate){
+
+        const sorted =
+            [...candidates].sort((a,b)=>{
+
+                const da = parseDate(a.date);
+                const db = parseDate(b.date);
+
+                if(!da && !db){
+                    return 0;
+                }
+
+                if(!da){
+                    return 1;
+                }
+
+                if(!db){
+                    return -1;
+                }
 
                 return Math.abs(
                     da.getTime() -
@@ -868,215 +942,158 @@ function findMackolikMatch(
                     targetDate.getTime()
                 );
 
-            }
-        )[0];
+            });
 
-}
+        return sorted[0];
 
-
-/* =========================================================
-   GEÇMİŞ 60 GÜN
-========================================================= */
-
-function getHistory(
-    targetDate
-){
-
-    const target =
-        parseDate(targetDate);
-
-
-    if(!target){
-        return [];
     }
 
+    /*
+       Tarih yoksa en güncel kayıt.
+       Özellikle güncel hafta için kullanılır.
+    */
+    return [...candidates].sort((a,b)=>{
 
-    const start =
-        new Date(target);
+        const da = parseDate(a.date);
+        const db = parseDate(b.date);
 
-
-    start.setDate(
-        start.getDate() -
-        HISTORY_DAYS
-    );
-
-
-    return mackolikMatches.filter(
-        match => {
-
-            const date =
-                parseDate(
-                    match.date
-                );
-
-
-            if(!date){
-                return false;
-            }
-
-
-            if(
-                date < start ||
-                date >= target
-            ){
-
-                return false;
-
-            }
-
-
-            return (
-                getScore(match)
-                !== null
-            );
-
+        if(!da && !db){
+            return 0;
         }
-    );
+
+        if(!da){
+            return 1;
+        }
+
+        if(!db){
+            return -1;
+        }
+
+        return db.getTime() - da.getTime();
+
+    })[0];
 
 }
 
 
 /* =========================================================
-   KULLANILACAK ÖRNEKLEM PAZARLARI
-========================================================= */
-
-const MARKETS = [
-
-    "iy15Ust",
-
-    "iy1",
-
-    "iy2",
-
-    "au15Alt",
-
-    "au15Ust"
-
-];
-
-
-/* =========================================================
-   PAZAR ANALİZİ
+   MARKET ANALİZİ
 ========================================================= */
 
 function analyzeMarket(
     targetMatch,
-    targetDate,
-    market
+    market,
+    targetDate
 ){
 
     const targetOdd =
         getOpeningOdd(
             targetMatch,
-            market
+            market.key
         );
 
-
-    if(
-        targetOdd === null
-    ){
-
+    /*
+       Hedef maçta bu açılış oranı yoksa
+       market hesaba katılmaz.
+    */
+    if(targetOdd === null){
         return null;
-
     }
-
 
     const history =
-        getHistory(
-            targetDate
-        );
+        getHistory(targetDate);
 
-
+    /*
+       SON 60 GÜN + BİREBİR AYNI AÇILIŞ ORANI
+    */
     const samples =
-        history.filter(
-            match => {
+        history.filter(match => {
 
-                const odd =
-                    getOpeningOdd(
-                        match,
-                        market
-                    );
-
-
-                return (
-                    odd !== null &&
-                    Number(odd) ===
-                    Number(targetOdd)
+            const odd =
+                getOpeningOdd(
+                    match,
+                    market.key
                 );
 
-            }
-        );
+            return exactOdds(
+                odd,
+                targetOdd
+            );
 
+        });
 
-    if(
-        samples.length <
-        MIN_SAMPLE
-    ){
-
+    if(samples.length < MIN_SAMPLE){
         return null;
-
     }
-
 
     let one = 0;
-
-    let draw = 0;
-
+    let x = 0;
     let two = 0;
 
+    samples.forEach(match => {
 
-    samples.forEach(
-        match => {
+        const result =
+            getResult(match);
 
-            const result =
-                getResult(match);
-
-
-            if(result === "1"){
-                one++;
-            }
-
-            if(result === "X"){
-                draw++;
-            }
-
-            if(result === "2"){
-                two++;
-            }
-
+        if(result === "1"){
+            one++;
         }
-    );
 
+        if(result === "X"){
+            x++;
+        }
+
+        if(result === "2"){
+            two++;
+        }
+
+    });
 
     const total =
-        one +
-        draw +
-        two;
+        one + x + two;
 
-
-    if(
-        total <
-        MIN_SAMPLE
-    ){
-
+    if(total < MIN_SAMPLE){
         return null;
-
     }
 
+    const p1 =
+        one / total;
+
+    const px =
+        x / total;
+
+    const p2 =
+        two / total;
+
+    /*
+       Market ağırlığı.
+
+       Örnek sayısı arttıkça ağırlık artar
+       fakat doğrusal şekilde sonsuza gitmez.
+
+       n / (n + 20)
+    */
+    const sampleWeight =
+        total /
+        (total + 20);
 
     return {
 
-        one:
-            one / total * 100,
+        key:market.key,
 
-        x:
-            draw / total * 100,
+        name:market.name,
 
-        two:
-            two / total * 100,
+        odd:targetOdd,
 
-        sample:
-            total
+        sample:total,
+
+        one:p1 * 100,
+
+        x:px * 100,
+
+        two:p2 * 100,
+
+        weight:sampleWeight
 
     };
 
@@ -1084,7 +1101,7 @@ function analyzeMarket(
 
 
 /* =========================================================
-   TEK TAHMİN MOTORU
+   TÜM MARKETLERDEN MATEMATİKSEL KARAR
 ========================================================= */
 
 function calculatePrediction(
@@ -1094,182 +1111,163 @@ function calculatePrediction(
 
     const analyses = [];
 
+    /*
+       BÜTÜN MARKETLER
+    */
+    MARKETS.forEach(market => {
 
-    MARKETS.forEach(
-        market => {
+        const result =
+            analyzeMarket(
+                targetMatch,
+                market,
+                targetDate
+            );
 
-            const analysis =
-                analyzeMarket(
-                    targetMatch,
-                    targetDate,
-                    market
-                );
-
-
-            if(analysis){
-
-                analyses.push(
-                    analysis
-                );
-
-            }
-
+        if(result){
+            analyses.push(result);
         }
-    );
 
+    });
 
     /*
-       Yeterli örneklem yok.
+       Hiçbir markette yeterli
+       birebir örnek yok.
     */
-
-    if(
-        !analyses.length
-    ){
+    if(!analyses.length){
 
         return {
 
-            prediction:"?",
+            prediction:null,
 
             one:0,
-
             x:0,
-
             two:0,
 
-            sample:0,
+            validMarkets:0,
+            totalSample:0,
 
-            markets:0
+            markets:[]
 
         };
 
     }
 
+    let score1 = 0;
+    let scoreX = 0;
+    let score2 = 0;
 
-    let one = 0;
+    let totalWeight = 0;
+    let totalSample = 0;
 
-    let x = 0;
+    analyses.forEach(item => {
 
-    let two = 0;
+        const weight =
+            item.weight;
 
-    let weightTotal = 0;
+        score1 +=
+            item.one *
+            weight;
 
-    let sampleTotal = 0;
+        scoreX +=
+            item.x *
+            weight;
 
+        score2 +=
+            item.two *
+            weight;
+
+        totalWeight += weight;
+
+        totalSample +=
+            item.sample;
+
+    });
+
+    if(totalWeight <= 0){
+
+        return {
+
+            prediction:null,
+
+            one:0,
+            x:0,
+            two:0,
+
+            validMarkets:0,
+            totalSample:0,
+
+            markets:[]
+
+        };
+
+    }
 
     /*
-       Örneklem sayısı fazla olan
-       pazar biraz daha ağırlıklı.
+       Ağırlıklı ortalama
     */
-
-    analyses.forEach(
-        item => {
-
-            const weight =
-                Math.sqrt(
-                    item.sample
-                );
-
-
-            one +=
-                item.one *
-                weight;
-
-
-            x +=
-                item.x *
-                weight;
-
-
-            two +=
-                item.two *
-                weight;
-
-
-            weightTotal +=
-                weight;
-
-
-            sampleTotal +=
-                item.sample;
-
-        }
-    );
-
-
-    one /=
-        weightTotal;
-
-
-    x /=
-        weightTotal;
-
-
-    two /=
-        weightTotal;
-
+    score1 /= totalWeight;
+    scoreX /= totalWeight;
+    score2 /= totalWeight;
 
     const total =
-        one +
-        x +
-        two;
+        score1 +
+        scoreX +
+        score2;
 
+    const one =
+        score1 / total * 100;
 
-    one =
-        one / total * 100;
+    const x =
+        scoreX / total * 100;
 
-
-    x =
-        x / total * 100;
-
-
-    two =
-        two / total * 100;
-
+    const two =
+        score2 / total * 100;
 
     /*
-       EN YÜKSEK ORAN = TEK TAHMİN
+       SADECE TEK SONUÇ
     */
+    const values = [
 
-    let prediction = "1";
+        {
+            key:"1",
+            value:one
+        },
 
-    let confidence = one;
+        {
+            key:"X",
+            value:x
+        },
 
+        {
+            key:"2",
+            value:two
+        }
 
-    if(x > confidence){
+    ];
 
-        prediction = "X";
+    values.sort(
+        (a,b)=>
+            b.value - a.value
+    );
 
-        confidence = x;
-
-    }
-
-
-    if(two > confidence){
-
-        prediction = "2";
-
-        confidence = two;
-
-    }
-
+    const prediction =
+        values[0].key;
 
     return {
 
         prediction,
 
         one,
-
         x,
-
         two,
 
-        confidence,
+        validMarkets:
+            analyses.length,
 
-        sample:
-            sampleTotal,
+        totalSample,
 
         markets:
-            analyses.length
+            analyses
 
     };
 
@@ -1277,65 +1275,22 @@ function calculatePrediction(
 
 
 /* =========================================================
-   SONUÇ NORMALİZASYONU
+   YÜZDE
 ========================================================= */
 
-function normalizeResult(value){
+function pct(value){
 
-    if(
-        value === null ||
-        value === undefined
-    ){
-
-        return null;
-
-    }
-
-
-    const result =
-        String(value)
-            .trim()
-            .toUpperCase();
-
-
-    if(
-        result === "1" ||
-        result === "MS1"
-    ){
-
-        return "1";
-
-    }
-
-
-    if(
-        result === "X" ||
-        result === "0" ||
-        result === "MSX"
-    ){
-
-        return "X";
-
-    }
-
-
-    if(
-        result === "2" ||
-        result === "MS2"
-    ){
-
-        return "2";
-
-    }
-
-
-    return null;
+    return (
+        Number(value || 0)
+            .toFixed(1)
+        + "%"
+    );
 
 }
 
 
 /* =========================================================
-   GÜVENLİ METİN
+   HTML GÜVENLİ
 ========================================================= */
 
 function escapeHtml(value){
@@ -1351,35 +1306,57 @@ function escapeHtml(value){
 
 
 /* =========================================================
-   SONUÇ ROZETİ
+   TAHMİN SINIFI
 ========================================================= */
 
-function resultBadge(
+function predictionClass(prediction){
+
+    if(prediction === "1"){
+        return "one";
+    }
+
+    if(prediction === "X"){
+        return "x";
+    }
+
+    if(prediction === "2"){
+        return "two";
+    }
+
+    return "none";
+
+}
+
+
+/* =========================================================
+   GERÇEK SONUÇ ROZETİ
+========================================================= */
+
+function renderResultBadge(
     prediction,
-    actual
+    actualResult
 ){
 
-    if(!actual){
+    if(!actualResult){
 
         return `
             <span
-                class="result result-wait"
-                title="Sonuç bekleniyor">
+                class="result-badge result-wait"
+                title="Skor bekleniyor">
                 •
             </span>
         `;
 
     }
 
-
     if(
-        prediction ===
-        actual
+        prediction &&
+        prediction === actualResult
     ){
 
         return `
             <span
-                class="result result-hit"
+                class="result-badge result-hit"
                 title="Tahmin tuttu">
                 ✓
             </span>
@@ -1387,13 +1364,78 @@ function resultBadge(
 
     }
 
-
     return `
         <span
-            class="result result-miss"
+            class="result-badge result-miss"
             title="Tahmin tutmadı">
             ✕
         </span>
+    `;
+
+}
+
+
+/* =========================================================
+   MARKET DETAYI
+========================================================= */
+
+function renderMarketDetails(decision){
+
+    if(
+        !decision ||
+        !decision.markets ||
+        !decision.markets.length
+    ){
+
+        return `
+            <div class="no-data">
+                Son 60 günde birebir aynı açılış
+                oranlarından yeterli örnek bulunamadı.
+            </div>
+        `;
+
+    }
+
+    const sorted =
+        [...decision.markets]
+            .sort(
+                (a,b)=>
+                    b.sample - a.sample
+            );
+
+    const rows =
+        sorted.map(item => {
+
+            return `
+                <div>
+                    <strong>
+                        ${escapeHtml(item.name)}
+                    </strong>
+                    =
+                    ${item.odd}
+                    •
+                    ${item.sample} maç
+                    •
+                    1: ${pct(item.one)}
+                    •
+                    X: ${pct(item.x)}
+                    •
+                    2: ${pct(item.two)}
+                </div>
+            `;
+
+        }).join("");
+
+    return `
+        <div class="details">
+
+            <strong>
+                Kullanılan marketler:
+            </strong>
+
+            ${rows}
+
+        </div>
     `;
 
 }
@@ -1408,47 +1450,44 @@ function renderMatch(
     index
 ){
 
-    /*
-       Önce Mackolik'ten bu maçın
-       açılış oranını buluyoruz.
-    */
-
     const mackolik =
-        findMackolikMatch(
-            match
-        );
+        findMackolikMatch(match);
 
-
+    /*
+       Mackolik eşleşmesi yoksa
+       tahmin üretme.
+    */
     if(!mackolik){
 
         return `
             <div class="match">
 
-                <div class="match-main">
+                <div class="match-top">
 
-                    <div class="match-number">
+                    <div class="number">
                         ${index + 1}
                     </div>
 
                     <div class="teams">
-
                         ${escapeHtml(match.home)}
                         -
                         ${escapeHtml(match.away)}
-
                     </div>
 
-                    <div class="prediction">
+                    <div class="prediction none">
                         -
                     </div>
+
+                    <span
+                        class="result-badge result-wait">
+                        •
+                    </span>
 
                 </div>
 
                 <div class="no-data">
-
-                    Bu maç için Mackolik
-                    açılış oranı bulunamadı.
-
+                    Mackolik'te bu maç için eşleşen
+                    kayıt bulunamadı.
                 </div>
 
             </div>
@@ -1456,36 +1495,67 @@ function renderMatch(
 
     }
 
-
-    const prediction =
-        calculatePrediction(
-            mackolik,
-            mackolik.date
-        );
-
+    /*
+       Hedef maçın Mackolik tarihi
+    */
+    const targetDate =
+        mackolik.date;
 
     /*
-       Spor Toto'nun gerçek sonucu.
-       Geçmiş haftalarda 1/X/2,
-       oynanmamış haftada null.
+       TÜM MARKETLERDEN HESAP
     */
-
-    const actual =
-        normalizeResult(
-            match.result
+    const decision =
+        calculatePrediction(
+            mackolik,
+            targetDate
         );
 
+    /*
+       GERÇEK SKOR
+       ARTIK DOĞRUDAN MACKOLIK'TEN
+    */
+    const actualResult =
+        getResult(mackolik);
+
+    const score =
+        getFullScore(mackolik);
+
+    const prediction =
+        decision.prediction;
+
+    const resultBadge =
+        renderResultBadge(
+            prediction,
+            actualResult
+        );
+
+    const scoreHtml =
+        score
+        ?
+        `
+            <div class="score">
+                MS Skor:
+                ${score.home}-${score.away}
+                ${actualResult
+                    ? ` • Sonuç: ${actualResult}`
+                    : ""}
+            </div>
+        `
+        :
+        `
+            <div class="score">
+                MS Skor: Henüz yok
+            </div>
+        `;
 
     return `
-
         <div class="match">
 
-            <div class="match-main">
+            <div class="match-top">
 
-                <div class="match-number">
+                <div class="number">
                     ${index + 1}
                 </div>
-
 
                 <div class="teams">
 
@@ -1495,229 +1565,164 @@ function renderMatch(
 
                 </div>
 
-
-                <!-- SADECE TEK TAHMİN -->
-
                 <div
-                    class="prediction">
+                    class="prediction
+                    ${predictionClass(prediction)}">
 
-                    ${prediction.prediction}
+                    ${prediction || "-"}
 
                 </div>
 
-
-                ${resultBadge(
-                    prediction.prediction,
-                    actual
-                )}
+                ${resultBadge}
 
             </div>
 
+            ${scoreHtml}
 
-            <div class="percentages">
+            <div class="probabilities">
 
-                <div class="percent">
-
+                <div class="prob">
                     1
-
-                    <strong>
-                        ${prediction.one.toFixed(1)}%
-                    </strong>
-
+                    <b>
+                        ${pct(decision.one)}
+                    </b>
                 </div>
 
-
-                <div class="percent">
-
+                <div class="prob">
                     X
-
-                    <strong>
-                        ${prediction.x.toFixed(1)}%
-                    </strong>
-
+                    <b>
+                        ${pct(decision.x)}
+                    </b>
                 </div>
 
-
-                <div class="percent">
-
+                <div class="prob">
                     2
-
-                    <strong>
-                        ${prediction.two.toFixed(1)}%
-                    </strong>
-
+                    <b>
+                        ${pct(decision.two)}
+                    </b>
                 </div>
 
             </div>
-
 
             <div class="details">
 
                 <strong>
-                    Tek tahmin:
+                    Tahmin:
                 </strong>
 
-                ${prediction.prediction}
+                ${prediction || "Yetersiz veri"}
 
-                &nbsp; • &nbsp;
-
+                •
                 <strong>
-                    Güven:
+                    ${decision.validMarkets}
                 </strong>
+                / ${MARKETS.length}
+                market kullanıldı
 
-                ${prediction.confidence
-                    ? prediction.confidence.toFixed(1) + "%"
-                    : "-"
-                }
-
-                &nbsp; • &nbsp;
-
+                •
                 <strong>
-                    Örneklem:
+                    ${decision.totalSample}
                 </strong>
+                geçmiş eşleşme
 
-                ${prediction.sample}
+                •
+                Son 60 gün
+
+                •
+                Oran toleransı: 0
 
             </div>
 
-
-            ${
-                prediction.prediction === "?"
-                ?
-
-                `
-                    <div class="no-data">
-
-                        Bu maç için en az
-                        ${MIN_SAMPLE}
-                        eşleşen örneklem bulunamadı.
-
-                    </div>
-                `
-
-                :
-
-                ""
-            }
+            ${renderMarketDetails(decision)}
 
         </div>
-
     `;
 
 }
 
 
 /* =========================================================
-   ÖZET
+   HAFTANIN BAŞARI ÖZETİ
 ========================================================= */
 
-function renderSummary(
-    matches
-){
+function renderResultSummary(matches){
 
     let hit = 0;
-
     let miss = 0;
-
     let wait = 0;
 
+    matches.forEach(match => {
 
-    matches.forEach(
-        match => {
+        const mackolik =
+            findMackolikMatch(match);
 
-            const actual =
-                normalizeResult(
-                    match.result
-                );
+        if(!mackolik){
 
-
-            if(!actual){
-
-                wait++;
-
-                return;
-
-            }
-
-
-            const mackolik =
-                findMackolikMatch(
-                    match
-                );
-
-
-            if(!mackolik){
-
-                wait++;
-
-                return;
-
-            }
-
-
-            const prediction =
-                calculatePrediction(
-                    mackolik,
-                    mackolik.date
-                );
-
-
-            if(
-                prediction.prediction === "?"
-            ){
-
-                wait++;
-
-                return;
-
-            }
-
-
-            if(
-                prediction.prediction ===
-                actual
-            ){
-
-                hit++;
-
-            }else{
-
-                miss++;
-
-            }
+            wait++;
+            return;
 
         }
-    );
 
+        const decision =
+            calculatePrediction(
+                mackolik,
+                mackolik.date
+            );
+
+        if(!decision.prediction){
+
+            wait++;
+            return;
+
+        }
+
+        /*
+           GERÇEK SONUÇ MACKOLIK SKORUNDAN
+        */
+        const actual =
+            getResult(mackolik);
+
+        if(!actual){
+
+            wait++;
+            return;
+
+        }
+
+        if(
+            decision.prediction === actual
+        ){
+
+            hit++;
+
+        }else{
+
+            miss++;
+
+        }
+
+    });
 
     const finished =
         hit + miss;
 
-
     const rate =
-        finished
+        finished > 0
         ?
         hit / finished * 100
         :
         0;
 
-
     return `
+        <div class="result-summary">
 
-        <div class="summary">
-
-            <div class="summary-title">
-
-                📊 Tahmin Sonuçları
-
+            <div class="result-summary-title">
+                📊 ${selectedWeek}. Hafta Tahmin Sonuçları
             </div>
 
+            <div class="result-summary-grid">
 
-            <div class="summary-grid">
-
-
-                <div
-                    class="summary-box summary-hit">
+                <div class="result-box hit">
 
                     <div class="icon">
                         ✓
@@ -1733,9 +1738,7 @@ function renderSummary(
 
                 </div>
 
-
-                <div
-                    class="summary-box summary-miss">
+                <div class="result-box miss">
 
                     <div class="icon">
                         ✕
@@ -1751,9 +1754,7 @@ function renderSummary(
 
                 </div>
 
-
-                <div
-                    class="summary-box summary-wait">
+                <div class="result-box wait">
 
                     <div class="icon">
                         •
@@ -1769,9 +1770,7 @@ function renderSummary(
 
                 </div>
 
-
-                <div
-                    class="summary-box summary-rate">
+                <div class="result-box rate">
 
                     <div class="icon">
                         %
@@ -1790,53 +1789,44 @@ function renderSummary(
             </div>
 
         </div>
-
     `;
 
 }
 
 
 /* =========================================================
-   HAFTA RENDER
+   HAFTAYI RENDER
 ========================================================= */
 
 function renderWeek(){
 
-    const weeks =
-        window.SPORT_TOTO_DATA?.weeks;
+    const weekData =
+        window.SPORT_TOTO_DATA
+        ?.weeks
+        ?.[selectedWeek];
 
+    if(!weekData){
 
-    const matches =
-        weeks?.[selectedWeek];
-
-
-    if(
-        !Array.isArray(matches)
-    ){
-
-        document.getElementById(
-            "content"
-        ).innerHTML = `
-
-            <div class="error">
-
-                ${selectedWeek}.
-                hafta bulunamadı.
-
-            </div>
-
-        `;
+        document.getElementById("content")
+            .innerHTML = `
+                <div class="error">
+                    ${selectedWeek}.
+                    hafta verisi bulunamadı.
+                </div>
+            `;
 
         return;
 
     }
 
-
-    const summary =
-        renderSummary(
-            matches
+    const matches =
+        Array.isArray(weekData)
+        ?
+        weekData
+        :
+        (
+            weekData.matches || []
         );
-
 
     const rows =
         matches
@@ -1849,66 +1839,80 @@ function renderWeek(){
             )
             .join("");
 
+    const summary =
+        renderResultSummary(matches);
 
-    document.getElementById(
-        "content"
-    ).innerHTML = `
+    document.getElementById("content")
+        .innerHTML = `
 
         ${summary}
-
 
         <div class="info">
 
             <div class="info-title">
-
-                ${selectedWeek}. Hafta
-
+                Spor Toto ${selectedWeek}. Hafta
             </div>
 
             <div class="info-text">
 
-                Her maç için sadece en yüksek
-                olasılığa sahip sonuç tahmin edilir.
-                Çift veya üçlü sistem kullanılmaz.
+                Tahmin motoru yalnızca Mackolik
+                açılış oranlarını kullanır.
+
+                <br>
+
+                Son 60 gündeki birebir aynı açılış
+                oranları geçmiş maçların MS
+                sonuçlarıyla karşılaştırılır.
+
+                <br>
+
+                Oran toleransı yoktur.
+                Güncel ve kapanış oranları
+                kullanılmaz.
+
+                <br>
+
+                Tüm marketler birlikte
+                matematiksel olarak ağırlıklandırılır
+                ve her maç için yalnızca
+                <strong>1 / X / 2</strong>
+                üretilir.
 
             </div>
 
         </div>
 
+        <div class="coupon">
 
-        <div class="matches">
+            <div class="coupon-head">
 
-            <div class="matches-header">
+                <strong>
+                    Tek Sonuç Kuponu
+                </strong>
 
-                <div class="matches-header-title">
+                <div class="summary">
 
-                    Tek Tahmin Kuponu
-
-                </div>
-
-
-                <div class="matches-header-info">
-
-                    <span class="header-badge">
-                        15 Maç
+                    <span class="badge">
+                        1 / X / 2
                     </span>
 
-                    <span class="header-badge">
-                        60 Gün
+                    <span class="badge">
+                        ${MARKETS.length}
+                        market
                     </span>
 
-                    <span class="header-badge">
-                        Min. ${MIN_SAMPLE} Örneklem
+                    <span class="badge">
+                        60 gün
                     </span>
 
-                    <span class="header-badge">
-                        Sadece 1 / X / 2
+                    <span class="badge">
+                        ${matches.length}
+                        maç
                     </span>
 
                 </div>
 
             </div>
-
 
             ${rows}
 
@@ -1926,31 +1930,31 @@ function renderWeek(){
 function renderWeeks(){
 
     const weeks =
-        window.SPORT_TOTO_DATA?.weeks || {};
+        window.SPORT_TOTO_DATA
+        ?.weeks || {};
 
-
-    const weekNumbers =
+    const numbers =
         Object.keys(weeks)
             .map(Number)
             .sort(
                 (a,b)=>a-b
             );
 
-
-    document.getElementById(
-        "weeks"
-    ).innerHTML =
-
-        weekNumbers
+    document.getElementById("weeks")
+        .innerHTML =
+        numbers
             .map(
                 week => `
 
                     <button
-                        class="week-btn ${
+                        class="week-btn
+                        ${
                             Number(week) ===
                             Number(selectedWeek)
-                            ? "active"
-                            : ""
+                            ?
+                            "active"
+                            :
+                            ""
                         }"
                         data-week="${week}">
 
@@ -1962,39 +1966,32 @@ function renderWeeks(){
             )
             .join("");
 
-
     document
-        .querySelectorAll(
-            ".week-btn"
-        )
-        .forEach(
-            button => {
+        .querySelectorAll(".week-btn")
+        .forEach(button => {
 
-                button.addEventListener(
-                    "click",
-                    function(){
+            button.addEventListener(
+                "click",
+                () => {
 
-                        selectedWeek =
-                            Number(
-                                this.dataset.week
-                            );
+                    selectedWeek =
+                        Number(
+                            button.dataset.week
+                        );
 
+                    renderWeeks();
+                    renderWeek();
 
-                        renderWeeks();
+                }
+            );
 
-                        renderWeek();
-
-                    }
-                );
-
-            }
-        );
+        });
 
 }
 
 
 /* =========================================================
-   MACKOLIK VERİSİ
+   MACKOLIK VERİSİNİ ÇEK
 ========================================================= */
 
 async function loadMackolik(){
@@ -2009,7 +2006,6 @@ async function loadMackolik(){
             }
         );
 
-
     if(!response.ok){
 
         throw new Error(
@@ -2019,27 +2015,27 @@ async function loadMackolik(){
 
     }
 
-
     const data =
         await response.json();
 
-
     if(
         !data ||
-        !Array.isArray(
-            data.matches
-        )
+        !Array.isArray(data.matches)
     ){
 
         throw new Error(
-            "Mackolik maç listesi bulunamadı."
+            "Mackolik matches verisi bulunamadı."
         );
 
     }
 
-
     mackolikMatches =
         data.matches;
+
+    console.log(
+        "Mackolik maç sayısı:",
+        mackolikMatches.length
+    );
 
 }
 
@@ -2052,9 +2048,7 @@ async function init(){
 
     try{
 
-        if(
-            !window.SPORT_TOTO_DATA
-        ){
+        if(!window.SPORT_TOTO_DATA){
 
             throw new Error(
                 "spor-toto-data.js yüklenemedi."
@@ -2062,10 +2056,9 @@ async function init(){
 
         }
 
-
         const weeks =
-            window.SPORT_TOTO_DATA.weeks;
-
+            window.SPORT_TOTO_DATA
+                .weeks || {};
 
         const numbers =
             Object.keys(weeks)
@@ -2073,7 +2066,6 @@ async function init(){
                 .sort(
                     (a,b)=>a-b
                 );
-
 
         selectedWeek =
             Number(
@@ -2085,58 +2077,47 @@ async function init(){
                 numbers.length - 1
             ];
 
-
         renderWeeks();
 
-
-        document.getElementById(
-            "content"
-        ).innerHTML = `
-
-            <div class="loading">
-
-                Mackolik verileri yükleniyor...
-
-            </div>
-
-        `;
-
+        document.getElementById("content")
+            .innerHTML = `
+                <div class="loading">
+                    Mackolik açılış oranları
+                    ve skorlar yükleniyor...
+                </div>
+            `;
 
         await loadMackolik();
 
-
         renderWeek();
-
 
     }catch(error){
 
         console.error(error);
 
+        document.getElementById("content")
+            .innerHTML = `
 
-        document.getElementById(
-            "content"
-        ).innerHTML = `
+                <div class="error">
 
-            <div class="error">
+                    <strong>
+                        Veri yüklenemedi.
+                    </strong>
 
-                <strong>
-                    Veri yüklenemedi.
-                </strong>
+                    <br><br>
 
-                <br><br>
+                    ${escapeHtml(
+                        error.message ||
+                        error
+                    )}
 
-                ${escapeHtml(
-                    error.message
-                )}
+                </div>
 
-            </div>
-
-        `;
+            `;
 
     }
 
 }
-
 
 init();
 
