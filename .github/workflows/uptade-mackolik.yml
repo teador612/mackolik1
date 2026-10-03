@@ -1,157 +1,132 @@
 name: Mackolik skor güncelleme
-
 on:
   repository_dispatch:
     types: [run-script]
-
   workflow_dispatch:
-
   schedule:
     - cron: '*/15 * * * *'
-
-
 permissions:
   contents: write
   pages: write
   id-token: write
-
-
 concurrency:
   group: pages
   cancel-in-progress: true
-
-
 jobs:
-
   update-and-deploy:
-
     runs-on: ubuntu-latest
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
-
     steps:
-
-
+      # =========================================================
+      # REPOYU AL
+      # =========================================================
       - name: Depoyu al
-
         uses: actions/checkout@v4
-
         with:
           fetch-depth: 0
-
-
-
+      # =========================================================
+      # NODE.JS
+      # =========================================================
       - name: Node.js kur
-
         uses: actions/setup-node@v4
-
         with:
           node-version: 20
-
-
-
+      # =========================================================
+      # MACKOLIK SKORLARINI GÜNCELLE
+      # =========================================================
       - name: Skorları ve yeni maçları güncelle
-
         run: node scripts/update-mackolik.mjs
-
-
-
+      # =========================================================
+      # DEĞİŞİKLİKLERİ REPOYA KAYDET
+      # =========================================================
       - name: Değişiklikleri repoya kaydet
-
         run: |
-
           git config user.name "github-actions[bot]"
-
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-
           git add data/matches.json
-
-
           if git diff --cached --quiet; then
-
             echo "Yeni skor değişikliği yok."
-
           else
-
             git commit -m "Güncel Mackolik skorları"
-
             git push
-
           fi
-
-
-
+      # =========================================================
+      # GITHUB PAGES
+      # =========================================================
       - name: Pages ayarını hazırla
-
         uses: actions/configure-pages@v5
-
-
-
+      # =========================================================
+      # SİTE DOSYALARINI HAZIRLA
+      # =========================================================
       - name: Site dosyalarını hazırla
-
         run: |
-
+          rm -rf _site
           mkdir -p _site/data
-
-
-          # Ana sayfa
+          # -----------------------------------------------------
+          # ANA SAYFA
+          # -----------------------------------------------------
           cp index.html _site/
-
-
-          # Skor sayfası
+          # -----------------------------------------------------
+          # SKOR SAYFASI
+          # -----------------------------------------------------
           cp skor.html _site/
-
-
-          # Kupon sayfası
+          # -----------------------------------------------------
+          # KUPON SAYFASI
+          # -----------------------------------------------------
           cp kupon.html _site/
-
-
+          # -----------------------------------------------------
+          # SPOR TOTO
+          # -----------------------------------------------------
+          cp spor-toto.html _site/
+          cp spor-toto-data.js _site/
+          # -----------------------------------------------------
           # CSS
+          # -----------------------------------------------------
           cp style.css _site/
           cp kupon.css _site/
-
-
-          # JavaScript
+          # -----------------------------------------------------
+          # JAVASCRIPT
+          # -----------------------------------------------------
           cp app.js _site/
           cp kupon.js _site/
-
-
+          # -----------------------------------------------------
           # PWA
+          # -----------------------------------------------------
           cp manifest.json _site/
           cp sw.js _site/
-
-
-          # Veriler
+          # -----------------------------------------------------
+          # MACKOLIK VERİSİ
+          # -----------------------------------------------------
           cp data/matches.json _site/data/
-
-
-          # İkonlar varsa yayınla
+          # -----------------------------------------------------
+          # İKONLAR
+          # -----------------------------------------------------
           if [ -f icon-180.png ]; then
             cp icon-180.png _site/
           fi
-
-
           if [ -f icon-192.png ]; then
             cp icon-192.png _site/
           fi
-
-
-
+          # -----------------------------------------------------
+          # KONTROL
+          # -----------------------------------------------------
+          echo "======================================"
+          echo "Yayınlanacak dosyalar:"
+          echo "======================================"
+          find _site -maxdepth 2 -type f | sort
+          echo "======================================"
+      # =========================================================
+      # PAGES ARTIFACT
+      # =========================================================
       - name: Site dosyalarını paketle
-
         uses: actions/upload-pages-artifact@v3
-
         with:
           path: _site
-
-
-
+      # =========================================================
+      # GITHUB PAGES'E YAYINLA
+      # =========================================================
       - name: GitHub Pages'e yayınla
-
         id: deployment
-
         uses: actions/deploy-pages@v4
