@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Spor Toto Tahmin</title>
+<title>Spor Toto Analiz</title>
 
 <style>
 *{
@@ -14,56 +14,93 @@
 
 body{
   margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#f3f4f6;
-  color:#111827;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  background:#f3f5f8;
+  color:#17202a;
 }
 
-.container{
-  max-width:1100px;
-  margin:auto;
-  padding:15px;
-}
-
-.header{
+header{
   background:#111827;
-  color:white;
-  border-radius:16px;
-  padding:20px;
-  margin-bottom:15px;
+  color:#fff;
+  padding:18px 14px;
+  text-align:center;
 }
 
-.header h1{
-  margin:0 0 6px;
-  font-size:24px;
-}
-
-.header p{
+header h1{
   margin:0;
-  opacity:.8;
+  font-size:22px;
+}
+
+header p{
+  margin:6px 0 0;
+  opacity:.75;
   font-size:13px;
 }
 
+.container{
+  width:min(1100px,100%);
+  margin:auto;
+  padding:12px;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  background:#fff;
+  padding:12px;
+  border-radius:14px;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+}
+
+.control label{
+  display:block;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:5px;
+  color:#64748b;
+}
+
+select,
+button{
+  width:100%;
+  border:1px solid #dbe1e8;
+  background:#fff;
+  border-radius:9px;
+  padding:10px;
+  font-size:14px;
+}
+
+button{
+  cursor:pointer;
+  font-weight:700;
+}
+
+button.active{
+  background:#111827;
+  color:#fff;
+}
+
 .tabs{
-  display:flex;
-  gap:8px;
-  margin-bottom:15px;
-  overflow-x:auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:7px;
+  margin-bottom:12px;
 }
 
 .tab{
-  border:0;
-  background:white;
-  padding:12px 15px;
+  background:#fff;
+  border:1px solid #dbe1e8;
   border-radius:10px;
-  cursor:pointer;
-  font-weight:bold;
-  white-space:nowrap;
+  padding:11px 5px;
+  font-size:13px;
+  font-weight:700;
 }
 
 .tab.active{
   background:#111827;
-  color:white;
+  color:#fff;
 }
 
 .panel{
@@ -74,116 +111,64 @@ body{
   display:block;
 }
 
-.controls{
-  background:white;
+.info{
+  background:#fff;
   border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
+  padding:13px;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
-.control label{
+.info strong{
   display:block;
-  font-size:12px;
-  font-weight:bold;
-  color:#6b7280;
   margin-bottom:5px;
 }
 
-select,
-button{
-  width:100%;
-  border:1px solid #d1d5db;
-  border-radius:9px;
-  padding:10px;
-  background:white;
-  font-size:14px;
-}
-
-button{
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.primary{
-  background:#111827;
-  color:white;
-  border-color:#111827;
-}
-
-.week-info{
-  background:white;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-.week-title{
-  font-size:18px;
-  font-weight:bold;
-}
-
-.week-status{
-  display:inline-block;
-  margin-top:7px;
-  padding:5px 9px;
-  border-radius:20px;
-  font-size:11px;
-  font-weight:bold;
-}
-
-.finished{
-  background:#dcfce7;
-  color:#166534;
-}
-
-.current{
-  background:#fef3c7;
-  color:#92400e;
-}
-
 .matches{
-  display:grid;
-  gap:10px;
+  display:flex;
+  flex-direction:column;
+  gap:9px;
 }
 
 .match{
-  background:white;
+  background:#fff;
   border-radius:14px;
-  padding:13px;
-  border:1px solid #e5e7eb;
+  padding:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.05);
 }
 
 .match-top{
   display:flex;
   justify-content:space-between;
-  gap:10px;
+  gap:8px;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:9px;
 }
 
 .match-no{
   font-size:12px;
-  color:#6b7280;
-  font-weight:bold;
+  font-weight:800;
+  color:#64748b;
 }
 
-.score{
-  font-weight:bold;
+.prediction{
+  font-size:14px;
+  font-weight:900;
+  padding:5px 9px;
+  border-radius:8px;
+  background:#eef2ff;
 }
 
 .teams{
   display:grid;
   grid-template-columns:1fr auto 1fr;
-  gap:8px;
   align-items:center;
-  font-weight:bold;
+  gap:8px;
+  font-weight:800;
 }
 
 .team{
-  font-size:14px;
+  line-height:1.25;
 }
 
 .team.away{
@@ -191,209 +176,268 @@ button{
 }
 
 .vs{
-  color:#9ca3af;
+  color:#94a3b8;
   font-size:12px;
-}
-
-.prediction{
-  margin-top:12px;
-  border-top:1px solid #eee;
-  padding-top:12px;
-}
-
-.pred-main{
-  font-size:20px;
-  font-weight:bold;
-  margin-bottom:8px;
 }
 
 .probs{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:6px;
+  margin-top:10px;
 }
 
 .prob{
-  background:#f3f4f6;
-  border-radius:8px;
-  padding:8px;
   text-align:center;
+  background:#f8fafc;
+  border-radius:8px;
+  padding:7px 4px;
 }
 
-.prob strong{
+.prob b{
   display:block;
   font-size:15px;
 }
 
-.prob small{
-  color:#6b7280;
+.prob span{
+  font-size:10px;
+  color:#64748b;
 }
 
-.system-box{
-  background:white;
-  padding:15px;
-  border-radius:14px;
-  margin-bottom:15px;
+.prob.main{
+  outline:2px solid #111827;
+  background:#eef2ff;
 }
 
-.system-summary{
+.form-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+  margin-top:9px;
+}
+
+.form-item{
+  width:27px;
+  height:27px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:7px;
+  font-size:11px;
+  font-weight:900;
+  color:#fff;
+  background:#94a3b8;
+}
+
+.form-item.win{
+  background:#16a34a;
+}
+
+.form-item.draw{
+  background:#f59e0b;
+}
+
+.form-item.loss{
+  background:#dc2626;
+}
+
+.score{
+  margin-top:8px;
+  font-size:12px;
+  color:#64748b;
+}
+
+.system-table{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.system-row{
+  background:#fff;
+  border-radius:12px;
+  padding:10px;
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:35px 1fr auto;
   gap:8px;
-  margin-top:12px;
+  align-items:center;
+  box-shadow:0 2px 7px rgba(0,0,0,.05);
 }
 
-.summary{
-  background:#f3f4f6;
-  padding:12px;
-  border-radius:10px;
-  text-align:center;
+.system-no{
+  font-weight:900;
 }
 
-.summary strong{
-  display:block;
-  font-size:20px;
+.system-teams{
+  font-size:13px;
+  font-weight:700;
+}
+
+.system-picks{
+  font-weight:900;
+  letter-spacing:2px;
+  font-size:15px;
+}
+
+.system-picks .selected{
+  background:#111827;
+  color:#fff;
+  border-radius:5px;
+  padding:3px 5px;
 }
 
 .coupon{
-  display:grid;
-  gap:8px;
-  margin-top:15px;
+  background:#111827;
+  color:#fff;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
 }
 
-.coupon-row{
-  background:#f9fafb;
-  padding:10px;
-  border-radius:9px;
-  display:grid;
-  grid-template-columns:35px 1fr 100px;
-  gap:8px;
-  align-items:center;
+.coupon-title{
+  font-size:16px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.coupon-line{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
 }
 
 .coupon-pick{
-  font-size:18px;
-  font-weight:bold;
-  text-align:center;
+  background:#fff;
+  color:#111827;
+  border-radius:7px;
+  padding:6px 8px;
+  font-weight:900;
+  font-size:13px;
 }
 
-.backtest-box{
-  background:white;
-  border-radius:14px;
-  padding:15px;
-  margin-bottom:15px;
-}
-
-.backtest-result{
+.stats{
   display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:10px;
-  margin-top:15px;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;
+  margin-bottom:12px;
 }
 
-.bt-stat{
-  background:#f3f4f6;
-  border-radius:10px;
+.stat{
+  background:#fff;
+  border-radius:12px;
   padding:12px;
   text-align:center;
+  box-shadow:0 2px 7px rgba(0,0,0,.05);
 }
 
-.bt-stat strong{
+.stat b{
   display:block;
   font-size:20px;
 }
 
-.bt-weeks{
-  margin-top:15px;
-  display:grid;
-  gap:8px;
+.stat span{
+  font-size:11px;
+  color:#64748b;
 }
 
-.bt-week{
-  border:1px solid #e5e7eb;
-  border-radius:10px;
-  padding:11px;
+.backtest-week{
   background:#fff;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:9px;
+  box-shadow:0 2px 7px rgba(0,0,0,.05);
+}
+
+.bt-head{
+  display:flex;
+  justify-content:space-between;
+  font-weight:900;
+  margin-bottom:8px;
+}
+
+.bt-grid{
   display:grid;
-  grid-template-columns:70px 1fr 100px;
-  align-items:center;
-  gap:10px;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
 }
 
-.good{
-  color:#15803d;
-  font-weight:bold;
+.bt-box{
+  background:#f8fafc;
+  padding:8px;
+  border-radius:8px;
+  text-align:center;
 }
 
-.bad{
-  color:#b91c1c;
-  font-weight:bold;
+.bt-box b{
+  display:block;
+  font-size:15px;
 }
 
-.note{
-  font-size:12px;
-  color:#6b7280;
-  line-height:1.5;
+.small{
+  font-size:11px;
+  color:#64748b;
 }
 
 .empty{
-  background:white;
-  padding:25px;
+  background:#fff;
   border-radius:14px;
+  padding:20px;
   text-align:center;
-  color:#6b7280;
+  color:#64748b;
 }
 
-@media(max-width:700px){
-
-  .container{
-    padding:10px;
-  }
+@media(max-width:650px){
 
   .controls{
     grid-template-columns:1fr;
   }
 
   .teams{
-    grid-template-columns:1fr 30px 1fr;
+    font-size:14px;
   }
 
-  .team{
-    font-size:13px;
+  .system-row{
+    grid-template-columns:30px 1fr;
   }
 
-  .backtest-result{
-    grid-template-columns:repeat(2,1fr);
+  .system-picks{
+    grid-column:2;
   }
 
-  .bt-week{
-    grid-template-columns:55px 1fr 75px;
-    font-size:12px;
-  }
-
-  .coupon-row{
-    grid-template-columns:30px 1fr 80px;
-  }
 }
 </style>
 </head>
 
 <body>
 
+<header>
+  <h1>⚽ Spor Toto Analiz</h1>
+  <p>İstatistiksel 1-X-2 tahmin sistemi</p>
+</header>
+
 <div class="container">
 
-  <div class="header">
-    <h1>🏆 Spor Toto Tahmin</h1>
-    <p>İstatistiksel 1 / X / 2 tahmin ve sistem kuponu</p>
+  <div class="controls">
+
+    <div class="control">
+      <label>Sezon</label>
+      <select id="seasonSelect"></select>
+    </div>
+
+    <div class="control">
+      <label>Hafta</label>
+      <select id="weekSelect"></select>
+    </div>
+
   </div>
 
   <div class="tabs">
 
-    <button class="tab active" data-tab="program">
+    <button class="tab active" data-tab="weekly">
       Haftalık Program
     </button>
 
-    <button class="tab" data-tab="system">
+    <button class="tab" data-tab="coupon">
       Sistem Kuponu
     </button>
 
@@ -403,387 +447,355 @@ button{
 
   </div>
 
+  <section id="weekly" class="panel active">
 
-  <!-- =====================================================
-       PROGRAM
-  ====================================================== -->
+    <div id="weekInfo" class="info"></div>
 
-  <section id="program" class="panel active">
-
-    <div class="controls">
-
-      <div class="control">
-        <label>SEZON</label>
-        <select id="seasonSelect"></select>
-      </div>
-
-      <div class="control">
-        <label>HAFTA</label>
-        <select id="weekSelect"></select>
-      </div>
-
-      <div class="control">
-        <label>TAHMİN MODELİ</label>
-        <select id="modelSelect">
-          <option value="form">Form + Genel İstatistik</option>
-          <option value="homeaway">Ev/Deplasman</option>
-          <option value="balanced">Dengeli</option>
-        </select>
-      </div>
-
-    </div>
-
-    <div id="weekInfo"></div>
+    <div id="stats" class="stats"></div>
 
     <div id="matches" class="matches"></div>
 
   </section>
 
+  <section id="coupon" class="panel">
 
-  <!-- =====================================================
-       SYSTEM
-  ====================================================== -->
+    <div class="coupon">
 
-  <section id="system" class="panel">
-
-    <div class="system-box">
-
-      <h2>Sistem Kuponu</h2>
-
-      <p class="note">
-        Her maç için modelin hesapladığı olasılıklara göre tekli,
-        ikili veya üçlü seçim oluşturulur.
-      </p>
-
-      <div class="controls">
-
-        <div class="control">
-          <label>HAFTA</label>
-          <select id="systemWeek"></select>
-        </div>
-
-        <div class="control">
-          <label>SİSTEM</label>
-          <select id="systemType">
-            <option value="single">Tekli</option>
-            <option value="double">İkili</option>
-            <option value="triple">Üçlü</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label>MODEL</label>
-          <select id="systemModel">
-            <option value="form">Form + Genel İstatistik</option>
-            <option value="homeaway">Ev/Deplasman</option>
-            <option value="balanced">Dengeli</option>
-          </select>
-        </div>
-
+      <div class="coupon-title">
+        Sistem Kuponu
       </div>
 
-      <button class="primary" id="buildCoupon">
-        Kuponu Oluştur
-      </button>
+      <div class="small" style="color:#cbd5e1;margin-bottom:10px;">
+        Ana tahminler ve belirsiz maçlara göre otomatik sistem.
+      </div>
 
-      <div id="systemSummary"></div>
-      <div id="coupon"></div>
+      <div id="couponLine" class="coupon-line"></div>
 
     </div>
+
+    <div id="systemRows" class="system-table"></div>
 
   </section>
 
-
-  <!-- =====================================================
-       BACKTEST
-  ====================================================== -->
-
   <section id="backtest" class="panel">
 
-    <div class="backtest-box">
-
-      <h2>Geçmiş Sezon Backtest</h2>
-
-      <p class="note">
-        Her hafta test edilirken yalnızca o haftadan önceki haftalar
-        modele verilir. Test edilen haftanın sonucu tahmin hesabına
-        dahil edilmez.
-      </p>
-
-      <div class="controls">
-
-        <div class="control">
-          <label>SEZON</label>
-          <select id="backtestSeason"></select>
-        </div>
-
-        <div class="control">
-          <label>MODEL</label>
-          <select id="backtestModel">
-            <option value="form">Form + Genel İstatistik</option>
-            <option value="homeaway">Ev/Deplasman</option>
-            <option value="balanced">Dengeli</option>
-          </select>
-        </div>
-
-        <div class="control">
-          <label>BAŞLANGIÇ HAFTASI</label>
-          <select id="backtestStart"></select>
-        </div>
-
+    <div class="info">
+      <strong>Geçmiş Sezon Backtest</strong>
+      <div class="small">
+        Her hafta tahmin edilirken yalnızca o haftadan önceki
+        haftalar kullanılır.
       </div>
-
-      <button class="primary" id="runBacktest">
-        Backtest Başlat
-      </button>
-
-      <div id="backtestResult"></div>
-
     </div>
+
+    <div id="backtestStats" class="stats"></div>
+
+    <div id="backtestWeeks"></div>
 
   </section>
 
 </div>
 
-
-<!-- =======================================================
-     VERİ DOSYASI
-======================================================= -->
-
 <script src="spor-toto-data.js"></script>
-
 
 <script>
 "use strict";
 
 /* =========================================================
-   GLOBAL
+   TEMEL
 ========================================================= */
 
-const state = {
+const DATA = window.SPORT_TOTO_DATA;
 
-  season: "",
-  week: "",
-  model: "form",
+const $ = id => document.getElementById(id);
 
-  matches: [],
-  predictions: [],
-
-  systemWeek: "",
-  systemType: "single",
-
-  backtestSeason: "",
-  backtestModel: "form"
-
-};
+let currentSeason = "";
+let currentWeek = 1;
 
 
 /* =========================================================
-   HELPERS
+   SEZON / HAFTA
 ========================================================= */
 
-function $(id){
-  return document.getElementById(id);
+function init(){
+
+  if(!DATA || !DATA.seasons){
+    document.body.innerHTML =
+      "<div style='padding:30px;text-align:center'>spor-toto-data.js yüklenemedi.</div>";
+    return;
+  }
+
+  const seasons = Object.keys(DATA.seasons);
+
+  currentSeason = seasons[0] || "";
+
+  $("seasonSelect").innerHTML = seasons.map(season => `
+    <option value="${escapeHtml(season)}">
+      ${escapeHtml(season)}
+    </option>
+  `).join("");
+
+  loadWeeks();
+
+  $("seasonSelect").addEventListener("change", () => {
+
+    currentSeason = $("seasonSelect").value;
+
+    loadWeeks();
+
+    renderAll();
+
+  });
+
+  $("weekSelect").addEventListener("change", () => {
+
+    currentWeek = Number($("weekSelect").value);
+
+    renderAll();
+
+  });
+
+  document.querySelectorAll(".tab").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+      document.querySelectorAll(".tab")
+        .forEach(x => x.classList.remove("active"));
+
+      document.querySelectorAll(".panel")
+        .forEach(x => x.classList.remove("active"));
+
+      button.classList.add("active");
+
+      $(button.dataset.tab).classList.add("active");
+
+      if(button.dataset.tab === "backtest"){
+        renderBacktest();
+      }
+
+    });
+
+  });
+
+  renderAll();
+}
+
+
+/* =========================================================
+   HAFTALAR
+========================================================= */
+
+function loadWeeks(){
+
+  const season = DATA.seasons[currentSeason];
+
+  if(!season){
+    $("weekSelect").innerHTML = "";
+    return;
+  }
+
+  const weeks = Object.keys(season.weeks)
+    .map(Number)
+    .sort((a,b) => a-b);
+
+  const latest = DATA.getLatestWeek
+    ? DATA.getLatestWeek(currentSeason)
+    : weeks[weeks.length - 1];
+
+  currentWeek = latest;
+
+  $("weekSelect").innerHTML = weeks.map(week => {
+
+    const item = season.weeks[week];
+
+    const status =
+      item.status === "finished"
+        ? "Tamamlandı"
+        : "Devam ediyor";
+
+    return `
+      <option value="${week}" ${week === latest ? "selected" : ""}>
+        ${week}. Hafta - ${status}
+      </option>
+    `;
+
+  }).join("");
+
+}
+
+
+/* =========================================================
+   YARDIMCILAR
+========================================================= */
+
+function escapeHtml(value){
+
+  return String(value ?? "")
+    .replace(/[&<>"']/g, c => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#39;"
+    }[c]));
+
 }
 
 function clamp(value,min,max){
+
   return Math.max(min,Math.min(max,value));
+
 }
 
-function pct(value){
-  return Math.round(value * 100);
+function normalizeResult(result){
+
+  if(result === "1" || result === "X" || result === "2"){
+    return result;
+  }
+
+  return null;
+
 }
 
-function resultFromScore(score){
+function getWeek(season,week){
 
-  if(!score || typeof score !== "string"){
-    return null;
-  }
+  return DATA.getWeek
+    ? DATA.getWeek(season,week)
+    : DATA.seasons[season]?.weeks?.[week];
 
-  const m = score.match(/(\d+)\s*-\s*(\d+)/);
-
-  if(!m){
-    return null;
-  }
-
-  const h = Number(m[1]);
-  const a = Number(m[2]);
-
-  if(h > a) return "1";
-  if(h < a) return "2";
-
-  return "X";
-}
-
-
-/* =========================================================
-   DATA
-========================================================= */
-
-function getSeasonData(){
-
-  if(
-    typeof SPORT_TOTO_DATA === "undefined" ||
-    !SPORT_TOTO_DATA.seasons
-  ){
-    return null;
-  }
-
-  return SPORT_TOTO_DATA.seasons[state.season] || null;
-}
-
-
-function getWeekData(season,week){
-
-  if(
-    typeof SPORT_TOTO_DATA === "undefined" ||
-    !SPORT_TOTO_DATA.seasons ||
-    !SPORT_TOTO_DATA.seasons[season]
-  ){
-    return null;
-  }
-
-  return SPORT_TOTO_DATA.seasons[season].weeks[week] || null;
 }
 
 
 /* =========================================================
    TAKIM GEÇMİŞİ
+
+   KRİTİK:
+   beforeWeek verilir.
+   Sadece week < beforeWeek kullanılır.
 ========================================================= */
 
-function getTeamHistory(team, beforeWeek, season){
+function getTeamHistory(season, team, beforeWeek){
 
-  const seasonData = SPORT_TOTO_DATA.seasons[season];
+  const seasonData = DATA.seasons[season];
 
-  if(!seasonData){
-    return [];
-  }
+  if(!seasonData) return [];
 
-  const weeks = seasonData.weeks || {};
+  const result = [];
 
-  const history = [];
-
-  Object.keys(weeks)
+  Object.keys(seasonData.weeks)
     .map(Number)
     .sort((a,b)=>a-b)
     .forEach(weekNo => {
 
-      if(weekNo >= Number(beforeWeek)){
-        return;
-      }
+      if(weekNo >= beforeWeek) return;
 
-      const week = weeks[String(weekNo)];
+      const week = seasonData.weeks[weekNo];
 
-      if(!week || !Array.isArray(week.matches)){
-        return;
-      }
+      if(!week || week.status !== "finished") return;
 
-      week.matches.forEach(match => {
+      (week.matches || []).forEach(match => {
 
-        if(!match.result){
-          return;
+        const resultCode = normalizeResult(match.result);
+
+        if(!resultCode) return;
+
+        if(match.home === team){
+
+          result.push({
+            week:weekNo,
+            side:"home",
+            result:
+              resultCode === "1"
+                ? "W"
+                : resultCode === "X"
+                  ? "D"
+                  : "L"
+          });
+
         }
 
-        if(
-          match.home !== team &&
-          match.away !== team
-        ){
-          return;
+        if(match.away === team){
+
+          result.push({
+            week:weekNo,
+            side:"away",
+            result:
+              resultCode === "2"
+                ? "W"
+                : resultCode === "X"
+                  ? "D"
+                  : "L"
+          });
+
         }
-
-        const isHome = match.home === team;
-
-        let points = 0;
-
-        if(match.result === "X"){
-          points = 1;
-        }
-
-        if(
-          (isHome && match.result === "1") ||
-          (!isHome && match.result === "2")
-        ){
-          points = 3;
-        }
-
-        history.push({
-          week:weekNo,
-          result:match.result,
-          home:isHome,
-          points
-        });
 
       });
 
     });
 
-  return history;
+  return result;
+
 }
 
 
 /* =========================================================
-   TAKIM FORM PUANI
+   FORM PUANI
 ========================================================= */
 
-function formScore(team, beforeWeek, season){
+function formScore(history){
 
-  const history = getTeamHistory(
-    team,
-    beforeWeek,
-    season
-  );
+  if(!history.length) return 0.5;
 
-  if(!history.length){
-    return 0.5;
-  }
+  const recent = history.slice(-6);
 
-  const recent = history.slice(-5);
+  let total = 0;
 
-  const total = recent.reduce(
-    (sum,item)=>sum + item.points,
-    0
-  );
+  recent.forEach(item => {
 
-  return total / (recent.length * 3);
+    if(item.result === "W") total += 1;
+    else if(item.result === "D") total += 0.5;
+
+  });
+
+  return total / recent.length;
+
 }
 
 
 /* =========================================================
-   EV / DEPLASMAN
+   EV / DEPLASMAN FORMU
 ========================================================= */
 
-function homeAwayScore(team, beforeWeek, season, isHome){
+function sideScore(history, side){
 
-  const history = getTeamHistory(
-    team,
-    beforeWeek,
-    season
-  );
+  const filtered = history.filter(x => x.side === side);
 
-  const filtered = history
-    .filter(x => x.home === isHome)
-    .slice(-5);
+  if(!filtered.length) return 0.5;
 
-  if(!filtered.length){
-    return 0.5;
-  }
+  const recent = filtered.slice(-5);
 
-  const total = filtered.reduce(
-    (sum,item)=>sum + item.points,
-    0
-  );
+  let total = 0;
 
-  return total / (filtered.length * 3);
+  recent.forEach(item => {
+
+    if(item.result === "W") total += 1;
+    else if(item.result === "D") total += 0.5;
+
+  });
+
+  return total / recent.length;
+
 }
 
 
 /* =========================================================
    GENEL SONUÇ ORANLARI
+
+   SADECE ÖNCEKİ HAFTALAR
 ========================================================= */
 
-function globalResultRates(beforeWeek,season){
+function globalRates(season,beforeWeek){
 
-  const seasonData = SPORT_TOTO_DATA.seasons[season];
+  const seasonData = DATA.seasons[season];
 
   const counts = {
     "1":0,
@@ -793,37 +805,25 @@ function globalResultRates(beforeWeek,season){
 
   let total = 0;
 
-  if(!seasonData){
-    return {
-      "1":0.34,
-      "X":0.32,
-      "2":0.34
-    };
-  }
+  if(!seasonData) return counts;
 
-  Object.keys(seasonData.weeks || {})
+  Object.keys(seasonData.weeks)
     .map(Number)
-    .sort((a,b)=>a-b)
     .forEach(weekNo => {
 
-      if(weekNo >= Number(beforeWeek)){
-        return;
-      }
+      if(weekNo >= beforeWeek) return;
 
-      const week =
-        seasonData.weeks[String(weekNo)];
+      const week = seasonData.weeks[weekNo];
 
-      if(!week || !Array.isArray(week.matches)){
-        return;
-      }
+      if(!week || week.status !== "finished") return;
 
-      week.matches.forEach(match => {
+      (week.matches || []).forEach(match => {
 
-        if(!match.result){
-          return;
-        }
+        const r = normalizeResult(match.result);
 
-        counts[match.result]++;
+        if(!r) return;
+
+        counts[r]++;
         total++;
 
       });
@@ -832,138 +832,117 @@ function globalResultRates(beforeWeek,season){
 
   if(!total){
     return {
-      "1":0.34,
-      "X":0.32,
-      "2":0.34
+      "1":0.45,
+      "X":0.27,
+      "2":0.28
     };
   }
 
   return {
-    "1":counts["1"] / total,
-    "X":counts["X"] / total,
-    "2":counts["2"] / total
+    "1":counts["1"]/total,
+    "X":counts["X"]/total,
+    "2":counts["2"]/total
   };
+
 }
 
 
 /* =========================================================
-   TAHMİN MOTORU
+   TAHMİN
+
+   Gelecek haftanın sonucu ASLA kullanılmaz.
 ========================================================= */
 
-function predictMatch(match,week,season,model){
+function predictMatch(match,season,beforeWeek){
 
-  const homeForm =
-    formScore(match.home,week,season);
-
-  const awayForm =
-    formScore(match.away,week,season);
-
-  const homeVenue =
-    homeAwayScore(
+  const homeHistory =
+    getTeamHistory(
+      season,
       match.home,
-      week,
-      season,
-      true
+      beforeWeek
     );
 
-  const awayVenue =
-    homeAwayScore(
-      match.away,
-      week,
+  const awayHistory =
+    getTeamHistory(
       season,
-      false
+      match.away,
+      beforeWeek
     );
+
+  const homeForm = formScore(homeHistory);
+  const awayForm = formScore(awayHistory);
+
+  const homeSide =
+    sideScore(homeHistory,"home");
+
+  const awaySide =
+    sideScore(awayHistory,"away");
 
   const global =
-    globalResultRates(
-      week,
-      season
+    globalRates(
+      season,
+      beforeWeek
     );
 
+  /*
+    Başlangıç olasılıkları
+  */
 
-  let p1;
-  let px;
-  let p2;
+  let p1 =
+    global["1"] * 0.35 +
+    homeForm * 0.30 +
+    homeSide * 0.20 +
+    (1-awayForm) * 0.15;
 
+  let p2 =
+    global["2"] * 0.35 +
+    awayForm * 0.30 +
+    awaySide * 0.20 +
+    (1-homeForm) * 0.15;
 
-  if(model === "homeaway"){
+  let px =
+    global["X"] * 0.50 +
+    (1-Math.abs(homeForm-awayForm)) * 0.30 +
+    (1-Math.abs(homeSide-awaySide)) * 0.20;
 
-    const homePower =
-      homeForm * 0.45 +
-      homeVenue * 0.55;
+  /*
+    Ev avantajı.
+  */
 
-    const awayPower =
-      awayForm * 0.45 +
-      awayVenue * 0.55;
+  p1 += 0.06;
 
-    const diff =
-      homePower - awayPower;
+  /*
+    Çok güçlü deplasman formunda
+    deplasman ihtimalini artır.
+  */
 
-    p1 =
-      0.34 +
-      diff * 0.42;
-
-    p2 =
-      0.34 -
-      diff * 0.42;
-
-    px =
-      1 - p1 - p2;
-
+  if(awayForm > 0.75){
+    p2 += 0.04;
   }
 
-  else if(model === "balanced"){
-
-    p1 =
-      global["1"] * 0.45 +
-      homeForm * 0.30 +
-      (1-awayForm) * 0.25;
-
-    p2 =
-      global["2"] * 0.45 +
-      awayForm * 0.30 +
-      (1-homeForm) * 0.25;
-
-    px =
-      global["X"] * 0.70 +
-      (1-Math.abs(homeForm-awayForm)) * 0.30;
-
+  if(homeForm > 0.75){
+    p1 += 0.04;
   }
 
-  else{
+  /*
+    Beraberliği aşırı düşürme.
+  */
 
-    const diff =
-      homeForm - awayForm;
+  px = Math.max(px,0.16);
 
-    p1 =
-      global["1"] * 0.40 +
-      0.33 +
-      diff * 0.45;
+  /*
+    Negatifleri temizle.
+  */
 
-    p2 =
-      global["2"] * 0.40 +
-      0.33 -
-      diff * 0.45;
+  p1 = Math.max(0.01,p1);
+  px = Math.max(0.01,px);
+  p2 = Math.max(0.01,p2);
 
-    px =
-      global["X"] * 0.65 +
-      (1-Math.abs(diff)) * 0.35;
-
-  }
-
-
-  p1 = clamp(p1,0.05,0.90);
-  px = clamp(px,0.05,0.70);
-  p2 = clamp(p2,0.05,0.90);
-
-
-  const total =
-    p1 + px + p2;
+  const total = p1 + px + p2;
 
   p1 /= total;
   px /= total;
   p2 /= total;
-
 
   const probabilities = {
     "1":p1,
@@ -971,25 +950,58 @@ function predictMatch(match,week,season,model){
     "2":p2
   };
 
-
-  const ordered =
+  const sorted =
     Object.entries(probabilities)
       .sort((a,b)=>b[1]-a[1]);
 
+  const main = sorted[0][0];
+
+  /*
+    Sistem seçimi.
+
+    İlk sonuç ile ikinci sonuç birbirine yakınsa
+    çift önerilir.
+  */
+
+  const first = sorted[0];
+  const second = sorted[1];
+
+  const difference =
+    first[1] - second[1];
+
+  let picks = [first[0]];
+
+  if(difference < 0.08){
+
+    picks = [
+      first[0],
+      second[0]
+    ];
+
+  }
+
+  if(difference < 0.035){
+
+    picks = [
+      "1",
+      "X",
+      "2"
+    ];
+
+  }
 
   return {
 
-    match,
-
-    p1,
-    px,
-    p2,
-
-    main:ordered[0][0],
-
     probabilities,
 
-    confidence:ordered[0][1]
+    main,
+
+    picks,
+
+    history:{
+      home:homeHistory,
+      away:awayHistory
+    }
 
   };
 
@@ -997,492 +1009,379 @@ function predictMatch(match,week,season,model){
 
 
 /* =========================================================
-   HAFTAYI OLUŞTUR
+   YÜZDE
 ========================================================= */
 
-function buildWeekList(){
+function pct(value){
 
-  const data =
-    getWeekData(
-      state.season,
-      state.week
-    );
-
-  state.matches =
-    data && Array.isArray(data.matches)
-      ? data.matches
-      : [];
-
-  state.predictions =
-    state.matches.map(match =>
-      predictMatch(
-        match,
-        Number(state.week),
-        state.season,
-        state.model
-      )
-    );
-
-  renderWeek();
+  return Math.round(value * 100);
 
 }
 
 
 /* =========================================================
-   PROGRAM RENDER
+   FORM HTML
 ========================================================= */
 
-function renderWeek(){
+function formHtml(history){
 
-  const data =
-    getWeekData(
-      state.season,
-      state.week
+  const recent = history.slice(-5);
+
+  if(!recent.length){
+    return `
+      <div class="small">
+        Geçmiş maç verisi yok
+      </div>
+    `;
+  }
+
+  return `
+    <div class="form-row">
+      ${recent.map(item => {
+
+        const cls =
+          item.result === "W"
+            ? "win"
+            : item.result === "D"
+              ? "draw"
+              : "loss";
+
+        const label =
+          item.result === "W"
+            ? "G"
+            : item.result === "D"
+              ? "B"
+              : "M";
+
+        return `
+          <div class="form-item ${cls}">
+            ${label}
+          </div>
+        `;
+
+      }).join("")}
+    </div>
+  `;
+
+}
+
+
+/* =========================================================
+   HAFTALIK PROGRAM
+========================================================= */
+
+function renderWeekly(){
+
+  const week =
+    getWeek(
+      currentSeason,
+      currentWeek
     );
 
-  if(!data){
+  if(!week){
 
     $("weekInfo").innerHTML =
-      `<div class="empty">Hafta bulunamadı.</div>`;
+      "Hafta bulunamadı.";
 
     $("matches").innerHTML = "";
 
     return;
   }
 
-
-  const statusClass =
-    data.status === "finished"
-      ? "finished"
-      : "current";
-
-  const statusText =
-    data.status === "finished"
-      ? "Tamamlandı"
-      : "Devam ediyor";
-
+  const finished =
+    (week.matches || [])
+      .filter(x => normalizeResult(x.result))
+      .length;
 
   $("weekInfo").innerHTML = `
+    <strong>${currentWeek}. Hafta</strong>
 
-    <div class="week-info">
-
-      <div class="week-title">
-        ${state.season} — ${state.week}. Hafta
-      </div>
-
-      <span class="week-status ${statusClass}">
-        ${statusText}
-      </span>
-
+    <div class="small">
+      ${finished} / ${(week.matches || []).length}
+      maç sonucu mevcut.
+      Tahminler yalnızca önceki haftalar kullanılarak
+      hesaplanır.
     </div>
-
   `;
 
+  const predictions =
+    (week.matches || []).map(match => {
 
-  if(!state.matches.length){
+      return {
+        match,
+        prediction:
+          predictMatch(
+            match,
+            currentSeason,
+            currentWeek
+          )
+      };
 
-    $("matches").innerHTML =
-      `<div class="empty">Maç bulunamadı.</div>`;
+    });
 
-    return;
-  }
-
+  renderStats(predictions);
 
   $("matches").innerHTML =
-    state.predictions
-      .map((prediction,index)=>{
-
-        const m =
-          prediction.match;
-
-        const actual =
-          m.result
-            ? `MS: ${m.result}`
-            : "";
-
-
-        return `
-
-          <div class="match">
-
-            <div class="match-top">
-
-              <div class="match-no">
-                ${m.no}. MAÇ
-              </div>
-
-              <div class="score">
-                ${m.score || actual || "-"}
-              </div>
-
-            </div>
-
-
-            <div class="teams">
-
-              <div class="team">
-                ${m.home}
-              </div>
-
-              <div class="vs">
-                VS
-              </div>
-
-              <div class="team away">
-                ${m.away}
-              </div>
-
-            </div>
-
-
-            <div class="prediction">
-
-              <div class="pred-main">
-                Tahmin: ${prediction.main}
-                (${pct(prediction.confidence)}%)
-              </div>
-
-
-              <div class="probs">
-
-                <div class="prob">
-                  <strong>${pct(prediction.p1)}%</strong>
-                  <small>1</small>
-                </div>
-
-                <div class="prob">
-                  <strong>${pct(prediction.px)}%</strong>
-                  <small>X</small>
-                </div>
-
-                <div class="prob">
-                  <strong>${pct(prediction.p2)}%</strong>
-                  <small>2</small>
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        `;
-
-      })
-      .join("");
-
-}
-
-
-/* =========================================================
-   SEZON / HAFTA SELECTLERİ
-========================================================= */
-
-function populateSelectors(){
-
-  const seasons =
-    Object.keys(
-      SPORT_TOTO_DATA.seasons || {}
-    );
-
-  $("seasonSelect").innerHTML =
-    seasons.map(season =>
-      `<option value="${season}">
-        ${season}
-      </option>`
-    ).join("");
-
-
-  $("backtestSeason").innerHTML =
-    seasons.map(season =>
-      `<option value="${season}">
-        ${season}
-      </option>`
-    ).join("");
-
-
-  if(!seasons.length){
-    return;
-  }
-
-
-  state.season =
-    seasons[0];
-
-  state.backtestSeason =
-    seasons[0];
-
-
-  populateWeeks();
-
-
-  populateBacktestWeeks();
-
-
-  buildWeekList();
-
-}
-
-
-/* =========================================================
-   NORMAL HAFTA LİSTESİ
-========================================================= */
-
-function populateWeeks(){
-
-  const seasonData =
-    getSeasonData();
-
-  if(!seasonData){
-    return;
-  }
-
-
-  const weeks =
-    Object.keys(
-      seasonData.weeks || {}
-    )
-    .map(Number)
-    .sort((a,b)=>a-b);
-
-
-  $("weekSelect").innerHTML =
-    weeks.map(week =>
-      `<option value="${week}">
-        ${week}. Hafta
-      </option>`
-    ).join("");
-
-
-  $("systemWeek").innerHTML =
-    weeks.map(week =>
-      `<option value="${week}">
-        ${week}. Hafta
-      </option>`
-    ).join("");
-
-
-  state.week =
-    String(
-      weeks[weeks.length - 1]
-    );
-
-  state.systemWeek =
-    state.week;
-
-
-  $("weekSelect").value =
-    state.week;
-
-  $("systemWeek").value =
-    state.systemWeek;
-
-}
-
-
-/* =========================================================
-   BACKTEST HAFTALARI
-========================================================= */
-
-function populateBacktestWeeks(){
-
-  const season =
-    $("backtestSeason").value ||
-    state.backtestSeason;
-
-  const seasonData =
-    SPORT_TOTO_DATA.seasons[season];
-
-  if(!seasonData){
-    return;
-  }
-
-
-  const weeks =
-    Object.keys(
-      seasonData.weeks || {}
-    )
-    .map(Number)
-    .sort((a,b)=>a-b);
-
-
-  $("backtestStart").innerHTML =
-    weeks.map(week =>
-      `<option value="${week}">
-        ${week}. Haftadan itibaren
-      </option>`
-    ).join("");
-
-
-  $("backtestStart").value =
-    weeks.length
-      ? weeks[0]
-      : "";
-
-}
-
-
-/* =========================================================
-   SİSTEM KUPONU
-========================================================= */
-
-function buildCoupon(){
-
-  const week =
-    $("systemWeek").value;
-
-  const type =
-    $("systemType").value;
-
-  const model =
-    $("systemModel").value;
-
-
-  const data =
-    getWeekData(
-      state.season,
-      week
-    );
-
-
-  if(!data || !Array.isArray(data.matches)){
-
-    $("coupon").innerHTML =
-      `<div class="empty">
-        Bu haftada maç bulunamadı.
-      </div>`;
-
-    return;
-  }
-
-
-  const predictions =
-    data.matches.map(match =>
-      predictMatch(
-        match,
-        Number(week),
-        state.season,
-        model
+    predictions.map(item =>
+      matchHtml(
+        item.match,
+        item.prediction
       )
-    );
+    ).join("");
+
+}
 
 
-  let totalLines = 1;
+/* =========================================================
+   MAÇ KARTI
+========================================================= */
 
-  let picks = [];
+function matchHtml(match,p){
+
+  const main = p.main;
+
+  return `
+    <div class="match">
+
+      <div class="match-top">
+
+        <div class="match-no">
+          ${match.no}. MAÇ
+        </div>
+
+        <div class="prediction">
+          Ana Tahmin: ${main}
+        </div>
+
+      </div>
+
+      <div class="teams">
+
+        <div class="team">
+          ${escapeHtml(match.home)}
+        </div>
+
+        <div class="vs">
+          VS
+        </div>
+
+        <div class="team away">
+          ${escapeHtml(match.away)}
+        </div>
+
+      </div>
+
+      <div class="probs">
+
+        ${probHtml(
+          "1",
+          p.probabilities["1"],
+          main
+        )}
+
+        ${probHtml(
+          "X",
+          p.probabilities["X"],
+          main
+        )}
+
+        ${probHtml(
+          "2",
+          p.probabilities["2"],
+          main
+        )}
+
+      </div>
+
+      <div style="margin-top:9px">
+
+        <div class="small">
+          Sistem:
+          <strong>${p.picks.join(" / ")}</strong>
+        </div>
+
+        ${formHtml(p.history.home)}
+
+        <div class="small" style="margin-top:5px">
+          Deplasman formu
+        </div>
+
+        ${formHtml(p.history.away)}
+
+      </div>
+
+      ${
+        match.score
+          ? `
+            <div class="score">
+              Sonuç: ${escapeHtml(match.score)}
+            </div>
+          `
+          : `
+            <div class="score">
+              Maç sonucu henüz yok
+            </div>
+          `
+      }
+
+    </div>
+  `;
+
+}
 
 
-  predictions.forEach(prediction => {
+/* =========================================================
+   OLASILIK KUTUSU
+========================================================= */
 
-    const sorted =
-      Object.entries(
-        prediction.probabilities
-      )
-      .sort((a,b)=>b[1]-a[1]);
+function probHtml(label,value,main){
 
+  return `
+    <div class="prob ${label === main ? "main" : ""}">
 
-    let selected;
+      <b>${pct(value)}%</b>
 
+      <span>${label}</span>
 
-    if(type === "single"){
+    </div>
+  `;
 
-      selected =
-        [sorted[0][0]];
-
-    }
-
-    else if(type === "double"){
-
-      selected =
-        sorted
-          .slice(0,2)
-          .map(x=>x[0]);
-
-    }
-
-    else{
-
-      selected =
-        ["1","X","2"];
-
-    }
+}
 
 
-    totalLines *= selected.length;
+/* =========================================================
+   İSTATİSTİK
+========================================================= */
 
+function renderStats(predictions){
 
-    picks.push({
-      prediction,
-      selected
-    });
+  const counts = {
+    "1":0,
+    "X":0,
+    "2":0
+  };
+
+  predictions.forEach(item => {
+
+    counts[item.prediction.main]++;
 
   });
 
+  $("stats").innerHTML = `
 
-  $("systemSummary").innerHTML = `
+    <div class="stat">
+      <b>${counts["1"]}</b>
+      <span>MS 1</span>
+    </div>
 
-    <div class="system-summary">
+    <div class="stat">
+      <b>${counts["X"]}</b>
+      <span>MS X</span>
+    </div>
 
-      <div class="summary">
-        <strong>${predictions.length}</strong>
-        <span>Maç</span>
-      </div>
-
-      <div class="summary">
-        <strong>${type === "single" ? "S" : type === "double" ? "D" : "T"}</strong>
-        <span>Sistem</span>
-      </div>
-
-      <div class="summary">
-        <strong>${totalLines}</strong>
-        <span>Kombinasyon</span>
-      </div>
-
+    <div class="stat">
+      <b>${counts["2"]}</b>
+      <span>MS 2</span>
     </div>
 
   `;
 
+}
 
-  $("coupon").innerHTML = `
 
-    <div class="coupon">
+/* =========================================================
+   KUPON
+========================================================= */
 
-      ${picks.map((item,index)=>{
+function renderCoupon(){
 
-        const p =
-          item.prediction;
+  const week =
+    getWeek(
+      currentSeason,
+      currentWeek
+    );
 
-        return `
+  if(!week){
 
-          <div class="coupon-row">
+    $("couponLine").innerHTML = "";
+    $("systemRows").innerHTML = "";
 
-            <div class="coupon-pick">
-              ${index + 1}
-            </div>
+    return;
+  }
 
-            <div>
-              <strong>
-                ${p.match.home}
-              </strong>
-                -
-              <strong>
-                ${p.match.away}
-              </strong>
-            </div>
+  const predictions =
+    (week.matches || []).map(match => {
 
-            <div class="coupon-pick">
-              ${item.selected.join(" / ")}
-            </div>
+      return {
+        match,
+        prediction:
+          predictMatch(
+            match,
+            currentSeason,
+            currentWeek
+          )
+      };
+
+    });
+
+  /*
+    Ana kupon:
+    her maçın ana tahmini
+  */
+
+  $("couponLine").innerHTML =
+    predictions.map(item => `
+      <div class="coupon-pick">
+        ${item.match.no}-${item.prediction.main}
+      </div>
+    `).join("");
+
+  /*
+    Sistem satırları
+  */
+
+  $("systemRows").innerHTML =
+    predictions.map(item => {
+
+      const picks =
+        item.prediction.picks;
+
+      return `
+        <div class="system-row">
+
+          <div class="system-no">
+            ${item.match.no}
+          </div>
+
+          <div class="system-teams">
+            ${escapeHtml(item.match.home)}
+            -
+            ${escapeHtml(item.match.away)}
+          </div>
+
+          <div class="system-picks">
+            ${["1","X","2"].map(x => {
+
+              if(picks.includes(x)){
+
+                return `
+                  <span class="selected">
+                    ${x}
+                  </span>
+                `;
+
+              }
+
+              return `<span>${x}</span>`;
+
+            }).join(" ")}
 
           </div>
 
-        `;
+        </div>
+      `;
 
-      }).join("")}
-
-    </div>
-
-  `;
+    }).join("");
 
 }
 
@@ -1491,109 +1390,84 @@ function buildCoupon(){
    BACKTEST
 ========================================================= */
 
-function runBacktest(){
+function renderBacktest(){
 
   const season =
-    $("backtestSeason").value;
+    DATA.seasons[currentSeason];
 
-  const model =
-    $("backtestModel").value;
+  if(!season){
 
-  const startWeek =
-    Number(
-      $("backtestStart").value
-    );
-
-
-  const seasonData =
-    SPORT_TOTO_DATA.seasons[season];
-
-
-  if(!seasonData){
-
-    $("backtestResult").innerHTML =
-      `<div class="empty">
-        Sezon bulunamadı.
-      </div>`;
+    $("backtestStats").innerHTML = "";
+    $("backtestWeeks").innerHTML = "";
 
     return;
   }
 
-
   const weeks =
-    Object.keys(
-      seasonData.weeks || {}
-    )
-    .map(Number)
-    .sort((a,b)=>a-b);
+    Object.keys(season.weeks)
+      .map(Number)
+      .sort((a,b)=>a-b)
+      .filter(weekNo => {
 
+        return (
+          season.weeks[weekNo].status === "finished" &&
+          weekNo > 1
+        );
+
+      });
 
   let total = 0;
   let correct = 0;
 
-  const weekResults = [];
+  let mainCount = {
+    "1":0,
+    "X":0,
+    "2":0
+  };
 
+  let html = "";
 
   weeks.forEach(weekNo => {
 
-    if(weekNo < startWeek){
-      return;
-    }
-
-
     const week =
-      seasonData.weeks[String(weekNo)];
-
-
-    if(
-      !week ||
-      week.status !== "finished" ||
-      !Array.isArray(week.matches)
-    ){
-      return;
-    }
-
-
-    /*
-       KRİTİK NOKTA:
-
-       predictMatch() içine weekNo gönderiyoruz.
-
-       getTeamHistory() ve globalResultRates()
-       weekNo'dan ÖNCEKİ haftaları kullanıyor.
-
-       Dolayısıyla test edilen haftanın sonucu
-       tahmin hesabına girmiyor.
-    */
+      season.weeks[weekNo];
 
     let weekTotal = 0;
     let weekCorrect = 0;
 
+    (week.matches || []).forEach(match => {
 
-    week.matches.forEach(match => {
+      const actual =
+        normalizeResult(match.result);
 
-      if(!match.result){
-        return;
-      }
+      if(!actual) return;
 
+      /*
+        EN ÖNEMLİ KISIM:
+
+        weekNo veriliyor.
+
+        Böylece predictMatch:
+        getTeamHistory(..., weekNo)
+        globalRates(..., weekNo)
+
+        kullanıyor ve hafta N sonuçlarını
+        hesaba katmıyor.
+      */
 
       const prediction =
         predictMatch(
           match,
-          weekNo,
-          season,
-          model
+          currentSeason,
+          weekNo
         );
-
 
       total++;
       weekTotal++;
 
+      mainCount[prediction.main]++;
 
-      if(
-        prediction.main ===
-        match.result
-      ){
+      if(prediction.main === actual){
 
         correct++;
         weekCorrect++;
@@ -1602,230 +1476,123 @@ function runBacktest(){
 
     });
 
-
     const rate =
       weekTotal
-        ? weekCorrect / weekTotal
+        ? Math.round(
+            weekCorrect / weekTotal * 100
+          )
         : 0;
 
+    html += `
+      <div class="backtest-week">
 
-    weekResults.push({
-      week:weekNo,
-      total:weekTotal,
-      correct:weekCorrect,
-      rate
-    });
-
-  });
-
-
-  const overallRate =
-    total
-      ? correct / total
-      : 0;
-
-
-  $("backtestResult").innerHTML = `
-
-    <div class="backtest-result">
-
-      <div class="bt-stat">
-        <strong>${total}</strong>
-        <span>Toplam Maç</span>
-      </div>
-
-      <div class="bt-stat">
-        <strong>${correct}</strong>
-        <span>Doğru Tahmin</span>
-      </div>
-
-      <div class="bt-stat">
-        <strong>${pct(overallRate)}%</strong>
-        <span>Başarı</span>
-      </div>
-
-      <div class="bt-stat">
-        <strong>${weekResults.length}</strong>
-        <span>Test Haftası</span>
-      </div>
-
-    </div>
-
-
-    <div class="bt-weeks">
-
-      ${weekResults.map(item=>`
-
-        <div class="bt-week">
-
-          <strong>
-            ${item.week}. Hafta
-          </strong>
+        <div class="bt-head">
 
           <span>
-            ${item.correct}/${item.total}
+            ${weekNo}. Hafta
           </span>
 
-          <span class="${
-            item.rate >= 0.5
-              ? "good"
-              : "bad"
-          }">
-            ${pct(item.rate)}%
+          <span>
+            ${weekCorrect}/${weekTotal}
+            (%${rate})
           </span>
 
         </div>
 
-      `).join("")}
+        <div class="bt-grid">
 
+          <div class="bt-box">
+            <b>${weekCorrect}</b>
+            <span class="small">
+              Doğru
+            </span>
+          </div>
+
+          <div class="bt-box">
+            <b>${weekTotal - weekCorrect}</b>
+            <span class="small">
+              Yanlış
+            </span>
+          </div>
+
+          <div class="bt-box">
+            <b>%${rate}</b>
+            <span class="small">
+              Başarı
+            </span>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  const totalRate =
+    total
+      ? Math.round(correct / total * 100)
+      : 0;
+
+  $("backtestStats").innerHTML = `
+
+    <div class="stat">
+      <b>${total}</b>
+      <span>Toplam Maç</span>
+    </div>
+
+    <div class="stat">
+      <b>${correct}</b>
+      <span>Doğru</span>
+    </div>
+
+    <div class="stat">
+      <b>%${totalRate}</b>
+      <span>Başarı</span>
     </div>
 
   `;
+
+  $("backtestWeeks").innerHTML =
+    html ||
+    `<div class="empty">
+      Backtest için yeterli geçmiş hafta yok.
+    </div>`;
 
 }
 
 
 /* =========================================================
-   EVENTLER
+   TÜM EKRANI YENİLE
 ========================================================= */
 
-document.querySelectorAll(".tab")
-.forEach(tab => {
+function renderAll(){
 
-  tab.addEventListener("click",()=>{
+  renderWeekly();
 
-    document
-      .querySelectorAll(".tab")
-      .forEach(x =>
-        x.classList.remove("active")
-      );
+  renderCoupon();
 
-    document
-      .querySelectorAll(".panel")
-      .forEach(x =>
-        x.classList.remove("active")
-      );
+  /*
+    Backtest paneli açıkken
+    hafta değişiminde de güncelle.
+  */
 
+  const backtestPanel =
+    $("backtest").classList.contains("active");
 
-    tab.classList.add("active");
+  if(backtestPanel){
+    renderBacktest();
+  }
 
-    const target =
-      $(tab.dataset.tab);
-
-    if(target){
-      target.classList.add("active");
-    }
-
-  });
-
-});
-
-
-$("seasonSelect")
-.addEventListener("change",()=>{
-
-  state.season =
-    $("seasonSelect").value;
-
-  populateWeeks();
-
-  buildWeekList();
-
-});
-
-
-$("weekSelect")
-.addEventListener("change",()=>{
-
-  state.week =
-    $("weekSelect").value;
-
-  buildWeekList();
-
-});
-
-
-$("modelSelect")
-.addEventListener("change",()=>{
-
-  state.model =
-    $("modelSelect").value;
-
-  buildWeekList();
-
-});
-
-
-$("buildCoupon")
-.addEventListener(
-  "click",
-  buildCoupon
-);
-
-
-$("backtestSeason")
-.addEventListener("change",()=>{
-
-  state.backtestSeason =
-    $("backtestSeason").value;
-
-  populateBacktestWeeks();
-
-});
-
-
-$("backtestModel")
-.addEventListener("change",()=>{
-
-  state.backtestModel =
-    $("backtestModel").value;
-
-});
-
-
-$("runBacktest")
-.addEventListener(
-  "click",
-  runBacktest
-);
+}
 
 
 /* =========================================================
    BAŞLAT
 ========================================================= */
 
-(function init(){
+init();
 
-  if(
-    typeof SPORT_TOTO_DATA === "undefined"
-  ){
-
-    document.body.innerHTML = `
-
-      <div style="
-        padding:30px;
-        font-family:Arial;
-      ">
-
-        <h2>Veri dosyası bulunamadı</h2>
-
-        <p>
-          <strong>spor-toto-data.js</strong>
-          dosyasını spor-toto.html ile aynı klasöre
-          yükleyin.
-        </p>
-
-      </div>
-
-    `;
-
-    return;
-  }
-
-
-  populateSelectors();
-
-})();
 </script>
 
 </body>
