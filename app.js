@@ -500,133 +500,84 @@ const MARKETS = [
     {
         id: "IY05U",
         title: "İY 0.5 Üst",
-        odds: {
-
-    id: "IY05U",
-
-    title: "İY 0.5 Üst",
-
-    odds: match =>
-
-        getOdds(
-
-            match,
-
-            [
-
-                "iy05Ust",
-
-                "iy05U",
-
-                "IY05U",
-
-                "iy05u",
-
-                "iy0_5U",
-
-                "iy0_5Over",
-
-                "iy05Over",
-
-                "IY0.5U",
-
-                "İY0.5Ü",
-
-                "iy05ust",
-
-                "iy0.5ust",
-
-                "iy05üst",
-
-                "iy0.5üst"
-
-            ]
-
-        )
-
-},
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "iy05U",
+                    "IY05U",
+                    "iy05u",
+                    "iy0_5U",
+                    "iy0_5Over",
+                    "iy05Over",
+                    "IY0.5U",
+                    "İY0.5Ü",
+                    "iy05ust",
+                    "iy0.5ust",
+                    "iy05üst",
+                    "iy05Ust",
+                    "IY05_Ust",
+                    "IY05_Üst",
+                    "iy05_over"
+                ]
+            )
+    },
     /* =========================
        İLK YARI 1.5 ÜST
     ========================= */
-{
-
-    id: "IY15U",
-
-    title: "İY 1.5 Üst",
-
-    odds: match =>
-
-        getOdds(
-
-            match,
-
-            [
-
-                "iy15Ust",
-
-                "iy15U",
-
-                "IY15U",
-
-                "iy15u",
-
-                "iy1_5U",
-
-                "iy1_5Over",
-
-                "iy15Over",
-
-                "IY1.5U",
-
-                "İY1.5Ü",
-
-                "iy1.5ust",
-
-                "iy15ust",
-
-                "iy1.5üst",
-
-                "iy15üst"
-
-            ]
-
-        )
-
-},
+    {
+        id: "IY15U",
+        title: "İY 1.5 Üst",
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "iy15U",
+                    "IY15U",
+                    "iy15u",
+                    "iy1_5U",
+                    "iy1_5Over",
+                    "iy15Over",
+                    "IY1.5U",
+                    "İY1.5Ü",
+                    "iy1.5ust",
+                    "iy15ust",
+                    "iy1.5üst",
+                    "iy15üst",
+                    "iy15Ust",
+                    "IY15_Ust",
+                    "IY15_Üst",
+                    "iy15_over"
+                ]
+            )
+    },
     /* =========================
-       {
-    id: "MS25U",
-    title: "2.5 Üst",
-    odds: match =>
-        getOdds(
-            match,
-            [
-                "au25Ust",
-                "au25ust",
-                "AU25Ust",
-                "AU25UST",
-
-                "ms25U",
-                "MS25U",
-                "ms25u",
-
-                "ms2_5U",
-                "ms2_5Over",
-                "ms25Over",
-
-                "MS2.5U",
-                "2.5U",
-                "2_5U",
-
-                "25U",
-                "25ust",
-                "25üst",
-
-                "2.5ust",
-                "2.5üst"
-            ]
-        )
-},
+       2.5 ÜST
+    ========================= */
+    {
+        id: "MS25U",
+        title: "2.5 Üst",
+        odds: match =>
+            getOdds(
+                match,
+                [
+                    "ms25U",
+                    "MS25U",
+                    "ms25u",
+                    "ms2_5U",
+                    "ms2_5Over",
+                    "ms25Over",
+                    "MS2.5U",
+                    "2.5U",
+                    "2_5U",
+                    "25U",
+                    "25ust",
+                    "25üst",
+                    "2.5ust",
+                    "2.5üst"
+                ]
+            )
+    },
     /* =========================
        KG VAR
     ========================= */
