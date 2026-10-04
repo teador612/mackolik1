@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bugünün Maçları</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+body {
+    margin: 0;
+    background: #07111f;
+    color: #eef4ff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+.container {
+    width: min(100%, 900px);
+    margin: auto;
+    padding: 14px;
+}
+/* HEADER */
+.header {
+    background: linear-gradient(135deg, #101d31, #0b1728);
+    border: 1px solid #20324c;
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 14px;
+}
+.header h1 {
+    margin: 0;
+    font-size: 21px;
+    font-weight: 800;
+}
+.header p {
+    margin: 6px 0 0;
+    color: #8392aa;
+    font-size: 12px;
+}
+/* CONTROLS */
+.controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.date-box {
+    flex: 1;
+}
+.date-box input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid #263b57;
+    background: #0e1b2e;
+    color: #fff;
+    outline: none;
+}
+.refresh {
+    width: 44px;
+    border: 1px solid #263b57;
+    border-radius: 10px;
+    background: #102239;
+    color: #8fdcff;
+    font-size: 18px;
+    cursor: pointer;
+}
+.refresh:active {
+    transform: scale(.96);
+}
+/* STATS */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+}
+.stat {
+    background: #0d1a2c;
+    border: 1px solid #1e3048;
+    border-radius: 11px;
+    padding: 11px 8px;
+    text-align: center;
+}
+.stat small {
+    display: block;
+    color: #71829d;
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+.stat strong {
+    font-size: 17px;
+}
+/* MESSAGE */
+.message {
+    text-align: center;
+    padding: 30px 15px;
+    background: #0c1829;
+    border: 1px solid #1e3048;
+    border-radius: 14px;
+    color: #8998ae;
+}
+/* MATCH */
+.match {
+    background: #0c1829;
+    border: 1px solid #1d3049;
+    border-radius: 14px;
+    margin-bottom: 9px;
+    overflow: hidden;
+    transition: .2s;
+}
+.match:hover {
+    border-color: #31577e;
+}
+.match-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 12px;
+}
+.expand {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #29425f;
+    background: #102239;
+    color: #91a8c3;
+    cursor: pointer;
+    font-size: 19px;
+}
+.expand:hover {
+    background: #173452;
+}
+.match-info {
+    min-width: 0;
+    flex: 1;
+}
+.league {
+    color: #7487a2;
+    font-size: 10px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.teams {
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.time {
+    color: #55d4c5;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.score {
+    min-width: 42px;
+    text-align: center;
+    padding: 5px 6px;
+    border-radius: 7px;
+    background: #172a42;
+    border: 1px solid #294461;
+    color: #dce9f8;
+    font-weight: 800;
+    font-size: 12px;
+}
+/* DETAIL */
+.match-detail {
+    display: none;
+    border-top: 1px solid #1a2b41;
+    background: #091522;
+    padding: 12px;
+}
+.match.open .match-detail {
+    display: block;
+}
+.detail-title {
+    color: #7588a3;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+}
+.detail-box {
+    background: #0e1d30;
+    border: 1px solid #20364f;
+    border-radius: 9px;
+    padding: 9px;
+}
+.detail-box span {
+    display: block;
+    color: #71829b;
+    font-size: 9px;
+    margin-bottom: 3px;
+}
+.detail-box strong {
+    font-size: 12px;
+}
+/* ODDS */
+.odds {
+    margin-top: 12px;
+}
+.odds-title {
+    color: #7588a3;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 7px;
+}
+.odds-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+}
+.odd {
+    background: #0e1d30;
+    border: 1px solid #20364f;
+    border-radius: 8px;
+    padding: 7px;
+    text-align: center;
+}
+.odd span {
+    display: block;
+    color: #71829b;
+    font-size: 9px;
+    margin-bottom: 3px;
+}
+.odd strong {
+    font-size: 12px;
+    color: #dce8f7;
+}
+/* RESPONSIVE */
+@media (max-width: 520px) {
+    .container {
+        padding: 10px;
+    }
+    .header {
+        padding: 15px;
+    }
+    .header h1 {
+        font-size: 18px;
+    }
+    .match-head {
+        padding: 10px;
+        gap: 7px;
+    }
+    .expand {
+        width: 30px;
+        height: 30px;
+        flex-basis: 30px;
+        font-size: 17px;
+    }
+    .teams {
+        font-size: 12px;
+    }
+    .stats {
+        gap: 6px;
+    }
+    .stat {
+        padding: 9px 5px;
+    }
+    .stat strong {
+        font-size: 15px;
+    }
+    .odds-list {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⚽ Bugünün Maçları</h1>
+        <p id="dateText">Maçlar yükleniyor...</p>
+    </div>
+    <div class="controls">
+        <div class="date-box">
+            <input type="date" id="dateFilter">
+        </div>
+        <button class="refresh" id="refreshBtn" title="Yenile">
+            ↻
+        </button>
+    </div>
+    <div class="stats">
+        <div class="stat">
+            <small>TOPLAM MAÇ</small>
+            <strong id="totalCount">0</strong>
+        </div>
+        <div class="stat">
+            <small>BAŞLAMAYAN</small>
+            <strong id="unplayedCount">0</strong>
+        </div>
+        <div class="stat">
+            <small>OYNANAN</small>
+            <strong id="playedCount">0</strong>
+        </div>
+    </div>
+    <div id="matches">
+        <div class="message">
+            Maçlar yükleniyor...
+        </div>
+    </div>
+</div>
+<script>
+const DATA_URL = './data/matches.json';
+let allMatches = [];
+/* TÜRKİYE TARİHİ */
+function todayTR() {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+/* TARİH DÖNÜŞTÜR */
+function normalizeDate(value) {
+    if (!value) return '';
+    const s = String(value).trim();
+    /*
+       2026-10-04
+    */
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        return s;
+    }
+    /*
+       04.10.2026
+    */
+    const m = s.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+    if (m) {
+        return `${m[3]}-${m[2]}-${m[1]}`;
+    }
+    /*
+       ISO tarih
+    */
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) {
+        return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+    return s;
+}
+/* JSON YÜKLE */
+async function loadData() {
+    const box = document.getElementById('matches');
+    box.innerHTML = `
+        <div class="message">
+            Maçlar yükleniyor...
+        </div>
+    `;
+    try {
+        const response = await fetch(DATA_URL + '?t=' + Date.now(), {
+            cache: 'no-store'
+        });
+        if (!response.ok) {
+            throw new Error('JSON yüklenemedi');
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            allMatches = data;
+        } else if (Array.isArray(data.matches)) {
+            allMatches = data.matches;
+        } else {
+            allMatches = [];
+        }
+        render();
+    } catch (error) {
+        console.error(error);
+        box.innerHTML = `
+            <div class="message">
+                Veri yüklenemedi.<br><br>
+                <small>
+                    data/matches.json kontrol edin.
+                </small>
+            </div>
+        `;
+    }
+}
+/* SKOR */
+function getScore(match) {
+    const score = match.score;
+    if (!score) return '';
+    if (
+        typeof score === 'object' &&
+        score.home != null &&
+        score.away != null
+    ) {
+        return `${score.home} - ${score.away}`;
+    }
+    if (typeof score === 'string') {
+        return score;
+    }
+    return '';
+}
+/* MAÇ BAŞLADI MI */
+function isPlayed(match) {
+    const score = getScore(match);
+    if (score) {
+        const numbers = score.match(/\d+/g);
+        if (numbers && numbers.length >= 2) {
+            return true;
+        }
+    }
+    const status = String(match.status ?? '').toLowerCase();
+    return [
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        'finished',
+        'finished',
+        'ended',
+        'live'
+    ].includes(status);
+}
+/* ORANLARI BUL */
+function getOdds(match) {
+    const odds =
+        match.openingOdds ||
+        match.openOdds ||
+        match.odds ||
+        match.opening ||
+        {};
+    return odds || {};
+}
+/* ORAN ADI */
+const oddNames = {
+    ms1: 'MS 1',
+    msX: 'MS X',
+    ms2: 'MS 2',
+    iy1: 'İY 1',
+    iyX: 'İY X',
+    iy2: 'İY 2',
+    cs1X: 'ÇŞ 1-X',
+    cs12: 'ÇŞ 1-2',
+    csX2: 'ÇŞ X-2',
+    au25Alt: '2.5 Alt',
+    au25Ust: '2.5 Üst',
+    kgVar: 'KG Var',
+    kgYok: 'KG Yok',
+    iy15Alt: 'İY 1.5 Alt',
+    iy15Ust: 'İY 1.5 Üst',
+    au15Alt: '1.5 Alt',
+    au15Ust: '1.5 Üst',
+    au35Alt: '3.5 Alt',
+    au35Ust: '3.5 Üst',
+    gol01: '0-1 Gol',
+    gol23: '2-3 Gol',
+    gol46: '4-6 Gol',
+    gol7: '7+ Gol',
+    handicap: 'Handikap',
+    handicap1: 'H1',
+    handicapX: 'HX',
+    handicap2: 'H2'
+};
+/* ORAN HTML */
+function renderOdds(match) {
+    const odds = getOdds(match);
+    const keys = Object.keys(odds);
+    const valid = keys.filter(key => {
+        const value = odds[key];
+        return (
+            value !== null &&
+            value !== undefined &&
+            value !== '' &&
+            oddNames[key]
+        );
+    });
+    if (!valid.length) {
+        return '';
+    }
+    return `
+        <div class="odds">
+            <div class="odds-title">
+                ORANLAR
+            </div>
+            <div class="odds-list">
+                ${valid.map(key => `
+                    <div class="odd">
+                        <span>
+                            ${oddNames[key]}
+                        </span>
+                        <strong>
+                            ${odds[key]}
+                        </strong>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+/* MAÇ RENDER */
+function renderMatch(match, index) {
+    const home =
+        match.home ||
+        match.homeTeam ||
+        '-';
+    const away =
+        match.away ||
+        match.awayTeam ||
+        '-';
+    const league =
+        match.league ||
+        match.leagueName ||
+        match.competition ||
+        '';
+    const time =
+        match.time ||
+        '';
+    const score = getScore(match);
+    const played = isPlayed(match);
+    const date =
+        normalizeDate(match.date);
+    const halftime =
+        match.halfTimeScore ||
+        match.htScore ||
+        null;
+    let halftimeText = '-';
+    if (
+        halftime &&
+        halftime.home != null &&
+        halftime.away != null
+    ) {
+        halftimeText =
+            `${halftime.home} - ${halftime.away}`;
+    }
+    return `
+        <div class="match" data-index="${index}">
+            <div class="match-head">
+                <button
+                    class="expand"
+                    onclick="toggleMatch(this)"
+                >
+                    +
+                </button>
+                <div class="match-info">
+                    <div class="league">
+                        ${escapeHTML(league)}
+                    </div>
+                    <div class="teams">
+                        ${escapeHTML(home)}
+                        -
+                        ${escapeHTML(away)}
+                    </div>
+                </div>
+                <div class="time">
+                    ${escapeHTML(time)}
+                </div>
+                ${
+                    score
+                    ?
+                    `<div class="score">
+                        ${escapeHTML(score)}
+                    </div>`
+                    :
+                    ''
+                }
+            </div>
+            <div class="match-detail">
+                <div class="detail-title">
+                    Maç Bilgileri
+                </div>
+                <div class="detail-grid">
+                    <div class="detail-box">
+                        <span>Tarih</span>
+                        <strong>
+                            ${escapeHTML(date || '-')}
+                        </strong>
+                    </div>
+                    <div class="detail-box">
+                        <span>Durum</span>
+                        <strong>
+                            ${
+                                played
+                                ? 'Oynandı / Oynanıyor'
+                                : 'Başlamadı'
+                            }
+                        </strong>
+                    </div>
+                    <div class="detail-box">
+                        <span>Maç Sonucu</span>
+                        <strong>
+                            ${escapeHTML(score || '-')}
+                        </strong>
+                    </div>
+                    <div class="detail-box">
+                        <span>İlk Yarı</span>
+                        <strong>
+                            ${escapeHTML(halftimeText)}
+                        </strong>
+                    </div>
+                </div>
+                ${renderOdds(match)}
+            </div>
+        </div>
+    `;
+}
+/* RENDER */
+function render() {
+    const selectedDate =
+        document.getElementById('dateFilter').value;
+    const matches = allMatches.filter(match => {
+        return normalizeDate(match.date) === selectedDate;
+    });
+    const container =
+        document.getElementById('matches');
+    document.getElementById('totalCount').textContent =
+        matches.length;
+    document.getElementById('playedCount').textContent =
+        matches.filter(isPlayed).length;
+    document.getElementById('unplayedCount').textContent =
+        matches.filter(m => !isPlayed(m)).length;
+    document.getElementById('dateText').textContent =
+        selectedDate
+        ? `Maçlar: ${selectedDate}`
+        : 'Maçlar';
+    if (!matches.length) {
+        container.innerHTML = `
+            <div class="message">
+                Bu tarihte maç bulunamadı.
+            </div>
+        `;
+        return;
+    }
+    /*
+       Saat sıralaması
+    */
+    matches.sort((a, b) => {
+        const ta = String(a.time || '99:99');
+        const tb = String(b.time || '99:99');
+        return ta.localeCompare(tb);
+    });
+    container.innerHTML =
+        matches
+        .map((match, index) =>
+            renderMatch(match, index)
+        )
+        .join('');
+}
+/* AÇ / KAPAT */
+function toggleMatch(button) {
+    const match =
+        button.closest('.match');
+    const isOpen =
+        match.classList.contains('open');
+    match.classList.toggle('open');
+    button.textContent =
+        isOpen ? '+' : '−';
+}
+/* HTML GÜVENLİĞİ */
+function escapeHTML(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+/* TARİHİ BUGÜNE AYARLA */
+document
+    .getElementById('dateFilter')
+    .value = todayTR();
+/* TARİH DEĞİŞİNCE */
+document
+    .getElementById('dateFilter')
+    .addEventListener('change', render);
+/* YENİLE */
+document
+    .getElementById('refreshBtn')
+    .addEventListener('click', loadData);
+/* BAŞLAT */
+loadData();
+</script>
+</body>
+</html>
