@@ -1,13 +1,14 @@
 name: Mackolik skor güncelleme
 
 on:
-  repository_dispatch:
-    types: [run-script]
+  schedule:
+    - cron: "*/15 * * * *"
 
   workflow_dispatch:
 
-  schedule:
-    - cron: '*/15 * * * *'
+  repository_dispatch:
+    types:
+      - run-script
 
 permissions:
   contents: write
@@ -16,209 +17,70 @@ permissions:
 
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
-  update-and-deploy:
-
+  update:
     runs-on: ubuntu-latest
 
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
-
-      # =========================================
-      # REPOYU AL
-      # =========================================
-
-      - name: Depoyu al
+      - name: Repoyu çek
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-
-      # =========================================
-      # NODE.JS
-      # =========================================
-
-      - name: Node.js kur
+      - name: Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-
-      # =========================================
-      # MACKOLIK VERİLERİNİ GÜNCELLE
-      # =========================================
-
-      - name: Skorları ve yeni maçları güncelle
+      # Futbol skorlarını güncelle
+      - name: Mackolik futbol verilerini güncelle
         run: node scripts/update-mackolik.mjs
 
+      # Basketbol verilerini güncelle
+      - name: Mackolik basketbol verilerini güncelle
+        run: node scripts/update-basketball.mjs
 
-      # =========================================
-      # VERİYİ REPOYA KAYDET
-      # =========================================
-
-      - name: Değişiklikleri repoya kaydet
+      # Değişiklikleri kaydet
+      - name: Verileri commit et
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/matches.json
+          git add data/matches.json data/basketball.json
 
           if git diff --cached --quiet; then
-            echo "Yeni skor değişikliği yok."
+            echo "Yeni veri değişikliği yok."
           else
-            git commit -m "Güncel Mackolik skorları"
+            git commit -m "Mackolik futbol ve basketbol verilerini güncelle"
             git push
           fi
 
-
-      # =========================================
-      # GITHUB PAGES
-      # =========================================
-
-      - name: Pages ayarını hazırla
-        uses: actions/configure-pages@v5
-
-
-      # =========================================
-      # SITE DOSYALARINI HAZIRLA
-      # =========================================
-
-      - name: Site dosyalarını hazırla
+      # GitHub Pages için site klasörü
+      - name: Pages klasörünü hazırla
         run: |
-
           rm -rf _site
-
           mkdir -p _site
+
+          # Ana site dosyaları
+          cp -r ./*.html _site/ 2>/dev/null || true
+          cp -r ./*.js _site/ 2>/dev/null || true
+          cp -r css _site/ 2>/dev/null || true
+          cp -r js _site/ 2>/dev/null || true
+
+          # Veri klasörleri
           mkdir -p _site/data
+          cp -r data/* _site/data/
 
+          # Script klasörü Pages'e gerekmez
+          rm -rf _site/scripts
 
-          # -------------------------------------
-          # ANA SAYFA
-          # -------------------------------------
-
-          cp index.html _site/
-
-
-          # -------------------------------------
-          # SKOR SAYFASI
-          # -------------------------------------
-
-          cp skor.html _site/
-
-
-          # -------------------------------------
-          # KUPON SAYFASI
-          # -------------------------------------
-
-          cp kupon.html _site/
-
-
-          # -------------------------------------
-          # SPOR TOTO
-          # -------------------------------------
-
-          cp spor-toto.html _site/
-
-          if [ -f spor-toto-data.js ]; then
-            cp spor-toto-data.js _site/data/
-          fi
-
-
-          # -------------------------------------
-          # BUGÜNÜN MAÇLARI
-          # -------------------------------------
-
-          cp bugunun-maclari.html _site/
-
-          cp bugunun-maclari.js _site/
-
-
-          # -------------------------------------
-          # CSS
-          # -------------------------------------
-
-          cp style.css _site/
-
-          if [ -f kupon.css ]; then
-            cp kupon.css _site/
-          fi
-
-
-          # -------------------------------------
-          # JAVASCRIPT
-          # -------------------------------------
-
-          cp app.js _site/
-
-          if [ -f kupon.js ]; then
-            cp kupon.js _site/
-          fi
-
-
-          # -------------------------------------
-          # PWA
-          # -------------------------------------
-
-          if [ -f manifest.json ]; then
-            cp manifest.json _site/
-          fi
-
-          if [ -f sw.js ]; then
-            cp sw.js _site/
-          fi
-
-
-          # -------------------------------------
-          # MACKOLIK VERİSİ
-          # -------------------------------------
-
-          cp data/matches.json _site/data/
-
-
-          # -------------------------------------
-          # İKONLAR
-          # -------------------------------------
-
-          if [ -f icon-180.png ]; then
-            cp icon-180.png _site/
-          fi
-
-          if [ -f icon-192.png ]; then
-            cp icon-192.png _site/
-          fi
-
-
-          # -------------------------------------
-          # KONTROL
-          # -------------------------------------
-
-          echo "======================================"
-          echo "Yayınlanacak dosyalar:"
-          echo "======================================"
-
+          echo "Pages dosyaları:"
           find _site -maxdepth 2 -type f | sort
 
-          echo "======================================"
-
-
-      # =========================================
-      # PAGES ARTIFACT
-      # =========================================
-
-      - name: Site dosyalarını paketle
+      - name: Pages artifact oluştur
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
-
-      # =========================================
-      # GITHUB PAGES'E YAYINLA
-      # =========================================
 
       - name: GitHub Pages'e yayınla
         id: deployment
