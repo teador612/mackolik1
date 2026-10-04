@@ -10,13 +10,14 @@ const DATA_PATH = path.join(
   "basketball-history.json"
 );
 
-const BASKETBALL_URL =
-  `${BASE_URL}/Basketball/Default.aspx`;
+const BASKETBALL_URL = `${BASE_URL}/Basketball/Default.aspx`;
 
 const USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
   "AppleWebKit/537.36 (KHTML, like Gecko) " +
   "Chrome/140.0 Safari/537.36";
+
+const CURRENT_SEASON = "2026-2027";
 
 /* =========================================================
    YARDIMCI
@@ -52,21 +53,20 @@ function parseDate(value) {
   const month = Number(match[2]);
   const year = Number(match[3]);
 
-  const date = new Date(year, month - 1, day);
-
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
-    return null;
-  }
+  if (month < 1 || month > 12 || day < 1 || day > 31) return null;
 
   return (
     `${year}-` +
     `${String(month).padStart(2, "0")}-` +
     `${String(day).padStart(2, "0")}`
   );
+}
+
+function isCurrentSeasonDate(dateStr) {
+  if (!dateStr) return false;
+  const year = Number(dateStr.split("-")[0]);
+  // Basketbol sezonu 2026 Sonbahar - 2027 İlkbahar arası oynanır
+  return year === 2026 || year === 2027;
 }
 
 function makeId(date, home, away) {
@@ -81,27 +81,34 @@ function makeId(date, home, away) {
    HTTP
 ========================================================= */
 
-async function fetchHtml(url) {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": USER_AGENT,
-        "Accept":
-          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
-        "Cache-Control": "no-cache"
+async function fetchHtml(url, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": USER_AGENT,
+          "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+          "Cache-Control": "no-cache",
+          "Referer": `${BASE_URL}/Basketball/Default.aspx`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      return await response.text();
+
+    } catch (error) {
+      if (attempt >= retries) {
+        throw error;
+      }
+      await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
     }
-
-    return await response.text();
-
-  } catch (error) {
-    throw error;
   }
+
+  throw new Error("HTML alınamadı");
 }
 
 /* =========================================================
@@ -121,63 +128,54 @@ function readHistory() {
       return json;
     }
 
-    if (Array.isArray(json.matches)) {
+    if (json && Array.isArray(json.matches)) {
       return json.matches;
     }
 
     return [];
 
   } catch (error) {
-    console.log(
-      "⚠️ basketball-history.json okunamadı:",
-      error.message
-    );
-
+    console.log("⚠️ basketball-history.json okunamadı:", error.message);
     return [];
   }
 }
 
 /* =========================================================
-   SADECE GÜNCEL SEZON LİGLERİ
+   LİG EKLE
 ========================================================= */
 
-function addLeague(map, id, name = "", type = "standing") {
+function addLeague(map, id, name, urls) {
   if (!id) return;
 
   id = String(id).trim();
-
   if (!/^\d+$/.test(id)) return;
 
-  name = normalizeText(name);
-
-  const key = `${type}:${id}`;
+  name = normalizeText(name) || `Basketbol ${id}`;
+  const key = id;
 
   if (!map.has(key)) {
     map.set(key, {
       id,
-      name: name || `Basketbol ${id}`,
-      type
+      name,
+      urls: [...new Set(urls || [])]
     });
-  } else {
-    const current = map.get(key);
-
-    if (
-      current.name.startsWith("Basketbol ") &&
-      name
-    ) {
-      current.name = name;
-    }
+    return;
   }
+
+  const current = map.get(key);
+
+  if (current.name.startsWith("Basketbol ") && !name.startsWith("Basketbol ")) {
+    current.name = name;
+  }
+
+  current.urls = [...new Set([...current.urls, ...(urls || [])])];
 }
 
-/*
-  SADECE açıkça mevcut sezon sayfalarında bulunan
-  bağlantıları yakalıyoruz.
+/* =========================================================
+   GÜNCEL SEZON LİG KEŞFİ
+========================================================= */
 
-  Eski sezon ID'lerini manuel olarak eklemiyoruz.
-*/
-
-function discoverCurrentSeasonLeagues(html) {
+function discoverLeagues(html) {
   const $ = cheerio.load(html);
   const leagues = new Map();
 
@@ -185,69 +183,43 @@ function discoverCurrentSeasonLeagues(html) {
     const href = $(element).attr("href") || "";
     const text = normalizeText($(element).text());
 
-    let match;
-
-    /*
-      Standing
-    */
-
-    match = href.match(
-      /\/Basketball\/Standing\/Default\.aspx\?[^#]*?\bid=(\d+)/i
-    );
-
+    let match = href.match(/Basketball\/Standing\/Default\.aspx\?[^#]*?\bid=(\d+)/i);
     if (match) {
-      addLeague(
-        leagues,
-        match[1],
-        text,
-        "standing-id"
-      );
+      const id = match[1];
+      addLeague(leagues, id, text, [
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=${id}`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=${id}`
+      ]);
       return;
     }
 
-    match = href.match(
-      /\/Basketball\/Standing\/Default\.aspx\?[^#]*?\bsId=(\d+)/i
-    );
-
+    match = href.match(/Basketball\/Standing\/Default\.aspx\?[^#]*?\bsId=(\d+)/i);
     if (match) {
-      addLeague(
-        leagues,
-        match[1],
-        text,
-        "standing-sid"
-      );
+      const id = match[1];
+      addLeague(leagues, id, text, [
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=${id}`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=${id}`
+      ]);
       return;
     }
 
-    /*
-      Cups
-    */
-
-    match = href.match(
-      /\/Basketball\/Cups\/Default\.aspx\?[^#]*?\bid=(\d+)/i
-    );
-
+    match = href.match(/Basketball\/Cups\/Default\.aspx\?[^#]*?\bid=(\d+)/i);
     if (match) {
-      addLeague(
-        leagues,
-        match[1],
-        text,
-        "cup-id"
-      );
+      const id = match[1];
+      addLeague(leagues, id, text, [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=${id}`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=${id}`
+      ]);
       return;
     }
 
-    match = href.match(
-      /\/Basketball\/Cups\/Default\.aspx\?[^#]*?\bsId=(\d+)/i
-    );
-
+    match = href.match(/Basketball\/Cups\/Default\.aspx\?[^#]*?\bsId=(\d+)/i);
     if (match) {
-      addLeague(
-        leagues,
-        match[1],
-        text,
-        "cup-sid"
-      );
+      const id = match[1];
+      addLeague(leagues, id, text, [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=${id}`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=${id}`
+      ]);
     }
   });
 
@@ -255,46 +227,62 @@ function discoverCurrentSeasonLeagues(html) {
 }
 
 /* =========================================================
-   BİLİNEN GÜNCEL SEZON LİGLERİ
+   GÜNCEL SEZON BİLİNEN LİGLER
 ========================================================= */
-
-/*
-  Bunlar mevcut sezon için bildiğimiz güncel sayfalar.
-
-  ESKİ SEZON ID'LERİ BURADA YOK.
-*/
 
 function getKnownCurrentSeasonLeagues() {
   return [
     {
       id: "1",
-      name: "Türkiye Basketbol",
-      type: "standing-id"
+      name: "Türkiye Basketbol Süper Ligi",
+      urls: [
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=1`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=1`
+      ]
     },
     {
       id: "300",
       name: "Türkiye Sigorta TBL",
-      type: "standing-id"
+      urls: [
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=300`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=300`
+      ]
     },
     {
       id: "8",
       name: "EuroLeague",
-      type: "cup-id"
+      urls: [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=8`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=8`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=8`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=8`
+      ]
     },
     {
       id: "23",
       name: "Türkiye Cumhurbaşkanlığı Kupası",
-      type: "cup-id"
+      urls: [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=23`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=23`
+      ]
     },
     {
       id: "1629",
       name: "Şampiyonlar Ligi",
-      type: "cup-id"
+      urls: [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=1629`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=1629`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?id=1629`,
+        `${BASE_URL}/Basketball/Standing/Default.aspx?sId=1629`
+      ]
     },
     {
       id: "10809",
       name: "Kıtalararası Kupası",
-      type: "cup-id"
+      urls: [
+        `${BASE_URL}/Basketball/Cups/Default.aspx?id=10809`,
+        `${BASE_URL}/Basketball/Cups/Default.aspx?sId=10809`
+      ]
     }
   ];
 }
@@ -305,7 +293,6 @@ function getKnownCurrentSeasonLeagues() {
 
 function parseMatchesFromPage(html, league) {
   const $ = cheerio.load(html);
-
   const matches = [];
 
   $("tr").each((_, row) => {
@@ -316,65 +303,44 @@ function parseMatchesFromPage(html, league) {
 
     if (cells.length < 3) return;
 
-    const rowText = normalizeText(
-      cells.join(" | ")
-    );
+    const rowText = normalizeText(cells.join(" | "));
 
     /*
       Tarih
     */
 
-    const dateMatch = rowText.match(
-      /\b(\d{1,2}[./-]\d{1,2}[./-]\d{4})\b/
-    );
-
+    const dateMatch = rowText.match(/\b(\d{1,2}[./-]\d{1,2}[./-]\d{4})\b/);
     if (!dateMatch) return;
 
     const date = parseDate(dateMatch[1]);
-
     if (!date) return;
 
     /*
-      Skor
+      SADECE 2026 VE 2027 (2026-2027 SEZONU)
     */
 
-    const scoreMatches =
-      rowText.match(/\b(\d{1,3})\s*-\s*(\d{1,3})\b/g);
-
-    if (!scoreMatches || scoreMatches.length === 0) {
+    if (!isCurrentSeasonDate(date)) {
       return;
     }
 
-    let finalScore = null;
-
     /*
-      Genellikle son skor MS skorudur.
+      Skorlar
     */
 
+    const scoreMatches = rowText.match(/\b(\d{1,3})\s*-\s*(\d{1,3})\b/g);
+    if (!scoreMatches || scoreMatches.length === 0) return;
+
+    let finalScore = null;
+
     for (let i = scoreMatches.length - 1; i >= 0; i--) {
-      const m = scoreMatches[i].match(
-        /(\d+)\s*-\s*(\d+)/
-      );
+      const match = scoreMatches[i].match(/(\d+)\s*-\s*(\d+)/);
+      if (!match) continue;
 
-      if (!m) continue;
+      const home = Number(match[1]);
+      const away = Number(match[2]);
 
-      const a = Number(m[1]);
-      const b = Number(m[2]);
-
-      /*
-        Basketbolda geçerli skor.
-      */
-
-      if (
-        a >= 0 &&
-        b >= 0 &&
-        a <= 250 &&
-        b <= 250
-      ) {
-        finalScore = {
-          home: a,
-          away: b
-        };
+      if (home >= 0 && away >= 0 && home <= 250 && away <= 250) {
+        finalScore = { home, away };
         break;
       }
     }
@@ -385,17 +351,12 @@ function parseMatchesFromPage(html, league) {
     const awayScore = finalScore.away;
 
     /*
-      Skorun bulunduğu hücre
+      Takımlar
     */
 
     let scoreIndex = -1;
-
     for (let i = 0; i < cells.length; i++) {
-      if (
-        /\b\d{1,3}\s*-\s*\d{1,3}\b/.test(
-          cells[i]
-        )
-      ) {
+      if (/\b\d{1,3}\s*-\s*\d{1,3}\b/.test(cells[i])) {
         scoreIndex = i;
         break;
       }
@@ -406,56 +367,23 @@ function parseMatchesFromPage(html, league) {
     let home = "";
     let away = "";
 
-    /*
-      En sık görülen yapı:
-
-      Tarih | Ev Sahibi | Skor | Deplasman
-    */
-
-    if (
-      scoreIndex > 0 &&
-      scoreIndex + 1 < cells.length
-    ) {
+    if (scoreIndex > 0 && scoreIndex + 1 < cells.length) {
       home = cells[scoreIndex - 1];
       away = cells[scoreIndex + 1];
     }
 
-    /*
-      Alternatif yapı
-    */
-
     if (!home || !away) {
       const candidates = cells.filter(cell => {
         if (!cell) return false;
-
-        if (
-          /^\d{1,2}[./-]\d{1,2}[./-]\d{4}$/
-            .test(cell)
-        ) {
-          return false;
-        }
-
-        if (
-          /^(MS|UZ|ERT|İPT|CANLI)$/i.test(cell)
-        ) {
-          return false;
-        }
-
-        if (
-          /^\d{1,3}\s*-\s*\d{1,3}$/.test(cell)
-        ) {
-          return false;
-        }
-
+        if (/^\d{1,2}[./-]\d{1,2}[./-]\d{4}$/.test(cell)) return false;
+        if (/^(MS|UZ|ERT|İPT|CANLI)$/i.test(cell)) return false;
+        if (/^\d{1,3}\s*-\s*\d{1,3}$/.test(cell)) return false;
         return cell.length >= 2;
       });
 
       if (candidates.length >= 2) {
-        home =
-          candidates[candidates.length - 2];
-
-        away =
-          candidates[candidates.length - 1];
+        home = candidates[candidates.length - 2];
+        away = candidates[candidates.length - 1];
       }
     }
 
@@ -469,78 +397,46 @@ function parseMatchesFromPage(html, league) {
     }
 
     /*
-      İY skorunu bulmaya çalış.
+      İY Skoru
     */
 
     let halfHomeScore = null;
     let halfAwayScore = null;
 
     if (scoreMatches.length >= 2) {
-      for (
-        let i = 0;
-        i < scoreMatches.length - 1;
-        i++
-      ) {
-        const first =
-          scoreMatches[i].match(
-            /(\d+)\s*-\s*(\d+)/
-          );
-
+      for (let i = 0; i < scoreMatches.length - 1; i++) {
+        const first = scoreMatches[i].match(/(\d+)\s*-\s*(\d+)/);
         if (!first) continue;
 
-        const firstHome = Number(first[1]);
-        const firstAway = Number(first[2]);
+        const h = Number(first[1]);
+        const a = Number(first[2]);
 
-        if (
-          firstHome > 150 ||
-          firstAway > 150
-        ) {
-          continue;
+        if (h <= 150 && a <= 150) {
+          halfHomeScore = h;
+          halfAwayScore = a;
+          break;
         }
-
-        halfHomeScore = firstHome;
-        halfAwayScore = firstAway;
-
-        break;
       }
     }
 
     matches.push({
       id: makeId(date, home, away),
-
       date,
       time: "",
-
       home,
       away,
-
       homeScore,
       awayScore,
-
       halfHomeScore,
       halfAwayScore,
-
-      total:
-        homeScore + awayScore,
-
-      league:
-        league.name ||
-        "Bilinmeyen",
-
-      leagueId:
-        league.id || null,
-
-      source:
-        "mackolik"
+      total: homeScore + awayScore,
+      league: league.name || "Bilinmeyen",
+      leagueId: league.id || null,
+      source: "mackolik"
     });
   });
 
-  /*
-    Aynı sayfadaki tekrarları temizle.
-  */
-
   const unique = new Map();
-
   for (const match of matches) {
     unique.set(match.id, match);
   }
@@ -553,68 +449,26 @@ function parseMatchesFromPage(html, league) {
 ========================================================= */
 
 async function fetchLeague(league, index, total) {
-  console.log(
-    `\n[${index}/${total}] ` +
-    `${league.name} (${league.id})`
-  );
-
-  const urls = [];
-
-  if (league.type === "standing-id") {
-    urls.push(
-      `${BASE_URL}/Basketball/Standing/Default.aspx?id=${league.id}`
-    );
-  }
-
-  if (league.type === "standing-sid") {
-    urls.push(
-      `${BASE_URL}/Basketball/Standing/Default.aspx?sId=${league.id}`
-    );
-  }
-
-  if (league.type === "cup-id") {
-    urls.push(
-      `${BASE_URL}/Basketball/Cups/Default.aspx?id=${league.id}`
-    );
-  }
-
-  if (league.type === "cup-sid") {
-    urls.push(
-      `${BASE_URL}/Basketball/Cups/Default.aspx?sId=${league.id}`
-    );
-  }
+  console.log(`\n[${index}/${total}] ${league.name} (${league.id})`);
 
   let bestMatches = [];
 
-  for (const url of urls) {
+  for (const url of league.urls) {
     try {
-      const html =
-        await fetchHtml(url);
+      const html = await fetchHtml(url, 3);
+      const matches = parseMatchesFromPage(html, league);
 
-      const matches =
-        parseMatchesFromPage(
-          html,
-          league
-        );
-
-      if (
-        matches.length >
-        bestMatches.length
-      ) {
+      if (matches.length > bestMatches.length) {
         bestMatches = matches;
       }
 
       if (matches.length > 0) {
-        console.log(
-          `   → ${matches.length} maç`
-        );
+        console.log(`   → ${matches.length} maç`);
         break;
       }
 
     } catch (error) {
-      console.log(
-        `   ⚠️ HTTP hata: ${error.message}`
-      );
+      console.log(`   ⚠️ ${url} → ${error.message}`);
     }
   }
 
@@ -626,76 +480,52 @@ async function fetchLeague(league, index, total) {
 }
 
 /* =========================================================
-   TEMİZLE
+   TEMİZLE / TEKİLLEŞTİR
 ========================================================= */
 
 function cleanMatches(matches) {
   const map = new Map();
 
   for (const match of matches) {
-    if (!match) continue;
+    if (!match || !match.date || !match.home || !match.away) {
+      continue;
+    }
 
-    if (
-      !match.date ||
-      !match.home ||
-      !match.away
-    ) {
+    /*
+      2026-2027 Sezonu Kontrolü
+    */
+
+    if (!isCurrentSeasonDate(match.date)) {
       continue;
     }
 
     if (
-      !Number.isFinite(
-        Number(match.homeScore)
-      ) ||
-      !Number.isFinite(
-        Number(match.awayScore)
-      )
+      !Number.isFinite(Number(match.homeScore)) ||
+      !Number.isFinite(Number(match.awayScore))
     ) {
       continue;
     }
 
-    const id =
-      match.id ||
-      makeId(
-        match.date,
-        match.home,
-        match.away
-      );
+    const id = match.id || makeId(match.date, match.home, match.away);
 
     map.set(id, {
       ...match,
-
       id,
-
-      homeScore:
-        Number(match.homeScore),
-
-      awayScore:
-        Number(match.awayScore),
-
-      total:
-        Number(match.homeScore) +
-        Number(match.awayScore)
+      homeScore: Number(match.homeScore),
+      awayScore: Number(match.awayScore),
+      total: Number(match.homeScore) + Number(match.awayScore)
     });
   }
 
-  return [...map.values()].sort(
-    (a, b) => {
-      if (a.date !== b.date) {
-        return a.date.localeCompare(
-          b.date
-        );
-      }
-
-      return (
-        normalizeTeam(a.home) +
-        normalizeTeam(a.away)
-      ).localeCompare(
-        normalizeTeam(b.home) +
-        normalizeTeam(b.away)
-      );
+  return [...map.values()].sort((a, b) => {
+    if (a.date !== b.date) {
+      return a.date.localeCompare(b.date);
     }
-  );
+
+    return (normalizeTeam(a.home) + normalizeTeam(a.away)).localeCompare(
+      normalizeTeam(b.home) + normalizeTeam(b.away)
+    );
+  });
 }
 
 /* =========================================================
@@ -704,298 +534,99 @@ function cleanMatches(matches) {
 
 async function main() {
   console.log("");
-  console.log(
-    "=============================================="
-  );
-  console.log(
-    "🏀 MACKOLİK BASKETBOL GEÇMİŞİ"
-  );
-  console.log(
-    "=============================================="
-  );
-  console.log(
-    "📅 Sezon: SADECE MEVCUT SEZON"
-  );
-  console.log(
-    "📚 Tarih sınırı: YOK"
-  );
-  console.log(
-    "🚫 Eski sezonlar: KAPALI"
-  );
+  console.log("==============================================");
+  console.log("🏀 MACKOLİK BASKETBOL GEÇMİŞİ");
+  console.log("==============================================");
+  console.log(`📅 Sezon: ${CURRENT_SEASON}`);
+  console.log("📚 Tarih sınırı: YOK");
+  console.log("🚫 Eski sezonlar: KAPALI");
   console.log("");
 
-  /*
-    Eski kayıtları koru.
-  */
+  const oldMatches = readHistory();
+  console.log(`Mevcut kayıt: ${oldMatches.length}\n`);
 
-  const oldMatches =
-    readHistory();
-
-  console.log(
-    `Mevcut kayıt: ${oldMatches.length}`
-  );
-
-  /*
-    Ana basketbol sayfası
-  */
-
-  console.log("");
-  console.log(
-    "🏀 Mackolik basketbol sayfası alınıyor..."
-  );
+  console.log("🏀 Mackolik basketbol sayfası alınıyor...");
 
   let basketballHtml;
-
   try {
-    basketballHtml =
-      await fetchHtml(
-        BASKETBALL_URL
-      );
-
+    basketballHtml = await fetchHtml(BASKETBALL_URL, 3);
   } catch (error) {
-    console.error(
-      "❌ Basketbol sayfası alınamadı:",
-      error.message
-    );
-
+    console.error("❌ Basketbol sayfası alınamadı:", error.message);
     process.exit(1);
   }
 
-  console.log(
-    `Basketbol HTML uzunluğu: ${basketballHtml.length}`
-  );
+  console.log(`Basketbol HTML uzunluğu: ${basketballHtml.length}`);
 
-  /*
-    Ana sayfadan güncel sezon liglerini
-    bulmayı dene.
-  */
+  const discovered = discoverLeagues(basketballHtml);
+  console.log(`🏆 Ana sayfadan bulunan güncel lig: ${discovered.length}`);
 
-  const discovered =
-    discoverCurrentSeasonLeagues(
-      basketballHtml
-    );
-
-  console.log(
-    `🏆 Ana sayfadan bulunan güncel lig: ${discovered.length}`
-  );
-
-  /*
-    Sadece bilinen güncel sezon liglerini
-    ekle.
-  */
-
-  const leagueMap =
-    new Map();
+  const leagueMap = new Map();
 
   for (const league of discovered) {
-    leagueMap.set(
-      `${league.type}:${league.id}`,
-      league
-    );
+    leagueMap.set(league.id, league);
   }
 
-  /*
-    Güncel sezon bilinen ligleri
-    ekle.
-  */
-
-  for (
-    const league of
-    getKnownCurrentSeasonLeagues()
-  ) {
-    leagueMap.set(
-      `${league.type}:${league.id}`,
-      league
-    );
+  for (const league of getKnownCurrentSeasonLeagues()) {
+    if (leagueMap.has(league.id)) {
+      const current = leagueMap.get(league.id);
+      current.name = league.name;
+      current.urls = [...new Set([...current.urls, ...league.urls])];
+    } else {
+      leagueMap.set(league.id, league);
+    }
   }
 
-  const leagues =
-    [...leagueMap.values()];
-
-  console.log(
-    `🏆 Taranacak güncel sezon ligleri: ${leagues.length}`
-  );
-
-  console.log("");
-
-  /*
-    Ligleri tara
-  */
+  const leagues = [...leagueMap.values()];
+  console.log(`🏆 Taranacak güncel sezon ligleri: ${leagues.length}`);
 
   const newMatches = [];
 
-  for (
-    let i = 0;
-    i < leagues.length;
-    i++
-  ) {
-    const matches =
-      await fetchLeague(
-        leagues[i],
-        i + 1,
-        leagues.length
-      );
+  for (let i = 0; i < leagues.length; i++) {
+    const matches = await fetchLeague(leagues[i], i + 1, leagues.length);
+    newMatches.push(...matches);
 
-    newMatches.push(
-      ...matches
-    );
-
-    /*
-      Mackolik'i gereksiz
-      zorlamamak için küçük bekleme.
-    */
-
-    await new Promise(
-      resolve =>
-        setTimeout(resolve, 200)
-    );
+    // Rate-limit ve 502 engeli için 1 saniyelik bekleme
+    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  /*
-    Birleştir
-  */
+  console.log("\n🔄 Veriler birleştiriliyor...");
 
-  console.log("");
-  console.log(
-    "🔄 Veriler birleştiriliyor..."
-  );
+  const merged = [...oldMatches, ...newMatches];
+  const cleaned = cleanMatches(merged);
 
-  const merged = [
-    ...oldMatches,
-    ...newMatches
-  ];
-
-  const cleaned =
-    cleanMatches(
-      merged
-    );
-
-  /*
-    İstatistik
-  */
-
-  const leagueNames =
-    new Set(
-      cleaned
-        .map(
-          match => match.league
-        )
-        .filter(Boolean)
-    );
-
-  const dates =
-    new Set(
-      cleaned
-        .map(
-          match => match.date
-        )
-        .filter(Boolean)
-    );
-
-  /*
-    Çıktı
-  */
+  const leagueNames = new Set(cleaned.map(m => m.league).filter(Boolean));
+  const dates = new Set(cleaned.map(m => m.date).filter(Boolean));
 
   const output = {
-    source:
-      BASKETBALL_URL,
-
-    updatedAt:
-      new Date().toISOString(),
-
-    season:
-      "2026-2027",
-
-    historyDays:
-      null,
-
-    historyLimit:
-      "none",
-
-    oldSeasons:
-      false,
-
-    leagueCount:
-      leagueNames.size,
-
-    dateCount:
-      dates.size,
-
-    matchCount:
-      cleaned.length,
-
-    matches:
-      cleaned
+    source: BASKETBALL_URL,
+    updatedAt: new Date().toISOString(),
+    season: CURRENT_SEASON,
+    historyDays: null,
+    historyLimit: "none",
+    oldSeasons: false,
+    leagueCount: leagueNames.size,
+    dateCount: dates.size,
+    matchCount: cleaned.length,
+    matches: cleaned
   };
 
-  fs.mkdirSync(
-    path.dirname(DATA_PATH),
-    {
-      recursive: true
-    }
-  );
+  fs.mkdirSync(path.dirname(DATA_PATH), { recursive: true });
+  fs.writeFileSync(DATA_PATH, JSON.stringify(output, null, 2), "utf8");
 
-  fs.writeFileSync(
-    DATA_PATH,
-    JSON.stringify(
-      output,
-      null,
-      2
-    ),
-    "utf8"
-  );
-
-  /*
-    Sonuç
-  */
-
-  console.log("");
-  console.log(
-    "=============================================="
-  );
-  console.log(
-    "✅ BASKETBOL GEÇMİŞİ TAMAMLANDI"
-  );
-  console.log(
-    "=============================================="
-  );
-
-  console.log(
-    `🆕 Yeni bulunan maç: ${newMatches.length}`
-  );
-
-  console.log(
-    `📦 Toplam benzersiz maç: ${cleaned.length}`
-  );
-
-  console.log(
-    `🏆 Lig sayısı: ${leagueNames.size}`
-  );
-
-  console.log(
-    `📅 Tarih sayısı: ${dates.size}`
-  );
-
-  console.log(
-    "📚 Sezon: 2026-2027"
-  );
-
-  console.log(
-    "🚫 Eski sezonlar: alınmadı"
-  );
-
-  console.log(
-    `💾 Dosya: ${DATA_PATH}`
-  );
-
-  console.log("");
+  console.log("\n==============================================");
+  console.log("✅ BASKETBOL GEÇMİŞİ TAMAMLANDI");
+  console.log("==============================================");
+  console.log(`🆕 Yeni bulunan maç: ${newMatches.length}`);
+  console.log(`📦 Toplam benzersiz maç: ${cleaned.length}`);
+  console.log(`🏆 Lig sayısı: ${leagueNames.size}`);
+  console.log(`📅 Tarih sayısı: ${dates.size}`);
+  console.log(`📚 Sezon: ${CURRENT_SEASON}`);
+  console.log("🚫 Eski sezonlar: alınmadı");
+  console.log(`💾 Dosya: ${DATA_PATH}\n`);
 }
 
 main().catch(error => {
-  console.error("");
-  console.error(
-    "❌ KRİTİK HATA"
-  );
+  console.error("\n❌ KRİTİK HATA");
   console.error(error);
   process.exit(1);
 });
