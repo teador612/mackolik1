@@ -43,6 +43,14 @@ jobs:
           node-version: 20
 
       # ==========================================
+      # CHEERIO
+      # ==========================================
+
+      - name: Cheerio kur
+        run: |
+          npm install cheerio
+
+      # ==========================================
       # FUTBOL
       # ==========================================
 
@@ -78,7 +86,6 @@ jobs:
 
           if [ -f data/basketball.json ]; then
             echo "basketball.json mevcut"
-            echo "Boyut:"
             wc -c data/basketball.json
           else
             echo "basketball.json BULUNAMADI"
@@ -87,7 +94,6 @@ jobs:
 
           if [ -f data/basketball-history.json ]; then
             echo "basketball-history.json mevcut"
-            echo "Boyut:"
             wc -c data/basketball-history.json
           else
             echo "basketball-history.json bulunamadı"
@@ -125,20 +131,14 @@ jobs:
           mkdir -p _site
           mkdir -p _site/data
 
-          # HTML
           cp ./*.html _site/ 2>/dev/null || true
-
-          # JS
           cp ./*.js _site/ 2>/dev/null || true
 
-          # CSS / JS klasörleri varsa
           cp -r css _site/ 2>/dev/null || true
           cp -r js _site/ 2>/dev/null || true
 
-          # Veri dosyaları
           cp -r data/* _site/data/
 
-          # Scriptleri Pages'e gönderme
           rm -rf _site/scripts
 
           echo "======================================"
