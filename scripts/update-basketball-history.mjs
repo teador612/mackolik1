@@ -1,253 +1,251 @@
-/**
- * BILYONER BASKETBOL VERİ TESTİ
- *
- * SADECE TEST
- * basketball-history.json DEĞİŞTİRİLMEZ.
- */
+import fs from "fs/promises";
 
 const BASE = "https://www.bilyoner.com";
 
-const HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-    "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
-
-  "Accept":
-    "application/json,text/plain,*/*",
-
-  "Accept-Language":
-    "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
-
-  "Referer":
-    "https://www.bilyoner.com/canli-skor/basketbol-canli-skor",
-
-  "Origin":
-    "https://www.bilyoner.com",
-
-  "Cache-Control":
-    "no-cache",
-
-  "Pragma":
-    "no-cache"
-};
-
-const ENDPOINTS = [
-  "/mobile/live-score/header",
-
-  "/mobile/live-stream/events",
-
-  "/mobile/live-stream/header/v2",
-
-  "/api/sse/subscribe",
-
-  "/canli-iddaa/basketbol",
-
-  "/canli-skor/basketbol-canli-skor",
-
-  "/api"
+const JS_URLS = [
+  "https://www.bilyoner.com/static/LiveScores.9c1b4952.js",
+  "https://www.bilyoner.com/static/main.be011cf9.js",
 ];
 
-function clean(value) {
-  return String(value || "")
-    .replace(/\\u002F/g, "/")
-    .replace(/\\"/g, '"')
-    .replace(/\\n/g, " ")
+const SEARCH_TERMS = [
+  "/api/",
+  "api/",
+  "api.",
+  "fetch(",
+  "axios",
+  "live-score",
+  "liveScore",
+  "live-score/header",
+  "live-stream",
+  "basketball",
+  "basketbol",
+  "matches",
+  "events",
+  "scores",
+  "score",
+  "fixture",
+  "fixtures",
+  "results",
+  "result",
+  "match",
+  "event",
+  "league",
+  "lig-karti",
+  "mac-karti",
+  "spor-data",
+  "aggregator",
+];
+
+function unique(arr) {
+  return [...new Set(arr)];
+}
+
+function extractUrls(text) {
+  const urls = [];
+
+  const patterns = [
+    /https?:\/\/[^"'`\s\\]+/g,
+    /["'`]((?:\/|https?:\/\/)[^"'`]+)["'`]/g,
+  ];
+
+  for (const regex of patterns) {
+    for (const m of text.matchAll(regex)) {
+      const value = m[1] || m[0];
+
+      if (
+        value.includes("bilyoner") ||
+        value.startsWith("/api") ||
+        value.startsWith("/mobile") ||
+        value.startsWith("/v3") ||
+        value.startsWith("/sports-data") ||
+        value.startsWith("/lig-") ||
+        value.startsWith("/mac-") ||
+        value.startsWith("/canli-")
+      ) {
+        urls.push(value);
+      }
+    }
+  }
+
+  return unique(urls);
+}
+
+function context(text, index, radius = 500) {
+  const start = Math.max(0, index - radius);
+  const end = Math.min(text.length, index + radius);
+
+  return text
+    .slice(start, end)
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function printPreview(text) {
-  const value = clean(text);
+function normalizeUrl(url) {
+  if (!url) return null;
 
-  console.log("");
-  console.log("---------- CEVAP BAŞLANGICI ----------");
-  console.log(value.slice(0, 10000));
-  console.log("---------- CEVAP SONU ----------");
-  console.log("");
-}
-
-function searchMatchPatterns(text) {
-  const patterns = [
-    /\d{1,3}\s*[-:]\s*\d{1,3}/g,
-
-    /"homeTeam"\s*:\s*"([^"]+)"/gi,
-
-    /"awayTeam"\s*:\s*"([^"]+)"/gi,
-
-    /"home"\s*:\s*"([^"]+)"/gi,
-
-    /"away"\s*:\s*"([^"]+)"/gi,
-
-    /"homeScore"\s*:\s*(\d+)/gi,
-
-    /"awayScore"\s*:\s*(\d+)/gi,
-
-    /"eventId"\s*:\s*"?([^",}]+)"?/gi,
-
-    /"betRadarId"\s*:\s*"?([^",}]+)"?/gi,
-
-    /"leagueId"\s*:\s*"?([^",}]+)"?/gi,
-
-    /"sportId"\s*:\s*"?([^",}]+)"?/gi
-  ];
-
-  for (const regex of patterns) {
-    const matches = [...text.matchAll(regex)];
-
-    if (matches.length) {
-      console.log("");
-      console.log(
-        `🔎 ${regex} -> ${matches.length} eşleşme`
-      );
-
-      for (const match of matches.slice(0, 20)) {
-        console.log(
-          " ",
-          match[0].slice(0, 500)
-        );
-      }
-    }
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
   }
+
+  if (url.startsWith("/")) {
+    return BASE + url;
+  }
+
+  return null;
 }
 
-async function request(url, method = "GET") {
-  console.log("");
-  console.log("========================================");
-  console.log("URL:", url);
-  console.log("METHOD:", method);
+async function fetchText(url) {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36",
+      Accept:
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
+    },
+    redirect: "follow",
+  });
+
+  return {
+    status: res.status,
+    contentType: res.headers.get("content-type") || "",
+    text: await res.text(),
+  };
+}
+
+console.log("========================================");
+console.log("🏀 BILYONER GERÇEK API KEŞİF TESTİ");
+console.log("========================================\n");
+
+const allCandidates = [];
+
+for (const jsUrl of JS_URLS) {
+  console.log("\n========================================");
+  console.log("📦 JS:", jsUrl);
   console.log("========================================");
 
   try {
-    const response = await fetch(url, {
-      method,
-      headers: HEADERS,
-      redirect: "follow"
-    });
+    const result = await fetchText(jsUrl);
 
-    const text = await response.text();
+    console.log("HTTP:", result.status);
+    console.log("Content-Type:", result.contentType);
+    console.log("Uzunluk:", result.text.length);
 
-    console.log("HTTP:", response.status);
-    console.log("Final URL:", response.url);
-    console.log(
-      "Content-Type:",
-      response.headers.get("content-type")
-    );
-    console.log(
-      "Uzunluk:",
-      text.length
-    );
-
-    if (text) {
-      printPreview(text);
-      searchMatchPatterns(text);
+    if (result.status !== 200) {
+      continue;
     }
 
-    return {
-      status: response.status,
-      ok: response.ok,
-      text
-    };
+    const js = result.text;
 
-  } catch (error) {
-    console.log(
-      "❌ HATA:",
-      error.message
-    );
+    const urls = extractUrls(js);
 
-    return {
-      status: 0,
-      ok: false,
-      text: ""
-    };
+    console.log("Bulunan URL adayı:", urls.length);
+
+    for (const url of urls) {
+      allCandidates.push(url);
+    }
+
+    for (const term of SEARCH_TERMS) {
+      const lower = js.toLowerCase();
+      const needle = term.toLowerCase();
+
+      let pos = 0;
+      let count = 0;
+
+      while (true) {
+        const found = lower.indexOf(needle, pos);
+
+        if (found === -1) break;
+
+        count++;
+
+        if (count <= 3) {
+          console.log(`\n🔎 "${term}" bulundu:`);
+          console.log(context(js, found, 700));
+        }
+
+        pos = found + needle.length;
+      }
+
+      if (count > 0) {
+        console.log(`➡️ "${term}" toplam: ${count}`);
+      }
+    }
+
+    console.log("\n--- URL ADAYLARI ---");
+
+    for (const url of unique(urls)) {
+      console.log(url);
+    }
+  } catch (err) {
+    console.log("❌ HATA:", err.message);
   }
 }
 
-async function main() {
-  console.log("");
-  console.log("========================================");
-  console.log("🏀 BILYONER BASKETBOL VERİ TESTİ");
-  console.log("========================================");
-  console.log("");
-  console.log(
-    "📌 basketball-history.json DEĞİŞTİRİLMEYECEK."
-  );
-  console.log("");
+console.log("\n========================================");
+console.log("🌐 TOPLAM URL ADAYLARI");
+console.log("========================================");
 
-  /*
-   * --------------------------------------------------
-   * 1. LIVE SCORE HEADER
-   * --------------------------------------------------
-   */
+const normalized = unique(
+  allCandidates
+    .map(normalizeUrl)
+    .filter(Boolean)
+);
 
-  await request(
-    BASE + "/mobile/live-score/header"
-  );
-
-  /*
-   * --------------------------------------------------
-   * 2. LIVE STREAM EVENTS
-   * --------------------------------------------------
-   */
-
-  await request(
-    BASE + "/mobile/live-stream/events"
-  );
-
-  /*
-   * --------------------------------------------------
-   * 3. LIVE STREAM HEADER
-   * --------------------------------------------------
-   */
-
-  await request(
-    BASE + "/mobile/live-stream/header/v2"
-  );
-
-  /*
-   * --------------------------------------------------
-   * 4. CANLI IDDAA
-   * --------------------------------------------------
-   */
-
-  await request(
-    BASE + "/canli-iddaa/basketbol"
-  );
-
-  /*
-   * --------------------------------------------------
-   * 5. CANLI SKOR
-   * --------------------------------------------------
-   */
-
-  await request(
-    BASE + "/canli-skor/basketbol-canli-skor"
-  );
-
-  /*
-   * --------------------------------------------------
-   * 6. API ROOT
-   * --------------------------------------------------
-   */
-
-  await request(
-    BASE + "/api"
-  );
-
-  /*
-   * --------------------------------------------------
-   * SON
-   * --------------------------------------------------
-   */
-
-  console.log("");
-  console.log("========================================");
-  console.log("🏁 BILYONER TEST TAMAMLANDI");
-  console.log("========================================");
+for (const url of normalized) {
+  console.log(url);
 }
 
-main().catch(error => {
-  console.error("");
-  console.error("❌ BEKLENMEYEN HATA");
-  console.error(error);
-  process.exit(1);
+console.log("\n========================================");
+console.log("🧪 MUHTEMEL API URL'LERİ TEST EDİLİYOR");
+console.log("========================================");
+
+const likely = normalized.filter((url) => {
+  const x = url.toLowerCase();
+
+  return (
+    x.includes("/api") ||
+    x.includes("aggregator") ||
+    x.includes("sports-data") ||
+    x.includes("live-score") ||
+    x.includes("live-stream") ||
+    x.includes("match") ||
+    x.includes("event") ||
+    x.includes("score") ||
+    x.includes("fixture") ||
+    x.includes("result") ||
+    x.includes("league") ||
+    x.includes("lig-") ||
+    x.includes("mac-")
+  );
 });
+
+for (const url of unique(likely)) {
+  try {
+    const result = await fetchText(url);
+
+    console.log("\n----------------------------------------");
+    console.log("URL:", url);
+    console.log("HTTP:", result.status);
+    console.log("Type:", result.contentType);
+    console.log("Length:", result.text.length);
+
+    if (
+      result.contentType.includes("json") ||
+      result.text.trim().startsWith("{") ||
+      result.text.trim().startsWith("[")
+    ) {
+      console.log(
+        result.text
+          .slice(0, 5000)
+          .replace(/\s+/g, " ")
+      );
+    }
+  } catch (err) {
+    console.log("❌", err.message);
+  }
+}
+
+console.log("\n========================================");
+console.log("🏁 TEST BİTTİ");
+console.log("========================================");
