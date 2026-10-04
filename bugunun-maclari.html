@@ -1,374 +1,617 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#111827">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
 
-  <title>Bugünün Maçları</title>
+<title>Bugünün Maçları</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+*{
+  box-sizing:border-box;
+}
 
-    body {
-      margin: 0;
-      padding: 14px;
-      background: #f3f4f6;
-      color: #111827;
-      font-family: Arial, Helvetica, sans-serif;
-    }
+html,body{
+  margin:0;
+  padding:0;
+  background:#080f20;
+  color:#e7edf8;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
 
-    .wrap {
-      max-width: 1100px;
-      margin: auto;
-    }
+body{
+  min-height:100vh;
+}
 
-    h1 {
-      margin: 0 0 5px;
-      font-size: 25px;
-    }
+button,
+input,
+select{
+  font:inherit;
+}
 
-    .sub {
-      color: #6b7280;
-      font-size: 13px;
-      margin-bottom: 15px;
-    }
+button{
+  cursor:pointer;
+}
 
-    .panel {
-      background: #fff;
-      border-radius: 12px;
-      padding: 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.07);
-      margin-bottom: 14px;
-    }
+.page{
+  width:100%;
+  max-width:1100px;
+  margin:auto;
+  padding:18px 14px 35px;
+}
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 10px;
-    }
+/* HEADER */
 
-    .field {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-    }
+.header{
+  margin-bottom:16px;
+}
 
-    .field label {
-      font-size: 12px;
-      font-weight: 700;
-      color: #374151;
-    }
+.header h1{
+  margin:0;
+  font-size:25px;
+  font-weight:800;
+  letter-spacing:-.3px;
+}
 
-    select,
-    input {
-      width: 100%;
-      min-height: 40px;
-      border: 1px solid #d1d5db;
-      border-radius: 8px;
-      padding: 8px 10px;
-      background: #fff;
-      font-size: 14px;
-      outline: none;
-    }
+.header p{
+  margin:5px 0 0;
+  color:#8998b3;
+  font-size:13px;
+}
 
-    select:focus,
-    input:focus {
-      border-color: #2563eb;
-    }
+/* BİLGİ KUTUSU */
 
-    .checks {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
+.info{
+  background:#0d1629;
+  border:1px solid #223452;
+  border-left:5px solid #2d8cff;
+  border-radius:18px;
+  padding:14px 16px;
+  margin-bottom:16px;
+  color:#b7c4d9;
+  font-size:13px;
+  line-height:1.5;
+}
 
-    .check {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 10px;
-      border-radius: 8px;
-      background: #f3f4f6;
-      font-size: 13px;
-    }
+/* FİLTRE */
 
-    .check input {
-      width: auto;
-      min-height: auto;
-    }
+.filter-box{
+  background:#0d1629;
+  border:1px solid #223452;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:16px;
+}
 
-    .buttons {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-    }
+.filter-title{
+  color:#91a0bb;
+  font-size:13px;
+  margin-bottom:7px;
+}
 
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 10px 15px;
-      font-weight: 700;
-      cursor: pointer;
-      background: #2563eb;
-      color: #fff;
-    }
+.field{
+  margin-bottom:16px;
+}
 
-    button.secondary {
-      background: #e5e7eb;
-      color: #111827;
-    }
+label{
+  display:block;
+  color:#9aa8c1;
+  font-size:13px;
+  margin-bottom:7px;
+}
 
-    .status {
-      font-size: 13px;
-      color: #6b7280;
-      margin: 12px 0;
-    }
+select,
+input[type="number"]{
+  width:100%;
+  height:58px;
+  padding:0 14px;
+  color:#e8eef9;
+  background:#0b1426;
+  border:2px solid #304465;
+  border-radius:17px;
+  outline:none;
+}
 
-    .match {
-      background: #fff;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 9px rgba(0,0,0,.06);
-      overflow: hidden;
-    }
+select:focus,
+input:focus{
+  border-color:#3c8dff;
+}
 
-    .match-head {
-      padding: 10px 12px;
-      background: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-    }
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
 
-    .league {
-      font-size: 12px;
-      font-weight: 700;
-      color: #6b7280;
-    }
+.checks{
+  display:flex;
+  flex-direction:column;
+  gap:13px;
+  margin-top:4px;
+}
 
-    .time {
-      font-size: 14px;
-      font-weight: 800;
-    }
+.check{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  color:#b9c6db;
+  font-size:14px;
+}
 
-    .match-body {
-      padding: 12px;
-    }
+.check input{
+  width:22px;
+  height:22px;
+  margin:0;
+  accent-color:#3b8cff;
+}
 
-    .teams {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr;
-      gap: 10px;
-      align-items: center;
-    }
+.actions{
+  display:flex;
+  gap:10px;
+  margin-top:17px;
+}
 
-    .team {
-      font-weight: 800;
-      font-size: 15px;
-    }
+.btn{
+  flex:1;
+  height:45px;
+  border:0;
+  border-radius:12px;
+  background:#247df0;
+  color:white;
+  font-weight:800;
+}
 
-    .team.away {
-      text-align: right;
-    }
+.btn.secondary{
+  background:#16243b;
+  border:1px solid #304465;
+}
 
-    .vs {
-      color: #9ca3af;
-      font-size: 12px;
-      font-weight: 700;
-    }
+/* İSTATİSTİK */
 
-    .score {
-      margin-top: 7px;
-      text-align: center;
-      font-weight: 800;
-      color: #111827;
-    }
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:18px;
+}
 
-    .predictions {
-      margin-top: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 7px;
-    }
+.stat{
+  background:#101b2f;
+  border:1px solid #223452;
+  border-radius:13px;
+  padding:12px 12px 13px;
+  min-width:0;
+}
 
-    .prediction {
-      border: 1px solid #e5e7eb;
-      border-radius: 9px;
-      padding: 9px;
-      background: #fff;
-    }
+.stat-title{
+  color:#8796b0;
+  font-size:11px;
+  margin-bottom:7px;
+}
 
-    .prediction-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
+.stat-value{
+  color:#edf3fc;
+  font-size:22px;
+  font-weight:850;
+}
 
-    .prediction-name {
-      font-weight: 800;
-      font-size: 13px;
-    }
+/* STATUS */
 
-    .rate {
-      font-weight: 900;
-      font-size: 14px;
-    }
+.status{
+  color:#7f90ab;
+  font-size:12px;
+  margin:0 2px 12px;
+}
 
-    .bar {
-      height: 7px;
-      border-radius: 20px;
-      background: #e5e7eb;
-      margin-top: 7px;
-      overflow: hidden;
-    }
+/* MAÇ KARTI */
 
-    .bar > div {
-      height: 100%;
-      border-radius: 20px;
-      background: #16a34a;
-    }
+.match{
+  background:#0b1424;
+  border:1px solid #20324e;
+  border-radius:17px;
+  margin-bottom:10px;
+  overflow:hidden;
+}
 
-    .detail {
-      margin-top: 6px;
-      color: #6b7280;
-      font-size: 11px;
-    }
+.match-main{
+  min-height:82px;
+  display:grid;
+  grid-template-columns:88px minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:10px;
+}
 
-    .empty {
-      background: #fff;
-      padding: 25px 15px;
-      border-radius: 12px;
-      text-align: center;
-      color: #6b7280;
-    }
+/* PLUS */
 
-    .loading {
-      background: #fff;
-      padding: 25px;
-      text-align: center;
-      border-radius: 12px;
-    }
+.plus{
+  width:88px;
+  height:60px;
+  border-radius:15px;
+  border:2px solid #294464;
+  background:#101e32;
+  color:#a8c0dc;
+  font-size:30px;
+  line-height:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
 
-    .odd {
-      font-size: 11px;
-      color: #6b7280;
-      margin-top: 4px;
-    }
+.plus.open{
+  color:#fff;
+  background:#172844;
+}
 
-    @media (max-width: 650px) {
-      body {
-        padding: 9px;
-      }
+/* MAÇ */
 
-      .grid {
-        grid-template-columns: 1fr;
-      }
+.match-info{
+  min-width:0;
+}
 
-      h1 {
-        font-size: 21px;
-      }
+.match-meta{
+  display:flex;
+  gap:7px;
+  align-items:center;
+  color:#8b9ab3;
+  font-size:12px;
+  margin-bottom:5px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-      .teams {
-        gap: 6px;
-      }
+.teams{
+  color:#eef3fb;
+  font-size:15px;
+  font-weight:850;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
 
-      .team {
-        font-size: 13px;
-      }
+.predictions{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:5px;
+}
 
-      .match-head {
-        padding: 9px;
-      }
+.prediction{
+  border:2px solid #318b16;
+  background:#17320e;
+  color:#83ec45;
+  border-radius:10px;
+  padding:6px 9px;
+  font-size:13px;
+  font-weight:850;
+  white-space:nowrap;
+}
 
-      .match-body {
-        padding: 10px;
-      }
-    }
-  </style>
+.prediction.best{
+  border-color:#398e13;
+  background:#19390e;
+}
+
+/* DETAY */
+
+.match-detail{
+  display:none;
+  border-top:1px solid #1f314c;
+  padding:12px;
+  background:#0d1729;
+}
+
+.match-detail.open{
+  display:block;
+}
+
+.detail-title{
+  color:#9aa9c0;
+  font-size:12px;
+  font-weight:700;
+  margin-bottom:9px;
+}
+
+.detail-prediction{
+  border:1px solid #29405f;
+  background:#101c30;
+  border-radius:12px;
+  margin-bottom:9px;
+  overflow:hidden;
+}
+
+.detail-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px;
+}
+
+.detail-name{
+  font-weight:850;
+  font-size:13px;
+}
+
+.detail-rate{
+  color:#7ce83e;
+  font-weight:900;
+}
+
+.detail-meta{
+  padding:0 10px 9px;
+  color:#7f90aa;
+  font-size:11px;
+}
+
+.samples{
+  border-top:1px solid #22344e;
+}
+
+.sample{
+  display:grid;
+  grid-template-columns:52px minmax(0,1fr) auto;
+  gap:8px;
+  align-items:center;
+  padding:9px 10px;
+  border-bottom:1px solid #1b2b42;
+}
+
+.sample:last-child{
+  border-bottom:0;
+}
+
+.sample-score{
+  font-weight:900;
+  font-size:13px;
+  text-align:center;
+  color:#dbe5f4;
+}
+
+.sample-teams{
+  min-width:0;
+}
+
+.sample-teams strong{
+  display:block;
+  color:#dce6f5;
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.sample-teams span{
+  display:block;
+  color:#71829d;
+  font-size:10px;
+  margin-top:2px;
+}
+
+.sample-result{
+  font-size:11px;
+  font-weight:900;
+  padding:5px 7px;
+  border-radius:7px;
+}
+
+.sample-result.win{
+  background:#17380e;
+  color:#7ee844;
+  border:1px solid #337c18;
+}
+
+.sample-result.loss{
+  background:#35171b;
+  color:#ff747f;
+  border:1px solid #703039;
+}
+
+.no-sample{
+  color:#71829d;
+  font-size:12px;
+  padding:10px;
+}
+
+/* EMPTY */
+
+.empty{
+  border:1px solid #223452;
+  background:#0d1629;
+  border-radius:16px;
+  padding:25px 15px;
+  text-align:center;
+  color:#8190aa;
+}
+
+/* DESKTOP */
+
+@media(min-width:700px){
+
+  .page{
+    padding:25px 20px 50px;
+  }
+
+  .match-main{
+    grid-template-columns:88px minmax(0,1fr) auto;
+  }
+
+}
+
+/* TELEFON */
+
+@media(max-width:600px){
+
+  .page{
+    padding:14px 10px 30px;
+  }
+
+  .header h1{
+    font-size:22px;
+  }
+
+  .filter-box{
+    padding:15px;
+  }
+
+  .grid2{
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+
+  select,
+  input[type="number"]{
+    height:58px;
+    font-size:14px;
+  }
+
+  .match-main{
+    grid-template-columns:76px minmax(0,1fr) auto;
+    gap:8px;
+    padding:9px;
+  }
+
+  .plus{
+    width:76px;
+    height:58px;
+  }
+
+  .teams{
+    font-size:14px;
+  }
+
+  .prediction{
+    font-size:11px;
+    padding:6px 7px;
+  }
+
+  .stats{
+    gap:8px;
+  }
+
+  .stat{
+    padding:10px;
+  }
+
+  .stat-title{
+    font-size:10px;
+  }
+
+  .stat-value{
+    font-size:20px;
+  }
+}
+</style>
 </head>
 
 <body>
 
-<div class="wrap">
+<div class="page">
 
-  <h1>Bugünün Maçları</h1>
-  <div class="sub">
-    Açılış oranlarına göre geçmiş maçlardan otomatik analiz
+  <div class="header">
+    <h1>Bugünün Maçları</h1>
+    <p>Açılış oranlarından geçmiş örneklem analizi</p>
   </div>
 
-  <div class="panel">
+  <div class="info">
+    <b>Nasıl çalışır?</b><br>
+    Geçmişte aynı şartları sağlayan maçlar bulunur.
+    Başarı oranı belirlediğiniz eşik ve örneklem sayısını
+    karşılıyorsa tahmin olarak gösterilir.
+    Oynanmamış maçlar yüzdeye girmez.
+  </div>
 
-    <div class="grid">
+  <div class="filter-box">
 
-      <div class="field">
-        <label for="tdDate">Tarih</label>
-        <select id="tdDate"></select>
+    <div class="filter-title">Maç günü</div>
+
+    <div class="field">
+      <select id="tdDate"></select>
+    </div>
+
+    <label>Eşleştirme</label>
+
+    <div class="field">
+      <select id="tdBasis">
+        <option value="each">Her oran türü tek tek (önerilen)</option>
+        <option value="ms1">Sadece MS1 oranı aynı olanlar</option>
+        <option value="ms1,ms2">MS1 + MS2 oranı aynı olanlar</option>
+        <option value="ms1,ms0,ms2">MS1 + MS0 + MS2 aynı olanlar</option>
+        <option value="league">Oransız: Aynı ligdeki maçlar</option>
+        <option value="team">Oransız: İki takımın tüm maçları</option>
+        <option value="all">Oransız: Tüm maçlar</option>
+      </select>
+    </div>
+
+    <div class="grid2">
+
+      <div>
+        <label>İdeal eşik (%)</label>
+        <input id="tdThr" type="number" value="70" min="0" max="100">
       </div>
 
-      <div class="field">
-        <label for="tdBasis">Analiz türü</label>
-        <select id="tdBasis">
-          <option value="each">Her oran türü tek tek (Önerilen)</option>
-          <option value="ms1">Sadece MS1 oranı aynı olanlar</option>
-          <option value="ms1,ms2">MS1 + MS2 oranı aynı olanlar</option>
-          <option value="ms1,ms0,ms2">MS1 + MS0 + MS2 aynı olanlar</option>
-          <option value="league">Oransız: Aynı ligdeki maçlar</option>
-          <option value="team">Oransız: İki takımın tüm maçları</option>
-          <option value="all">Oransız: Tüm maçlar</option>
-        </select>
+      <div>
+        <label>Min. geçmiş maç</label>
+        <input id="tdMin" type="number" value="5" min="1">
       </div>
 
-      <div class="field">
-        <label for="tdThr">Minimum başarı (%)</label>
-        <input id="tdThr" type="number" min="0" max="100" value="70">
-      </div>
+    </div>
 
-      <div class="field">
-        <label for="tdMin">Minimum geçmiş maç</label>
-        <input id="tdMin" type="number" min="1" value="5">
-      </div>
+    <label>Min. oran</label>
 
-      <div class="field">
-        <label for="tdOdd">Minimum oran</label>
-        <input id="tdOdd" type="number" min="1" step="0.01" value="1.40">
-      </div>
-
+    <div class="field">
+      <input id="tdOdd" type="number" value="1.4" min="1" step="0.01">
     </div>
 
     <div class="checks">
 
       <label class="check">
-        <input type="checkbox" id="tdOnly">
-        Sadece ideal sonucu olan maçlar
+        <input id="tdOnly" type="checkbox">
+        <span>Sadece ideal sonucu olan maçlar</span>
       </label>
 
       <label class="check">
-        <input type="checkbox" id="tdAll">
-        Tüm sonuçları göster
+        <input id="tdAll" type="checkbox">
+        <span>Tüm sonuçları göster</span>
       </label>
 
     </div>
 
-    <div class="buttons">
-      <button id="tdAnalyze">Analiz et</button>
-      <button id="tdRefresh" class="secondary">Yenile</button>
+    <div class="actions">
+      <button class="btn" id="tdAnalyze">Analiz Et</button>
+      <button class="btn secondary" id="tdRefresh">Yenile</button>
     </div>
 
   </div>
 
-  <div id="tdStatus" class="status">
-    Veriler hazırlanıyor...
+  <div class="stats">
+
+    <div class="stat">
+      <div class="stat-title">Oynanmamış maç</div>
+      <div class="stat-value" id="statMatches">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">İdeal sonuçlu</div>
+      <div class="stat-value" id="statIdeal">0</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-title">Analiz havuzu</div>
+      <div class="stat-value" id="statPool">0</div>
+    </div>
+
+  </div>
+
+  <div class="status" id="tdStatus">
+    Veriler yükleniyor...
   </div>
 
   <div id="tdResults">
-    <div class="loading">Maçlar yükleniyor...</div>
+    <div class="empty">
+      Maçlar yükleniyor...
+    </div>
   </div>
 
 </div>
