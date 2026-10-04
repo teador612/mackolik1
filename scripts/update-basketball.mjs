@@ -1,3 +1,5 @@
+// scripts/update-basketball.mjs
+
 import fs from "node:fs";
 import path from "node:path";
 
@@ -25,13 +27,23 @@ async function main() {
 
   if (matches.length === 0) {
     console.error("❌ Hiç basketbol maçı bulunamadı.");
-    console.error("Mackolik HTML yapısı kontrol edilmeli.");
     process.exit(1);
   }
 
-  const old = readOld();
+  const oldData = readOld();
 
-  const merged = merge(old, matches);
+  const oldMatches = Array.isArray(oldData)
+    ? oldData
+    : Array.isArray(oldData.matches)
+      ? oldData.matches
+      : [];
+
+  console.log(`Eski kayıt: ${oldMatches.length}`);
+
+  const merged = merge(
+    oldMatches,
+    matches
+  );
 
   const output = {
     source: URL,
@@ -50,8 +62,12 @@ async function main() {
     "utf8"
   );
 
-  console.log(`✅ JSON yazıldı: ${merged.length} maç`);
-
+  console.log("");
+  console.log("================================");
+  console.log("✅ BASKETBOL VERİSİ GÜNCELLENDİ");
+  console.log("================================");
+  console.log(`Yeni maç: ${matches.length}`);
+  console.log(`Toplam kayıt: ${merged.length}`);
   console.log("");
 
   for (const m of matches.slice(0, 10)) {
@@ -78,9 +94,7 @@ async function fetchPage(url) {
   });
 
   if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status}`
-    );
+    throw new Error(`HTTP ${response.status}`);
   }
 
   return await response.text();
@@ -93,10 +107,6 @@ async function fetchPage(url) {
 
 function parseProgram(html) {
   const matches = [];
-
-  /*
-   * Önce gerçek <tr> satırlarını al.
-   */
 
   const trMatches =
     html.match(
@@ -117,10 +127,6 @@ function parseProgram(html) {
       continue;
     }
 
-    /*
-     * Lig başlığı.
-     */
-
     const league =
       detectLeagueRow(rowText);
 
@@ -128,10 +134,6 @@ function parseProgram(html) {
       currentLeague = league;
       continue;
     }
-
-    /*
-     * Tarih.
-     */
 
     const dateMatch =
       rowText.match(
@@ -143,30 +145,14 @@ function parseProgram(html) {
         `${dateMatch[3]}-${pad(dateMatch[2])}-${pad(dateMatch[1])}`;
     }
 
-    /*
-     * Maç satırı.
-     */
-
     const timeMatch =
       rowText.match(
         /\b([01]?\d|2[0-3]):([0-5]\d)\b/
       );
 
-    if (!timeMatch) {
+    if (!timeMatch || !currentDate) {
       continue;
     }
-
-    if (!currentDate) {
-      continue;
-    }
-
-    /*
-     * Takım adını HTML içinden bul.
-     *
-     * Örnek:
-     *
-     * Los Angeles Cl - Golden State
-     */
 
     const teamMatch =
       rowText.match(
@@ -177,15 +163,11 @@ function parseProgram(html) {
       continue;
     }
 
-    let home =
+    const home =
       cleanTeam(teamMatch[1]);
 
-    let away =
+    const away =
       cleanTeam(teamMatch[2]);
-
-    /*
-     * Başlıkların takım olarak yakalanmasını engelle.
-     */
 
     if (
       !isTeam(home) ||
@@ -194,18 +176,7 @@ function parseProgram(html) {
       continue;
     }
 
-    /*
-     * TS.
-     */
-
-    const totalLine =
-      extractTotal(rowText);
-
-    /*
-     * Gerçek maç kaydı.
-     */
-
-    const match = {
+    matches.push({
       id: makeId(
         currentDate,
         home,
@@ -220,7 +191,6 @@ function parseProgram(html) {
       league: currentLeague,
 
       home,
-
       away,
 
       homeScore: null,
@@ -229,21 +199,13 @@ function parseProgram(html) {
       halfHomeScore: null,
       halfAwayScore: null,
 
-      totalLine,
+      totalLine:
+        extractTotal(rowText),
 
-      status: "not_started"
-    };
-
-    matches.push(match);
+      status:
+        "not_started"
+    });
   }
-
-  /*
-   * Bazı Mackolik sürümlerinde maç bilgileri
-   * <tr> yerine div yapısında bulunabiliyor.
-   *
-   * Eğer tr yöntemi sonuç vermediyse ikinci
-   * güvenli yöntem çalışır.
-   */
 
   if (matches.length === 0) {
     console.log(
@@ -305,18 +267,11 @@ function parseFallback(html) {
       continue;
     }
 
-    /*
-     * Önceki ve sonraki birkaç satırı birleştir.
-     */
-
     const block =
       lines
         .slice(
           Math.max(0, i),
-          Math.min(
-            lines.length,
-            i + 4
-          )
+          Math.min(lines.length, i + 4)
         )
         .join(" | ");
 
@@ -378,7 +333,7 @@ function parseFallback(html) {
 
 
 /* =========================================================
-   HTML -> TEXT
+   HTML TEMİZLE
 ========================================================= */
 
 function htmlToText(html) {
@@ -461,8 +416,7 @@ function detectLeagueRow(text) {
     "Avusturya Superliga"
   ];
 
-  const n =
-    normalize(text);
+  const n = normalize(text);
 
   for (const league of leagues) {
     if (
@@ -473,10 +427,6 @@ function detectLeagueRow(text) {
       return league;
     }
   }
-
-  /*
-   * Mackolik bazen lig adını tek başına verir.
-   */
 
   if (
     /NBA|WNBA|KBL|ACB|BBL|LNB|Basket|Liga|League|Serie/i.test(
@@ -540,10 +490,6 @@ function isTeam(value) {
     return false;
   }
 
-  /*
-   * Sadece sayı olan değerleri reddet.
-   */
-
   if (
     /^\d+(?:[,.]\d+)?$/.test(value)
   ) {
@@ -590,9 +536,7 @@ function extractTotal(text) {
 
 function readOld() {
   if (!fs.existsSync(DATA_FILE)) {
-    return {
-      matches: []
-    };
+    return [];
   }
 
   try {
@@ -604,25 +548,25 @@ function readOld() {
         )
       );
 
-    if (
-      Array.isArray(data)
-    ) {
-      return {
-        matches: data
-      };
+    if (Array.isArray(data)) {
+      return data;
     }
 
-    return {
-      matches:
-        Array.isArray(data.matches)
-          ? data.matches
-          : []
-    };
+    if (
+      data &&
+      Array.isArray(data.matches)
+    ) {
+      return data.matches;
+    }
 
-  } catch {
-    return {
-      matches: []
-    };
+    return [];
+
+  } catch (error) {
+    console.log(
+      "⚠️ Eski basketball.json okunamadı, boş veri kullanılacak."
+    );
+
+    return [];
   }
 }
 
@@ -632,12 +576,7 @@ function readOld() {
 ========================================================= */
 
 function merge(oldMatches, newMatches) {
-  const map =
-    new Map();
-
-  /*
-   * Eski kayıtları koru.
-   */
+  const map = new Map();
 
   for (const match of oldMatches) {
     if (
@@ -650,10 +589,6 @@ function merge(oldMatches, newMatches) {
       );
     }
   }
-
-  /*
-   * Yeni kayıtlar.
-   */
 
   for (const match of newMatches) {
     if (!match.id) {
@@ -675,12 +610,7 @@ function merge(oldMatches, newMatches) {
       match.id,
       {
         ...old,
-
         ...match,
-
-        /*
-         * Geçmiş skorları koru.
-         */
 
         homeScore:
           old.homeScore ??
@@ -712,8 +642,7 @@ function merge(oldMatches, newMatches) {
 ========================================================= */
 
 function unique(matches) {
-  const map =
-    new Map();
+  const map = new Map();
 
   for (const match of matches) {
     if (
@@ -774,7 +703,7 @@ function pad(value) {
 
 
 /* =========================================================
-   START
+   ÇALIŞTIR
 ========================================================= */
 
 main().catch(error => {
