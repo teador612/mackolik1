@@ -1,969 +1,1208 @@
-(function () {
-  'use strict';
+(function(){
 
-  const DATA_URL = './data/matches.json';
-  const START_DATE = '2026-09-01';
+'use strict';
 
-  const RES = [
-    {
-      label: 'MS1',
-      keys: ['ms1'],
-      test: (ft) => ft && ft[0] > ft[1]
-    },
-    {
-      label: 'MS0',
-      keys: ['ms0', 'msX'],
-      test: (ft) => ft && ft[0] === ft[1]
-    },
-    {
-      label: 'MS2',
-      keys: ['ms2'],
-      test: (ft) => ft && ft[0] < ft[1]
-    },
-    {
-      label: 'KG Var',
-      keys: ['kgVar'],
-      test: (ft) => ft && ft[0] > 0 && ft[1] > 0
-    },
-    {
-      label: '2,5 Üst',
-      keys: ['over25'],
-      test: (ft) => ft && (ft[0] + ft[1]) > 2.5
-    },
-    {
-      label: 'İY 0,5 Üst',
-      keys: ['iyOver05'],
-      test: (ft, ht) => ht && (ht[0] + ht[1]) > 0.5
-    },
-    {
-      label: 'İY 1,5 Üst',
-      keys: ['iyOver15'],
-      test: (ft, ht) => ht && (ht[0] + ht[1]) > 1.5
-    }
-  ];
+const DATA_URL = './data/matches.json';
+const START_DATE = '2026-09-01';
 
-  let RAW = [];
-  let MATCHES = [];
-  let HISTORICAL = [];
-  let TODAY = [];
+let MATCHES = [];
+let HISTORICAL = [];
+let OPENED = {};
 
-  const $ = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 
-  function esc(v) {
-    return String(v == null ? '' : v)
-      .replace(/[&<>"']/g, c => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      }[c]));
+function esc(v){
+  return String(v == null ? '' : v)
+    .replace(/[&<>"']/g,c=>({
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    }[c]));
+}
+
+function num(v){
+
+  if(v == null || v === '') return NaN;
+
+  if(typeof v === 'number'){
+    return Number.isFinite(v) ? v : NaN;
   }
 
-  function number(v) {
-    if (v == null || v === '') return NaN;
-
-    if (typeof v === 'number') {
-      return Number.isFinite(v) ? v : NaN;
-    }
-
-    let s = String(v)
+  const n = Number(
+    String(v)
       .trim()
-      .replace(',', '.');
+      .replace(',','.')
+  );
 
-    const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
 
-    return Number.isFinite(n) ? n : NaN;
-  }
+function isoDate(v){
 
-  function dateToISO(v) {
+  if(!v) return '';
 
-    if (!v) return '';
+  const s = String(v).trim();
 
-    const s = String(v).trim();
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-      return s;
-    }
-
-    const m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
-
-    if (m) {
-      return `${m[3]}-${String(m[2]).padStart(2, '0')}-${String(m[1]).padStart(2, '0')}`;
-    }
-
-    return '';
-  }
-
-  function todayISO() {
-
-    const d = new Date();
-
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-
-    return `${y}-${m}-${day}`;
-  }
-
-  function formatDate(iso) {
-
-    const p = String(iso).split('-');
-
-    if (p.length !== 3) return iso;
-
-    return `${p[2]}.${p[1]}.${p[0]}`;
-  }
-
-  function scoreObject(obj) {
-
-    if (!obj) return null;
-
-    const h = number(obj.home);
-    const a = number(obj.away);
-
-    if (!Number.isFinite(h) || !Number.isFinite(a)) {
-      return null;
-    }
-
-    return [h, a];
-  }
-
-  function scoreString(v) {
-
-    if (!v) return null;
-
-    const m = String(v).match(/(\d+)\s*[-:]\s*(\d+)/);
-
-    if (!m) return null;
-
-    return [
-      Number(m[1]),
-      Number(m[2])
-    ];
-  }
-
-  function getFT(m) {
-
-    if (m.score) {
-      const s = scoreObject(m.score);
-
-      if (s) return s;
-    }
-
-    if (m.fullTimeScore) {
-      const s = scoreObject(m.fullTimeScore);
-
-      if (s) return s;
-    }
-
-    if (m.finalScore) {
-      const s = scoreObject(m.finalScore);
-
-      if (s) return s;
-    }
-
-    const s = scoreString(m.score);
-
+  if(/^\d{4}-\d{2}-\d{2}$/.test(s)){
     return s;
   }
 
-  function getHT(m) {
+  const m = s.match(
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/
+  );
 
-    if (m.halfTimeScore) {
-      const s = scoreObject(m.halfTimeScore);
+  if(!m) return '';
 
-      if (s) return s;
-    }
+  return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+}
 
-    if (m.htScore) {
-      const s = scoreObject(m.htScore);
+function today(){
 
-      if (s) return s;
-    }
+  const d = new Date();
 
-    return scoreString(m.halfTimeScore);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function dateTR(v){
+
+  const p = String(v).split('-');
+
+  return p.length === 3
+    ? `${p[2]} ${monthName(p[1])} ${p[0]}`
+    : v;
+}
+
+function monthName(m){
+
+  const a = [
+    '',
+    'Oca','Şub','Mar','Nis','May','Haz',
+    'Tem','Ağu','Eyl','Eki','Kas','Ara'
+  ];
+
+  return a[Number(m)] || m;
+}
+
+function score(v){
+
+  if(!v) return null;
+
+  const h = num(v.home);
+  const a = num(v.away);
+
+  if(Number.isFinite(h) && Number.isFinite(a)){
+    return [h,a];
   }
 
-  function isPlayed(m) {
+  return null;
+}
 
-    const ft = getFT(m);
+function scoreText(v){
 
-    if (!ft) return false;
+  if(!v) return null;
 
-    const status = String(m.status == null ? '' : m.status).toLowerCase();
+  const m = String(v).match(
+    /(\d+)\s*[-:]\s*(\d+)/
+  );
 
-    if (
-      status === 'not_started' ||
-      status === 'scheduled' ||
-      status === 'upcoming' ||
-      status === '0'
-    ) {
-      return false;
-    }
+  if(!m) return null;
 
-    return true;
-  }
+  return [
+    Number(m[1]),
+    Number(m[2])
+  ];
+}
 
-  function oddsObject(m) {
+function getFT(m){
 
-    const source =
-      m.odds ||
-      m.openingOdds ||
-      m.opening ||
-      m.markets ||
-      {};
+  let s = score(m.score);
 
-    const out = {};
+  if(s) return s;
 
-    function add(key, value) {
+  s = score(m.fullTimeScore);
 
-      const n = number(value);
+  if(s) return s;
 
-      if (!Number.isFinite(n)) return;
+  s = score(m.finalScore);
 
-      out[key] = n;
-    }
+  if(s) return s;
 
-    /*
-      Mackolik isimleri
-      ↓
-      Analiz sisteminin isimleri
-    */
+  return scoreText(m.score);
+}
 
-    add('ms1', source.ms1);
-    add('ms0', source.ms0);
-    add('ms0', source.msX);
-    add('ms2', source.ms2);
+function getHT(m){
 
-    add('kgVar', source.kgVar);
-    add('kgYok', source.kgYok);
+  let s = score(m.halfTimeScore);
 
-    add('over25', source.over25);
-    add('over25', source.au25Ust);
+  if(s) return s;
 
-    add('under25', source.under25);
-    add('under25', source.au25Alt);
+  s = score(m.htScore);
 
-    add('iy1', source.iy1);
-    add('iy0', source.iy0);
-    add('iy0', source.iyX);
-    add('iy2', source.iy2);
+  if(s) return s;
 
-    add('iyOver15', source.iyOver15);
-    add('iyOver15', source.iy15Ust);
+  return null;
+}
 
-    add('iyUnder15', source.iyUnder15);
-    add('iyUnder15', source.iy15Alt);
+function played(m){
 
-    add('iyOver05', source.iyOver05);
+  const ft = getFT(m);
 
-    return out;
-  }
+  if(!ft) return false;
 
-  function normalize(m) {
+  const st = String(
+    m.status == null ? '' : m.status
+  ).toLowerCase();
 
-    const date =
-      dateToISO(m.date) ||
-      dateToISO(m.matchDate);
-
-    const played = isPlayed(m);
-
-    return {
-      raw: m,
-
-      code: String(
-        m.code ||
-        m.id ||
-        m.matchCode ||
-        ''
-      ),
-
-      date,
-
-      time: String(
-        m.time ||
-        m.startTime ||
-        ''
-      ),
-
-      league: String(
-        m.league ||
-        m.leagueName ||
-        ''
-      ),
-
-      home: String(
-        m.home ||
-        m.homeTeam ||
-        ''
-      ),
-
-      away: String(
-        m.away ||
-        m.awayTeam ||
-        ''
-      ),
-
-      odds: oddsObject(m),
-
-      scoreFT: getFT(m),
-
-      scoreHT: getHT(m),
-
-      played
-    };
-  }
-
-  function getHistoricalPool() {
-
-    return MATCHES.filter(m => {
-
-      if (!m.played) return false;
-
-      if (!m.date) return false;
-
-      return m.date >= START_DATE;
-    });
-  }
-
-  function cleanName(v) {
-
-    return String(v || '')
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/fc|sc|cd|de|club|atletico|deportivo|fk|sk|sporting/g, '')
-      .replace(/[^a-z0-9ğüşıöç]/g, '')
-      .trim();
-  }
-
-  function teamMatch(a, b) {
-
-    const x = cleanName(a);
-    const y = cleanName(b);
-
-    if (!x || !y) return false;
-
-    if (x === y) return true;
-
-    if (x.length > 3 && y.length > 3) {
-      return x.includes(y) || y.includes(x);
-    }
-
+  if(
+    st === 'not_started' ||
+    st === 'scheduled' ||
+    st === 'upcoming' ||
+    st === '0'
+  ){
     return false;
   }
 
-  function oddsSame(a, b) {
+  return true;
+}
 
-    return Math.abs(Number(a) - Number(b)) < 0.0001;
-  }
+/*
+=========================================
+ORANLARI NORMALLEŞTİR
+=========================================
+*/
 
-  function historicalByOdds(match, key) {
+function odds(m){
 
-    const value = match.odds[key];
+  const o =
+    m.odds ||
+    m.openingOdds ||
+    m.opening ||
+    m.markets ||
+    {};
 
-    if (!Number.isFinite(value)) {
-      return [];
-    }
+  const r = {};
 
-    return HISTORICAL.filter(h => {
+  function add(name,...keys){
 
-      if (!h.odds) return false;
+    for(const key of keys){
 
-      const hv = h.odds[key];
+      const n = num(o[key]);
 
-      if (!Number.isFinite(hv)) return false;
-
-      return oddsSame(hv, value);
-    });
-  }
-
-  function resultStat(list, result) {
-
-    let total = 0;
-    let success = 0;
-
-    for (const h of list) {
-
-      const ft = h.scoreFT;
-
-      if (!ft) continue;
-
-      const ht = h.scoreHT;
-
-      const ok = result.test(ft, ht);
-
-      if (ok == null) continue;
-
-      total++;
-
-      if (ok) success++;
-    }
-
-    if (!total) return null;
-
-    return {
-      total,
-      success,
-      rate: success / total * 100
-    };
-  }
-
-  function getOddForResult(match, result) {
-
-    for (const key of result.keys) {
-
-      if (Number.isFinite(match.odds[key])) {
-        return {
-          key,
-          value: match.odds[key]
-        };
+      if(Number.isFinite(n)){
+        r[name] = n;
+        return;
       }
     }
-
-    return null;
   }
 
-  function analyzeEach(match, minRate, minSample, minOdd) {
+  add('ms1','ms1');
+  add('ms0','ms0','msX');
+  add('ms2','ms2');
 
-    const output = [];
+  add('kgVar','kgVar');
+  add('kgYok','kgYok');
 
-    for (const result of RES) {
+  add('over25','over25','au25Ust');
+  add('under25','under25','au25Alt');
 
-      const odd = getOddForResult(match, result);
+  add('iy1','iy1');
+  add('iy0','iy0','iyX');
+  add('iy2','iy2');
 
-      if (!odd) continue;
+  add('iyOver05','iyOver05');
+  add('iyOver15','iyOver15','iy15Ust');
+  add('iyUnder15','iyUnder15','iy15Alt');
 
-      if (odd.value < minOdd) continue;
+  return r;
+}
 
-      const historical = historicalByOdds(match, odd.key);
+function normalize(m){
 
-      const stat = resultStat(historical, result);
+  return {
 
-      if (!stat) continue;
+    raw:m,
 
-      if (stat.total < minSample) continue;
+    code:String(
+      m.code ||
+      m.id ||
+      ''
+    ),
 
-      if (stat.rate < minRate) continue;
+    date:isoDate(
+      m.date ||
+      m.matchDate
+    ),
 
-      output.push({
-        result: result.label,
-        odd: odd.value,
-        rate: stat.rate,
-        total: stat.total,
-        success: stat.success,
-        key: odd.key
-      });
-    }
+    time:String(
+      m.time ||
+      m.startTime ||
+      ''
+    ),
 
-    return output.sort((a, b) => {
+    league:String(
+      m.league ||
+      m.leagueName ||
+      ''
+    ),
 
-      if (b.rate !== a.rate) {
-        return b.rate - a.rate;
-      }
+    home:String(
+      m.home ||
+      m.homeTeam ||
+      ''
+    ),
 
-      return b.total - a.total;
-    });
+    away:String(
+      m.away ||
+      m.awayTeam ||
+      ''
+    ),
+
+    odds:odds(m),
+
+    scoreFT:getFT(m),
+
+    scoreHT:getHT(m),
+
+    played:played(m)
+
+  };
+}
+
+/*
+=========================================
+TAHMİN TÜRLERİ
+=========================================
+*/
+
+const RESULTS = [
+
+  {
+    name:'MS1',
+    keys:['ms1'],
+    test:(ft)=>ft && ft[0] > ft[1]
+  },
+
+  {
+    name:'MS0',
+    keys:['ms0'],
+    test:(ft)=>ft && ft[0] === ft[1]
+  },
+
+  {
+    name:'MS2',
+    keys:['ms2'],
+    test:(ft)=>ft && ft[0] < ft[1]
+  },
+
+  {
+    name:'KG Var',
+    keys:['kgVar'],
+    test:(ft)=>ft && ft[0] > 0 && ft[1] > 0
+  },
+
+  {
+    name:'2,5 Üst',
+    keys:['over25'],
+    test:(ft)=>ft && ft[0] + ft[1] > 2.5
+  },
+
+  {
+    name:'İY 0,5 Üst',
+    keys:['iyOver05'],
+    test:(ft,ht)=>ht && ht[0] + ht[1] > .5
+  },
+
+  {
+    name:'İY 1,5 Üst',
+    keys:['iyOver15'],
+    test:(ft,ht)=>ht && ht[0] + ht[1] > 1.5
   }
 
-  function analyzeNoOdds(match, basis, minRate, minSample) {
+];
 
-    let pool = [];
+/*
+=========================================
+ORAN EŞLEŞMESİ
+=========================================
+*/
 
-    if (basis === 'league') {
+function sameOdd(a,b){
 
-      pool = HISTORICAL.filter(h =>
-        h.league &&
-        match.league &&
-        h.league === match.league
+  return Math.abs(
+    Number(a)-Number(b)
+  ) < .0001;
+}
+
+function historicalByOdd(match,key){
+
+  const value = match.odds[key];
+
+  if(!Number.isFinite(value)){
+    return [];
+  }
+
+  return HISTORICAL.filter(h=>{
+
+    const v = h.odds[key];
+
+    return Number.isFinite(v) &&
+           sameOdd(v,value);
+
+  });
+}
+
+/*
+=========================================
+SONUÇ İSTATİSTİĞİ
+=========================================
+*/
+
+function stat(list,result){
+
+  let total=0;
+  let success=0;
+
+  for(const m of list){
+
+    if(!m.scoreFT) continue;
+
+    const ok =
+      result.test(
+        m.scoreFT,
+        m.scoreHT
       );
 
-    } else if (basis === 'team') {
+    if(ok == null) continue;
 
-      pool = HISTORICAL.filter(h => {
+    total++;
 
-        const homeMatch =
-          teamMatch(h.home, match.home) ||
-          teamMatch(h.away, match.home);
-
-        const awayMatch =
-          teamMatch(h.home, match.away) ||
-          teamMatch(h.away, match.away);
-
-        return homeMatch || awayMatch;
-      });
-
-    } else {
-
-      pool = HISTORICAL.slice();
-    }
-
-    const output = [];
-
-    for (const result of RES) {
-
-      const stat = resultStat(pool, result);
-
-      if (!stat) continue;
-
-      if (stat.total < minSample) continue;
-
-      if (stat.rate < minRate) continue;
-
-      output.push({
-        result: result.label,
-        odd: null,
-        rate: stat.rate,
-        total: stat.total,
-        success: stat.success,
-        key: null
-      });
-    }
-
-    return output.sort((a, b) => b.rate - a.rate);
+    if(ok) success++;
   }
 
-  function analyzeCombined(match, basis, minRate, minSample, minOdd) {
+  if(!total) return null;
 
-    const keys = basis.split(',').map(x => x.trim());
+  return {
+    total,
+    success,
+    rate:(success/total)*100
+  };
+}
 
-    let pool = HISTORICAL.filter(h => {
+/*
+=========================================
+ANALİZ
+=========================================
+*/
 
-      for (const key of keys) {
+function analyzeEach(match){
 
-        const current = match.odds[key];
-
-        if (!Number.isFinite(current)) {
-          return false;
-        }
-
-        const old = h.odds[key];
-
-        if (!Number.isFinite(old)) {
-          return false;
-        }
-
-        if (!oddsSame(current, old)) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    const output = [];
-
-    for (const result of RES) {
-
-      const odd = getOddForResult(match, result);
-
-      if (odd && odd.value < minOdd) continue;
-
-      const stat = resultStat(pool, result);
-
-      if (!stat) continue;
-
-      if (stat.total < minSample) continue;
-
-      if (stat.rate < minRate) continue;
-
-      output.push({
-        result: result.label,
-        odd: odd ? odd.value : null,
-        rate: stat.rate,
-        total: stat.total,
-        success: stat.success,
-        key: odd ? odd.key : null
-      });
-    }
-
-    return output.sort((a, b) => b.rate - a.rate);
-  }
-
-  function analyze(match) {
-
-    const minRate = Math.max(
+  const threshold =
+    Math.max(
       0,
-      Math.min(100, number($('tdThr').value) || 70)
+      Math.min(
+        100,
+        num($('tdThr').value) || 70
+      )
     );
 
-    const minSample = Math.max(
+  const minSample =
+    Math.max(
       1,
-      Math.floor(number($('tdMin').value) || 5)
+      Math.floor(
+        num($('tdMin').value) || 5
+      )
     );
 
-    const minOdd = Math.max(
+  const minOdd =
+    Math.max(
       1,
-      number($('tdOdd').value) || 1.4
+      num($('tdOdd').value) || 1.4
     );
 
-    const basis = $('tdBasis').value;
+  const output=[];
 
-    if (basis === 'each') {
+  for(const result of RESULTS){
 
-      return analyzeEach(
-        match,
-        minRate,
-        minSample,
-        minOdd
-      );
+    let oddKey=null;
+    let oddValue=null;
+
+    for(const key of result.keys){
+
+      if(Number.isFinite(match.odds[key])){
+
+        oddKey=key;
+        oddValue=match.odds[key];
+
+        break;
+      }
+
     }
 
-    if (
-      basis === 'league' ||
-      basis === 'team' ||
-      basis === 'all'
-    ) {
+    if(!oddKey) continue;
 
-      return analyzeNoOdds(
+    if(oddValue < minOdd) continue;
+
+    const samples =
+      historicalByOdd(
         match,
-        basis,
-        minRate,
-        minSample
+        oddKey
       );
+
+    const s =
+      stat(samples,result);
+
+    if(!s) continue;
+
+    if(s.total < minSample) continue;
+
+    if(s.rate < threshold) continue;
+
+    output.push({
+
+      name:result.name,
+
+      key:oddKey,
+
+      odd:oddValue,
+
+      rate:s.rate,
+
+      total:s.total,
+
+      success:s.success,
+
+      samples:samples,
+
+      result:result
+
+    });
+
+  }
+
+  output.sort(
+    (a,b)=>
+      b.rate-a.rate ||
+      b.total-a.total
+  );
+
+  return output;
+}
+
+/*
+=========================================
+BİRLEŞİK ANALİZ
+=========================================
+*/
+
+function analyzeCombined(match,basis){
+
+  const threshold =
+    num($('tdThr').value) || 70;
+
+  const minSample =
+    Math.max(
+      1,
+      Math.floor(
+        num($('tdMin').value) || 5
+      )
+    );
+
+  const minOdd =
+    num($('tdOdd').value) || 1.4;
+
+  const keys =
+    basis
+      .split(',')
+      .map(x=>x.trim());
+
+  const pool =
+    HISTORICAL.filter(h=>{
+
+      return keys.every(key=>{
+
+        const a=match.odds[key];
+        const b=h.odds[key];
+
+        return Number.isFinite(a) &&
+               Number.isFinite(b) &&
+               sameOdd(a,b);
+
+      });
+
+    });
+
+  const output=[];
+
+  for(const result of RESULTS){
+
+    const s=stat(
+      pool,
+      result
+    );
+
+    if(!s) continue;
+
+    if(s.total < minSample) continue;
+
+    if(s.rate < threshold) continue;
+
+    let odd=null;
+
+    for(const key of result.keys){
+
+      if(Number.isFinite(match.odds[key])){
+
+        odd=match.odds[key];
+
+        break;
+      }
+
     }
 
-    return analyzeCombined(
+    if(odd != null && odd < minOdd){
+      continue;
+    }
+
+    output.push({
+
+      name:result.name,
+
+      key:null,
+
+      odd,
+
+      rate:s.rate,
+
+      total:s.total,
+
+      success:s.success,
+
+      samples:pool,
+
+      result
+
+    });
+
+  }
+
+  return output.sort(
+    (a,b)=>b.rate-a.rate
+  );
+}
+
+/*
+=========================================
+ORANSIZ ANALİZ
+=========================================
+*/
+
+function analyzeNoOdds(match,basis){
+
+  const threshold =
+    num($('tdThr').value) || 70;
+
+  const minSample =
+    Math.max(
+      1,
+      Math.floor(
+        num($('tdMin').value) || 5
+      )
+    );
+
+  let pool=[];
+
+  if(basis==='league'){
+
+    pool=HISTORICAL.filter(
+      h=>h.league===match.league
+    );
+
+  }else if(basis==='team'){
+
+    pool=HISTORICAL.filter(h=>
+      h.home===match.home ||
+      h.away===match.home ||
+      h.home===match.away ||
+      h.away===match.away
+    );
+
+  }else{
+
+    pool=HISTORICAL.slice();
+
+  }
+
+  const output=[];
+
+  for(const result of RESULTS){
+
+    const s=stat(pool,result);
+
+    if(!s) continue;
+
+    if(s.total<minSample) continue;
+
+    if(s.rate<threshold) continue;
+
+    output.push({
+
+      name:result.name,
+
+      odd:null,
+
+      rate:s.rate,
+
+      total:s.total,
+
+      success:s.success,
+
+      samples:pool,
+
+      result
+
+    });
+
+  }
+
+  return output.sort(
+    (a,b)=>b.rate-a.rate
+  );
+}
+
+function analyze(match){
+
+  const basis=$('tdBasis').value;
+
+  if(basis==='each'){
+    return analyzeEach(match);
+  }
+
+  if(
+    basis==='league' ||
+    basis==='team' ||
+    basis==='all'
+  ){
+    return analyzeNoOdds(
       match,
-      basis,
-      minRate,
-      minSample,
-      minOdd
+      basis
     );
   }
 
-  function rateClass(rate) {
+  return analyzeCombined(
+    match,
+    basis
+  );
+}
 
-    if (rate >= 80) return 'very-high';
+/*
+=========================================
+ÖRNEKLEM SONUCU
+=========================================
+*/
 
-    if (rate >= 70) return 'high';
+function sampleHTML(sample,result){
 
-    if (rate >= 60) return 'medium';
+  const ok =
+    result.test(
+      sample.scoreFT,
+      sample.scoreHT
+    );
 
-    return 'low';
-  }
+  const score =
+    sample.scoreFT
+      ? `${sample.scoreFT[0]}-${sample.scoreFT[1]}`
+      : '-';
 
-  function predictionHTML(p) {
+  return `
+    <div class="sample">
 
-    const rate = Number(p.rate.toFixed(1));
+      <div class="sample-score">
+        ${score}
+      </div>
+
+      <div class="sample-teams">
+
+        <strong>
+          ${esc(sample.home)}
+          -
+          ${esc(sample.away)}
+        </strong>
+
+        <span>
+          ${esc(sample.date)}
+          ·
+          ${esc(sample.league)}
+        </span>
+
+      </div>
+
+      <div class="sample-result ${ok?'win':'loss'}">
+        ${ok?'✓':'✕'}
+      </div>
+
+    </div>
+  `;
+}
+
+/*
+=========================================
+DETAY
+=========================================
+*/
+
+function detailHTML(match,predictions){
+
+  if(!predictions.length){
 
     return `
-      <div class="prediction">
+      <div class="no-sample">
+        Bu maç için seçilen şartları sağlayan tahmin bulunamadı.
+      </div>
+    `;
+  }
 
-        <div class="prediction-top">
+  return predictions.map((p,index)=>{
 
-          <div class="prediction-name">
-            ${esc(p.result)}
+    const samples=p.samples || [];
+
+    return `
+      <div class="detail-prediction">
+
+        <div class="detail-head">
+
+          <div class="detail-name">
+            ${esc(p.name)}
             ${
               p.odd != null
-                ? `<div class="odd">Oran: ${p.odd.toFixed(2)}</div>`
-                : ''
+              ? ` · ${Number(p.odd).toFixed(2)}`
+              : ''
             }
           </div>
 
-          <div class="rate">
-            %${rate}
+          <div class="detail-rate">
+            %${Number(p.rate).toFixed(1)}
           </div>
 
         </div>
 
-        <div class="bar">
-          <div style="width:${Math.min(100, rate)}%"></div>
+        <div class="detail-meta">
+          ${p.success} başarılı /
+          ${p.total} geçmiş maç
         </div>
 
-        <div class="detail">
-          ${p.success} başarılı / ${p.total} geçmiş maç
+        <div class="samples">
+
+          ${
+            samples.length
+              ? samples
+                  .slice(0,50)
+                  .map(s=>
+                    sampleHTML(
+                      s,
+                      p.result
+                    )
+                  )
+                  .join('')
+              : `
+                <div class="no-sample">
+                  Örneklem bulunamadı.
+                </div>
+              `
+          }
+
         </div>
 
       </div>
     `;
-  }
 
-  function matchHTML(match, predictions) {
+  }).join('');
+}
 
-    const score =
-      match.played && match.scoreFT
-        ? `${match.scoreFT[0]} - ${match.scoreFT[1]}`
-        : 'Oynanmadı';
+/*
+=========================================
+MAÇ KARTI
+=========================================
+*/
 
-    return `
-      <div class="match">
+function matchHTML(match,predictions,index){
 
-        <div class="match-head">
+  const id =
+    `match_${index}`;
 
-          <div class="league">
-            ${esc(match.league || 'Lig bilgisi yok')}
+  const visible =
+    predictions.slice(0,2);
+
+  return `
+    <div class="match">
+
+      <div class="match-main">
+
+        <button
+          class="plus"
+          data-id="${id}"
+          aria-label="Detayları aç"
+        >
+          +
+        </button>
+
+        <div class="match-info">
+
+          <div class="match-meta">
+            <span>${esc(match.time || '--:--')}</span>
+            <span>·</span>
+            <span>${esc(match.league || '')}</span>
           </div>
-
-          <div class="time">
-            ${esc(match.time || '--:--')}
-          </div>
-
-        </div>
-
-        <div class="match-body">
 
           <div class="teams">
-
-            <div class="team">
-              ${esc(match.home)}
-            </div>
-
-            <div class="vs">
-              VS
-            </div>
-
-            <div class="team away">
-              ${esc(match.away)}
-            </div>
-
+            ${esc(match.home)}
+            -
+            ${esc(match.away)}
           </div>
 
-          <div class="score">
-            ${score}
-          </div>
+        </div>
 
-          <div class="predictions">
-            ${predictions.map(predictionHTML).join('')}
-          </div>
+        <div class="predictions">
+
+          ${
+            visible.length
+              ? visible.map((p,i)=>`
+                  <div class="prediction ${i===0?'best':''}">
+                    ${esc(p.name)}
+                    %${Number(p.rate).toFixed(1)}
+                  </div>
+                `).join('')
+              : ''
+          }
 
         </div>
 
       </div>
-    `;
-  }
 
-  function dates() {
+      <div
+        class="match-detail"
+        id="${id}"
+      >
+        ${detailHTML(match,predictions)}
+      </div>
 
-    const set = new Set();
+    </div>
+  `;
+}
 
-    MATCHES.forEach(m => {
+/*
+=========================================
+TARİHLER
+=========================================
+*/
 
-      if (m.date) {
-        set.add(m.date);
-      }
+function fillDates(){
 
-    });
+  const select=$('tdDate');
 
-    return Array.from(set).sort();
-  }
+  const dates=[
+    ...new Set(
+      MATCHES
+        .map(m=>m.date)
+        .filter(Boolean)
+    )
+  ].sort();
 
-  function fillDates() {
+  select.innerHTML='';
 
-    const select = $('tdDate');
+  const todayDate=today();
 
-    const allDates = dates();
+  for(const d of dates){
 
-    const today = todayISO();
+    const op=
+      document.createElement('option');
 
-    select.innerHTML = '';
+    op.value=d;
+    op.textContent=dateTR(d);
 
-    for (const date of allDates) {
-
-      const option = document.createElement('option');
-
-      option.value = date;
-      option.textContent = formatDate(date);
-
-      if (date === today) {
-        option.selected = true;
-      }
-
-      select.appendChild(option);
+    if(d===todayDate){
+      op.selected=true;
     }
 
-    if (!select.value && allDates.length) {
-
-      const future =
-        allDates.find(d => d >= today);
-
-      select.value =
-        future || allDates[allDates.length - 1];
-    }
+    select.appendChild(op);
   }
 
-  function render() {
+  if(!select.value && dates.length){
 
-    const date = $('tdDate').value;
+    const nearest =
+      dates.find(d=>d>=todayDate);
 
-    const onlyIdeal = $('tdOnly').checked;
-    const showAll = $('tdAll').checked;
+    select.value =
+      nearest ||
+      dates[dates.length-1];
+  }
+}
 
-    TODAY = MATCHES
-      .filter(m =>
-        m.date === date &&
+/*
+=========================================
+RENDER
+=========================================
+*/
+
+function render(){
+
+  const selectedDate=
+    $('tdDate').value;
+
+  const onlyIdeal=
+    $('tdOnly').checked;
+
+  const showAll=
+    $('tdAll').checked;
+
+  const matches=
+    MATCHES
+      .filter(m=>
+        m.date===selectedDate &&
         !m.played
       )
-      .sort((a, b) =>
-        String(a.time).localeCompare(String(b.time))
+      .sort((a,b)=>
+        String(a.time)
+          .localeCompare(
+            String(b.time)
+          )
       );
 
-    const container = $('tdResults');
+  let idealCount=0;
+  let html='';
+  let shown=0;
 
-    if (!TODAY.length) {
+  for(let i=0;i<matches.length;i++){
 
-      container.innerHTML = `
-        <div class="empty">
-          ${formatDate(date)} tarihinde oynanmamış maç bulunamadı.
-        </div>
-      `;
+    const match=matches[i];
 
-      $('tdStatus').textContent =
-        `${formatDate(date)} • 0 maç`;
+    const predictions=
+      analyze(match);
 
-      return;
+    if(predictions.length){
+      idealCount++;
     }
 
-    let html = '';
+    if(
+      onlyIdeal &&
+      predictions.length===0
+    ){
+      continue;
+    }
 
-    let shown = 0;
+    if(
+      !showAll &&
+      predictions.length===0
+    ){
+      continue;
+    }
 
-    for (const match of TODAY) {
-
-      const predictions = analyze(match);
-
-      if (onlyIdeal && predictions.length === 0) {
-        continue;
-      }
-
-      if (!showAll && predictions.length === 0) {
-        continue;
-      }
-
-      html += matchHTML(
+    html +=
+      matchHTML(
         match,
-        predictions
+        predictions,
+        i
       );
 
-      shown++;
-    }
-
-    if (!shown) {
-
-      container.innerHTML = `
-        <div class="empty">
-          Seçilen kriterlere uygun tahmin bulunan maç yok.
-        </div>
-      `;
-
-    } else {
-
-      container.innerHTML = html;
-    }
-
-    $('tdStatus').textContent =
-      `${formatDate(date)} • ${shown} maç gösteriliyor • ${HISTORICAL.length} geçmiş maç analiz edildi`;
+    shown++;
   }
 
-  async function load() {
+  $('statMatches').textContent=
+    matches.length.toLocaleString('tr-TR');
 
-    $('tdStatus').textContent =
-      'Mackolik verileri yükleniyor...';
+  $('statIdeal').textContent=
+    idealCount.toLocaleString('tr-TR');
 
-    try {
+  $('statPool').textContent=
+    HISTORICAL.length.toLocaleString('tr-TR');
 
-      const response = await fetch(
-        DATA_URL + '?v=' + Date.now(),
-        {
-          cache: 'no-store'
+  $('tdStatus').textContent=
+    `${dateTR(selectedDate)} · ${shown} maç gösteriliyor`;
+
+  if(!shown){
+
+    $('tdResults').innerHTML=`
+      <div class="empty">
+        Bu kriterlere uygun tahmin bulunan maç yok.
+      </div>
+    `;
+
+    return;
+  }
+
+  $('tdResults').innerHTML=html;
+
+  document
+    .querySelectorAll('.plus')
+    .forEach(button=>{
+
+      button.addEventListener(
+        'click',
+        ()=>{
+
+          const id=
+            button.dataset.id;
+
+          const detail=
+            document.getElementById(id);
+
+          if(!detail) return;
+
+          const open=
+            detail.classList.toggle('open');
+
+          button.classList.toggle(
+            'open',
+            open
+          );
+
+          button.textContent=
+            open ? '−' : '+';
+
         }
       );
 
-      if (!response.ok) {
-        throw new Error(
-          'Veri dosyası yüklenemedi: HTTP ' +
-          response.status
-        );
-      }
+    });
+}
 
-      const data = await response.json();
+/*
+=========================================
+VERİYİ YÜKLE
+=========================================
+*/
 
-      RAW = Array.isArray(data)
-        ? data
-        : Array.isArray(data.matches)
-          ? data.matches
-          : [];
+async function load(){
 
-      MATCHES = RAW
+  $('tdStatus').textContent=
+    'Veriler yükleniyor...';
+
+  try{
+
+    const response=
+      await fetch(
+        DATA_URL +
+        '?v=' +
+        Date.now(),
+        {
+          cache:'no-store'
+        }
+      );
+
+    if(!response.ok){
+      throw new Error(
+        'matches.json yüklenemedi'
+      );
+    }
+
+    const data=
+      await response.json();
+
+    const raw=
+      Array.isArray(data)
+      ? data
+      : Array.isArray(data.matches)
+        ? data.matches
+        : [];
+
+    MATCHES=
+      raw
         .map(normalize)
-        .filter(m =>
+        .filter(m=>
           m.date &&
           m.home &&
           m.away
         );
 
-      HISTORICAL =
-        getHistoricalPool();
+    HISTORICAL=
+      MATCHES.filter(m=>
+        m.played &&
+        m.date>=START_DATE
+      );
 
-      fillDates();
+    fillDates();
 
-      render();
+    render();
 
-    } catch (error) {
+  }catch(error){
 
-      console.error(error);
+    console.error(error);
 
-      $('tdStatus').textContent =
-        'Veri yüklenirken hata oluştu.';
+    $('tdStatus').textContent=
+      'Veri yüklenemedi';
 
-      $('tdResults').innerHTML = `
-        <div class="empty">
-          <b>Veriler yüklenemedi.</b>
-          <br><br>
-          data/matches.json kontrol edilmeli.
-          <br><br>
-          ${esc(error.message)}
-        </div>
-      `;
-    }
+    $('tdResults').innerHTML=`
+      <div class="empty">
+        <b>Veriler yüklenemedi.</b>
+        <br><br>
+        data/matches.json kontrol edilmeli.
+        <br><br>
+        ${esc(error.message)}
+      </div>
+    `;
   }
+}
 
-  $('tdAnalyze').addEventListener(
+/*
+=========================================
+EVENTLER
+=========================================
+*/
+
+$('tdAnalyze')
+  .addEventListener(
     'click',
     render
   );
 
-  $('tdRefresh').addEventListener(
+$('tdRefresh')
+  .addEventListener(
     'click',
     load
   );
 
-  $('tdDate').addEventListener(
+$('tdDate')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdBasis').addEventListener(
+$('tdBasis')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdThr').addEventListener(
+$('tdThr')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdMin').addEventListener(
+$('tdMin')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdOdd').addEventListener(
+$('tdOdd')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdOnly').addEventListener(
+$('tdOnly')
+  .addEventListener(
     'change',
     render
   );
 
-  $('tdAll').addEventListener(
+$('tdAll')
+  .addEventListener(
     'change',
     render
   );
 
-  load();
+load();
 
 })();
