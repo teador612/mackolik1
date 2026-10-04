@@ -1,18 +1,11 @@
 /**
- * BILYONER BASKETBOL API TEST
+ * BILYONER BASKETBOL VERİ TESTİ
  *
- * AMAÇ:
- * Bilyoner sayfasındaki INITIAL_STATE ve JavaScript bundle
- * içindeki API endpointlerini bulmak.
- *
+ * SADECE TEST
  * basketball-history.json DEĞİŞTİRİLMEZ.
  */
 
-const PAGE =
-  "https://www.bilyoner.com/canli-skor/basketbol-canli-skor";
-
-const BASE =
-  "https://www.bilyoner.com";
+const BASE = "https://www.bilyoner.com";
 
 const HEADERS = {
   "User-Agent":
@@ -20,16 +13,39 @@ const HEADERS = {
     "(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
 
   "Accept":
-    "text/html,application/xhtml+xml,application/xml;q=0.9," +
-    "image/avif,image/webp,*/*;q=0.8",
+    "application/json,text/plain,*/*",
 
   "Accept-Language":
     "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
 
-  "Cache-Control": "no-cache",
+  "Referer":
+    "https://www.bilyoner.com/canli-skor/basketbol-canli-skor",
 
-  "Pragma": "no-cache"
+  "Origin":
+    "https://www.bilyoner.com",
+
+  "Cache-Control":
+    "no-cache",
+
+  "Pragma":
+    "no-cache"
 };
+
+const ENDPOINTS = [
+  "/mobile/live-score/header",
+
+  "/mobile/live-stream/events",
+
+  "/mobile/live-stream/header/v2",
+
+  "/api/sse/subscribe",
+
+  "/canli-iddaa/basketbol",
+
+  "/canli-skor/basketbol-canli-skor",
+
+  "/api"
+];
 
 function clean(value) {
   return String(value || "")
@@ -40,126 +56,108 @@ function clean(value) {
     .trim();
 }
 
-function unique(arr) {
-  return [...new Set(arr)];
+function printPreview(text) {
+  const value = clean(text);
+
+  console.log("");
+  console.log("---------- CEVAP BAŞLANGICI ----------");
+  console.log(value.slice(0, 10000));
+  console.log("---------- CEVAP SONU ----------");
+  console.log("");
 }
 
-function extractScriptUrls(html) {
-  const urls = [];
+function searchMatchPatterns(text) {
+  const patterns = [
+    /\d{1,3}\s*[-:]\s*\d{1,3}/g,
 
-  const regex =
-    /<script[^>]+src=["']([^"']+\.js[^"']*)["']/gi;
+    /"homeTeam"\s*:\s*"([^"]+)"/gi,
 
-  let match;
+    /"awayTeam"\s*:\s*"([^"]+)"/gi,
 
-  while ((match = regex.exec(html)) !== null) {
-    let url = match[1];
+    /"home"\s*:\s*"([^"]+)"/gi,
 
-    if (url.startsWith("/")) {
-      url = BASE + url;
-    } else if (url.startsWith("//")) {
-      url = "https:" + url;
+    /"away"\s*:\s*"([^"]+)"/gi,
+
+    /"homeScore"\s*:\s*(\d+)/gi,
+
+    /"awayScore"\s*:\s*(\d+)/gi,
+
+    /"eventId"\s*:\s*"?([^",}]+)"?/gi,
+
+    /"betRadarId"\s*:\s*"?([^",}]+)"?/gi,
+
+    /"leagueId"\s*:\s*"?([^",}]+)"?/gi,
+
+    /"sportId"\s*:\s*"?([^",}]+)"?/gi
+  ];
+
+  for (const regex of patterns) {
+    const matches = [...text.matchAll(regex)];
+
+    if (matches.length) {
+      console.log("");
+      console.log(
+        `🔎 ${regex} -> ${matches.length} eşleşme`
+      );
+
+      for (const match of matches.slice(0, 20)) {
+        console.log(
+          " ",
+          match[0].slice(0, 500)
+        );
+      }
     }
-
-    urls.push(url);
   }
-
-  return unique(urls);
 }
 
-function extractApiCandidates(text) {
-  const results = [];
+async function request(url, method = "GET") {
+  console.log("");
+  console.log("========================================");
+  console.log("URL:", url);
+  console.log("METHOD:", method);
+  console.log("========================================");
 
-  /*
-   * URL formatları
-   */
-  const urlRegex =
-    /https?:\/\/[^"'`\\\s]+/gi;
-
-  for (const match of text.matchAll(urlRegex)) {
-    const value = clean(match[0]);
-
-    if (
-      /api|aping|score|match|event|basket|sport|live/i.test(value)
-    ) {
-      results.push(value);
-    }
-  }
-
-  /*
-   * Relative API yolları
-   */
-  const relativeRegex =
-    /["'`]((?:\/|api\/|v\d\/)[A-Za-z0-9_?=&./:{}-]*(?:api|score|match|event|sport|live|basket)[A-Za-z0-9_?=&./:{}-]*)["'`]/gi;
-
-  for (const match of text.matchAll(relativeRegex)) {
-    results.push(clean(match[1]));
-  }
-
-  /*
-   * Özellikle aping.bilyoner.com geçen parçalar
-   */
-  const apiingRegex =
-    /aping\.bilyoner\.com[^"'`\\\s]*/gi;
-
-  for (const match of text.matchAll(apiingRegex)) {
-    results.push(
-      "https://" + clean(match[0])
-    );
-  }
-
-  return unique(results);
-}
-
-function findStateInfo(html) {
-  const result = {};
-
-  const initialIndex =
-    html.indexOf("window.INITIAL_STATE");
-
-  if (initialIndex < 0) {
-    result.found = false;
-    return result;
-  }
-
-  result.found = true;
-
-  const start =
-    Math.max(0, initialIndex - 500);
-
-  const end =
-    Math.min(html.length, initialIndex + 150000);
-
-  result.sample =
-    html.slice(start, end);
-
-  return result;
-}
-
-async function fetchText(url) {
   try {
     const response = await fetch(url, {
-      method: "GET",
+      method,
       headers: HEADERS,
       redirect: "follow"
     });
 
     const text = await response.text();
 
+    console.log("HTTP:", response.status);
+    console.log("Final URL:", response.url);
+    console.log(
+      "Content-Type:",
+      response.headers.get("content-type")
+    );
+    console.log(
+      "Uzunluk:",
+      text.length
+    );
+
+    if (text) {
+      printPreview(text);
+      searchMatchPatterns(text);
+    }
+
     return {
-      ok: response.ok,
       status: response.status,
-      url: response.url,
+      ok: response.ok,
       text
     };
 
   } catch (error) {
+    console.log(
+      "❌ HATA:",
+      error.message
+    );
+
     return {
-      ok: false,
       status: 0,
-      url,
-      text: "",
-      error: error.message
+      ok: false,
+      text: ""
     };
   }
 }
@@ -167,253 +165,83 @@ async function fetchText(url) {
 async function main() {
   console.log("");
   console.log("========================================");
-  console.log("🏀 BILYONER API KEŞİF TESTİ");
+  console.log("🏀 BILYONER BASKETBOL VERİ TESTİ");
   console.log("========================================");
   console.log("");
-  console.log("📌 basketball-history.json DEĞİŞTİRİLMEYECEK");
-  console.log("");
-
-  /*
-   * ----------------------------------------------------
-   * 1) ANA SAYFA
-   * ----------------------------------------------------
-   */
-
-  console.log("1️⃣ Bilyoner basketbol sayfası alınıyor...");
-
-  const page = await fetchText(PAGE);
-
-  console.log("HTTP:", page.status);
-  console.log("Final URL:", page.url);
-  console.log("HTML:", page.text.length);
-
-  if (!page.ok) {
-    console.log("");
-    console.log("❌ Bilyoner sayfası alınamadı.");
-    console.log(page.error || "");
-    process.exit(1);
-  }
-
-  console.log("✅ Ana sayfa alındı.");
-
-  /*
-   * ----------------------------------------------------
-   * 2) SCRIPT DOSYALARI
-   * ----------------------------------------------------
-   */
-
-  console.log("");
-  console.log("2️⃣ JavaScript dosyaları aranıyor...");
-
-  const scripts =
-    extractScriptUrls(page.text);
-
   console.log(
-    "Bulunan JS:",
-    scripts.length
+    "📌 basketball-history.json DEĞİŞTİRİLMEYECEK."
+  );
+  console.log("");
+
+  /*
+   * --------------------------------------------------
+   * 1. LIVE SCORE HEADER
+   * --------------------------------------------------
+   */
+
+  await request(
+    BASE + "/mobile/live-score/header"
   );
 
-  for (const url of scripts) {
-    console.log(" -", url);
-  }
-
   /*
-   * ----------------------------------------------------
-   * 3) INITIAL_STATE
-   * ----------------------------------------------------
+   * --------------------------------------------------
+   * 2. LIVE STREAM EVENTS
+   * --------------------------------------------------
    */
 
-  console.log("");
-  console.log("3️⃣ INITIAL_STATE kontrol ediliyor...");
-
-  const state =
-    findStateInfo(page.text);
-
-  if (state.found) {
-    console.log("✅ window.INITIAL_STATE bulundu.");
-
-    const candidates =
-      extractApiCandidates(state.sample);
-
-    console.log(
-      "INITIAL_STATE içinden API adayı:",
-      candidates.length
-    );
-
-    for (const item of candidates) {
-      console.log("API:", item);
-    }
-
-  } else {
-    console.log(
-      "⚠️ INITIAL_STATE bulunamadı."
-    );
-  }
-
-  /*
-   * ----------------------------------------------------
-   * 4) ANA HTML'DEN API ARAMA
-   * ----------------------------------------------------
-   */
-
-  console.log("");
-  console.log("4️⃣ HTML içerisinden API aranıyor...");
-
-  const htmlApis =
-    extractApiCandidates(page.text);
-
-  console.log(
-    "HTML API adayı:",
-    htmlApis.length
+  await request(
+    BASE + "/mobile/live-stream/events"
   );
 
-  for (const api of htmlApis) {
-    console.log("API:", api);
-  }
-
   /*
-   * ----------------------------------------------------
-   * 5) LIVE SCORES JS
-   * ----------------------------------------------------
+   * --------------------------------------------------
+   * 3. LIVE STREAM HEADER
+   * --------------------------------------------------
    */
 
-  console.log("");
-  console.log("5️⃣ LiveScores JavaScript aranıyor...");
-
-  const liveScripts =
-    scripts.filter(url =>
-      /LiveScores/i.test(url)
-    );
-
-  console.log(
-    "LiveScores JS:",
-    liveScripts.length
+  await request(
+    BASE + "/mobile/live-stream/header/v2"
   );
 
-  const allApis = [];
-
-  for (const url of liveScripts) {
-    console.log("");
-    console.log("JS:", url);
-
-    const result =
-      await fetchText(url);
-
-    console.log(
-      "HTTP:",
-      result.status
-    );
-
-    console.log(
-      "Boyut:",
-      result.text.length
-    );
-
-    if (!result.ok) {
-      console.log("❌ JS alınamadı.");
-      continue;
-    }
-
-    const apis =
-      extractApiCandidates(result.text);
-
-    console.log(
-      "API adayı:",
-      apis.length
-    );
-
-    for (const api of apis) {
-      console.log("API:", api);
-      allApis.push(api);
-    }
-  }
-
   /*
-   * ----------------------------------------------------
-   * 6) DİĞER JS DOSYALARINI TARA
-   * ----------------------------------------------------
+   * --------------------------------------------------
+   * 4. CANLI IDDAA
+   * --------------------------------------------------
    */
 
-  console.log("");
-  console.log("6️⃣ Diğer JS dosyaları taranıyor...");
-
-  for (const url of scripts) {
-    if (/LiveScores/i.test(url)) {
-      continue;
-    }
-
-    /*
-     * Çok fazla dosya varsa ilk 30 dosyayla sınırlıyoruz.
-     */
-    if (
-      scripts.indexOf(url) >= 30
-    ) {
-      break;
-    }
-
-    const result =
-      await fetchText(url);
-
-    if (!result.ok) {
-      continue;
-    }
-
-    const apis =
-      extractApiCandidates(result.text);
-
-    if (apis.length) {
-      console.log("");
-      console.log("JS:", url);
-
-      for (const api of apis) {
-        console.log("API:", api);
-        allApis.push(api);
-      }
-    }
-  }
+  await request(
+    BASE + "/canli-iddaa/basketbol"
+  );
 
   /*
-   * ----------------------------------------------------
-   * 7) SONUÇ
-   * ----------------------------------------------------
+   * --------------------------------------------------
+   * 5. CANLI SKOR
+   * --------------------------------------------------
    */
 
-  const uniqueApis =
-    unique(allApis);
+  await request(
+    BASE + "/canli-skor/basketbol-canli-skor"
+  );
+
+  /*
+   * --------------------------------------------------
+   * 6. API ROOT
+   * --------------------------------------------------
+   */
+
+  await request(
+    BASE + "/api"
+  );
+
+  /*
+   * --------------------------------------------------
+   * SON
+   * --------------------------------------------------
+   */
 
   console.log("");
   console.log("========================================");
-  console.log("🔎 API KEŞİF SONUCU");
-  console.log("========================================");
-
-  console.log(
-    "Toplam benzersiz API adayı:",
-    uniqueApis.length
-  );
-
-  if (!uniqueApis.length) {
-    console.log("");
-    console.log(
-      "⚠️ JavaScript içinde açık API adresi bulunamadı."
-    );
-
-    console.log("");
-    console.log(
-      "Bilyoner'in veri yapısı muhtemelen runtime request"
-    );
-
-    console.log(
-      "veya farklı bir bundle üzerinden çağrılıyor."
-    );
-  }
-
-  for (const api of uniqueApis) {
-    console.log(api);
-  }
-
-  console.log("");
-  console.log("========================================");
-  console.log("🏁 TEST TAMAMLANDI");
+  console.log("🏁 BILYONER TEST TAMAMLANDI");
   console.log("========================================");
 }
 
