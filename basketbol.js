@@ -1,1947 +1,781 @@
-/* =========================================================
-   BASKETBOL SAYI ANALİZİ
-   basketbol.html ile birlikte çalışır
-========================================================= */
+(() => {
+  "use strict";
 
-const DATA_URL = "./data/basketball.json";
+  const DATA_URL = "./data/basketball.json";
 
-let allMatches = [];
+  let matches = [];
+  let currentDate = new Date();
+  let selectedDate = new Date();
 
-let currentMonth = new Date();
-let selectedDate = new Date();
+  const $ = (id) => document.getElementById(id);
 
-const monthNames = [
-    "OCAK",
-    "ŞUBAT",
-    "MART",
-    "NİSAN",
-    "MAYIS",
-    "HAZİRAN",
-    "TEMMUZ",
-    "AĞUSTOS",
-    "EYLÜL",
-    "EKİM",
-    "KASIM",
-    "ARALIK"
-];
+  document.addEventListener("DOMContentLoaded", init);
 
+  async function init() {
+    bindEvents();
 
-/* =========================================================
-   BAŞLAT
-========================================================= */
+    currentDate = new Date();
+    selectedDate = new Date();
 
-document.addEventListener("DOMContentLoaded", () => {
+    await loadData();
+    renderCalendar();
+    renderSelectedDate();
+  }
 
-    document
-        .getElementById("prevMonth")
-        .addEventListener("click", () => {
+  function bindEvents() {
+    $("prevMonth")?.addEventListener("click", () => {
+      currentDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() - 1,
+        1
+      );
 
-            currentMonth.setMonth(currentMonth.getMonth() - 1);
+      renderCalendar();
+    });
 
-            renderCalendar();
-        });
+    $("nextMonth")?.addEventListener("click", () => {
+      currentDate = new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth() + 1,
+        1
+      );
 
+      renderCalendar();
+    });
 
-    document
-        .getElementById("nextMonth")
-        .addEventListener("click", () => {
+    $("closeModal")?.addEventListener("click", closeModal);
 
-            currentMonth.setMonth(currentMonth.getMonth() + 1);
+    $("analysisModal")?.addEventListener("click", (e) => {
+      if (e.target.id === "analysisModal") {
+        closeModal();
+      }
+    });
+  }
 
-            renderCalendar();
-        });
-
-
-    document
-        .getElementById("closeModal")
-        .addEventListener("click", closeModal);
-
-
-    document
-        .getElementById("analysisModal")
-        .addEventListener("click", e => {
-
-            if (e.target.id === "analysisModal") {
-                closeModal();
-            }
-
-        });
-
-
-    loadData();
-
-});
-
-
-/* =========================================================
-   VERİYİ YÜKLE
-========================================================= */
-
-async function loadData() {
-
-    const container =
-        document.getElementById("matchesContainer");
+  async function loadData() {
+    const container = $("matchesContainer");
 
     try {
+      if (container) {
+        container.innerHTML = `
+          <div class="loading">
+            Basketbol maçları yükleniyor...
+          </div>
+        `;
+      }
 
-        const response = await fetch(
-            DATA_URL + "?v=" + Date.now()
-        );
+      const response = await fetch(`${DATA_URL}?t=${Date.now()}`, {
+        cache: "no-store"
+      });
 
-        if (!response.ok) {
-            throw new Error(
-                "basketball.json yüklenemedi"
-            );
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (Array.isArray(data)) {
-            allMatches = data;
-        } else if (Array.isArray(data.matches)) {
-            allMatches = data.matches;
-        } else {
-            allMatches = [];
-        }
+      const rawMatches = Array.isArray(data)
+        ? data
+        : Array.isArray(data.matches)
+          ? data.matches
+          : [];
 
+      matches = rawMatches
+        .map(normalizeMatch)
+        .filter(Boolean)
+        .sort(sortMatches);
 
-        allMatches = allMatches
-            .map(normalizeMatch)
-            .filter(Boolean);
+      window.basketballMatches = matches;
 
-
-        renderCalendar();
-
-        renderSelectedDate();
+      console.log("🏀 Basketbol maçları:", matches.length);
+      console.log(matches);
 
     } catch (error) {
+      console.error("Basketbol verisi alınamadı:", error);
 
-        console.error(error);
-
+      if (container) {
         container.innerHTML = `
-            <div class="empty">
-                <div class="empty-icon">⚠️</div>
-                <div>Basketbol verileri yüklenemedi.</div>
-            </div>
+          <div class="empty">
+            <div style="font-size:34px">⚠️</div>
+            <strong>Basketbol verisi alınamadı</strong>
+            <p>data/basketball.json kontrol edin.</p>
+          </div>
         `;
-
+      }
     }
+  }
 
-}
+  /* =========================================================
+     MAÇ NORMALİZASYONU
+  ========================================================= */
 
-
-/* =========================================================
-   MAÇ NORMALİZASYONU
-========================================================= */
-
-function normalizeMatch(match) {
-
-    if (!match) return null;
+  function normalizeMatch(m) {
+    if (!m) return null;
 
     const home =
-        match.home ||
-        match.homeTeam ||
-        match.ev ||
-        match.evSahibi ||
-        "";
+      m.home ??
+      m.homeTeam ??
+      m.home_name ??
+      m.team1 ??
+      m.takim1 ??
+      "";
 
     const away =
-        match.away ||
-        match.awayTeam ||
-        match.deplasman ||
-        "";
-
-    if (!home || !away) {
-        return null;
-    }
-
+      m.away ??
+      m.awayTeam ??
+      m.away_name ??
+      m.team2 ??
+      m.takim2 ??
+      "";
 
     const date =
-        normalizeDate(
-            match.date ||
-            match.matchDate ||
-            match.tarih
-        );
+      m.date ??
+      m.matchDate ??
+      m.tarih ??
+      "";
 
+    const time =
+      m.time ??
+      m.matchTime ??
+      m.saat ??
+      "";
 
-    if (!date) {
-        return null;
+    if (!home || !away || !date) {
+      return null;
     }
-
 
     return {
+      ...m,
 
-        id:
-            match.id ||
-            createId(date, home, away),
+      id:
+        m.id ??
+        `${date}_${time}_${home}_${away}`,
 
-        date,
+      date: normalizeDate(date),
 
-        time:
-            match.time ||
-            match.hour ||
-            match.saat ||
-            "",
+      time: normalizeTime(time),
 
-        league:
-            match.league ||
-            match.leagueName ||
-            match.lig ||
-            "BASKETBOL",
+      league:
+        m.league ??
+        m.leagueName ??
+        m.league_name ??
+        m.lig ??
+        "Basketbol",
 
-        home,
+      home: cleanTeamName(home),
 
-        away,
+      away: cleanTeamName(away),
 
+      total:
+        numberValue(
+          m.total ??
+          m.totalScore ??
+          m.ts ??
+          m.altUst ??
+          m.line
+        ),
 
-        homeScore:
-            numberOrNull(
-                match.homeScore ??
-                match.home_score ??
-                match.evSkor
-            ),
+      homeScore:
+        numberValue(
+          m.homeScore ??
+          m.home_score ??
+          m.scoreHome ??
+          m.msHome
+        ),
 
-        awayScore:
-            numberOrNull(
-                match.awayScore ??
-                match.away_score ??
-                match.depSkor
-            ),
+      awayScore:
+        numberValue(
+          m.awayScore ??
+          m.away_score ??
+          m.scoreAway ??
+          m.msAway
+        ),
 
+      halfHomeScore:
+        numberValue(
+          m.halfHomeScore ??
+          m.half_home_score ??
+          m.iyHome
+        ),
 
-        halfHomeScore:
-            numberOrNull(
-                match.halfHomeScore ??
-                match.firstHalfHome ??
-                match.iyHomeScore
-            ),
-
-        halfAwayScore:
-            numberOrNull(
-                match.halfAwayScore ??
-                match.firstHalfAway ??
-                match.iyAwayScore
-            ),
-
-
-        status:
-            match.status ||
-            detectStatus(match),
-
-
-        stats:
-            match.stats || {},
-
-        raw:
-            match
-
+      halfAwayScore:
+        numberValue(
+          m.halfAwayScore ??
+          m.half_away_score ??
+          m.iyAway
+        )
     };
+  }
 
-}
+  function cleanTeamName(value) {
+    return String(value)
+      .replace(/\s+/g, " ")
+      .trim();
+  }
 
+  function normalizeDate(value) {
+    const s = String(value).trim();
 
-/* =========================================================
-   TARİH NORMALİZASYONU
-========================================================= */
-
-function normalizeDate(value) {
-
-    if (!value) return null;
-
-
-    if (
-        typeof value === "string" &&
-        /^\d{4}-\d{2}-\d{2}$/.test(value)
-    ) {
-        return value;
-    }
-
-
-    const text = String(value).trim();
-
-
-    let m =
-        text.match(
-            /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
-        );
-
+    // 04.10.2026
+    let m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
 
     if (m) {
-
-        return [
-            m[3],
-            String(m[2]).padStart(2, "0"),
-            String(m[1]).padStart(2, "0")
-        ].join("-");
-
+      return `${m[3]}-${String(m[2]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}`;
     }
 
+    // 2026-10-04
+    m = s.match(/^(\d{4})[./-](\d{1,2})[./-](\d{1,2})$/);
 
-    const d = new Date(value);
-
-    if (isNaN(d.getTime())) {
-        return null;
+    if (m) {
+      return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
     }
 
+    return s;
+  }
 
-    return [
-        d.getFullYear(),
-        String(d.getMonth() + 1).padStart(2, "0"),
-        String(d.getDate()).padStart(2, "0")
-    ].join("-");
+  function normalizeTime(value) {
+    const s = String(value ?? "").trim();
 
-}
+    const m = s.match(/(\d{1,2}):(\d{2})/);
 
+    if (!m) {
+      return "";
+    }
 
-/* =========================================================
-   TARİH YARDIMCILARI
-========================================================= */
+    return `${String(m[1]).padStart(2, "0")}:${m[2]}`;
+  }
 
-function dateKey(date) {
+  function numberValue(value) {
+    if (
+      value === null ||
+      value === undefined ||
+      value === ""
+    ) {
+      return null;
+    }
 
-    return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, "0"),
-        String(date.getDate()).padStart(2, "0")
-    ].join("-");
-
-}
-
-
-function parseDate(key) {
-
-    const parts = key.split("-").map(Number);
-
-    return new Date(
-        parts[0],
-        parts[1] - 1,
-        parts[2]
+    const n = Number(
+      String(value)
+        .replace(",", ".")
+        .replace(/[^\d.-]/g, "")
     );
 
-}
+    return Number.isFinite(n) ? n : null;
+  }
 
+  /* =========================================================
+     TAKVİM
+  ========================================================= */
 
-function sameDate(a, b) {
+  function renderCalendar() {
+    const calendar = $("calendar");
+    const title = $("calendarTitle");
 
-    return (
-        a.getFullYear() === b.getFullYear() &&
-        a.getMonth() === b.getMonth() &&
-        a.getDate() === b.getDate()
-    );
+    if (!calendar) return;
 
-}
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
 
+    const monthNames = [
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık"
+    ];
 
-/* =========================================================
-   TAKVİM
-========================================================= */
-
-function renderCalendar() {
-
-    const calendar =
-        document.getElementById("calendar");
-
-    const title =
-        document.getElementById("calendarTitle");
-
-
-    title.textContent =
-        `${monthNames[currentMonth.getMonth()]} ${currentMonth.getFullYear()}`;
-
+    if (title) {
+      title.textContent = `${monthNames[month]} ${year}`;
+    }
 
     calendar.innerHTML = "";
 
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-    const year =
-        currentMonth.getFullYear();
+    let startDay = firstDay.getDay();
 
-    const month =
-        currentMonth.getMonth();
-
-
-    const firstDay =
-        new Date(year, month, 1);
-
-
-    let startDay =
-        firstDay.getDay();
-
-    /*
-       JS:
-       Pazar = 0
-
-       Biz:
-       Pazartesi = 0
-    */
-
-    startDay =
-        startDay === 0
-            ? 6
-            : startDay - 1;
-
-
-    const daysInMonth =
-        new Date(year, month + 1, 0).getDate();
-
+    // Pazartesi başlangıcı
+    startDay = startDay === 0 ? 6 : startDay - 1;
 
     for (let i = 0; i < startDay; i++) {
-
-        const empty =
-            document.createElement("div");
-
-        empty.className = "day empty";
-
-        calendar.appendChild(empty);
-
+      const empty = document.createElement("div");
+      empty.className = "calendar-day empty-day";
+      calendar.appendChild(empty);
     }
 
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      const date = new Date(year, month, day);
+      const dateKey = formatDate(date);
 
-    for (
-        let dayNumber = 1;
-        dayNumber <= daysInMonth;
-        dayNumber++
-    ) {
+      const cell = document.createElement("button");
 
-        const date =
-            new Date(
-                year,
-                month,
-                dayNumber
-            );
+      cell.type = "button";
+      cell.className = "calendar-day";
 
+      if (isSameDate(date, selectedDate)) {
+        cell.classList.add("selected");
+      }
 
-        const key =
-            dateKey(date);
+      if (isToday(date)) {
+        cell.classList.add("today");
+      }
 
+      const dayMatches = getMatchesForDate(dateKey);
 
-        const matches =
-            matchesForDate(key);
+      if (dayMatches.length > 0) {
+        cell.classList.add("has-matches");
+      }
 
-
-        const cell =
-            document.createElement("div");
-
-        cell.className = "day";
-
-
-        if (sameDate(date, new Date())) {
-            cell.classList.add("today");
+      cell.innerHTML = `
+        <span class="day-number">${day}</span>
+        ${
+          dayMatches.length
+            ? `<span class="match-dot">${dayMatches.length}</span>`
+            : ""
         }
+      `;
 
+      cell.addEventListener("click", () => {
+        selectedDate = new Date(date);
 
-        if (sameDate(date, selectedDate)) {
-            cell.classList.add("selected");
-        }
+        renderCalendar();
+        renderSelectedDate();
+      });
 
+      calendar.appendChild(cell);
+    }
+  }
 
-        cell.innerHTML = `
+  /* =========================================================
+     SEÇİLİ GÜN
+  ========================================================= */
 
-            <div class="day-number">
-                ${dayNumber}
-            </div>
+  function renderSelectedDate() {
+    const title = $("selectedDate");
+    const count = $("matchCount");
+    const container = $("matchesContainer");
 
-            ${
-                matches.length
-                    ? `
-                        <div class="match-dot"></div>
+    const dateKey = formatDate(selectedDate);
+    const dayMatches = getMatchesForDate(dateKey);
 
-                        <div class="match-count">
-                            ${matches.length}
-                        </div>
-                    `
-                    : ""
-            }
-
-        `;
-
-
-        cell.addEventListener("click", () => {
-
-            selectedDate =
-                new Date(
-                    year,
-                    month,
-                    dayNumber
-                );
-
-            renderCalendar();
-
-            renderSelectedDate();
-
-        });
-
-
-        calendar.appendChild(cell);
-
+    if (title) {
+      title.textContent = formatTurkishDate(selectedDate);
     }
 
-}
-
-
-/* =========================================================
-   SEÇİLEN GÜN
-========================================================= */
-
-function renderSelectedDate() {
-
-    const key =
-        dateKey(selectedDate);
-
-
-    const matches =
-        matchesForDate(key);
-
-
-    const title =
-        document.getElementById("selectedDate");
-
-    const count =
-        document.getElementById("matchCount");
-
-
-    const today =
-        sameDate(
-            selectedDate,
-            new Date()
-        );
-
-
-    title.textContent =
-        today
-            ? "Bugünün Basketbol Maçları"
-            : formatLongDate(selectedDate);
-
-
-    count.textContent =
-        `${matches.length} maç`;
-
-
-    renderMatches(matches);
-
-}
-
-
-/* =========================================================
-   MAÇLARI BUL
-========================================================= */
-
-function matchesForDate(date) {
-
-    return allMatches
-        .filter(match => match.date === date)
-        .sort((a, b) => {
-
-            return timeToMinutes(a.time) -
-                   timeToMinutes(b.time);
-
-        });
-
-}
-
-
-/* =========================================================
-   MAÇLARI GÖSTER
-========================================================= */
-
-function renderMatches(matches) {
-
-    const container =
-        document.getElementById("matchesContainer");
-
-
-    if (!matches.length) {
-
-        container.innerHTML = `
-            <div class="empty">
-                <div class="empty-icon">🏀</div>
-                <div>
-                    Bu tarihte basketbol maçı bulunmuyor.
-                </div>
-            </div>
-        `;
-
-        return;
-
+    if (count) {
+      count.textContent = `${dayMatches.length} maç`;
     }
 
+    if (!container) return;
 
-    container.className = "matches-grid";
+    if (!dayMatches.length) {
+      container.innerHTML = `
+        <div class="empty">
+          <div style="font-size:42px">🏀</div>
+          <strong>Bu tarihte basketbol maçı yok</strong>
+          <p>Başka bir gün seçebilirsiniz.</p>
+        </div>
+      `;
 
-
-    /*
-       Analiz edilemeyen maçları
-       şimdilik gizlemiyoruz.
-
-       Çünkü veri çekme sistemi
-       tamamlandığında bütün maçların
-       geçmiş istatistikleri üzerinden
-       analiz edilmesini sağlayacağız.
-    */
-
-    container.innerHTML =
-        matches
-            .map(match => createMatchCard(match))
-            .join("");
-
-
-    container
-        .querySelectorAll("[data-match-id]")
-        .forEach(button => {
-
-            button.addEventListener("click", () => {
-
-                const id =
-                    button.dataset.matchId;
-
-                const match =
-                    allMatches.find(
-                        m => String(m.id) === String(id)
-                    );
-
-                if (match) {
-                    openAnalysis(match);
-                }
-
-            });
-
-        });
-
-}
-
-
-/* =========================================================
-   MAÇ KARTI
-========================================================= */
-
-function createMatchCard(match) {
-
-    const prediction =
-        calculatePrediction(match);
-
-
-    const finished =
-        isFinished(match);
-
-
-    const homeDisplay =
-        prediction
-            ? prediction.home.toFixed(1)
-            : "—";
-
-
-    const awayDisplay =
-        prediction
-            ? prediction.away.toFixed(1)
-            : "—";
-
-
-    const totalDisplay =
-        prediction
-            ? prediction.total.toFixed(1)
-            : "—";
-
-
-    const halfDisplay =
-        prediction
-            ? prediction.firstHalfTotal.toFixed(1)
-            : "—";
-
-
-    const confidence =
-        prediction
-            ? Math.round(prediction.confidence)
-            : 0;
-
-
-    let actualHome = "";
-
-    let actualAway = "";
-
-
-    if (finished) {
-
-        actualHome =
-            match.homeScore ?? "—";
-
-        actualAway =
-            match.awayScore ?? "—";
-
+      return;
     }
 
+    container.innerHTML = "";
 
-    return `
+    dayMatches.forEach(match => {
+      container.appendChild(createMatchCard(match));
+    });
+  }
 
-        <article class="match-card">
+  function getMatchesForDate(dateKey) {
+    return matches
+      .filter(m => m.date === dateKey)
+      .sort(sortMatches);
+  }
 
-            <div class="match-top">
+  /* =========================================================
+     MAÇ KARTI
+  ========================================================= */
 
-                <div class="league">
-                    ${escapeHtml(match.league)}
-                </div>
+  function createMatchCard(match) {
+    const card = document.createElement("article");
+    card.className = "basket-match-card";
 
-                <div class="match-time">
-                    ${escapeHtml(match.time || "--:--")}
-                </div>
+    const prediction = calculatePrediction(match);
+    const finished = isFinished(match);
 
-            </div>
+    const totalText =
+      prediction.total !== null
+        ? prediction.total.toFixed(1)
+        : "-";
 
+    const firstHalfText =
+      prediction.firstHalf !== null
+        ? prediction.firstHalf.toFixed(1)
+        : "-";
 
-            <div class="teams">
+    card.innerHTML = `
+      <div class="match-top">
+        <span class="league">
+          ${escapeHtml(match.league)}
+        </span>
 
-                <div class="team">
+        <span class="match-time">
+          ${escapeHtml(match.time || "--:--")}
+        </span>
+      </div>
 
-                    <div class="team-name">
-                        ${escapeHtml(match.home)}
-                    </div>
+      <div class="teams">
+        <div class="team home">
+          <strong>${escapeHtml(match.home)}</strong>
+        </div>
 
-                    <div class="team-score ${
-                        prediction ? "predicted" : ""
-                    }">
+        <div class="vs">
+          ${
+            finished
+              ? `${match.homeScore ?? "-"}<span>-</span>${match.awayScore ?? "-"}`
+              : "VS"
+          }
+        </div>
 
-                        ${
-                            finished
-                                ? actualHome
-                                : homeDisplay
-                        }
+        <div class="team away">
+          <strong>${escapeHtml(match.away)}</strong>
+        </div>
+      </div>
 
-                    </div>
+      <div class="prediction-box">
+        <div class="prediction-title">
+          TAHMİN
+        </div>
 
-                </div>
+        <div class="predicted-score">
+          <span>${prediction.home.toFixed(1)}</span>
+          <b>-</b>
+          <span>${prediction.away.toFixed(1)}</span>
+        </div>
+      </div>
 
+      <div class="stats-row">
+        <div>
+          <small>MAÇ TOPLAMI</small>
+          <strong>${totalText}</strong>
+        </div>
 
-                <div class="team">
+        <div>
+          <small>İLK YARI</small>
+          <strong>${firstHalfText}</strong>
+        </div>
 
-                    <div class="team-name">
-                        ${escapeHtml(match.away)}
-                    </div>
+        <div>
+          <small>GÜVEN</small>
+          <strong>%${prediction.confidence}</strong>
+        </div>
+      </div>
 
-                    <div class="team-score ${
-                        prediction ? "predicted" : ""
-                    }">
-
-                        ${
-                            finished
-                                ? actualAway
-                                : awayDisplay
-                        }
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="prediction-box">
-
-                <div class="prediction-row">
-
-                    <div>
-
-                        <div class="prediction-label">
-                            Maç Toplamı
-                        </div>
-
-                        <div class="prediction-value">
-                            ${totalDisplay}
-                        </div>
-
-                    </div>
-
-
-                    <div class="half-total">
-
-                        <div class="prediction-label">
-                            İlk Yarı
-                        </div>
-
-                        <div class="prediction-value">
-                            ${halfDisplay}
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="card-bottom">
-
-                <div class="confidence">
-
-                    ${
-                        prediction
-                            ? `Güven <strong>%${confidence}</strong>`
-                            : `Analiz bekleniyor`
-                    }
-
-                </div>
-
-
-                <button
-                    class="detail-button"
-                    data-match-id="${escapeHtml(match.id)}"
-                >
-                    ANALİZ DETAY →
-                </button>
-
-            </div>
-
-        </article>
-
+      <button class="analysis-button" type="button">
+        ANALİZ DETAY
+      </button>
     `;
 
-}
+    card
+      .querySelector(".analysis-button")
+      ?.addEventListener("click", () => {
+        openAnalysis(match, prediction);
+      });
 
+    return card;
+  }
 
-/* =========================================================
-   TAHMİN HESAPLAMA
-========================================================= */
+  /* =========================================================
+     TAHMİN
+  ========================================================= */
 
-function calculatePrediction(match) {
-
+  function calculatePrediction(match) {
     /*
-       Şimdilik JSON içindeki hazır stats
-       varsa onları kullanıyoruz.
-
-       Bir sonraki aşamada gerçek Mackolik
-       geçmiş maç verilerini buraya bağlayacağız.
-    */
-
-
-    const homeStats =
-        getTeamStats(
-            match.home,
-            match.date
-        );
-
-
-    const awayStats =
-        getTeamStats(
-            match.away,
-            match.date
-        );
-
-
-    /*
-       Yeterli geçmiş veri yoksa
-       stats içindeki hazır değerleri kontrol et.
-    */
-
-    if (
-        !homeStats.totalGames &&
-        !awayStats.totalGames
-    ) {
-
-        return getExistingPrediction(match);
-
-    }
-
-
-    const homeAttack =
-        average([
-            homeStats.last5Scored,
-            homeStats.last10Scored,
-            homeStats.homeScored
-        ]);
-
-
-    const homeDefense =
-        average([
-            homeStats.last5Conceded,
-            homeStats.last10Conceded,
-            homeStats.homeConceded
-        ]);
-
-
-    const awayAttack =
-        average([
-            awayStats.last5Scored,
-            awayStats.last10Scored,
-            awayStats.awayScored
-        ]);
-
-
-    const awayDefense =
-        average([
-            awayStats.last5Conceded,
-            awayStats.last10Conceded,
-            awayStats.awayConceded
-        ]);
-
-
-    let expectedHome =
-        average([
-            homeAttack,
-            awayDefense
-        ]);
-
-
-    let expectedAway =
-        average([
-            awayAttack,
-            homeDefense
-        ]);
-
-
-    /*
-       Mantıksız değerleri engelle
-    */
-
-    expectedHome =
-        clamp(expectedHome, 50, 140);
-
-    expectedAway =
-        clamp(expectedAway, 50, 140);
-
+     * Şimdilik elimizde gelecek maç için yalnızca maçın
+     * kendisine ait TS çizgisi varsa onu kullanıyoruz.
+     *
+     * Geçmiş maç verileri sisteme eklendiğinde burada:
+     * - son 5
+     * - son 10
+     * - iç saha
+     * - deplasman
+     * - H2H
+     * - ilk yarı
+     * istatistikleri otomatik kullanılacak.
+     */
 
     const total =
-        expectedHome +
-        expectedAway;
+      match.total !== null
+        ? match.total
+        : 160;
 
+    let homeRatio = 0.50;
 
-    const firstHalfTotal =
-        total * 0.51;
+    /*
+     * Basit takım ismi bazlı sabit dağılım kullanmıyoruz.
+     * Veri yoksa dengeli dağılım veriyoruz.
+     */
 
+    const home = total * homeRatio;
+    const away = total - home;
 
-    const sample =
-        homeStats.totalGames +
-        awayStats.totalGames;
-
-
-    const confidence =
-        calculateConfidence(sample);
-
-
-    return {
-
-        home: expectedHome,
-
-        away: expectedAway,
-
-        total,
-
-        firstHalfTotal,
-
-        confidence,
-
-        homeStats,
-
-        awayStats
-
-    };
-
-}
-
-
-/* =========================================================
-   MEVCUT TAHMİN VARSA KULLAN
-========================================================= */
-
-function getExistingPrediction(match) {
-
-    const p =
-        match.prediction ||
-        match.analysis ||
-        match.tahmin ||
-        {};
-
-
-    const home =
-        numberOrNull(
-            p.home ??
-            p.homeScore ??
-            p.ev
-        );
-
-
-    const away =
-        numberOrNull(
-            p.away ??
-            p.awayScore ??
-            p.deplasman
-        );
-
-
-    const total =
-        numberOrNull(
-            p.total ??
-            p.matchTotal ??
-            p.toplam
-        );
-
-
-    if (
-        home === null &&
-        away === null &&
-        total === null
-    ) {
-
-        return null;
-
-    }
-
-
-    const h =
-        home ??
-        (
-            total !== null
-                ? total / 2
-                : 0
-        );
-
-
-    const a =
-        away ??
-        (
-            total !== null
-                ? total / 2
-                : 0
-        );
-
+    const firstHalf = total * 0.47;
 
     return {
-
-        home: h,
-
-        away: a,
-
-        total:
-            total ??
-            (h + a),
-
-        firstHalfTotal:
-            numberOrNull(
-                p.firstHalfTotal ??
-                p.firstHalf ??
-                p.iyTotal
-            ) ??
-            ((h + a) * .51),
-
-        confidence:
-            numberOrNull(
-                p.confidence ??
-                p.guven
-            ) ??
-            65
-
+      home,
+      away,
+      total,
+      firstHalf,
+      confidence:
+        match.total !== null ? 62 : 50
     };
+  }
 
-}
+  /* =========================================================
+     ANALİZ MODALI
+  ========================================================= */
 
+  function openAnalysis(match, prediction) {
+    const modal = $("analysisModal");
 
-/* =========================================================
-   TAKIM İSTATİSTİKLERİ
-========================================================= */
+    if (!modal) return;
 
-function getTeamStats(teamName, beforeDate) {
+    const league = $("modalLeague");
+    const home = $("modalHome");
+    const away = $("modalAway");
+    const time = $("modalTime");
+    const content = $("modalContent");
 
-    const key =
-        normalizeTeam(teamName);
-
-
-    const history =
-        allMatches
-            .filter(match => {
-
-                if (
-                    normalizeTeam(match.home) !== key &&
-                    normalizeTeam(match.away) !== key
-                ) {
-                    return false;
-                }
-
-
-                if (
-                    match.date >= beforeDate
-                ) {
-                    return false;
-                }
-
-
-                return isFinished(match);
-
-            })
-            .sort(
-                (a, b) =>
-                    b.date.localeCompare(a.date)
-            );
-
-
-    const last5 =
-        history.slice(0, 5);
-
-
-    const last10 =
-        history.slice(0, 10);
-
-
-    const homeGames =
-        history
-            .filter(
-                m =>
-                    normalizeTeam(m.home) === key
-            );
-
-
-    const awayGames =
-        history
-            .filter(
-                m =>
-                    normalizeTeam(m.away) === key
-            );
-
-
-    const home5 =
-        homeGames.slice(0, 5);
-
-
-    const away5 =
-        awayGames.slice(0, 5);
-
-
-    return {
-
-        totalGames:
-            history.length,
-
-        last5Scored:
-            average(
-                last5.map(
-                    m => teamScored(m, key)
-                )
-            ),
-
-        last5Conceded:
-            average(
-                last5.map(
-                    m => teamConceded(m, key)
-                )
-            ),
-
-        last10Scored:
-            average(
-                last10.map(
-                    m => teamScored(m, key)
-                )
-            ),
-
-        last10Conceded:
-            average(
-                last10.map(
-                    m => teamConceded(m, key)
-                )
-            ),
-
-        homeScored:
-            average(
-                home5.map(
-                    m => teamScored(m, key)
-                )
-            ),
-
-        homeConceded:
-            average(
-                home5.map(
-                    m => teamConceded(m, key)
-                )
-            ),
-
-        awayScored:
-            average(
-                away5.map(
-                    m => teamScored(m, key)
-                )
-            ),
-
-        awayConceded:
-            average(
-                away5.map(
-                    m => teamConceded(m, key)
-                )
-            )
-
-    };
-
-}
-
-
-/* =========================================================
-   TAKIMIN ATTIĞI SAYI
-========================================================= */
-
-function teamScored(match, teamKey) {
-
-    if (
-        normalizeTeam(match.home) === teamKey
-    ) {
-
-        return match.homeScore;
-
+    if (league) {
+      league.textContent = match.league;
     }
 
-
-    return match.awayScore;
-
-}
-
-
-/* =========================================================
-   TAKIMIN YEDİĞİ SAYI
-========================================================= */
-
-function teamConceded(match, teamKey) {
-
-    if (
-        normalizeTeam(match.home) === teamKey
-    ) {
-
-        return match.awayScore;
-
+    if (home) {
+      home.textContent = match.home;
     }
 
-
-    return match.homeScore;
-
-}
-
-
-/* =========================================================
-   DETAY MODAL
-========================================================= */
-
-function openAnalysis(match) {
-
-    const modal =
-        document.getElementById("analysisModal");
-
-
-    const prediction =
-        calculatePrediction(match);
-
-
-    document.getElementById("modalLeague")
-        .textContent =
-            match.league;
-
-
-    document.getElementById("modalHome")
-        .textContent =
-            match.home;
-
-
-    document.getElementById("modalAway")
-        .textContent =
-            match.away;
-
-
-    document.getElementById("modalTime")
-        .textContent =
-            match.time || "--:--";
-
-
-    document.getElementById("modalContent")
-        .innerHTML =
-            createModalContent(
-                match,
-                prediction
-            );
-
-
-    modal.classList.add("show");
-
-}
-
-
-/* =========================================================
-   MODAL İÇERİĞİ
-========================================================= */
-
-function createModalContent(
-    match,
-    prediction
-) {
-
-    if (!prediction) {
-
-        return `
-
-            <div class="empty">
-
-                <div class="empty-icon">
-                    📊
-                </div>
-
-                Bu maç için yeterli geçmiş
-                veri henüz bulunmuyor.
-
-            </div>
-
-        `;
-
+    if (away) {
+      away.textContent = match.away;
     }
 
-
-    const h =
-        prediction.home.toFixed(1);
-
-
-    const a =
-        prediction.away.toFixed(1);
-
-
-    const total =
-        prediction.total.toFixed(1);
-
-
-    const half =
-        prediction.firstHalfTotal.toFixed(1);
-
-
-    const confidence =
-        Math.round(
-            prediction.confidence
-        );
-
-
-    const hs =
-        prediction.homeStats || {};
-
-
-    const as =
-        prediction.awayStats || {};
-
-
-    let actualHtml = "";
-
-
-    if (isFinished(match)) {
-
-        actualHtml = `
-
-            <div class="section-title">
-                GERÇEKLEŞEN SONUÇ
-            </div>
-
-            <div class="actual-result">
-
-                <div class="actual-score">
-
-                    ${match.homeScore}
-
-                    <span>-</span>
-
-                    ${match.awayScore}
-
-                </div>
-
-            </div>
-
-        `;
-
+    if (time) {
+      time.textContent = match.time || "--:--";
     }
 
+    if (content) {
+      content.innerHTML = `
+        <div class="analysis-summary">
 
-    return `
+          <div class="analysis-team">
+            <span>${escapeHtml(match.home)}</span>
+            <strong>${prediction.home.toFixed(1)}</strong>
+          </div>
 
-        <div class="section-title">
-            BASKETBOL MAÇ ANALİZİ
-        </div>
+          <div class="analysis-vs">VS</div>
 
-        <div class="stats-grid">
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    1. PERİYOT
-                </div>
-
-                <div class="stat-value">
-                    ${((total / 4) * .99).toFixed(1)}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    2. PERİYOT
-                </div>
-
-                <div class="stat-value">
-                    ${((total / 4) * 1.02).toFixed(1)}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    İLK YARI
-                </div>
-
-                <div class="stat-value highlight">
-                    ${half}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    3. PERİYOT
-                </div>
-
-                <div class="stat-value">
-                    ${((total / 4) * 1.01).toFixed(1)}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    4. PERİYOT
-                </div>
-
-                <div class="stat-value">
-                    ${((total / 4) * .98).toFixed(1)}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    MAÇ TOPLAMI
-                </div>
-
-                <div class="stat-value highlight">
-                    ${total}
-                </div>
-
-                <div class="stat-sub">
-                    SAYI
-                </div>
-
-            </div>
+          <div class="analysis-team">
+            <span>${escapeHtml(match.away)}</span>
+            <strong>${prediction.away.toFixed(1)}</strong>
+          </div>
 
         </div>
 
+        <div class="analysis-grid">
 
-        <div class="section-title">
-            TAKIM BAZLI TAHMİNLER
-        </div>
+          <div class="analysis-item">
+            <small>Beklenen Maç Toplamı</small>
+            <strong>
+              ${
+                prediction.total !== null
+                  ? prediction.total.toFixed(1)
+                  : "-"
+              }
+            </strong>
+          </div>
 
+          <div class="analysis-item">
+            <small>Beklenen İlk Yarı</small>
+            <strong>
+              ${
+                prediction.firstHalf !== null
+                  ? prediction.firstHalf.toFixed(1)
+                  : "-"
+              }
+            </strong>
+          </div>
 
-        <div class="team-analysis">
+          <div class="analysis-item">
+            <small>Ev Sahibi Tahmini</small>
+            <strong>${prediction.home.toFixed(1)}</strong>
+          </div>
 
-            <div class="analysis-box">
+          <div class="analysis-item">
+            <small>Deplasman Tahmini</small>
+            <strong>${prediction.away.toFixed(1)}</strong>
+          </div>
 
-                <div class="analysis-title">
-                    EV SAHİBİ
-                </div>
+          <div class="analysis-item">
+            <small>Güven</small>
+            <strong>%${prediction.confidence}</strong>
+          </div>
 
-                <div class="analysis-team">
-                    ${escapeHtml(match.home)}
-                </div>
-
-                <div class="analysis-number">
-                    ${h}
-                </div>
-
-                <div class="analysis-desc">
-                    BEKLENEN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="analysis-box">
-
-                <div class="analysis-title">
-                    DEPLASMAN
-                </div>
-
-                <div class="analysis-team">
-                    ${escapeHtml(match.away)}
-                </div>
-
-                <div class="analysis-number">
-                    ${a}
-                </div>
-
-                <div class="analysis-desc">
-                    BEKLENEN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="analysis-box">
-
-                <div class="analysis-title">
-                    BEKLENEN MAÇ TOPLAMI
-                </div>
-
-                <div class="analysis-team">
-                    ${h} + ${a}
-                </div>
-
-                <div class="analysis-number">
-                    ${total}
-                </div>
-
-                <div class="analysis-desc">
-                    SAYI
-                </div>
-
-            </div>
+          <div class="analysis-item">
+            <small>Veri Durumu</small>
+            <strong>
+              ${
+                match.total !== null
+                  ? "TS mevcut"
+                  : "Sınırlı veri"
+              }
+            </strong>
+          </div>
 
         </div>
 
-
-        <div class="section-title">
-            İLK YARI TAHMİNİ
+        <div class="analysis-note">
+          Bu maç için geçmiş Mackolik istatistikleri
+          henüz veri havuzuna eklenmemişse tahmin,
+          mevcut maç bilgileri üzerinden hesaplanır.
         </div>
-
-
-        <div class="team-analysis">
-
-            <div class="analysis-box">
-
-                <div class="analysis-title">
-                    EV SAHİBİ
-                </div>
-
-                <div class="analysis-number">
-                    ${(h * .51).toFixed(1)}
-                </div>
-
-            </div>
-
-
-            <div class="analysis-box">
-
-                <div class="analysis-title">
-                    DEPLASMAN
-                </div>
-
-                <div class="analysis-number">
-                    ${(a * .51).toFixed(1)}
-                </div>
-
-            </div>
-
-
-            <div class="analysis-box">
-
-                <div class="analysis-title">
-                    İLK YARI TOPLAMI
-                </div>
-
-                <div class="analysis-number"
-                     style="color:#43d6c3">
-                    ${half}
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="section-title">
-            GEÇMİŞ VERİLER
-        </div>
-
-
-        <div class="stats-grid">
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    EV SON 5
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(hs.last5Scored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    EV SON 10
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(hs.last10Scored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    EV İÇ SAHA
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(hs.homeScored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    DEP SON 5
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(as.last5Scored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    DEP SON 10
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(as.last10Scored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-
-            <div class="stat-box">
-
-                <div class="stat-label">
-                    DEP DEPLASMAN
-                </div>
-
-                <div class="stat-value">
-                    ${formatStat(as.awayScored)}
-                </div>
-
-                <div class="stat-sub">
-                    ATILAN SAYI
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="section-title">
-            ANALİZ GÜVENİ
-        </div>
-
-
-        <div class="actual-result">
-
-            <div class="actual-score"
-                 style="color:#43d6c3">
-
-                %${confidence}
-
-            </div>
-
-        </div>
-
-
-        ${actualHtml}
-
-    `;
-
-}
-
-
-/* =========================================================
-   MODAL KAPAT
-========================================================= */
-
-function closeModal() {
-
-    document
-        .getElementById("analysisModal")
-        .classList.remove("show");
-
-}
-
-
-/* =========================================================
-   TARİH / SAAT
-========================================================= */
-
-function timeToMinutes(time) {
-
-    if (!time) return 9999;
-
-    const m =
-        String(time).match(
-            /(\d{1,2})[:.](\d{2})/
-        );
-
-    if (!m) return 9999;
+      `;
+    }
+
+    modal.classList.add("open");
+    modal.style.display = "flex";
+  }
+
+  function closeModal() {
+    const modal = $("analysisModal");
+
+    if (!modal) return;
+
+    modal.classList.remove("open");
+    modal.style.display = "none";
+  }
+
+  /* =========================================================
+     TARİH / SIRALAMA
+  ========================================================= */
+
+  function formatDate(date) {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, "0"),
+      String(date.getDate()).padStart(2, "0")
+    ].join("-");
+  }
+
+  function formatTurkishDate(date) {
+    const days = [
+      "Pazar",
+      "Pazartesi",
+      "Salı",
+      "Çarşamba",
+      "Perşembe",
+      "Cuma",
+      "Cumartesi"
+    ];
+
+    const months = [
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık"
+    ];
+
+    return `${days[date.getDay()]}, ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+  }
+
+  function isToday(date) {
+    const now = new Date();
 
     return (
-        Number(m[1]) * 60 +
-        Number(m[2])
+      date.getFullYear() === now.getFullYear() &&
+      date.getMonth() === now.getMonth() &&
+      date.getDate() === now.getDate()
     );
+  }
 
-}
-
-
-function formatLongDate(date) {
-
-    return date.toLocaleDateString(
-        "tr-TR",
-        {
-            day: "numeric",
-            month: "long",
-            year: "numeric"
-        }
-    );
-
-}
-
-
-/* =========================================================
-   DURUM
-========================================================= */
-
-function detectStatus(match) {
-
-    if (
-        numberOrNull(match.homeScore) !== null &&
-        numberOrNull(match.awayScore) !== null
-    ) {
-        return "finished";
-    }
-
-    return "not_started";
-
-}
-
-
-function isFinished(match) {
-
+  function isSameDate(a, b) {
     return (
-        match.status === "finished" ||
-        match.status === "completed" ||
-        match.status === "played" ||
-        (
-            match.homeScore !== null &&
-            match.awayScore !== null
-        )
+      a.getFullYear() === b.getFullYear() &&
+      a.getMonth() === b.getMonth() &&
+      a.getDate() === b.getDate()
     );
+  }
 
-}
-
-
-/* =========================================================
-   TAKIM NORMALİZASYONU
-========================================================= */
-
-function normalizeTeam(name) {
-
-    return String(name || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9çğıöşü\s]/gi, " ")
-        .replace(/\s+/g, " ")
-        .trim();
-
-}
-
-
-/* =========================================================
-   YARDIMCI FONKSİYONLAR
-========================================================= */
-
-function numberOrNull(value) {
-
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return null;
-    }
-
-
-    const n =
-        Number(
-            String(value)
-                .replace(",", ".")
-                .replace(/[^\d.-]/g, "")
-        );
-
-
-    return Number.isFinite(n)
-        ? n
-        : null;
-
-}
-
-
-function average(values) {
-
-    const valid =
-        values
-            .filter(
-                v =>
-                    typeof v === "number" &&
-                    Number.isFinite(v)
-            );
-
-
-    if (!valid.length) {
-        return 0;
-    }
-
-
+  function isFinished(match) {
     return (
-        valid.reduce(
-            (a, b) => a + b,
-            0
-        ) / valid.length
+      match.homeScore !== null &&
+      match.awayScore !== null
     );
+  }
 
-}
+  function sortMatches(a, b) {
+    const ad = `${a.date} ${a.time}`;
+    const bd = `${b.date} ${b.time}`;
 
+    return ad.localeCompare(bd);
+  }
 
-function clamp(value, min, max) {
+  /* =========================================================
+     HTML GÜVENLİĞİ
+  ========================================================= */
 
-    return Math.max(
-        min,
-        Math.min(max, value)
-    );
-
-}
-
-
-function calculateConfidence(sample) {
-
-    if (!sample) {
-        return 55;
-    }
-
-
-    return clamp(
-        55 + Math.min(sample, 20) * 1.25,
-        55,
-        80
-    );
-
-}
-
-
-function formatStat(value) {
-
-    if (
-        value === undefined ||
-        value === null ||
-        !Number.isFinite(value)
-    ) {
-        return "—";
-    }
-
-    return Number(value).toFixed(1);
-
-}
-
-
-function createId(date, home, away) {
-
-    return (
-        date +
-        "-" +
-        normalizeTeam(home) +
-        "-" +
-        normalizeTeam(away)
-    )
-        .replace(/\s+/g, "-");
-
-}
-
-
-function escapeHtml(value) {
-
+  function escapeHtml(value) {
     return String(value ?? "")
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
 
-}
+  /* =========================================================
+     DIŞARIDAN ÇAĞRILABİLİR
+  ========================================================= */
 
+  window.refreshBasketball = async function () {
+    await loadData();
+    renderCalendar();
+    renderSelectedDate();
+  };
 
-/* =========================================================
-   DIŞARIDAN KULLANILABİLSİN
-========================================================= */
+  window.renderBasketballDate = function (date) {
+    const d = date instanceof Date
+      ? date
+      : new Date(date);
 
-window.basketballMatches = () => allMatches;
+    if (Number.isNaN(d.getTime())) {
+      return;
+    }
 
-window.refreshBasketball = () => {
+    selectedDate = d;
+    currentDate = new Date(
+      d.getFullYear(),
+      d.getMonth(),
+      1
+    );
 
-    loadData();
+    renderCalendar();
+    renderSelectedDate();
+  };
 
-};
+})();
