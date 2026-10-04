@@ -12,329 +12,283 @@
       box-sizing: border-box;
     }
 
-    html,
     body {
       margin: 0;
-      padding: 0;
+      padding: 14px;
       background: #f3f4f6;
       color: #111827;
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    body {
-      min-height: 100vh;
-    }
-
-    button,
-    select,
-    input {
-      font: inherit;
-    }
-
-    .bm-container {
-      width: min(1100px, 100%);
+    .wrap {
+      max-width: 1100px;
       margin: auto;
-      padding: 15px;
     }
 
-    .bm-header {
-      background: #111827;
-      color: white;
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 14px;
+    h1 {
+      margin: 0 0 5px;
+      font-size: 25px;
     }
 
-    .bm-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin: 0 0 6px;
-    }
-
-    .bm-subtitle {
-      opacity: .75;
+    .sub {
+      color: #6b7280;
       font-size: 13px;
+      margin-bottom: 15px;
     }
 
-    .bm-controls {
-      background: white;
-      border-radius: 16px;
+    .panel {
+      background: #fff;
+      border-radius: 12px;
       padding: 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
       margin-bottom: 14px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.06);
     }
 
-    .bm-control-grid {
+    .grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
 
-    .bm-field {
+    .field {
       display: flex;
       flex-direction: column;
       gap: 5px;
     }
 
-    .bm-field label {
+    .field label {
       font-size: 12px;
       font-weight: 700;
-      color: #4b5563;
+      color: #374151;
     }
 
-    .bm-field input,
-    .bm-field select {
+    select,
+    input {
       width: 100%;
-      min-height: 42px;
+      min-height: 40px;
       border: 1px solid #d1d5db;
-      border-radius: 10px;
+      border-radius: 8px;
       padding: 8px 10px;
-      background: white;
+      background: #fff;
+      font-size: 14px;
       outline: none;
     }
 
-    .bm-field input:focus,
-    .bm-field select:focus {
+    select:focus,
+    input:focus {
       border-color: #2563eb;
     }
 
-    .bm-checks {
+    .checks {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 8px;
       margin-top: 12px;
     }
 
-    .bm-check {
+    .check {
       display: flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: #f3f4f6;
       font-size: 13px;
-      font-weight: 600;
     }
 
-    .bm-check input {
-      width: 17px;
-      height: 17px;
+    .check input {
+      width: auto;
+      min-height: auto;
     }
 
-    .bm-datebar {
+    .buttons {
       display: flex;
       gap: 8px;
-      align-items: center;
       margin-top: 12px;
     }
 
-    .bm-datebar button {
+    button {
       border: 0;
-      background: #111827;
-      color: white;
-      border-radius: 9px;
-      padding: 9px 12px;
-      cursor: pointer;
-    }
-
-    .bm-datebar button:hover {
-      opacity: .9;
-    }
-
-    .bm-date {
-      flex: 1;
-      text-align: center;
-      font-weight: 800;
-      font-size: 14px;
-    }
-
-    .bm-summary {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      background: white;
-      border-radius: 14px;
-      padding: 12px 14px;
-      margin-bottom: 12px;
-      box-shadow: 0 3px 12px rgba(0,0,0,.05);
-    }
-
-    .bm-count {
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .bm-loading {
-      text-align: center;
-      padding: 40px 15px;
-      color: #6b7280;
-    }
-
-    .bm-error {
-      background: #fee2e2;
-      color: #991b1b;
-      border-radius: 12px;
-      padding: 15px;
+      border-radius: 8px;
+      padding: 10px 15px;
       font-weight: 700;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
     }
 
-    .bm-empty {
-      background: white;
-      border-radius: 14px;
-      padding: 35px 15px;
-      text-align: center;
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .status {
+      font-size: 13px;
       color: #6b7280;
-      box-shadow: 0 3px 12px rgba(0,0,0,.05);
+      margin: 12px 0;
     }
 
-    .bm-match {
-      background: white;
-      border-radius: 16px;
-      margin-bottom: 12px;
+    .match {
+      background: #fff;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 9px rgba(0,0,0,.06);
       overflow: hidden;
-      box-shadow: 0 3px 12px rgba(0,0,0,.06);
     }
 
-    .bm-match-head {
-      padding: 13px 14px 9px;
+    .match-head {
+      padding: 10px 12px;
+      background: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
       display: flex;
       justify-content: space-between;
       gap: 10px;
       align-items: center;
-      border-bottom: 1px solid #f0f0f0;
     }
 
-    .bm-time {
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .bm-league {
-      color: #6b7280;
+    .league {
       font-size: 12px;
       font-weight: 700;
-      text-align: right;
+      color: #6b7280;
     }
 
-    .bm-teams {
-      padding: 14px;
+    .time {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .match-body {
+      padding: 12px;
+    }
+
+    .teams {
       display: grid;
       grid-template-columns: 1fr auto 1fr;
       gap: 10px;
       align-items: center;
     }
 
-    .bm-team {
-      font-size: 15px;
+    .team {
       font-weight: 800;
+      font-size: 15px;
     }
 
-    .bm-team.away {
+    .team.away {
       text-align: right;
     }
 
-    .bm-score {
-      min-width: 58px;
+    .vs {
+      color: #9ca3af;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .score {
+      margin-top: 7px;
       text-align: center;
-      font-size: 17px;
-      font-weight: 900;
+      font-weight: 800;
+      color: #111827;
     }
 
-    .bm-predictions {
-      padding: 0 14px 14px;
-      display: grid;
-      gap: 8px;
+    .predictions {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
     }
 
-    .bm-prediction {
+    .prediction {
       border: 1px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 11px;
-      background: #fafafa;
+      border-radius: 9px;
+      padding: 9px;
+      background: #fff;
     }
 
-    .bm-prediction-top {
+    .prediction-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
       gap: 8px;
     }
 
-    .bm-market {
+    .prediction-name {
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .rate {
       font-weight: 900;
       font-size: 14px;
     }
 
-    .bm-odd {
-      background: #111827;
-      color: white;
-      border-radius: 7px;
-      padding: 4px 7px;
-      font-size: 12px;
-      font-weight: 800;
-    }
-
-    .bm-result {
-      margin-top: 7px;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .bm-rate {
-      margin-top: 7px;
-      height: 8px;
-      background: #e5e7eb;
+    .bar {
+      height: 7px;
       border-radius: 20px;
+      background: #e5e7eb;
+      margin-top: 7px;
       overflow: hidden;
     }
 
-    .bm-rate-bar {
+    .bar > div {
       height: 100%;
-      background: #16a34a;
       border-radius: 20px;
+      background: #16a34a;
     }
 
-    .bm-detail {
+    .detail {
       margin-top: 6px;
       color: #6b7280;
       font-size: 11px;
     }
 
-    .bm-good {
-      color: #15803d;
+    .empty {
+      background: #fff;
+      padding: 25px 15px;
+      border-radius: 12px;
+      text-align: center;
+      color: #6b7280;
     }
 
-    .bm-medium {
-      color: #ca8a04;
+    .loading {
+      background: #fff;
+      padding: 25px;
+      text-align: center;
+      border-radius: 12px;
     }
 
-    .bm-bad {
-      color: #dc2626;
+    .odd {
+      font-size: 11px;
+      color: #6b7280;
+      margin-top: 4px;
     }
 
-    .bm-no-prediction {
-      padding: 0 14px 14px;
-      color: #9ca3af;
-      font-size: 12px;
-    }
-
-    @media (max-width: 600px) {
-      .bm-container {
+    @media (max-width: 650px) {
+      body {
         padding: 9px;
       }
 
-      .bm-control-grid {
+      .grid {
         grid-template-columns: 1fr;
       }
 
-      .bm-title {
+      h1 {
         font-size: 21px;
       }
 
-      .bm-teams {
+      .teams {
         gap: 6px;
       }
 
-      .bm-team {
+      .team {
         font-size: 13px;
+      }
+
+      .match-head {
+        padding: 9px;
+      }
+
+      .match-body {
+        padding: 10px;
       }
     }
   </style>
@@ -342,131 +296,84 @@
 
 <body>
 
-  <main class="bm-container">
+<div class="wrap">
 
-    <header class="bm-header">
-      <div class="bm-title">Bugünün Maçları</div>
-      <div class="bm-subtitle">
-        Açılış oranlarına göre geçmiş sonuç analizi
-      </div>
-    </header>
+  <h1>Bugünün Maçları</h1>
+  <div class="sub">
+    Açılış oranlarına göre geçmiş maçlardan otomatik analiz
+  </div>
 
-    <section class="bm-controls">
+  <div class="panel">
 
-      <div class="bm-control-grid">
+    <div class="grid">
 
-        <div class="bm-field">
-          <label for="bmDate">Tarih</label>
-          <input type="date" id="bmDate">
-        </div>
-
-        <div class="bm-field">
-          <label for="bmBasis">Analiz yöntemi</label>
-          <select id="bmBasis">
-            <option value="each">
-              Her oran türü tek tek
-            </option>
-            <option value="ms1">
-              Sadece MS1 oranı aynı
-            </option>
-            <option value="ms1,ms2">
-              MS1 + MS2 aynı
-            </option>
-            <option value="ms1,ms0,ms2">
-              MS1 + MS X + MS2 aynı
-            </option>
-            <option value="league">
-              Aynı lig
-            </option>
-            <option value="team">
-              Aynı takımlar
-            </option>
-            <option value="all">
-              Tüm geçmiş maçlar
-            </option>
-          </select>
-        </div>
-
-        <div class="bm-field">
-          <label for="bmThreshold">
-            Minimum başarı %
-          </label>
-
-          <input
-            type="number"
-            id="bmThreshold"
-            min="1"
-            max="100"
-            value="70"
-          >
-        </div>
-
-        <div class="bm-field">
-          <label for="bmMinSample">
-            Minimum geçmiş maç
-          </label>
-
-          <input
-            type="number"
-            id="bmMinSample"
-            min="1"
-            value="5"
-          >
-        </div>
-
-        <div class="bm-field">
-          <label for="bmMinOdd">
-            Minimum oran
-          </label>
-
-          <input
-            type="number"
-            id="bmMinOdd"
-            min="1"
-            step="0.01"
-            value="1.40"
-          >
-        </div>
-
+      <div class="field">
+        <label for="tdDate">Tarih</label>
+        <select id="tdDate"></select>
       </div>
 
-      <div class="bm-checks">
-
-        <label class="bm-check">
-          <input type="checkbox" id="bmOnlyIdeal" checked>
-          Sadece başarılı tahminleri göster
-        </label>
-
-        <label class="bm-check">
-          <input type="checkbox" id="bmShowAll">
-          Tüm sonuçları göster
-        </label>
-
+      <div class="field">
+        <label for="tdBasis">Analiz türü</label>
+        <select id="tdBasis">
+          <option value="each">Her oran türü tek tek (Önerilen)</option>
+          <option value="ms1">Sadece MS1 oranı aynı olanlar</option>
+          <option value="ms1,ms2">MS1 + MS2 oranı aynı olanlar</option>
+          <option value="ms1,ms0,ms2">MS1 + MS0 + MS2 aynı olanlar</option>
+          <option value="league">Oransız: Aynı ligdeki maçlar</option>
+          <option value="team">Oransız: İki takımın tüm maçları</option>
+          <option value="all">Oransız: Tüm maçlar</option>
+        </select>
       </div>
 
-      <div class="bm-datebar">
-        <button id="bmPrev">‹</button>
-
-        <div class="bm-date" id="bmDateText">
-          -
-        </div>
-
-        <button id="bmNext">›</button>
+      <div class="field">
+        <label for="tdThr">Minimum başarı (%)</label>
+        <input id="tdThr" type="number" min="0" max="100" value="70">
       </div>
 
-    </section>
-
-    <section id="bmContent">
-
-      <div class="bm-loading">
-        Maçlar yükleniyor...
+      <div class="field">
+        <label for="tdMin">Minimum geçmiş maç</label>
+        <input id="tdMin" type="number" min="1" value="5">
       </div>
 
-    </section>
+      <div class="field">
+        <label for="tdOdd">Minimum oran</label>
+        <input id="tdOdd" type="number" min="1" step="0.01" value="1.40">
+      </div>
 
-  </main>
+    </div>
 
-  <script src="./bugunun-maclari.js"></script>
+    <div class="checks">
+
+      <label class="check">
+        <input type="checkbox" id="tdOnly">
+        Sadece ideal sonucu olan maçlar
+      </label>
+
+      <label class="check">
+        <input type="checkbox" id="tdAll">
+        Tüm sonuçları göster
+      </label>
+
+    </div>
+
+    <div class="buttons">
+      <button id="tdAnalyze">Analiz et</button>
+      <button id="tdRefresh" class="secondary">Yenile</button>
+    </div>
+
+  </div>
+
+  <div id="tdStatus" class="status">
+    Veriler hazırlanıyor...
+  </div>
+
+  <div id="tdResults">
+    <div class="loading">Maçlar yükleniyor...</div>
+  </div>
+
+</div>
+
+<script src="./bugunun-maclari.js"></script>
 
 </body>
 </html>
