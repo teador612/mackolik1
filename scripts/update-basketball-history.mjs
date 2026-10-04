@@ -11,14 +11,24 @@ const DATA_PATH = path.join(
 );
 
 const PROGRAM_URL =
-  "https://arsiv.mackolik.com/Program/Program.aspx?st=2";
+  `${BASE_URL}/Program/Program.aspx?st=2`;
 
-const DAYS_BACK = 90;
+const RESULTS_URL =
+  `${BASE_URL}/Basketbol/Canli-Sonuclar`;
 
+/*
+=========================================================
+AYAR
+=========================================================
+*/
 
-/* =========================================================
-   YARDIMCILAR
-========================================================= */
+const DAYS_BACK = 60;
+
+/*
+=========================================================
+YARDIMCILAR
+=========================================================
+*/
 
 function normalizeText(value) {
   return String(value || "")
@@ -50,55 +60,56 @@ function parseNumber(value) {
   return Number.isFinite(n) ? n : null;
 }
 
-function parseScore(value) {
+function parseDate(value) {
   const text = normalizeText(value);
 
   const match = text.match(
-    /(\d+)\s*[-:]\s*(\d+)/
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
   );
 
   if (!match) {
     return null;
   }
 
-  return {
-    home: Number(match[1]),
-    away: Number(match[2])
-  };
-}
-
-function parseDate(value) {
-  const text = normalizeText(value);
-
-  let m = text.match(
-    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
-  );
-
-  if (!m) {
-    return null;
-  }
-
-  return `${m[3]}-${String(m[2]).padStart(2, "0")}-${String(m[1]).padStart(2, "0")}`;
+  return `${match[3]}-${String(match[2]).padStart(2, "0")}-${String(match[1]).padStart(2, "0")}`;
 }
 
 function dateDaysAgo(days) {
-  const d = new Date();
+  const date = new Date();
 
-  d.setDate(d.getDate() - days);
+  date.setHours(0, 0, 0, 0);
+  date.setDate(date.getDate() - days);
 
-  return d;
+  return date;
 }
 
-function isOldEnough(date) {
+function isWithinHistory(date) {
+  if (!date) {
+    return false;
+  }
+
   const d = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(d.getTime())) {
+    return false;
+  }
 
   return d >= dateDaysAgo(DAYS_BACK);
 }
 
+function makeId(date, home, away) {
+  return [
+    date,
+    normalizeTeam(home),
+    normalizeTeam(away)
+  ].join("_");
+}
 
-/* =========================================================
-   DOSYA
-========================================================= */
+/*
+=========================================================
+DOSYA OKU
+=========================================================
+*/
 
 function readHistory() {
   try {
@@ -110,6 +121,10 @@ function readHistory() {
       DATA_PATH,
       "utf8"
     );
+
+    if (!raw.trim()) {
+      return [];
+    }
 
     const json = JSON.parse(raw);
 
@@ -133,37 +148,41 @@ function readHistory() {
   }
 }
 
+/*
+=========================================================
+HTTP
+=========================================================
+*/
 
-/* =========================================================
-   PROGRAM SAYFASI
-========================================================= */
-
-async function fetchProgram() {
-  console.log("🏀 Basketbol programı alınıyor...");
-
+async function fetchHtml(url) {
   const response = await fetch(
-    PROGRAM_URL,
+    url,
     {
       headers: {
         "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+        "Accept":
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language":
+          "tr-TR,tr;q=0.9,en;q=0.8"
       }
     }
   );
 
   if (!response.ok) {
     throw new Error(
-      `Program HTTP ${response.status}`
+      `HTTP ${response.status}: ${url}`
     );
   }
 
   return await response.text();
 }
 
-
-/* =========================================================
-   PROGRAMDAN MAÇLARI OKU
-========================================================= */
+/*
+=========================================================
+PROGRAM SAYFASI
+=========================================================
+*/
 
 function parseProgram(html) {
   const $ = cheerio.load(html);
@@ -185,9 +204,6 @@ function parseProgram(html) {
 
     const rowText = cells.join(" | ");
 
-    /*
-     * Tarih bul
-     */
     const dateMatch = rowText.match(
       /\b\d{1,2}\.\d{1,2}\.\d{4}\b/
     );
@@ -200,13 +216,10 @@ function parseProgram(html) {
       dateMatch[0]
     );
 
-    if (!date) {
+    if (!date || !isWithinHistory(date)) {
       return;
     }
 
-    /*
-     * Saat
-     */
     const timeMatch = rowText.match(
       /\b\d{1,2}:\d{2}\b/
     );
@@ -215,40 +228,30 @@ function parseProgram(html) {
       ? timeMatch[0]
       : "";
 
-    /*
-     * Takım isimlerini bulmaya çalış
-     */
-
-    let teams = [];
+    let home = "";
+    let away = "";
 
     for (const cell of cells) {
 
       if (
-        cell.includes(" - ") ||
-        cell.includes(" v ")
+        cell.includes(" v ") ||
+        cell.includes(" - ")
       ) {
-        teams = cell
+
+        const parts = cell
           .split(/\s+v\s+|\s+-\s+/i)
           .map(normalizeText)
           .filter(Boolean);
 
-        if (teams.length === 2) {
+        if (parts.length === 2) {
+          home = parts[0];
+          away = parts[1];
           break;
         }
       }
     }
 
-    if (teams.length !== 2) {
-      return;
-    }
-
-    const home = teams[0];
-    const away = teams[1];
-
-    if (
-      home.length < 2 ||
-      away.length < 2
-    ) {
+    if (!home || !away) {
       return;
     }
 
@@ -258,10 +261,6 @@ function parseProgram(html) {
     ) {
       return;
     }
-
-    /*
-     * TS / toplam çizgisi
-     */
 
     let total = null;
 
@@ -276,8 +275,11 @@ function parseProgram(html) {
     }
 
     results.push({
-      id:
-        `${date}_${time}_${normalizeTeam(home)}_${normalizeTeam(away)}`,
+      id: makeId(
+        date,
+        home,
+        away
+      ),
 
       date,
       time,
@@ -300,38 +302,36 @@ function parseProgram(html) {
   return results;
 }
 
+/*
+=========================================================
+SONUÇ SAYFASI
+=========================================================
+*/
 
-/* =========================================================
-   GEÇMİŞ SONUÇ SAYFALARINI PARSE ETME
-========================================================= */
-
-function parseResultsFromPage(html) {
+function parseResults(html) {
   const $ = cheerio.load(html);
 
   const results = [];
 
   $("tr").each((_, row) => {
 
-    const text = normalizeText(
-      $(row).text()
-    );
+    const cells = $(row)
+      .find("td")
+      .map((_, td) =>
+        normalizeText($(td).text())
+      )
+      .get();
 
-    if (!text) {
+    if (cells.length < 3) {
       return;
     }
 
-    /*
-     * Örnek:
-     *
-     * 27.09.2026
-     * Beşiktaş Boa (K)
-     * 65 - 56
-     * Melikgazi Kayseri B. (K)
-     * 35 - 30
-     */
+    const text = normalizeText(
+      cells.join(" | ")
+    );
 
     const dateMatch = text.match(
-      /\b(\d{1,2}\.\d{1,2}\.\d{4})\b/
+      /\b\d{1,2}\.\d{1,2}\.\d{4}\b/
     );
 
     if (!dateMatch) {
@@ -339,106 +339,145 @@ function parseResultsFromPage(html) {
     }
 
     const date = parseDate(
-      dateMatch[1]
+      dateMatch[0]
     );
 
-    if (!date || !isOldEnough(date)) {
+    if (!date || !isWithinHistory(date)) {
       return;
     }
 
     /*
-     * Skorları yakala
-     */
+    -----------------------------------------------------
+    SKORLARI BUL
+    -----------------------------------------------------
+    */
 
     const scores = [
       ...text.matchAll(
         /(\d+)\s*-\s*(\d+)/g
       )
-    ].map(m => ({
-      home: Number(m[1]),
-      away: Number(m[2])
+    ].map(match => ({
+      home: Number(match[1]),
+      away: Number(match[2])
     }));
 
-    if (scores.length < 2) {
+    if (!scores.length) {
       return;
     }
 
     /*
-     * İlk skor genellikle ilk yarı,
-     * ikinci skor maç sonudur.
-     */
+    İlk skor genellikle ilk yarı,
+    son skor maç sonucu.
+    */
 
-    const half = scores[0];
-    const final = scores[scores.length - 1];
+    const finalScore =
+      scores[scores.length - 1];
+
+    const halfScore =
+      scores.length >= 2
+        ? scores[0]
+        : null;
 
     if (
-      final.home < 30 ||
-      final.away < 30
+      finalScore.home < 30 ||
+      finalScore.away < 30
     ) {
       return;
     }
 
     /*
-     * Takım isimlerini skorlardan ayır.
-     */
-
-    let rowHtml = $(row).html() || "";
-
-    /*
-     * Metin içerisinden score çevresindeki
-     * takım isimlerini almaya çalış.
-     */
-
-    const plainCells = $(row)
-      .find("td")
-      .map((_, td) =>
-        normalizeText($(td).text())
-      )
-      .get();
+    -----------------------------------------------------
+    TAKIMLARI BUL
+    -----------------------------------------------------
+    */
 
     let home = "";
     let away = "";
 
-    for (const cell of plainCells) {
+    /*
+    Önce hücreleri kontrol et.
+    */
+
+    for (const cell of cells) {
+
+      const finalPattern =
+        `${finalScore.home} - ${finalScore.away}`;
 
       if (
-        cell.includes(
-          `${final.home} - ${final.away}`
-        )
+        cell.includes(finalPattern)
       ) {
-        const parts = cell.split(
-          `${final.home} - ${final.away}`
-        );
+
+        const parts =
+          cell.split(finalPattern);
 
         if (parts.length >= 2) {
-          home = normalizeText(parts[0]);
-          away = normalizeText(parts[1]);
+
+          const left =
+            normalizeText(parts[0]);
+
+          const right =
+            normalizeText(parts[1]);
+
+          if (left && right) {
+            home = left;
+            away = right;
+          }
         }
       }
     }
 
     /*
-     * Hücre yapısı farklıysa maç isimlerini
-     * skorların çevresinden bul.
-     */
+    -----------------------------------------------------
+    TAKIMLARI HÜCRELERDEN AL
+    -----------------------------------------------------
+    */
 
     if (!home || !away) {
 
-      const possibleTeams = plainCells.filter(
-        x =>
-          x.length >= 3 &&
-          !x.match(
-            /^\d+(?:\s*-\s*\d+)?$/
-          ) &&
-          !x.match(
-            /^\d{1,2}\.\d{1,2}\.\d{4}$/
-          ) &&
-          !x.match(
-            /^\d{1,2}:\d{2}$/
-          )
-      );
+      const possibleTeams =
+        cells.filter(cell => {
+
+          if (!cell) {
+            return false;
+          }
+
+          if (
+            /^\d+$/.test(cell)
+          ) {
+            return false;
+          }
+
+          if (
+            /^\d+\s*-\s*\d+$/.test(cell)
+          ) {
+            return false;
+          }
+
+          if (
+            /^\d{1,2}\.\d{1,2}\.\d{4}$/.test(cell)
+          ) {
+            return false;
+          }
+
+          if (
+            /^\d{1,2}:\d{2}$/.test(cell)
+          ) {
+            return false;
+          }
+
+          if (
+            cell === "MS" ||
+            cell === "UZ" ||
+            cell === "ERT"
+          ) {
+            return false;
+          }
+
+          return cell.length >= 3;
+        });
 
       if (possibleTeams.length >= 2) {
+
         home =
           possibleTeams[
             possibleTeams.length - 2
@@ -448,6 +487,25 @@ function parseResultsFromPage(html) {
           possibleTeams[
             possibleTeams.length - 1
           ];
+      }
+    }
+
+    /*
+    -----------------------------------------------------
+    TAKIMLARI AYIR
+    -----------------------------------------------------
+    */
+
+    if (
+      home.includes(" v ")
+    ) {
+
+      const parts =
+        home.split(/\s+v\s+/i);
+
+      if (parts.length === 2) {
+        home = parts[0];
+        away = parts[1];
       }
     }
 
@@ -463,25 +521,37 @@ function parseResultsFromPage(html) {
     }
 
     results.push({
-      id:
-        `${date}_${normalizeTeam(home)}_${normalizeTeam(away)}`,
+      id: makeId(
+        date,
+        home,
+        away
+      ),
 
       date,
-
       time: "",
 
       home,
-
       away,
 
-      homeScore: final.home,
-      awayScore: final.away,
+      homeScore:
+        finalScore.home,
 
-      halfHomeScore: half.home,
-      halfAwayScore: half.away,
+      awayScore:
+        finalScore.away,
+
+      halfHomeScore:
+        halfScore
+          ? halfScore.home
+          : null,
+
+      halfAwayScore:
+        halfScore
+          ? halfScore.away
+          : null,
 
       total:
-        final.home + final.away,
+        finalScore.home +
+        finalScore.away,
 
       source: "mackolik"
     });
@@ -490,80 +560,126 @@ function parseResultsFromPage(html) {
   return results;
 }
 
+/*
+=========================================================
+BİRLEŞTİR
+=========================================================
+*/
 
-/* =========================================================
-   VERİ BİRLEŞTİR
-========================================================= */
-
-function mergeMatches(oldMatches, newMatches) {
+function mergeMatches(
+  oldMatches,
+  newMatches
+) {
 
   const map = new Map();
+
+  /*
+  Eski veriler
+  */
 
   for (const match of oldMatches) {
 
     if (
       !match ||
       !match.id ||
+      !match.date ||
       !match.home ||
       !match.away
     ) {
       continue;
     }
 
-    map.set(match.id, match);
+    if (
+      !isWithinHistory(match.date)
+    ) {
+      continue;
+    }
+
+    map.set(
+      match.id,
+      match
+    );
   }
+
+  /*
+  Yeni veriler
+  */
 
   for (const match of newMatches) {
 
     if (
       !match ||
       !match.id ||
+      !match.date ||
       !match.home ||
       !match.away
     ) {
       continue;
     }
 
-    const old = map.get(match.id);
-
-    if (!old) {
-      map.set(match.id, match);
+    if (
+      !isWithinHistory(match.date)
+    ) {
       continue;
     }
 
-    map.set(match.id, {
-      ...old,
-      ...match,
+    const old =
+      map.get(match.id);
 
-      homeScore:
-        match.homeScore ??
-        old.homeScore ??
-        null,
+    if (!old) {
 
-      awayScore:
-        match.awayScore ??
-        old.awayScore ??
-        null,
+      map.set(
+        match.id,
+        match
+      );
 
-      halfHomeScore:
-        match.halfHomeScore ??
-        old.halfHomeScore ??
-        null,
+      continue;
+    }
 
-      halfAwayScore:
-        match.halfAwayScore ??
-        old.halfAwayScore ??
-        null
-    });
+    map.set(
+      match.id,
+      {
+        ...old,
+        ...match,
+
+        homeScore:
+          match.homeScore ??
+          old.homeScore ??
+          null,
+
+        awayScore:
+          match.awayScore ??
+          old.awayScore ??
+          null,
+
+        halfHomeScore:
+          match.halfHomeScore ??
+          old.halfHomeScore ??
+          null,
+
+        halfAwayScore:
+          match.halfAwayScore ??
+          old.halfAwayScore ??
+          null,
+
+        total:
+          match.total ??
+          old.total ??
+          null
+      }
+    );
   }
 
-  return [...map.values()];
+  return [
+    ...map.values()
+  ];
 }
 
-
-/* =========================================================
-   TEMİZLE
-========================================================= */
+/*
+=========================================================
+TEMİZLE
+=========================================================
+*/
 
 function cleanMatches(matches) {
 
@@ -571,11 +687,18 @@ function cleanMatches(matches) {
 
   for (const match of matches) {
 
-    if (!match.date) {
+    if (
+      !match ||
+      !match.date ||
+      !match.home ||
+      !match.away
+    ) {
       continue;
     }
 
-    if (!match.home || !match.away) {
+    if (
+      !isWithinHistory(match.date)
+    ) {
       continue;
     }
 
@@ -587,84 +710,146 @@ function cleanMatches(matches) {
     }
 
     /*
-     * En azından final skoru veya maç bilgisi olsun.
-     */
+    Geçmiş için skor yoksa
+    kayıt tutulabilir.
+    */
 
-    const valid =
-      (
-        match.homeScore !== null &&
-        match.awayScore !== null
-      ) ||
-      match.total !== null ||
-      match.time;
-
-    if (!valid) {
-      continue;
-    }
-
-    map.set(match.id, match);
+    map.set(
+      match.id,
+      match
+    );
   }
 
-  return [...map.values()]
-    .sort((a, b) => {
-      return `${a.date} ${a.time || ""}`
-        .localeCompare(
-          `${b.date} ${b.time || ""}`
-        );
-    });
+  return [
+    ...map.values()
+  ].sort((a, b) =>
+    `${a.date} ${a.time || ""}`
+      .localeCompare(
+        `${b.date} ${b.time || ""}`
+      )
+  );
 }
 
-
-/* =========================================================
-   ANA
-========================================================= */
+/*
+=========================================================
+ANA
+=========================================================
+*/
 
 async function main() {
 
   console.log("");
-  console.log("================================");
-  console.log("🏀 BASKETBOL GEÇMİŞ VERİSİ");
-  console.log("================================");
-
-  const oldMatches = readHistory();
+  console.log(
+    "========================================"
+  );
+  console.log(
+    "🏀 BASKETBOL GEÇMİŞ VERİSİ"
+  );
+  console.log(
+    "========================================"
+  );
 
   console.log(
-    "Mevcut geçmiş kayıt:",
+    `📅 Geçmiş aralığı: ${DAYS_BACK} gün`
+  );
+
+  const oldMatches =
+    readHistory();
+
+  console.log(
+    "Mevcut kayıt:",
     oldMatches.length
   );
 
   try {
 
-    const html = await fetchProgram();
+    /*
+    -----------------------------------------------------
+    PROGRAM
+    -----------------------------------------------------
+    */
+
+    console.log("");
+    console.log(
+      "🏀 Basketbol programı alınıyor..."
+    );
+
+    const programHtml =
+      await fetchHtml(
+        PROGRAM_URL
+      );
 
     console.log(
       "Program HTML:",
-      html.length
+      programHtml.length
     );
 
-    const currentMatches =
-      parseProgram(html);
+    const programMatches =
+      parseProgram(
+        programHtml
+      );
 
     console.log(
       "Program maçları:",
-      currentMatches.length
+      programMatches.length
     );
 
     /*
-     * Şimdilik programdaki verileri de geçmiş
-     * havuzuna ekliyoruz.
-     *
-     * Gerçek sonuçlar ayrı kaynaklardan geldikçe
-     * skorlarla güncellenecek.
-     */
+    -----------------------------------------------------
+    SONUÇLAR
+    -----------------------------------------------------
+    */
 
-    const merged = mergeMatches(
-      oldMatches,
-      currentMatches
+    console.log("");
+    console.log(
+      "🏀 Basketbol sonuçları alınıyor..."
     );
 
+    const resultsHtml =
+      await fetchHtml(
+        RESULTS_URL
+      );
+
+    console.log(
+      "Sonuç HTML:",
+      resultsHtml.length
+    );
+
+    const resultMatches =
+      parseResults(
+        resultsHtml
+      );
+
+    console.log(
+      "Sonuç maçları:",
+      resultMatches.length
+    );
+
+    /*
+    -----------------------------------------------------
+    BİRLEŞTİR
+    -----------------------------------------------------
+    */
+
+    const merged =
+      mergeMatches(
+        oldMatches,
+        [
+          ...programMatches,
+          ...resultMatches
+        ]
+      );
+
     const cleaned =
-      cleanMatches(merged);
+      cleanMatches(
+        merged
+      );
+
+    /*
+    -----------------------------------------------------
+    KLASÖR
+    -----------------------------------------------------
+    */
 
     fs.mkdirSync(
       path.dirname(DATA_PATH),
@@ -673,41 +858,100 @@ async function main() {
       }
     );
 
+    /*
+    -----------------------------------------------------
+    DOSYAYI YAZ
+    -----------------------------------------------------
+    */
+
+    const output = {
+      source: BASE_URL,
+
+      updatedAt:
+        new Date().toISOString(),
+
+      historyDays:
+        DAYS_BACK,
+
+      matches:
+        cleaned
+    };
+
     fs.writeFileSync(
       DATA_PATH,
       JSON.stringify(
-        {
-          source:
-            "https://arsiv.mackolik.com",
-          updatedAt:
-            new Date().toISOString(),
-          historyDays:
-            DAYS_BACK,
-          matches:
-            cleaned
-        },
+        output,
         null,
         2
+      ),
+      "utf8"
+    );
+
+    /*
+    -----------------------------------------------------
+    ÖZET
+    -----------------------------------------------------
+    */
+
+    const completed =
+      cleaned.filter(
+        match =>
+          Number.isFinite(
+            Number(match.homeScore)
+          ) &&
+          Number.isFinite(
+            Number(match.awayScore)
+          )
       );
 
     console.log("");
-    console.log("================================");
-    console.log("✅ BASKETBOL GEÇMİŞ VERİSİ YAZILDI");
-    console.log("================================");
+    console.log(
+      "========================================"
+    );
+
+    console.log(
+      "✅ BASKETBOL GEÇMİŞ VERİSİ GÜNCELLENDİ"
+    );
+
+    console.log(
+      "========================================"
+    );
+
     console.log(
       "Toplam kayıt:",
       cleaned.length
     );
 
+    console.log(
+      "Skorlu maç:",
+      completed.length
+    );
+
+    console.log(
+      "Geçmiş:",
+      `${DAYS_BACK} gün`
+    );
+
+    console.log(
+      "Dosya:",
+      DATA_PATH
+    );
+
+    console.log(
+      "========================================"
+    );
+
   } catch (error) {
 
     console.error("");
+
     console.error(
       "❌ Basketbol geçmiş verisi alınamadı:"
     );
 
     console.error(
-      error.stack || error.message
+      error.stack ||
+      error.message
     );
 
     process.exitCode = 1;
