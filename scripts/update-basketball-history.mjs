@@ -1,447 +1,1070 @@
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ROOT = process.cwd();
 
-const ROOT = path.resolve(__dirname, "..");
-const DATA_DIR = path.join(ROOT, "data");
-const OUTPUT = path.join(DATA_DIR, "basketball-history.json");
+const DATA_FILE = path.join(
+  ROOT,
+  "data",
+  "basketball-history.json"
+);
+
+const BASE_URL = "https://arsiv.mackolik.com";
+
+const STANDING_URL =
+  `${BASE_URL}/Basketbol/Puan-Durumu`;
 
 const DAYS_BACK = 60;
 
-const API =
-  "https://www.sofascore.com/api/v1/sport/basketball/scheduled-events";
+const USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+  "AppleWebKit/537.36 (KHTML, like Gecko) " +
+  "Chrome/140.0.0.0 Safari/537.36";
 
-const HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36",
-  Accept: "application/json,text/plain,*/*",
-  Referer: "https://www.sofascore.com/",
-};
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+/* =========================================================
+   YARDIMCILAR
+========================================================= */
+
+function normalize(value) {
+  return String(value || "")
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-function pad(n) {
-  return String(n).padStart(2, "0");
+
+function cleanTeam(value) {
+  return normalize(value)
+    .replace(/\s+\([^)]+\)$/g, "")
+    .trim();
 }
 
-function formatDate(date) {
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
-    date.getDate()
-  )}`;
+
+function parseScore(value) {
+  if (!value) return null;
+
+  const m = String(value).match(
+    /(\d+)\s*[-:]\s*(\d+)/
+  );
+
+  if (!m) return null;
+
+  return {
+    home: Number(m[1]),
+    away: Number(m[2])
+  };
 }
 
-function dateDaysAgo(days) {
+
+function parseDate(value) {
+  if (!value) return null;
+
+  const text = normalize(value);
+
+  let m = text.match(
+    /^(\d{1,2})\.(\d{1,2})\.(\d{4})/
+  );
+
+  if (m) {
+    const day = String(m[1]).padStart(2, "0");
+    const month = String(m[2]).padStart(2, "0");
+    const year = m[3];
+
+    return `${year}-${month}-${day}`;
+  }
+
+  m = text.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})/
+  );
+
+  if (m) {
+    return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
+  }
+
+  return null;
+}
+
+
+function daysAgo(days) {
   const d = new Date();
-  d.setHours(12, 0, 0, 0);
+
+  d.setHours(0, 0, 0, 0);
+
   d.setDate(d.getDate() - days);
+
   return d;
 }
 
-function safeNumber(value) {
-  return Number.isFinite(Number(value)) ? Number(value) : null;
+
+function isWithin60Days(date) {
+  const parsed = new Date(`${date}T00:00:00`);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return false;
+  }
+
+  const today = new Date();
+
+  today.setHours(0, 0, 0, 0);
+
+  const minDate = daysAgo(DAYS_BACK);
+
+  return parsed >= minDate && parsed <= today;
 }
 
-function getScore(score) {
-  if (!score) return null;
 
-  return (
-    safeNumber(score.current) ??
-    safeNumber(score.normaltime) ??
-    safeNumber(score.display) ??
-    null
+function makeId(date, home, away) {
+  return [
+    date,
+    normalize(home).toLowerCase(),
+    normalize(away).toLowerCase()
+  ].join("|");
+}
+
+
+/* =========================================================
+   HTTP
+========================================================= */
+
+async function get(url) {
+  const response = await fetch(url, {
+    headers: {
+      "User-Agent": USER_AGENT,
+      "Accept":
+        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "Accept-Language":
+        "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
+      "Cache-Control": "no-cache"
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `HTTP ${response.status} - ${url}`
+    );
+  }
+
+  return await response.text();
+}
+
+
+/* =========================================================
+   HTML TEMİZLEME
+========================================================= */
+
+function stripHtml(html) {
+  return normalize(
+    String(html || "")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/gi, " ")
+      .replace(/&amp;/gi, "&")
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;/gi, "'")
   );
 }
 
-function getHalfScore(score) {
-  if (!score) return null;
+
+/* =========================================================
+   SONUÇ SATIRI PARSER
+========================================================= */
+
+function parseResultRows(html) {
+
+  const matches = [];
 
   /*
-   * Basketbolda SofaScore:
-   * period1 = 1. çeyrek
-   * period2 = 2. çeyrek
-   *
-   * İlk yarı = period1 + period2
-   */
-  const p1 = safeNumber(score.period1);
-  const p2 = safeNumber(score.period2);
+    Mackolik'in sonuç tablosu zaman zaman farklı
+    class isimleri kullanabildiği için burada
+    <tr> bazlı genel parser kullanıyoruz.
+  */
 
-  if (p1 === null || p2 === null) return null;
+  const rows =
+    String(html || "")
+      .match(/<tr[\s\S]*?<\/tr>/gi) || [];
 
-  return p1 + p2;
-}
 
-function isFinished(event) {
-  const type = event?.status?.type;
+  for (const row of rows) {
 
-  return [
-    "finished",
-    "afterpenalties",
-    "afterovertime",
-  ].includes(type);
-}
+    const text = stripHtml(row);
 
-function normalizeMatch(event) {
-  const home = event?.homeTeam?.name;
-  const away = event?.awayTeam?.name;
+    if (!text) continue;
 
-  if (!event?.id || !home || !away) {
-    return null;
-  }
 
-  const homeScore = getScore(event.homeScore);
-  const awayScore = getScore(event.awayScore);
+    /*
+      Tarih
+      ör:
+      4.10.2026
+      03.10.2026
+    */
 
-  /*
-   * Sadece sonucu belli olmuş maçları geçmişe alıyoruz.
-   */
-  if (!isFinished(event)) {
-    return null;
-  }
-
-  if (homeScore === null || awayScore === null) {
-    return null;
-  }
-
-  const timestamp = Number(event.startTimestamp);
-
-  if (!Number.isFinite(timestamp)) {
-    return null;
-  }
-
-  const date = new Date(timestamp * 1000);
-
-  const halfHomeScore = getHalfScore(event.homeScore);
-  const halfAwayScore = getHalfScore(event.awayScore);
-
-  return {
-    id: `sofa-${event.id}`,
-
-    source: "sofascore",
-
-    sourceId: String(event.id),
-
-    date: formatDate(date),
-
-    timestamp,
-
-    time: date.toISOString(),
-
-    league:
-      event?.tournament?.uniqueTournament?.name ||
-      event?.tournament?.name ||
-      "Basketbol",
-
-    category:
-      event?.tournament?.category?.name ||
-      "",
-
-    home,
-
-    away,
-
-    homeTeamId: event?.homeTeam?.id ?? null,
-
-    awayTeamId: event?.awayTeam?.id ?? null,
-
-    homeScore,
-
-    awayScore,
-
-    totalScore: homeScore + awayScore,
-
-    halfHomeScore,
-
-    halfAwayScore,
-
-    halfTotal:
-      halfHomeScore !== null && halfAwayScore !== null
-        ? halfHomeScore + halfAwayScore
-        : null,
-
-    quarterScores: {
-      home: {
-        q1: safeNumber(event?.homeScore?.period1),
-        q2: safeNumber(event?.homeScore?.period2),
-        q3: safeNumber(event?.homeScore?.period3),
-        q4: safeNumber(event?.homeScore?.period4),
-      },
-
-      away: {
-        q1: safeNumber(event?.awayScore?.period1),
-        q2: safeNumber(event?.awayScore?.period2),
-        q3: safeNumber(event?.awayScore?.period3),
-        q4: safeNumber(event?.awayScore?.period4),
-      },
-    },
-
-    status: event?.status?.type || "finished",
-
-    winner:
-      homeScore > awayScore
-        ? "home"
-        : awayScore > homeScore
-        ? "away"
-        : "draw",
-
-    homeWinnerCode: event?.homeScore?.current
-      ? event?.homeScore?.current > event?.awayScore?.current
-        ? 1
-        : event?.homeScore?.current < event?.awayScore?.current
-        ? 2
-        : 0
-      : null,
-  };
-}
-
-async function fetchDay(date) {
-  const url = `${API}/${date}`;
-
-  try {
-    const response = await fetch(url, {
-      headers: HEADERS,
-    });
-
-    if (!response.ok) {
-      console.log(`❌ ${date} HTTP ${response.status}`);
-      return [];
-    }
-
-    const data = await response.json();
-
-    if (!Array.isArray(data?.events)) {
-      console.log(`⚠️ ${date}: events bulunamadı`);
-      return [];
-    }
-
-    const matches = [];
-
-    for (const event of data.events) {
-      const match = normalizeMatch(event);
-
-      if (match) {
-        matches.push(match);
-      }
-    }
-
-    console.log(
-      `📅 ${date} | Toplam: ${data.events.length} | Skorlu: ${matches.length}`
+    const dateMatch = text.match(
+      /\b(\d{1,2}\.\d{1,2}\.\d{4})\b/
     );
 
-    return matches;
-  } catch (error) {
-    console.log(`❌ ${date} hata: ${error.message}`);
-    return [];
-  }
-}
+    if (!dateMatch) continue;
 
-function loadOldData() {
-  if (!fs.existsSync(OUTPUT)) {
-    return [];
-  }
 
-  try {
-    const json = JSON.parse(fs.readFileSync(OUTPUT, "utf8"));
+    const date = parseDate(
+      dateMatch[1]
+    );
 
-    if (Array.isArray(json)) {
-      return json;
-    }
+    if (!date) continue;
 
-    if (Array.isArray(json.matches)) {
-      return json.matches;
-    }
+    if (!isWithin60Days(date)) continue;
 
-    return [];
-  } catch {
-    console.log("⚠️ Eski basketball-history.json okunamadı.");
-    return [];
-  }
-}
 
-function cleanOldData(matches) {
-  const minDate = dateDaysAgo(DAYS_BACK);
-  const minTimestamp = minDate.getTime();
+    /*
+      Maç skoru arıyoruz.
+    */
 
-  return matches.filter(match => {
-    if (!match?.date) return false;
+    const scoreMatches = [
+      ...text.matchAll(
+        /(\d{1,3})\s*-\s*(\d{1,3})/g
+      )
+    ];
 
-    const time = new Date(match.date).getTime();
-
-    if (!Number.isFinite(time)) return false;
-
-    return time >= minTimestamp;
-  });
-}
-
-function mergeMatches(oldMatches, newMatches) {
-  const map = new Map();
-
-  for (const match of oldMatches) {
-    if (!match?.id) continue;
-
-    map.set(String(match.id), match);
-  }
-
-  for (const match of newMatches) {
-    if (!match?.id) continue;
-
-    const id = String(match.id);
-
-    const old = map.get(id);
-
-    if (!old) {
-      map.set(id, match);
+    if (!scoreMatches.length) {
       continue;
     }
 
+
     /*
-     * Yeni SofaScore verisi eski kaydı günceller.
-     */
-    map.set(id, {
-      ...old,
-      ...match,
+      Genellikle ilk skor İY,
+      ikinci skor MS olur.
+    */
+
+    let halfScore = null;
+    let fullScore = null;
+
+
+    if (scoreMatches.length >= 2) {
+
+      halfScore = {
+        home: Number(scoreMatches[0][1]),
+        away: Number(scoreMatches[0][2])
+      };
+
+      fullScore = {
+        home: Number(scoreMatches[1][1]),
+        away: Number(scoreMatches[1][2])
+      };
+
+    } else {
+
+      fullScore = {
+        home: Number(scoreMatches[0][1]),
+        away: Number(scoreMatches[0][2])
+      };
+
+    }
+
+
+    /*
+      Takım isimlerini skorun çevresinden
+      yakalamaya çalışıyoruz.
+    */
+
+    const scoreIndex =
+      text.indexOf(
+        `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`
+      );
+
+
+    let before = "";
+
+    let after = "";
+
+
+    if (scoreIndex >= 0) {
+
+      before =
+        text.slice(
+          dateMatch.index + dateMatch[0].length,
+          scoreIndex
+        );
+
+      after =
+        text.slice(
+          scoreIndex +
+          `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`.length
+        );
+
+    }
+
+
+    /*
+      before içerisindeki son anlamlı ifade
+      ev sahibi olabilir.
+    */
+
+    let home = null;
+    let away = null;
+
+
+    const beforeParts =
+      before
+        .split(/\s{2,}|\|/)
+        .map(cleanTeam)
+        .filter(Boolean);
+
+
+    const afterParts =
+      after
+        .split(/\s{2,}|\|/)
+        .map(cleanTeam)
+        .filter(Boolean);
+
+
+    if (beforeParts.length) {
+      home =
+        beforeParts[beforeParts.length - 1];
+    }
+
+
+    if (afterParts.length) {
+
+      away =
+        afterParts.find(
+          x =>
+            x.length > 2 &&
+            !/^(MS|UZ|İY|IY|H1|H2|TS)$/i.test(x)
+        ) || null;
+
+    }
+
+
+    /*
+      Yukarıdaki yöntem takım adlarını bulamazsa
+      Mackolik'in yaygın " | " yapısını deneyelim.
+    */
+
+    if (!home || !away) {
+
+      const parts =
+        text
+          .split(/\s{2,}|\|/)
+          .map(cleanTeam)
+          .filter(Boolean);
+
+
+      const scoreText =
+        `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`;
+
+
+      const index =
+        parts.findIndex(
+          x => x.includes(scoreText)
+        );
+
+
+      if (index > 0) {
+
+        home =
+          cleanTeam(parts[index - 1]);
+
+        if (index + 1 < parts.length) {
+
+          away =
+            cleanTeam(parts[index + 1]);
+
+        }
+
+      }
+
+    }
+
+
+    /*
+      Takım isimleri skor içinden bozulduysa
+      satırın tamamından daha güvenli regex.
+    */
+
+    if (!home || !away) {
+
+      const teamMatch =
+        text.match(
+          /(?:MS|UZ)?\s*([A-Za-zÇĞİÖŞÜçğıöşü0-9.&'()\- ]{2,})\s+(\d{1,3})\s*-\s*(\d{1,3})\s+([A-Za-zÇĞİÖŞÜçğıöşü0-9.&'()\- ]{2,})/i
+        );
+
+
+      if (teamMatch) {
+
+        home =
+          cleanTeam(teamMatch[1]);
+
+        away =
+          cleanTeam(teamMatch[4]);
+
+      }
+
+    }
+
+
+    if (!home || !away) continue;
+
+
+    /*
+      Çöp satırlarını engelle.
+    */
+
+    const invalid = [
+      "puan",
+      "fikstür",
+      "sonuçlar",
+      "macsonucu",
+      "ilk yarı",
+      "ilk yarı sonucu",
+      "alt üst",
+      "iddaa",
+      "takım",
+      "ms",
+      "iy",
+      "h1",
+      "h2"
+    ];
+
+
+    const homeLower =
+      normalize(home).toLowerCase();
+
+    const awayLower =
+      normalize(away).toLowerCase();
+
+
+    if (
+      invalid.includes(homeLower) ||
+      invalid.includes(awayLower)
+    ) {
+      continue;
+    }
+
+
+    if (
+      /^\d+(?:[.,]\d+)?$/.test(home) ||
+      /^\d+(?:[.,]\d+)?$/.test(away)
+    ) {
+      continue;
+    }
+
+
+    if (
+      homeLower === awayLower
+    ) {
+      continue;
+    }
+
+
+    /*
+      Fazla uzun / tablo başlığı benzeri
+      satırları ele.
+    */
+
+    if (
+      home.length > 80 ||
+      away.length > 80
+    ) {
+      continue;
+    }
+
+
+    const id =
+      makeId(
+        date,
+        home,
+        away
+      );
+
+
+    matches.push({
+
+      id,
+
+      date,
+
+      home,
+
+      away,
 
       homeScore:
-        match.homeScore !== null
-          ? match.homeScore
-          : old.homeScore ?? null,
+        fullScore?.home ?? null,
 
       awayScore:
-        match.awayScore !== null
-          ? match.awayScore
-          : old.awayScore ?? null,
+        fullScore?.away ?? null,
 
       halfHomeScore:
-        match.halfHomeScore !== null
-          ? match.halfHomeScore
-          : old.halfHomeScore ?? null,
+        halfScore?.home ?? null,
 
       halfAwayScore:
-        match.halfAwayScore !== null
-          ? match.halfAwayScore
-          : old.halfAwayScore ?? null,
+        halfScore?.away ?? null,
 
       totalScore:
-        match.totalScore !== null
-          ? match.totalScore
-          : old.totalScore ?? null,
+        fullScore
+          ? fullScore.home + fullScore.away
+          : null,
 
-      halfTotal:
-        match.halfTotal !== null
-          ? match.halfTotal
-          : old.halfTotal ?? null,
+      status:
+        fullScore
+          ? "finished"
+          : "not_started",
+
+      source:
+        "mackolik",
+
+      updatedAt:
+        new Date().toISOString()
+
     });
+
   }
 
-  return [...map.values()];
+
+  return matches;
 }
 
-function sortMatches(matches) {
-  return matches.sort((a, b) => {
-    const ta = Number(a.timestamp || 0);
-    const tb = Number(b.timestamp || 0);
 
-    return ta - tb;
-  });
-}
+/* =========================================================
+   PUAN DURUMU SAYFASINDAN LİG ID'LERİ
+========================================================= */
 
-async function main() {
-  console.log("========================================");
-  console.log("🏀 SOFASCORE BASKETBOL GEÇMİŞİ");
-  console.log("========================================");
-  console.log(`📅 Geçmiş aralığı: ${DAYS_BACK} gün`);
-  console.log("");
+function parseLeagueIds(html) {
 
-  fs.mkdirSync(DATA_DIR, {
-    recursive: true,
-  });
+  const ids = new Set();
 
-  const oldMatches = loadOldData();
-
-  console.log(`Mevcut kayıt: ${oldMatches.length}`);
-  console.log("");
-
-  const allNewMatches = [];
-
-  for (let i = DAYS_BACK; i >= 0; i--) {
-    const date = formatDate(dateDaysAgo(i));
-
-    const matches = await fetchDay(date);
-
-    allNewMatches.push(...matches);
-
-    /*
-     * Sofascore'a çok hızlı yüklenmemek için
-     * istekler arasında küçük bekleme.
-     */
-    await sleep(250);
-  }
-
-  console.log("");
-  console.log("========================================");
-  console.log("🔄 VERİLER BİRLEŞTİRİLİYOR");
-  console.log("========================================");
-
-  let merged = mergeMatches(oldMatches, allNewMatches);
-
-  merged = cleanOldData(merged);
-
-  merged = sortMatches(merged);
 
   /*
-   * Aynı event ID tekrar oluşmuşsa Map zaten tek kayıt bırakıyor.
-   */
-  const output = {
-    source:
-      "https://www.sofascore.com/basketball",
+    BasketbolStanding / Puan-Durumu
+    bağlantılarındaki id değerlerini yakala.
+  */
 
-    sourceApi:
-      "https://www.sofascore.com/api/v1/sport/basketball/scheduled-events/{date}",
+  const regex =
+    /(?:Basketball\/Standing\/Default\.aspx\?id=|Basketbol\/Puan-Durumu\?id=)(\d+)/gi;
 
-    updatedAt: new Date().toISOString(),
 
-    days: DAYS_BACK,
+  for (
+    const match of String(html).matchAll(regex)
+  ) {
 
-    matches: merged,
+    ids.add(
+      Number(match[1])
+    );
+
+  }
+
+
+  /*
+    Sayfada id bulunamazsa ana lig
+    olarak 1'i kullan.
+  */
+
+  if (!ids.size) {
+    ids.add(1);
+  }
+
+
+  return [...ids];
+}
+
+
+/* =========================================================
+   FİKSTÜR AJAX SAYFASI
+========================================================= */
+
+async function fetchFixturePage(leagueId) {
+
+  const urls = [
+
+    `${BASE_URL}/AjaxHandlers/BasketballTabsHandler.aspx?id=${leagueId}&tab=2&type=tabs`,
+
+    `${BASE_URL}/AjaxHandlers/BasketballTabsHandler.aspx?id=${leagueId}&tab=2&type=tabs&lang=tr`
+
+  ];
+
+
+  for (const url of urls) {
+
+    try {
+
+      const html =
+        await get(url);
+
+      if (
+        html &&
+        html.length > 100
+      ) {
+
+        return html;
+
+      }
+
+    } catch (error) {
+
+      console.log(
+        `⚠️ Fikstür alınamadı: ${error.message}`
+      );
+
+    }
+
+  }
+
+
+  return "";
+}
+
+
+/* =========================================================
+   ANA İŞLEM
+========================================================= */
+
+async function main() {
+
+  console.log("");
+  console.log("========================================");
+  console.log("🏀 MACKOLİK BASKETBOL GEÇMİŞİ");
+  console.log("========================================");
+  console.log(
+    `📅 Geçmiş aralığı: ${DAYS_BACK} gün`
+  );
+  console.log("");
+
+
+  let oldData = {
+    matches: []
   };
 
+
+  if (
+    fs.existsSync(DATA_FILE)
+  ) {
+
+    try {
+
+      oldData =
+        JSON.parse(
+          fs.readFileSync(
+            DATA_FILE,
+            "utf8"
+          )
+        );
+
+    } catch {
+
+      console.log(
+        "⚠️ Eski history JSON okunamadı."
+      );
+
+    }
+
+  }
+
+
+  const oldMatches =
+    Array.isArray(oldData.matches)
+      ? oldData.matches
+      : [];
+
+
+  console.log(
+    `Mevcut kayıt: ${oldMatches.length}`
+  );
+
+
+  /*
+    Ana puan durumu sayfası
+  */
+
+  console.log("");
+  console.log(
+    "🏀 Mackolik basketbol sayfası alınıyor..."
+  );
+
+
+  let standingHtml = "";
+
+
+  try {
+
+    standingHtml =
+      await get(
+        STANDING_URL
+      );
+
+    console.log(
+      `HTML uzunluğu: ${standingHtml.length}`
+    );
+
+  } catch (error) {
+
+    console.error(
+      `❌ Puan durumu alınamadı: ${error.message}`
+    );
+
+  }
+
+
+  /*
+    Lig ID'lerini bul
+  */
+
+  const leagueIds =
+    parseLeagueIds(
+      standingHtml
+    );
+
+
+  console.log(
+    `Bulunan lig ID: ${leagueIds.join(", ")}`
+  );
+
+
+  /*
+    Sonuçları birleştir
+  */
+
+  const allNew =
+    [];
+
+
+  /*
+    Önce ana sayfadaki sonuçları dene.
+  */
+
+  const mainResults =
+    parseResultRows(
+      standingHtml
+    );
+
+
+  if (mainResults.length) {
+
+    console.log(
+      `Ana sayfa sonuçları: ${mainResults.length}`
+    );
+
+    allNew.push(
+      ...mainResults
+    );
+
+  }
+
+
+  /*
+    Her lig için Fikstür AJAX.
+  */
+
+  for (
+    const leagueId of leagueIds
+  ) {
+
+    console.log("");
+    console.log(
+      `📋 Lig ${leagueId} fikstürü alınıyor...`
+    );
+
+
+    const fixtureHtml =
+      await fetchFixturePage(
+        leagueId
+      );
+
+
+    if (!fixtureHtml) {
+
+      console.log(
+        "⚠️ Fikstür verisi boş."
+      );
+
+      continue;
+
+    }
+
+
+    console.log(
+      `Fikstür HTML: ${fixtureHtml.length}`
+    );
+
+
+    const fixtureMatches =
+      parseResultRows(
+        fixtureHtml
+      );
+
+
+    console.log(
+      `Fikstür sonuçları: ${fixtureMatches.length}`
+    );
+
+
+    allNew.push(
+      ...fixtureMatches
+    );
+
+  }
+
+
+  /*
+    Tekilleştir
+  */
+
+  const map =
+    new Map();
+
+
+  for (
+    const match of oldMatches
+  ) {
+
+    if (
+      !match ||
+      !match.id
+    ) {
+      continue;
+    }
+
+
+    if (
+      !match.date ||
+      !isWithin60Days(match.date)
+    ) {
+      continue;
+    }
+
+
+    map.set(
+      match.id,
+      match
+    );
+
+  }
+
+
+  for (
+    const match of allNew
+  ) {
+
+    if (
+      !match ||
+      !match.id
+    ) {
+      continue;
+    }
+
+
+    const old =
+      map.get(
+        match.id
+      );
+
+
+    if (!old) {
+
+      map.set(
+        match.id,
+        match
+      );
+
+      continue;
+
+    }
+
+
+    map.set(
+      match.id,
+      {
+
+        ...old,
+
+        ...match,
+
+        /*
+          Skor eski kayıtta varsa koru.
+        */
+
+        homeScore:
+          match.homeScore ??
+          old.homeScore ??
+          null,
+
+        awayScore:
+          match.awayScore ??
+          old.awayScore ??
+          null,
+
+        halfHomeScore:
+          match.halfHomeScore ??
+          old.halfHomeScore ??
+          null,
+
+        halfAwayScore:
+          match.halfAwayScore ??
+          old.halfAwayScore ??
+          null
+
+      }
+    );
+
+  }
+
+
+  /*
+    Sadece 60 günlük kayıtlar
+  */
+
+  const finalMatches =
+    [...map.values()]
+      .filter(
+        match =>
+          match.date &&
+          isWithin60Days(
+            match.date
+          )
+      )
+      .sort(
+        (a, b) =>
+          String(b.date)
+            .localeCompare(
+              String(a.date)
+            )
+      );
+
+
+  /*
+    Yaz
+  */
+
+  const output = {
+
+    source:
+      STANDING_URL,
+
+    updatedAt:
+      new Date().toISOString(),
+
+    daysBack:
+      DAYS_BACK,
+
+    matches:
+      finalMatches
+
+  };
+
+
+  fs.mkdirSync(
+    path.dirname(DATA_FILE),
+    {
+      recursive: true
+    }
+  );
+
+
   fs.writeFileSync(
-    OUTPUT,
-    JSON.stringify(output, null, 2),
+    DATA_FILE,
+    JSON.stringify(
+      output,
+      null,
+      2
+    ),
     "utf8"
   );
 
-  console.log("");
-  console.log("========================================");
-  console.log("✅ SOFASCORE GEÇMİŞ VERİSİ GÜNCELLENDİ");
-  console.log("========================================");
-  console.log(`Yeni çekilen: ${allNewMatches.length}`);
-  console.log(`Toplam kayıt: ${merged.length}`);
-  console.log(`Geçmiş: ${DAYS_BACK} gün`);
-  console.log(`Dosya: ${OUTPUT}`);
-  console.log("========================================");
+
+  const scored =
+    finalMatches.filter(
+      m =>
+        Number.isFinite(
+          m.homeScore
+        ) &&
+        Number.isFinite(
+          m.awayScore
+        )
+    );
+
+
+  const withHalf =
+    finalMatches.filter(
+      m =>
+        Number.isFinite(
+          m.halfHomeScore
+        ) &&
+        Number.isFinite(
+          m.halfAwayScore
+        )
+    );
+
 
   console.log("");
+  console.log("========================================");
+  console.log("✅ BASKETBOL GEÇMİŞİ GÜNCELLENDİ");
+  console.log("========================================");
+  console.log(
+    `Toplam kayıt: ${finalMatches.length}`
+  );
+  console.log(
+    `Skorlu maç: ${scored.length}`
+  );
+  console.log(
+    `İY skorlu maç: ${withHalf.length}`
+  );
+  console.log(
+    `Geçmiş: ${DAYS_BACK} gün`
+  );
+  console.log(
+    `Lig sayısı: ${leagueIds.length}`
+  );
+  console.log(
+    `Dosya: ${DATA_FILE}`
+  );
+  console.log("========================================");
+
 
   /*
-   * Örnek birkaç kayıt göster.
-   */
-  for (const match of merged.slice(-10)) {
+    Debug için son 10 kayıt
+  */
+
+  console.log("");
+  console.log("SON KAYITLAR:");
+
+  for (
+    const match of finalMatches.slice(0, 10)
+  ) {
+
     console.log(
-      `${match.date} | ${match.league} | ${match.home} - ${match.away} | ${match.homeScore}-${match.awayScore} | İY ${match.halfHomeScore ?? "-"}-${match.halfAwayScore ?? "-"}`
+      `${match.date} | ` +
+      `${match.home} - ${match.away} | ` +
+      `İY: ${
+        match.halfHomeScore ?? "-"
+      }-${
+        match.halfAwayScore ?? "-"
+      } | ` +
+      `MS: ${
+        match.homeScore ?? "-"
+      }-${
+        match.awayScore ?? "-"
+      }`
     );
+
   }
+
+  console.log("");
+
 }
 
-main().catch(error => {
-  console.error("");
-  console.error("========================================");
-  console.error("❌ SOFASCORE GEÇMİŞ GÜNCELLEME HATASI");
-  console.error("========================================");
-  console.error(error);
-  process.exit(1);
-});
+
+main().catch(
+  error => {
+
+    console.error("");
+    console.error(
+      "❌ BASKETBOL HISTORY HATASI"
+    );
+
+    console.error(
+      error
+    );
+
+    process.exit(1);
+
+  }
+);
