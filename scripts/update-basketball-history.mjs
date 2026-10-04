@@ -1,966 +1,1014 @@
 import fs from "fs";
 import path from "path";
-
-const ROOT = process.cwd();
-
-const DATA_FILE = path.join(
-  ROOT,
+import * as cheerio from "cheerio";
+const BASE_URL = "https://arsiv.mackolik.com";
+const DATA_PATH = path.join(
+  process.cwd(),
   "data",
   "basketball-history.json"
 );
-
-const BASE_URL = "https://arsiv.mackolik.com";
-
-const STANDING_URL =
-  `${BASE_URL}/Basketbol/Puan-Durumu`;
-
 const DAYS_BACK = 60;
-
-const USER_AGENT =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-  "AppleWebKit/537.36 (KHTML, like Gecko) " +
-  "Chrome/140.0.0.0 Safari/537.36";
-
-
+// Basketbol programı
+const PROGRAM_URL =
+  `${BASE_URL}/Program/Program.aspx?st=2`;
+// Mackolik basketbol sonuçlarında kullanılan olası sayfalar
+const RESULT_URLS = [
+  `${BASE_URL}/Program/Program.aspx?st=2`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=1`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=2`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=3`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=4`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=5`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=6`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=7`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=8`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=9`,
+  `${BASE_URL}/Program/Program.aspx?st=2&dt=10`
+];
+const HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36",
+  "Accept":
+    "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8"
+};
 /* =========================================================
    YARDIMCILAR
 ========================================================= */
-
-function normalize(value) {
+function normalizeText(value) {
   return String(value || "")
     .replace(/\u00a0/g, " ")
+    .replace(/\r/g, " ")
+    .replace(/\n/g, " ")
+    .replace(/\t/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
-
-
-function cleanTeam(value) {
-  return normalize(value)
-    .replace(/\s+\([^)]+\)$/g, "")
+function normalizeTeam(value) {
+  return normalizeText(value)
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ü/g, "u")
+    .replace(/ş/g, "s")
+    .replace(/ö/g, "o")
+    .replace(/ç/g, "c")
+    .replace(/[()]/g, "")
+    .replace(/[.,'’"]/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
-
-
-function parseScore(value) {
-  if (!value) return null;
-
-  const m = String(value).match(
-    /(\d+)\s*[-:]\s*(\d+)/
+function parseNumber(value) {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  const n = Number(
+    String(value)
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "")
   );
-
-  if (!m) return null;
-
-  return {
-    home: Number(m[1]),
-    away: Number(m[2])
-  };
+  return Number.isFinite(n) ? n : null;
 }
-
-
 function parseDate(value) {
-  if (!value) return null;
-
-  const text = normalize(value);
-
-  let m = text.match(
-    /^(\d{1,2})\.(\d{1,2})\.(\d{4})/
+  const text = normalizeText(value);
+  const m = text.match(
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
   );
-
-  if (m) {
-    const day = String(m[1]).padStart(2, "0");
-    const month = String(m[2]).padStart(2, "0");
-    const year = m[3];
-
-    return `${year}-${month}-${day}`;
+  if (!m) {
+    return null;
   }
-
-  m = text.match(
-    /^(\d{4})-(\d{1,2})-(\d{1,2})/
-  );
-
-  if (m) {
-    return `${m[1]}-${String(m[2]).padStart(2, "0")}-${String(m[3]).padStart(2, "0")}`;
-  }
-
-  return null;
+  return `${m[3]}-${String(m[2]).padStart(2, "0")}-${String(
+    m[1]
+  ).padStart(2, "0")}`;
 }
-
-
-function daysAgo(days) {
+function getCutoffDate() {
   const d = new Date();
-
   d.setHours(0, 0, 0, 0);
-
-  d.setDate(d.getDate() - days);
-
+  d.setDate(d.getDate() - DAYS_BACK);
   return d;
 }
-
-
-function isWithin60Days(date) {
-  const parsed = new Date(`${date}T00:00:00`);
-
-  if (Number.isNaN(parsed.getTime())) {
+function isWithinHistory(date) {
+  if (!date) {
     return false;
   }
-
-  const today = new Date();
-
-  today.setHours(0, 0, 0, 0);
-
-  const minDate = daysAgo(DAYS_BACK);
-
-  return parsed >= minDate && parsed <= today;
+  const d = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(d.getTime())) {
+    return false;
+  }
+  return d >= getCutoffDate();
 }
-
-
-function makeId(date, home, away) {
+function makeId(date, home, away, time = "") {
   return [
     date,
-    normalize(home).toLowerCase(),
-    normalize(away).toLowerCase()
-  ].join("|");
+    time || "",
+    normalizeTeam(home),
+    normalizeTeam(away)
+  ].join("_");
 }
-
-
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 /* =========================================================
-   HTTP
+   DOSYA
 ========================================================= */
-
-async function get(url) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": USER_AGENT,
-      "Accept":
-        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language":
-        "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7",
-      "Cache-Control": "no-cache"
-    }
-  });
-
-  if (!response.ok) {
-    throw new Error(
-      `HTTP ${response.status} - ${url}`
-    );
+function readHistory() {
+  if (!fs.existsSync(DATA_PATH)) {
+    return [];
   }
-
-  return await response.text();
+  try {
+    const raw = fs.readFileSync(DATA_PATH, "utf8");
+    const json = JSON.parse(raw);
+    if (Array.isArray(json)) {
+      return json;
+    }
+    if (Array.isArray(json.matches)) {
+      return json.matches;
+    }
+    return [];
+  } catch (error) {
+    console.log(
+      "⚠️ Eski basketbol geçmişi okunamadı:",
+      error.message
+    );
+    return [];
+  }
 }
-
-
 /* =========================================================
-   HTML TEMİZLEME
+   HTML AL
 ========================================================= */
-
-function stripHtml(html) {
-  return normalize(
-    String(html || "")
-      .replace(/<script[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/gi, " ")
-      .replace(/&amp;/gi, "&")
-      .replace(/&quot;/gi, '"')
-      .replace(/&#39;/gi, "'")
-  );
+async function fetchHtml(url) {
+  try {
+    const response = await fetch(url, {
+      headers: HEADERS
+    });
+    if (!response.ok) {
+      console.log(
+        `⚠️ HTTP ${response.status}: ${url}`
+      );
+      return "";
+    }
+    return await response.text();
+  } catch (error) {
+    console.log(
+      `⚠️ Sayfa alınamadı: ${url}`,
+      error.message
+    );
+    return "";
+  }
 }
-
-
 /* =========================================================
-   SONUÇ SATIRI PARSER
+   SKOR BUL
 ========================================================= */
-
-function parseResultRows(html) {
-
-  const matches = [];
-
+function extractScores(text) {
+  const matches = [
+    ...text.matchAll(
+      /(\d{1,3})\s*[-:]\s*(\d{1,3})/g
+    )
+  ];
+  return matches.map(match => ({
+    home: Number(match[1]),
+    away: Number(match[2])
+  }));
+}
+/* =========================================================
+   TAKIM BUL
+========================================================= */
+function findTeams(cells, text) {
+  let home = "";
+  let away = "";
   /*
-    Mackolik'in sonuç tablosu zaman zaman farklı
-    class isimleri kullanabildiği için burada
-    <tr> bazlı genel parser kullanıyoruz.
+   Önce hücrelerde:
+   Takım - Takım
+   Takım v Takım
+   formatını ara.
   */
-
-  const rows =
-    String(html || "")
-      .match(/<tr[\s\S]*?<\/tr>/gi) || [];
-
-
-  for (const row of rows) {
-
-    const text = stripHtml(row);
-
-    if (!text) continue;
-
-
-    /*
-      Tarih
-      ör:
-      4.10.2026
-      03.10.2026
-    */
-
-    const dateMatch = text.match(
-      /\b(\d{1,2}\.\d{1,2}\.\d{4})\b/
+  for (const cell of cells) {
+    const value = normalizeText(cell);
+    const match = value.match(
+      /^(.+?)\s+(?:v|-)\s+(.+?)$/i
     );
-
-    if (!dateMatch) continue;
-
-
-    const date = parseDate(
-      dateMatch[1]
-    );
-
-    if (!date) continue;
-
-    if (!isWithin60Days(date)) continue;
-
-
+    if (match) {
+      const h = normalizeText(match[1]);
+      const a = normalizeText(match[2]);
+      if (
+        h.length >= 2 &&
+        a.length >= 2 &&
+        normalizeTeam(h) !== normalizeTeam(a)
+      ) {
+        return {
+          home: h,
+          away: a
+        };
+      }
+    }
+  }
+  /*
+   Bazı Mackolik satırlarında takımlar ayrı
+   hücrelerde bulunuyor.
+  */
+  const candidates = cells
+    .map(normalizeText)
+    .filter(value => {
+      if (!value || value.length < 2) {
+        return false;
+      }
+      if (
+        /^\d+(?:\s*[-:]\s*\d+)?$/.test(value)
+      ) {
+        return false;
+      }
+      if (
+        /^\d{1,2}[./]\d{1,2}[./]\d{4}$/.test(value)
+      ) {
+        return false;
+      }
+      if (
+        /^\d{1,2}:\d{2}$/.test(value)
+      ) {
+        return false;
+      }
+      if (
+        /^TS\s*:?\s*\d+(?:[.,]\d+)?$/i.test(value)
+      ) {
+        return false;
+      }
+      return true;
+    });
+  if (candidates.length >= 2) {
     /*
-      Maç skoru arıyoruz.
+     Son iki anlamlı hücre çoğu sonuç satırında
+     takım isimlerine karşılık geliyor.
     */
-
+    for (let i = 0; i < candidates.length - 1; i++) {
+      const h = candidates[i];
+      const a = candidates[i + 1];
+      if (
+        h.length >= 2 &&
+        a.length >= 2 &&
+        normalizeTeam(h) !== normalizeTeam(a)
+      ) {
+        /*
+         Açıkça lig adı gibi duran satırları
+         mümkün olduğunca ele.
+        */
+        if (
+          !/^(basketbol|basket|basketball)$/i.test(h) &&
+          !/^(basketbol|basket|basketball)$/i.test(a)
+        ) {
+          home = h;
+          away = a;
+        }
+      }
+    }
+  }
+  /*
+   Son çare:
+   metinde "Takım - skor - skor - Takım"
+   benzeri yapı varsa çevresinden yakala.
+  */
+  if (!home || !away) {
     const scoreMatches = [
       ...text.matchAll(
         /(\d{1,3})\s*-\s*(\d{1,3})/g
       )
     ];
-
-    if (!scoreMatches.length) {
-      continue;
-    }
-
-
-    /*
-      Genellikle ilk skor İY,
-      ikinci skor MS olur.
-    */
-
-    let halfScore = null;
-    let fullScore = null;
-
-
-    if (scoreMatches.length >= 2) {
-
-      halfScore = {
-        home: Number(scoreMatches[0][1]),
-        away: Number(scoreMatches[0][2])
-      };
-
-      fullScore = {
-        home: Number(scoreMatches[1][1]),
-        away: Number(scoreMatches[1][2])
-      };
-
-    } else {
-
-      fullScore = {
-        home: Number(scoreMatches[0][1]),
-        away: Number(scoreMatches[0][2])
-      };
-
-    }
-
-
-    /*
-      Takım isimlerini skorun çevresinden
-      yakalamaya çalışıyoruz.
-    */
-
-    const scoreIndex =
-      text.indexOf(
-        `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`
-      );
-
-
-    let before = "";
-
-    let after = "";
-
-
-    if (scoreIndex >= 0) {
-
-      before =
+    if (scoreMatches.length) {
+      const firstScore =
+        scoreMatches[0];
+      const before =
+        text.slice(0, firstScore.index);
+      const after =
         text.slice(
-          dateMatch.index + dateMatch[0].length,
-          scoreIndex
+          firstScore.index +
+          firstScore[0].length
         );
-
-      after =
-        text.slice(
-          scoreIndex +
-          `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`.length
-        );
-
-    }
-
-
-    /*
-      before içerisindeki son anlamlı ifade
-      ev sahibi olabilir.
-    */
-
-    let home = null;
-    let away = null;
-
-
-    const beforeParts =
-      before
-        .split(/\s{2,}|\|/)
-        .map(cleanTeam)
-        .filter(Boolean);
-
-
-    const afterParts =
-      after
-        .split(/\s{2,}|\|/)
-        .map(cleanTeam)
-        .filter(Boolean);
-
-
-    if (beforeParts.length) {
-      home =
-        beforeParts[beforeParts.length - 1];
-    }
-
-
-    if (afterParts.length) {
-
-      away =
-        afterParts.find(
-          x =>
-            x.length > 2 &&
-            !/^(MS|UZ|İY|IY|H1|H2|TS)$/i.test(x)
-        ) || null;
-
-    }
-
-
-    /*
-      Yukarıdaki yöntem takım adlarını bulamazsa
-      Mackolik'in yaygın " | " yapısını deneyelim.
-    */
-
-    if (!home || !away) {
-
-      const parts =
-        text
+      const beforeParts =
+        before
           .split(/\s{2,}|\|/)
-          .map(cleanTeam)
+          .map(normalizeText)
           .filter(Boolean);
-
-
-      const scoreText =
-        `${scoreMatches[0][1]} - ${scoreMatches[0][2]}`;
-
-
-      const index =
-        parts.findIndex(
-          x => x.includes(scoreText)
-        );
-
-
-      if (index > 0) {
-
+      const afterParts =
+        after
+          .split(/\s{2,}|\|/)
+          .map(normalizeText)
+          .filter(Boolean);
+      if (beforeParts.length) {
         home =
-          cleanTeam(parts[index - 1]);
-
-        if (index + 1 < parts.length) {
-
-          away =
-            cleanTeam(parts[index + 1]);
-
-        }
-
+          beforeParts[
+            beforeParts.length - 1
+          ];
       }
-
-    }
-
-
-    /*
-      Takım isimleri skor içinden bozulduysa
-      satırın tamamından daha güvenli regex.
-    */
-
-    if (!home || !away) {
-
-      const teamMatch =
-        text.match(
-          /(?:MS|UZ)?\s*([A-Za-zÇĞİÖŞÜçğıöşü0-9.&'()\- ]{2,})\s+(\d{1,3})\s*-\s*(\d{1,3})\s+([A-Za-zÇĞİÖŞÜçğıöşü0-9.&'()\- ]{2,})/i
-        );
-
-
-      if (teamMatch) {
-
-        home =
-          cleanTeam(teamMatch[1]);
-
+      if (afterParts.length) {
         away =
-          cleanTeam(teamMatch[4]);
-
+          afterParts[0];
       }
-
     }
-
-
-    if (!home || !away) continue;
-
-
+  }
+  if (
+    !home ||
+    !away ||
+    normalizeTeam(home) === normalizeTeam(away)
+  ) {
+    return null;
+  }
+  return {
+    home,
+    away
+  };
+}
+/* =========================================================
+   GENEL SONUÇ PARSER
+========================================================= */
+function parseBasketballResults(html) {
+  const $ = cheerio.load(html);
+  const results = [];
+  $("tr").each((_, row) => {
+    const cells = $(row)
+      .find("td")
+      .map((_, td) =>
+        normalizeText($(td).text())
+      )
+      .get();
+    if (cells.length < 2) {
+      return;
+    }
+    const text = normalizeText(
+      cells.join(" | ")
+    );
+    if (!text) {
+      return;
+    }
     /*
-      Çöp satırlarını engelle.
-    */
-
-    const invalid = [
-      "puan",
-      "fikstür",
-      "sonuçlar",
-      "macsonucu",
-      "ilk yarı",
-      "ilk yarı sonucu",
-      "alt üst",
-      "iddaa",
-      "takım",
-      "ms",
-      "iy",
-      "h1",
-      "h2"
-    ];
-
-
-    const homeLower =
-      normalize(home).toLowerCase();
-
-    const awayLower =
-      normalize(away).toLowerCase();
-
-
-    if (
-      invalid.includes(homeLower) ||
-      invalid.includes(awayLower)
-    ) {
-      continue;
+     * Tarih
+     */
+    const dateMatch = text.match(
+      /\b(\d{1,2}[./-]\d{1,2}[./-]\d{4})\b/
+    );
+    if (!dateMatch) {
+      return;
     }
-
-
-    if (
-      /^\d+(?:[.,]\d+)?$/.test(home) ||
-      /^\d+(?:[.,]\d+)?$/.test(away)
-    ) {
-      continue;
+    const date = parseDate(
+      dateMatch[1]
+    );
+    if (!date || !isWithinHistory(date)) {
+      return;
     }
-
-
-    if (
-      homeLower === awayLower
-    ) {
-      continue;
-    }
-
-
     /*
-      Fazla uzun / tablo başlığı benzeri
-      satırları ele.
-    */
-
-    if (
-      home.length > 80 ||
-      away.length > 80
-    ) {
-      continue;
+     * Saat
+     */
+    const timeMatch = text.match(
+      /\b\d{1,2}:\d{2}\b/
+    );
+    const time =
+      timeMatch
+        ? timeMatch[0]
+        : "";
+    /*
+     * Skorlar
+     */
+    const scores =
+      extractScores(text);
+    if (!scores.length) {
+      return;
     }
-
-
+    /*
+     * Basketbolda final skorun makul olması
+     * gerekiyor. Çok küçük değerleri veri hatası
+     * olarak değerlendir.
+     */
+    const final =
+      scores[scores.length - 1];
+    if (
+      final.home < 30 ||
+      final.away < 30
+    ) {
+      return;
+    }
+    /*
+     * İlk yarı skorunu bul.
+     * Mackolik satırlarında birden fazla skor
+     * bulunabiliyor. Finalden önceki skor en
+     * güvenli adaydır.
+     */
+    let half = null;
+    if (scores.length >= 2) {
+      half =
+        scores[scores.length - 2];
+    }
+    /*
+     * Takımlar
+     */
+    const teams =
+      findTeams(
+        cells,
+        text
+      );
+    if (!teams) {
+      return;
+    }
+    /*
+     * Lig bilgisini mümkünse al.
+     */
+    let league = "";
+    for (const cell of cells) {
+      const value =
+        normalizeText(cell);
+      if (
+        value &&
+        value.length > 2 &&
+        !value.match(
+          /\d{1,2}[./]\d{1,2}[./]\d{4}/
+        ) &&
+        !value.match(
+          /^\d{1,2}:\d{2}$/
+        ) &&
+        !value.match(
+          /^\d+\s*-\s*\d+$/
+        ) &&
+        value !== teams.home &&
+        value !== teams.away
+      ) {
+        /*
+         Çok uzun hücreleri lig olarak
+         kabul etmiyoruz.
+         */
+        if (
+          value.length <= 80 &&
+          !/^\d+$/.test(value)
+        ) {
+          league = value;
+        }
+      }
+    }
     const id =
       makeId(
         date,
-        home,
-        away
+        teams.home,
+        teams.away,
+        time
       );
-
-
-    matches.push({
-
+    results.push({
       id,
-
       date,
-
-      home,
-
-      away,
-
-      homeScore:
-        fullScore?.home ?? null,
-
-      awayScore:
-        fullScore?.away ?? null,
-
+      time,
+      home: teams.home,
+      away: teams.away,
+      league,
+      homeScore: final.home,
+      awayScore: final.away,
       halfHomeScore:
-        halfScore?.home ?? null,
-
-      halfAwayScore:
-        halfScore?.away ?? null,
-
-      totalScore:
-        fullScore
-          ? fullScore.home + fullScore.away
+        half
+          ? half.home
           : null,
-
-      status:
-        fullScore
-          ? "finished"
-          : "not_started",
-
+      halfAwayScore:
+        half
+          ? half.away
+          : null,
+      total:
+        final.home +
+        final.away,
       source:
-        "mackolik",
-
-      updatedAt:
-        new Date().toISOString()
-
+        "mackolik"
     });
-
-  }
-
-
-  return matches;
+  });
+  return results;
 }
-
-
 /* =========================================================
-   PUAN DURUMU SAYFASINDAN LİG ID'LERİ
+   PROGRAMDAN MAÇLAR
 ========================================================= */
-
-function parseLeagueIds(html) {
-
-  const ids = new Set();
-
-
-  /*
-    BasketbolStanding / Puan-Durumu
-    bağlantılarındaki id değerlerini yakala.
-  */
-
-  const regex =
-    /(?:Basketball\/Standing\/Default\.aspx\?id=|Basketbol\/Puan-Durumu\?id=)(\d+)/gi;
-
-
-  for (
-    const match of String(html).matchAll(regex)
-  ) {
-
-    ids.add(
-      Number(match[1])
-    );
-
-  }
-
-
-  /*
-    Sayfada id bulunamazsa ana lig
-    olarak 1'i kullan.
-  */
-
-  if (!ids.size) {
-    ids.add(1);
-  }
-
-
-  return [...ids];
-}
-
-
-/* =========================================================
-   FİKSTÜR AJAX SAYFASI
-========================================================= */
-
-async function fetchFixturePage(leagueId) {
-
-  const urls = [
-
-    `${BASE_URL}/AjaxHandlers/BasketballTabsHandler.aspx?id=${leagueId}&tab=2&type=tabs`,
-
-    `${BASE_URL}/AjaxHandlers/BasketballTabsHandler.aspx?id=${leagueId}&tab=2&type=tabs&lang=tr`
-
-  ];
-
-
-  for (const url of urls) {
-
-    try {
-
-      const html =
-        await get(url);
-
-      if (
-        html &&
-        html.length > 100
-      ) {
-
-        return html;
-
-      }
-
-    } catch (error) {
-
-      console.log(
-        `⚠️ Fikstür alınamadı: ${error.message}`
-      );
-
+function parseProgram(html) {
+  const $ = cheerio.load(html);
+  const results = [];
+  $("tr").each((_, row) => {
+    const cells = $(row)
+      .find("td")
+      .map((_, td) =>
+        normalizeText($(td).text())
+      )
+      .get();
+    if (cells.length < 2) {
+      return;
     }
-
-  }
-
-
-  return "";
+    const text =
+      normalizeText(
+        cells.join(" | ")
+      );
+    const dateMatch =
+      text.match(
+        /\b(\d{1,2}[./-]\d{1,2}[./-]\d{4})\b/
+      );
+    if (!dateMatch) {
+      return;
+    }
+    const date =
+      parseDate(
+        dateMatch[1]
+      );
+    if (
+      !date ||
+      !isWithinHistory(date)
+    ) {
+      return;
+    }
+    const timeMatch =
+      text.match(
+        /\b\d{1,2}:\d{2}\b/
+      );
+    const time =
+      timeMatch
+        ? timeMatch[0]
+        : "";
+    const teams =
+      findTeams(
+        cells,
+        text
+      );
+    if (!teams) {
+      return;
+    }
+    let total = null;
+    const totalMatch =
+      text.match(
+        /\bTS\s*:?\s*(\d+(?:[.,]\d+)?)\b/i
+      );
+    if (totalMatch) {
+      total =
+        parseNumber(
+          totalMatch[1]
+        );
+    }
+    results.push({
+      id:
+        makeId(
+          date,
+          teams.home,
+          teams.away,
+          time
+        ),
+      date,
+      time,
+      home:
+        teams.home,
+      away:
+        teams.away,
+      league: "",
+      homeScore: null,
+      awayScore: null,
+      halfHomeScore: null,
+      halfAwayScore: null,
+      total,
+      source:
+        "mackolik"
+    });
+  });
+  return results;
 }
-
-
 /* =========================================================
-   ANA İŞLEM
+   MAÇLARI BİRLEŞTİR
 ========================================================= */
-
+function mergeMatches(
+  oldMatches,
+  newMatches
+) {
+  const map =
+    new Map();
+  for (const match of oldMatches) {
+    if (
+      !match ||
+      !match.date ||
+      !match.home ||
+      !match.away
+    ) {
+      continue;
+    }
+    const id =
+      match.id ||
+      makeId(
+        match.date,
+        match.home,
+        match.away,
+        match.time || ""
+      );
+    map.set(
+      id,
+      {
+        ...match,
+        id
+      }
+    );
+  }
+  for (const match of newMatches) {
+    if (
+      !match ||
+      !match.date ||
+      !match.home ||
+      !match.away
+    ) {
+      continue;
+    }
+    const id =
+      match.id ||
+      makeId(
+        match.date,
+        match.home,
+        match.away,
+        match.time || ""
+      );
+    const old =
+      map.get(id);
+    if (!old) {
+      map.set(
+        id,
+        {
+          ...match,
+          id
+        }
+      );
+      continue;
+    }
+    map.set(
+      id,
+      {
+        ...old,
+        ...match,
+        id,
+        home:
+          match.home ||
+          old.home,
+        away:
+          match.away ||
+          old.away,
+        league:
+          match.league ||
+          old.league ||
+          "",
+        homeScore:
+          match.homeScore !== null &&
+          match.homeScore !== undefined
+            ? match.homeScore
+            : old.homeScore ?? null,
+        awayScore:
+          match.awayScore !== null &&
+          match.awayScore !== undefined
+            ? match.awayScore
+            : old.awayScore ?? null,
+        halfHomeScore:
+          match.halfHomeScore !== null &&
+          match.halfHomeScore !== undefined
+            ? match.halfHomeScore
+            : old.halfHomeScore ?? null,
+        halfAwayScore:
+          match.halfAwayScore !== null &&
+          match.halfAwayScore !== undefined
+            ? match.halfAwayScore
+            : old.halfAwayScore ?? null,
+        total:
+          match.total !== null &&
+          match.total !== undefined
+            ? match.total
+            : old.total ?? null
+      }
+    );
+  }
+  return [
+    ...map.values()
+  ];
+}
+/* =========================================================
+   DUPLICATE TEMİZLEME
+========================================================= */
+function cleanMatches(matches) {
+  const map =
+    new Map();
+  for (const match of matches) {
+    if (
+      !match ||
+      !match.date ||
+      !match.home ||
+      !match.away
+    ) {
+      continue;
+    }
+    if (
+      !isWithinHistory(
+        match.date
+      )
+    ) {
+      continue;
+    }
+    if (
+      normalizeTeam(match.home) ===
+      normalizeTeam(match.away)
+    ) {
+      continue;
+    }
+    /*
+     * Final skoru varsa kesinlikle sakla.
+     * Program maçıysa skor olmayabilir.
+     */
+    const hasScore =
+      Number.isFinite(
+        Number(match.homeScore)
+      ) &&
+      Number.isFinite(
+        Number(match.awayScore)
+      );
+    const hasProgramInfo =
+      match.time ||
+      match.total !== null;
+    if (
+      !hasScore &&
+      !hasProgramInfo
+    ) {
+      continue;
+    }
+    const id =
+      match.id ||
+      makeId(
+        match.date,
+        match.home,
+        match.away,
+        match.time || ""
+      );
+    const old =
+      map.get(id);
+    if (!old) {
+      map.set(
+        id,
+        {
+          ...match,
+          id
+        }
+      );
+      continue;
+    }
+    /*
+     * Skorlu kayıt her zaman öncelikli.
+     */
+    const oldHasScore =
+      Number.isFinite(
+        Number(old.homeScore)
+      ) &&
+      Number.isFinite(
+        Number(old.awayScore)
+      );
+    if (
+      hasScore &&
+      !oldHasScore
+    ) {
+      map.set(
+        id,
+        {
+          ...old,
+          ...match,
+          id
+        }
+      );
+    } else {
+      map.set(
+        id,
+        {
+          ...old,
+          ...match,
+          id,
+          homeScore:
+            match.homeScore ??
+            old.homeScore ??
+            null,
+          awayScore:
+            match.awayScore ??
+            old.awayScore ??
+            null,
+          halfHomeScore:
+            match.halfHomeScore ??
+            old.halfHomeScore ??
+            null,
+          halfAwayScore:
+            match.halfAwayScore ??
+            old.halfAwayScore ??
+            null,
+          league:
+            match.league ||
+            old.league ||
+            ""
+        }
+      );
+    }
+  }
+  return [
+    ...map.values()
+  ].sort((a, b) => {
+    const aa =
+      `${a.date} ${a.time || ""}`;
+    const bb =
+      `${b.date} ${b.time || ""}`;
+    return bb.localeCompare(aa);
+  });
+}
+/* =========================================================
+   ANA
+========================================================= */
 async function main() {
-
   console.log("");
-  console.log("========================================");
-  console.log("🏀 MACKOLİK BASKETBOL GEÇMİŞİ");
-  console.log("========================================");
+  console.log(
+    "=============================================="
+  );
+  console.log(
+    "🏀 MACKOLİK BASKETBOL GEÇMİŞİ"
+  );
+  console.log(
+    "=============================================="
+  );
   console.log(
     `📅 Geçmiş aralığı: ${DAYS_BACK} gün`
   );
   console.log("");
-
-
-  let oldData = {
-    matches: []
-  };
-
-
-  if (
-    fs.existsSync(DATA_FILE)
-  ) {
-
-    try {
-
-      oldData =
-        JSON.parse(
-          fs.readFileSync(
-            DATA_FILE,
-            "utf8"
-          )
-        );
-
-    } catch {
-
-      console.log(
-        "⚠️ Eski history JSON okunamadı."
-      );
-
-    }
-
-  }
-
-
   const oldMatches =
-    Array.isArray(oldData.matches)
-      ? oldData.matches
-      : [];
-
-
+    readHistory();
   console.log(
     `Mevcut kayıt: ${oldMatches.length}`
   );
-
-
+  let allMatches = [
+    ...oldMatches
+  ];
   /*
-    Ana puan durumu sayfası
-  */
-
+   * -------------------------------------------------------
+   * 1) ANA PROGRAM
+   * -------------------------------------------------------
+   */
   console.log("");
   console.log(
-    "🏀 Mackolik basketbol sayfası alınıyor..."
+    "🏀 Mackolik basketbol programı alınıyor..."
   );
-
-
-  let standingHtml = "";
-
-
-  try {
-
-    standingHtml =
-      await get(
-        STANDING_URL
-      );
-
+  const programHtml =
+    await fetchHtml(
+      PROGRAM_URL
+    );
+  if (programHtml) {
     console.log(
-      `HTML uzunluğu: ${standingHtml.length}`
+      `Program HTML uzunluğu: ${programHtml.length}`
     );
-
-  } catch (error) {
-
-    console.error(
-      `❌ Puan durumu alınamadı: ${error.message}`
+    const programMatches =
+      parseProgram(
+        programHtml
+      );
+    console.log(
+      `Programdan bulunan maç: ${programMatches.length}`
     );
-
+    allMatches.push(
+      ...programMatches
+    );
   }
-
-
   /*
-    Lig ID'lerini bul
-  */
-
-  const leagueIds =
-    parseLeagueIds(
-      standingHtml
-    );
-
-
+   * -------------------------------------------------------
+   * 2) TÜM OLASI SONUÇ SAYFALARINI TARA
+   * -------------------------------------------------------
+   */
+  console.log("");
   console.log(
-    `Bulunan lig ID: ${leagueIds.join(", ")}`
+    "🔎 Basketbol sonuç sayfaları taranıyor..."
   );
-
-
-  /*
-    Sonuçları birleştir
-  */
-
-  const allNew =
-    [];
-
-
-  /*
-    Önce ana sayfadaki sonuçları dene.
-  */
-
-  const mainResults =
-    parseResultRows(
-      standingHtml
-    );
-
-
-  if (mainResults.length) {
-
-    console.log(
-      `Ana sayfa sonuçları: ${mainResults.length}`
-    );
-
-    allNew.push(
-      ...mainResults
-    );
-
-  }
-
-
-  /*
-    Her lig için Fikstür AJAX.
-  */
-
-  for (
-    const leagueId of leagueIds
-  ) {
-
-    console.log("");
-    console.log(
-      `📋 Lig ${leagueId} fikstürü alınıyor...`
-    );
-
-
-    const fixtureHtml =
-      await fetchFixturePage(
-        leagueId
-      );
-
-
-    if (!fixtureHtml) {
-
-      console.log(
-        "⚠️ Fikstür verisi boş."
-      );
-
-      continue;
-
-    }
-
-
-    console.log(
-      `Fikstür HTML: ${fixtureHtml.length}`
-    );
-
-
-    const fixtureMatches =
-      parseResultRows(
-        fixtureHtml
-      );
-
-
-    console.log(
-      `Fikstür sonuçları: ${fixtureMatches.length}`
-    );
-
-
-    allNew.push(
-      ...fixtureMatches
-    );
-
-  }
-
-
-  /*
-    Tekilleştir
-  */
-
-  const map =
-    new Map();
-
-
-  for (
-    const match of oldMatches
-  ) {
-
-    if (
-      !match ||
-      !match.id
-    ) {
-      continue;
-    }
-
-
-    if (
-      !match.date ||
-      !isWithin60Days(match.date)
-    ) {
-      continue;
-    }
-
-
-    map.set(
-      match.id,
-      match
-    );
-
-  }
-
-
-  for (
-    const match of allNew
-  ) {
-
-    if (
-      !match ||
-      !match.id
-    ) {
-      continue;
-    }
-
-
-    const old =
-      map.get(
-        match.id
-      );
-
-
-    if (!old) {
-
-      map.set(
-        match.id,
-        match
-      );
-
-      continue;
-
-    }
-
-
-    map.set(
-      match.id,
-      {
-
-        ...old,
-
-        ...match,
-
-        /*
-          Skor eski kayıtta varsa koru.
-        */
-
-        homeScore:
-          match.homeScore ??
-          old.homeScore ??
-          null,
-
-        awayScore:
-          match.awayScore ??
-          old.awayScore ??
-          null,
-
-        halfHomeScore:
-          match.halfHomeScore ??
-          old.halfHomeScore ??
-          null,
-
-        halfAwayScore:
-          match.halfAwayScore ??
-          old.halfAwayScore ??
-          null
-
-      }
-    );
-
-  }
-
-
-  /*
-    Sadece 60 günlük kayıtlar
-  */
-
-  const finalMatches =
-    [...map.values()]
-      .filter(
-        match =>
-          match.date &&
-          isWithin60Days(
-            match.date
-          )
+  const uniqueUrls =
+    [
+      ...new Set(
+        RESULT_URLS
       )
-      .sort(
-        (a, b) =>
-          String(b.date)
-            .localeCompare(
-              String(a.date)
-            )
+    ];
+  let totalFound = 0;
+  for (
+    let i = 0;
+    i < uniqueUrls.length;
+    i++
+  ) {
+    const url =
+      uniqueUrls[i];
+    console.log(
+      `[${i + 1}/${uniqueUrls.length}] ${url}`
+    );
+    const html =
+      await fetchHtml(url);
+    if (!html) {
+      continue;
+    }
+    const matches =
+      parseBasketballResults(
+        html
       );
-
-
+    console.log(
+      `   → ${matches.length} basketbol sonucu`
+    );
+    totalFound +=
+      matches.length;
+    allMatches.push(
+      ...matches
+    );
+    /*
+     * Mackolik'i gereksiz yere
+     * arka arkaya bombardıman etme.
+     */
+    await sleep(500);
+  }
   /*
-    Yaz
-  */
-
-  const output = {
-
-    source:
-      STANDING_URL,
-
-    updatedAt:
-      new Date().toISOString(),
-
-    daysBack:
-      DAYS_BACK,
-
-    matches:
-      finalMatches
-
-  };
-
-
+   * -------------------------------------------------------
+   * 3) BİRLEŞTİR
+   * -------------------------------------------------------
+   */
+  console.log("");
+  console.log(
+    "🔄 Veriler birleştiriliyor..."
+  );
+  const cleaned =
+    cleanMatches(
+      mergeMatches(
+        oldMatches,
+        allMatches
+      )
+    );
+  /*
+   * -------------------------------------------------------
+   * 4) İSTATİSTİK
+   * -------------------------------------------------------
+   */
+  const withScore =
+    cleaned.filter(
+      m =>
+        Number.isFinite(
+          Number(m.homeScore)
+        ) &&
+        Number.isFinite(
+          Number(m.awayScore)
+        )
+    );
+  const leagues =
+    new Set(
+      cleaned
+        .map(m =>
+          normalizeText(
+            m.league
+          )
+        )
+        .filter(Boolean)
+    );
+  const dates =
+    new Set(
+      cleaned.map(
+        m => m.date
+      )
+    );
+  console.log("");
+  console.log(
+    "=============================================="
+  );
+  console.log(
+    "📊 SONUÇ"
+  );
+  console.log(
+    "=============================================="
+  );
+  console.log(
+    `Bulunan yeni sonuç: ${totalFound}`
+  );
+  console.log(
+    `Toplam benzersiz maç: ${cleaned.length}`
+  );
+  console.log(
+    `Skorlu maç: ${withScore.length}`
+  );
+  console.log(
+    `Lig sayısı: ${leagues.size}`
+  );
+  console.log(
+    `Tarih sayısı: ${dates.size}`
+  );
+  /*
+   * -------------------------------------------------------
+   * 5) JSON YAZ
+   * -------------------------------------------------------
+   */
   fs.mkdirSync(
-    path.dirname(DATA_FILE),
+    path.dirname(DATA_PATH),
     {
       recursive: true
     }
   );
-
-
+  const output = {
+    source:
+      BASE_URL,
+    updatedAt:
+      new Date().toISOString(),
+    historyDays:
+      DAYS_BACK,
+    matchCount:
+      cleaned.length,
+    leagues:
+      [...leagues].sort(),
+    matches:
+      cleaned
+  };
   fs.writeFileSync(
-    DATA_FILE,
+    DATA_PATH,
     JSON.stringify(
       output,
       null,
@@ -968,103 +1016,38 @@ async function main() {
     ),
     "utf8"
   );
-
-
-  const scored =
-    finalMatches.filter(
-      m =>
-        Number.isFinite(
-          m.homeScore
-        ) &&
-        Number.isFinite(
-          m.awayScore
-        )
-    );
-
-
-  const withHalf =
-    finalMatches.filter(
-      m =>
-        Number.isFinite(
-          m.halfHomeScore
-        ) &&
-        Number.isFinite(
-          m.halfAwayScore
-        )
-    );
-
-
   console.log("");
-  console.log("========================================");
-  console.log("✅ BASKETBOL GEÇMİŞİ GÜNCELLENDİ");
-  console.log("========================================");
   console.log(
-    `Toplam kayıt: ${finalMatches.length}`
+    "=============================================="
   );
   console.log(
-    `Skorlu maç: ${scored.length}`
+    "✅ BASKETBOL GEÇMİŞİ YAZILDI"
   );
   console.log(
-    `İY skorlu maç: ${withHalf.length}`
+    "=============================================="
   );
   console.log(
-    `Geçmiş: ${DAYS_BACK} gün`
+    `📁 ${DATA_PATH}`
   );
   console.log(
-    `Lig sayısı: ${leagueIds.length}`
+    `🏀 ${cleaned.length} maç`
   );
   console.log(
-    `Dosya: ${DATA_FILE}`
+    `🏆 ${leagues.size} lig`
   );
-  console.log("========================================");
-
-
-  /*
-    Debug için son 10 kayıt
-  */
-
+  console.log(
+    `📅 ${dates.size} farklı tarih`
+  );
   console.log("");
-  console.log("SON KAYITLAR:");
-
-  for (
-    const match of finalMatches.slice(0, 10)
-  ) {
-
-    console.log(
-      `${match.date} | ` +
-      `${match.home} - ${match.away} | ` +
-      `İY: ${
-        match.halfHomeScore ?? "-"
-      }-${
-        match.halfAwayScore ?? "-"
-      } | ` +
-      `MS: ${
-        match.homeScore ?? "-"
-      }-${
-        match.awayScore ?? "-"
-      }`
-    );
-
-  }
-
-  console.log("");
-
 }
-
-
-main().catch(
-  error => {
-
-    console.error("");
-    console.error(
-      "❌ BASKETBOL HISTORY HATASI"
-    );
-
-    console.error(
-      error
-    );
-
-    process.exit(1);
-
-  }
-);
+main().catch(error => {
+  console.error("");
+  console.error(
+    "❌ Basketbol geçmiş güncellemesi başarısız:"
+  );
+  console.error(
+    error.stack ||
+    error.message
+  );
+  process.exitCode = 1;
+});
