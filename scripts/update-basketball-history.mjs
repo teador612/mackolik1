@@ -95,7 +95,6 @@ async function fetchHtml(url, retries = 3) {
       });
 
       if (response.status === 502 || response.status === 429) {
-        // Rate limit alındığında uzun bekleme
         console.log(`   ⏳ Rate limit/502 algılandı, bekleniyor... (${attempt * 3}s)`);
         await new Promise(resolve => setTimeout(resolve, 3000 * attempt));
         continue;
@@ -307,7 +306,7 @@ async function fetchLeague(league, index, total) {
 
   for (const url of league.urls) {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200)); // İstekler arası dinamik mola
+      await new Promise(resolve => setTimeout(resolve, 1200));
 
       const html = await fetchHtml(url, 3);
       const matches = parseMatchesFromPage(html, league);
@@ -316,7 +315,6 @@ async function fetchLeague(league, index, total) {
         console.log(`   ✅ En iyi kaynak: ${url}`);
         console.log(`   ✅ ${matches.length} maç`);
         bestMatches = matches;
-        // MAÇ BULUNDU: Diğer URL'lere gereksiz istek atma (Early Exit)
         break;
       }
 
