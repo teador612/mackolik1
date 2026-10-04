@@ -1,794 +1,766 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Basketbol Sayı Analizi</title>
+  <title>Basketbol Oran Analizi</title>
 
-<style>
-* {
-    box-sizing: border-box;
-}
-
-html,
-body {
-    margin: 0;
-    padding: 0;
-    background: #080d14;
-    color: #e8eef5;
-    font-family: Arial, Helvetica, sans-serif;
-}
-
-body {
-    min-height: 100vh;
-}
-
-/* =========================
-   HEADER
-========================= */
-
-.header {
-    height: 64px;
-    border-bottom: 1px solid #1b2633;
-    background: #0b121a;
-    display: flex;
-    align-items: center;
-    padding: 0 24px;
-}
-
-.header-inner {
-    width: 100%;
-    max-width: 1200px;
-    margin: auto;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.logo {
-    font-size: 18px;
-    font-weight: 700;
-    color: #e9f1f8;
-}
-
-.logo span {
-    color: #38d9c5;
-}
-
-/* =========================
-   MAIN
-========================= */
-
-.container {
-    width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px 18px 50px;
-}
-
-/* =========================
-   TITLE
-========================= */
-
-.page-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 20px;
-}
-
-.page-title h1 {
-    margin: 0;
-    font-size: 22px;
-}
-
-.page-title p {
-    margin: 6px 0 0;
-    color: #8290a0;
-    font-size: 13px;
-}
-
-/* =========================
-   CALENDAR
-========================= */
-
-.calendar-box {
-    background: #0d151e;
-    border: 1px solid #202c39;
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 28px;
-}
-
-.calendar-header {
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 18px;
-    border-bottom: 1px solid #202c39;
-}
-
-.calendar-title {
-    font-size: 17px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.calendar-buttons {
-    display: flex;
-    gap: 8px;
-}
-
-.calendar-buttons button {
-    width: 38px;
-    height: 34px;
-    border: 1px solid #293745;
-    border-radius: 8px;
-    background: #111b25;
-    color: #d9e3eb;
-    cursor: pointer;
-    font-size: 18px;
-}
-
-.calendar-buttons button:hover {
-    background: #172532;
-}
-
-.weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    border-bottom: 1px solid #202c39;
-}
-
-.weekdays div {
-    text-align: center;
-    padding: 11px 4px;
-    font-size: 11px;
-    color: #718091;
-    font-weight: 700;
-}
-
-.calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-}
-
-.day {
-    min-height: 68px;
-    border-right: 1px solid #18232e;
-    border-bottom: 1px solid #18232e;
-    padding: 9px;
-    cursor: pointer;
-    position: relative;
-    transition: .15s;
-}
-
-.day:nth-child(7n) {
-    border-right: 0;
-}
-
-.day:hover {
-    background: #111c27;
-}
-
-.day.empty {
-    cursor: default;
-    background: #0a1017;
-}
-
-.day-number {
-    font-size: 13px;
-    color: #9ca9b7;
-}
-
-.day.today .day-number {
-    color: #38d9c5;
-    font-weight: 800;
-}
-
-.day.selected {
-    background: #11252a;
-    box-shadow: inset 0 0 0 1px #27cdb9;
-}
-
-.day.selected .day-number {
-    color: #4ce4d0;
-    font-weight: 800;
-}
-
-.match-dot {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #38d9c5;
-    box-shadow: 0 0 8px rgba(56, 217, 197, .5);
-}
-
-.match-count {
-    position: absolute;
-    right: 7px;
-    bottom: 5px;
-    font-size: 9px;
-    color: #647484;
-}
-
-/* =========================
-   SELECTED DATE
-========================= */
-
-.selected-date {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-}
-
-.selected-date h2 {
-    margin: 0;
-    font-size: 18px;
-}
-
-.selected-date span {
-    font-size: 12px;
-    color: #6e7d8d;
-}
-
-/* =========================
-   MATCH GRID
-========================= */
-
-.matches-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-}
-
-/* =========================
-   MATCH CARD
-========================= */
-
-.match-card {
-    background: #0d151e;
-    border: 1px solid #202c39;
-    border-radius: 14px;
-    padding: 16px;
-    position: relative;
-    overflow: hidden;
-}
-
-.match-card:hover {
-    border-color: #314352;
-}
-
-.match-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.league {
-    font-size: 10px;
-    color: #8190a0;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.league::before {
-    content: "";
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: #6776ff;
-    margin-right: 6px;
-    vertical-align: middle;
-}
-
-.match-time {
-    padding: 5px 8px;
-    border: 1px solid #27534f;
-    border-radius: 6px;
-    color: #54d8c6;
-    background: #0c2928;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.teams {
-    margin-bottom: 14px;
-}
-
-.team {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    min-height: 29px;
-}
-
-.team-name {
-    font-size: 14px;
-    color: #c6ced7;
-}
-
-.team-score {
-    font-size: 15px;
-    color: #7e8b99;
-}
-
-.team-score.predicted {
-    color: #f1f5f8;
-    font-weight: 800;
-}
-
-.prediction-box {
-    background: #102126;
-    border: 1px solid #294149;
-    border-radius: 12px;
-    padding: 13px;
-    margin-top: 8px;
-}
-
-.prediction-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.prediction-label {
-    font-size: 9px;
-    color: #73838e;
-    text-transform: uppercase;
-    letter-spacing: .7px;
-}
-
-.prediction-value {
-    color: #44d9c5;
-    font-size: 20px;
-    font-weight: 800;
-}
-
-.half-total {
-    text-align: right;
-}
-
-.half-total .prediction-value {
-    color: #e9eff4;
-    font-size: 17px;
-}
-
-.card-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 13px;
-}
-
-.confidence {
-    font-size: 10px;
-    color: #778695;
-}
-
-.confidence strong {
-    color: #42d6c2;
-}
-
-.detail-button {
-    border: 0;
-    background: transparent;
-    color: #758494;
-    font-size: 10px;
-    cursor: pointer;
-    text-transform: uppercase;
-}
-
-.detail-button:hover {
-    color: #42d6c2;
-}
-
-/* =========================
-   EMPTY
-========================= */
-
-.empty {
-    background: #0d151e;
-    border: 1px solid #202c39;
-    border-radius: 14px;
-    padding: 45px 20px;
-    text-align: center;
-    color: #6f7e8c;
-}
-
-.empty-icon {
-    font-size: 32px;
-    margin-bottom: 10px;
-}
-
-/* =========================
-   MODAL
-========================= */
-
-.modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(3, 7, 12, .82);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    z-index: 1000;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-box {
-    width: 100%;
-    max-width: 790px;
-    max-height: 90vh;
-    overflow-y: auto;
-    background: #0b121a;
-    border: 1px solid #24313d;
-    border-radius: 15px;
-    box-shadow: 0 20px 70px rgba(0,0,0,.5);
-}
-
-.modal-header {
-    padding: 20px 22px;
-    border-bottom: 1px solid #202c39;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-teams {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.modal-league {
-    font-size: 10px;
-    color: #54d8c6;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.modal-team {
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.modal-time {
-    color: #6f7e8c;
-    font-size: 12px;
-}
-
-.close-modal {
-    width: 34px;
-    height: 34px;
-    border: 0;
-    background: transparent;
-    color: #788694;
-    font-size: 25px;
-    cursor: pointer;
-}
-
-.modal-content {
-    padding: 22px;
-}
-
-.section-title {
-    color: #4fd8c4;
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin: 20px 0 10px;
-}
-
-.section-title:first-child {
-    margin-top: 0;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.stat-box {
-    background: #0e171f;
-    border: 1px solid #1f2b36;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-}
-
-.stat-label {
-    color: #71808d;
-    font-size: 9px;
-    text-transform: uppercase;
-}
-
-.stat-value {
-    margin-top: 7px;
-    font-size: 23px;
-    font-weight: 800;
-}
-
-.stat-value.highlight {
-    color: #43d6c3;
-}
-
-.stat-sub {
-    margin-top: 4px;
-    color: #697784;
-    font-size: 9px;
-}
-
-.team-analysis {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-}
-
-.analysis-box {
-    background: #0e171f;
-    border: 1px solid #1f2b36;
-    border-radius: 10px;
-    padding: 16px;
-}
-
-.analysis-title {
-    color: #6f7e8c;
-    font-size: 9px;
-    text-transform: uppercase;
-}
-
-.analysis-team {
-    margin-top: 7px;
-    font-size: 15px;
-    font-weight: 700;
-}
-
-.analysis-number {
-    margin-top: 9px;
-    font-size: 23px;
-    font-weight: 800;
-    color: #eef3f7;
-}
-
-.analysis-desc {
-    margin-top: 4px;
-    color: #687785;
-    font-size: 9px;
-}
-
-.actual-result {
-    background: #101a22;
-    border: 1px solid #25333e;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-}
-
-.actual-score {
-    font-size: 26px;
-    font-weight: 800;
-}
-
-.actual-score span {
-    color: #4ad8c5;
-}
-
-/* =========================
-   LOADING
-========================= */
-
-.loading {
-    padding: 40px;
-    text-align: center;
-    color: #73818e;
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media (max-width: 900px) {
-    .matches-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+  <style>
+    * {
+      box-sizing: border-box;
     }
-}
 
-@media (max-width: 650px) {
-
-    .header {
-        padding: 0 14px;
+    body {
+      margin: 0;
+      background: #0b0f14;
+      color: #fff;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .container {
-        padding: 18px 12px 40px;
+      width: min(1100px, 94%);
+      margin: auto;
+      padding: 20px 0 50px;
     }
 
-    .page-title h1 {
-        font-size: 18px;
+    /* HEADER */
+
+    .header {
+      text-align: center;
+      margin-bottom: 20px;
     }
 
-    .matches-grid {
-        grid-template-columns: 1fr;
+    .header h1 {
+      margin: 0;
+      font-size: 26px;
     }
 
-    .day {
-        min-height: 55px;
-        padding: 7px;
+    .header p {
+      margin: 7px 0 0;
+      color: #8d98a8;
+      font-size: 13px;
     }
 
-    .day-number {
-        font-size: 12px;
+    /* DATE SELECTOR */
+
+    .date-selector {
+      position: relative;
+      margin-bottom: 18px;
+    }
+
+    .date-button {
+      width: 100%;
+      border: 1px solid #26303d;
+      background: #151b23;
+      color: #fff;
+      border-radius: 12px;
+      padding: 15px 17px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    .date-button:hover {
+      background: #1a222c;
+    }
+
+    .date-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .calendar-icon {
+      font-size: 20px;
+    }
+
+    .date-text {
+      font-weight: 700;
+    }
+
+    .arrow {
+      font-size: 18px;
+      transition: transform .2s;
+    }
+
+    .date-selector.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    /* CALENDAR */
+
+    .calendar-panel {
+      display: none;
+      margin-top: 8px;
+      background: #11171f;
+      border: 1px solid #26303d;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .date-selector.open .calendar-panel {
+      display: block;
     }
 
     .calendar-header {
-        padding: 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
     }
 
-    .calendar-title {
-        font-size: 14px;
+    .month-title {
+      font-size: 16px;
+      font-weight: 700;
     }
 
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .month-button {
+      width: 36px;
+      height: 36px;
+      border: 1px solid #303a48;
+      background: #181f28;
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 20px;
     }
 
-    .team-analysis {
-        grid-template-columns: 1fr;
+    .month-button:hover {
+      background: #222b36;
     }
+
+    .weekdays,
+    .calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .weekday {
+      text-align: center;
+      color: #758194;
+      font-size: 11px;
+      padding: 5px 0;
+      font-weight: 700;
+    }
+
+    .calendar-day {
+      min-height: 42px;
+      border: 1px solid transparent;
+      background: #171e27;
+      color: #dfe5ed;
+      border-radius: 8px;
+      cursor: pointer;
+      position: relative;
+      font-size: 13px;
+    }
+
+    .calendar-day:hover {
+      background: #222b36;
+    }
+
+    .calendar-day.today {
+      border-color: #596779;
+    }
+
+    .calendar-day.selected {
+      background: #fff;
+      color: #111;
+      border-color: #fff;
+      font-weight: 700;
+    }
+
+    .calendar-day.has-matches::after {
+      content: "";
+      position: absolute;
+      bottom: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: #55d98b;
+    }
+
+    .calendar-day.selected.has-matches::after {
+      background: #111;
+    }
+
+    .empty-day {
+      background: transparent;
+      cursor: default;
+    }
+
+    .match-dot {
+      display: none;
+    }
+
+    /* SELECTED DATE */
+
+    .selected-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin: 18px 0 12px;
+    }
+
+    .selected-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    #matchCount {
+      color: #8d98a8;
+      font-size: 13px;
+    }
+
+    /* MATCH CARD */
+
+    .basket-match-card {
+      background: #121820;
+      border: 1px solid #26303d;
+      border-radius: 15px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, .16);
+    }
+
+    .match-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 17px;
+    }
+
+    .league {
+      color: #8d98a8;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .match-time {
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .teams {
+      display: grid;
+      grid-template-columns: 1fr 70px 1fr;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .team {
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .team.home {
+      text-align: right;
+    }
+
+    .team.away {
+      text-align: left;
+    }
+
+    .vs {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .vs span {
+      padding: 0 5px;
+      color: #6e7b8c;
+    }
+
+    /* PREDICTION */
+
+    .prediction-box {
+      margin-top: 16px;
+      padding: 13px;
+      border-radius: 11px;
+      background: #181f28;
+      text-align: center;
+    }
+
+    .prediction-title {
+      color: #778496;
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .predicted-score {
+      font-size: 23px;
+      font-weight: 800;
+    }
+
+    .predicted-score b {
+      color: #697587;
+      margin: 0 7px;
+    }
+
+    /* STATS */
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stats-row > div {
+      background: #171e27;
+      border-radius: 9px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+
+    .stats-row small {
+      display: block;
+      color: #727f90;
+      font-size: 9px;
+      margin-bottom: 5px;
+    }
+
+    .stats-row strong {
+      font-size: 13px;
+    }
+
+    /* BUTTON */
+
+    .analysis-button {
+      width: 100%;
+      margin-top: 11px;
+      padding: 11px;
+      border: 1px solid #303b49;
+      background: transparent;
+      color: #fff;
+      border-radius: 9px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .analysis-button:hover {
+      background: #1c2530;
+    }
+
+    /* EMPTY */
+
+    .empty,
+    .loading {
+      background: #121820;
+      border: 1px solid #26303d;
+      border-radius: 14px;
+      padding: 35px 20px;
+      text-align: center;
+      color: #8b97a8;
+    }
+
+    .empty strong,
+    .loading strong {
+      display: block;
+      color: #fff;
+      margin-top: 8px;
+    }
+
+    .empty p {
+      margin-bottom: 0;
+      font-size: 13px;
+    }
+
+    /* MODAL */
 
     .modal {
-        padding: 8px;
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: rgba(0, 0, 0, .78);
+      padding: 20px;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.open {
+      display: flex;
     }
 
     .modal-box {
-        max-height: 94vh;
+      width: min(650px, 100%);
+      max-height: 90vh;
+      overflow-y: auto;
+      background: #11171f;
+      border: 1px solid #303b49;
+      border-radius: 16px;
+      padding: 20px;
+      position: relative;
     }
-}
-</style>
+
+    .modal-close {
+      position: absolute;
+      right: 13px;
+      top: 10px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      font-size: 27px;
+      cursor: pointer;
+    }
+
+    .modal-title {
+      margin: 0 35px 5px 0;
+      font-size: 20px;
+    }
+
+    .modal-league {
+      color: #8490a0;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+
+    .modal-match {
+      text-align: center;
+      padding: 15px;
+      background: #181f28;
+      border-radius: 12px;
+      margin-bottom: 15px;
+    }
+
+    .modal-teams {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      font-weight: 700;
+      flex-wrap: wrap;
+    }
+
+    .modal-time {
+      margin-top: 7px;
+      color: #7e8a9a;
+      font-size: 12px;
+    }
+
+    .analysis-summary {
+      display: grid;
+      grid-template-columns: 1fr 50px 1fr;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .analysis-team {
+      background: #181f28;
+      border-radius: 10px;
+      padding: 13px;
+      text-align: center;
+    }
+
+    .analysis-team span {
+      display: block;
+      font-size: 12px;
+      color: #9ca7b6;
+      margin-bottom: 7px;
+    }
+
+    .analysis-team strong {
+      font-size: 22px;
+    }
+
+    .analysis-vs {
+      text-align: center;
+      color: #697587;
+      font-weight: 700;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+    }
+
+    .analysis-item {
+      background: #181f28;
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .analysis-item small {
+      display: block;
+      color: #7d8999;
+      font-size: 10px;
+      margin-bottom: 6px;
+    }
+
+    .analysis-item strong {
+      font-size: 15px;
+    }
+
+    .analysis-note {
+      margin-top: 13px;
+      padding: 12px;
+      border-radius: 9px;
+      background: #171e27;
+      color: #7f8b9b;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        width: 94%;
+        padding-top: 15px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+      }
+
+      .calendar-day {
+        min-height: 38px;
+      }
+
+      .teams {
+        grid-template-columns: 1fr 50px 1fr;
+      }
+
+      .team {
+        font-size: 13px;
+      }
+
+      .predicted-score {
+        font-size: 21px;
+      }
+
+      .analysis-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<header class="header">
-    <div class="header-inner">
-        <div class="logo">
-            🏀 <span>Basketbol</span> Sayı Analizi
-        </div>
-    </div>
-</header>
+<div class="container">
 
-<main class="container">
+  <header class="header">
+    <h1>🏀 Basketbol Analizi</h1>
+    <p>Mackolik basketbol verileriyle maç analizi</p>
+  </header>
 
-    <div class="page-title">
-        <div>
-            <h1>Analiz Edilen Maçlar</h1>
-            <p>Atılan ve yenilen sayılara göre basketbol analizi</p>
-        </div>
-    </div>
+  <!-- TARİH SEÇİCİ -->
 
-    <!-- TAKVİM -->
+  <div class="date-selector" id="dateSelector">
 
-    <section class="calendar-box">
-
-        <div class="calendar-header">
-
-            <div id="calendarTitle" class="calendar-title">
-                EKİM 2026
-            </div>
-
-            <div class="calendar-buttons">
-                <button id="prevMonth">‹</button>
-                <button id="nextMonth">›</button>
-            </div>
-
-        </div>
-
-        <div class="weekdays">
-            <div>PZT</div>
-            <div>SAL</div>
-            <div>ÇAR</div>
-            <div>PER</div>
-            <div>CUM</div>
-            <div>CMT</div>
-            <div>PAZ</div>
-        </div>
-
-        <div id="calendar" class="calendar"></div>
-
-    </section>
-
-    <!-- SEÇİLEN TARİH -->
-
-    <div class="selected-date">
-
-        <h2 id="selectedDate">
-            Bugünün Basketbol Maçları
-        </h2>
-
-        <span id="matchCount">
-            0 maç
+    <button
+      type="button"
+      class="date-button"
+      id="dateButton"
+    >
+      <span class="date-left">
+        <span class="calendar-icon">📅</span>
+        <span class="date-text" id="dateButtonText">
+          Tarih seç
         </span>
+      </span>
+
+      <span class="arrow">⌄</span>
+    </button>
+
+    <div class="calendar-panel">
+
+      <div class="calendar-header">
+
+        <button
+          type="button"
+          class="month-button"
+          id="prevMonth"
+        >
+          ‹
+        </button>
+
+        <div
+          class="month-title"
+          id="calendarTitle"
+        ></div>
+
+        <button
+          type="button"
+          class="month-button"
+          id="nextMonth"
+        >
+          ›
+        </button>
+
+      </div>
+
+      <div class="weekdays">
+        <div class="weekday">Pzt</div>
+        <div class="weekday">Sal</div>
+        <div class="weekday">Çar</div>
+        <div class="weekday">Per</div>
+        <div class="weekday">Cum</div>
+        <div class="weekday">Cmt</div>
+        <div class="weekday">Paz</div>
+      </div>
+
+      <div
+        id="calendar"
+        class="calendar"
+      ></div>
 
     </div>
 
-    <!-- MAÇLAR -->
+  </div>
 
-    <div id="matchesContainer">
+  <!-- SEÇİLEN GÜN -->
 
-        <div class="loading">
-            Basketbol maçları yükleniyor...
-        </div>
+  <div class="selected-header">
+    <h2 id="selectedDate"></h2>
+    <span id="matchCount">0 maç</span>
+  </div>
 
-    </div>
+  <!-- MAÇLAR -->
 
-</main>
-
-
-<!-- =========================
-     ANALİZ MODAL
-========================= -->
-
-<div id="analysisModal" class="modal">
-
-    <div class="modal-box">
-
-        <div class="modal-header">
-
-            <div class="modal-teams">
-
-                <div id="modalLeague" class="modal-league">
-                    EUROCUP
-                </div>
-
-                <div id="modalHome" class="modal-team">
-                    Ev Sahibi
-                </div>
-
-                <div id="modalAway" class="modal-team">
-                    Deplasman
-                </div>
-
-                <div id="modalTime" class="modal-time">
-                    20:00
-                </div>
-
-            </div>
-
-            <button id="closeModal" class="close-modal">
-                ×
-            </button>
-
-        </div>
-
-
-        <div id="modalContent" class="modal-content">
-
-            <!-- JS BURAYI DOLDURACAK -->
-
-        </div>
-
-    </div>
+  <div id="matchesContainer"></div>
 
 </div>
 
 
+<!-- ANALİZ MODALI -->
+
+<div
+  class="modal"
+  id="analysisModal"
+>
+
+  <div class="modal-box">
+
+    <button
+      type="button"
+      class="modal-close"
+      id="closeModal"
+    >
+      ×
+    </button>
+
+    <h2 class="modal-title">
+      🏀 Basketbol Maç Analizi
+    </h2>
+
+    <div
+      class="modal-league"
+      id="modalLeague"
+    ></div>
+
+    <div class="modal-match">
+
+      <div class="modal-teams">
+        <span id="modalHome"></span>
+        <span>—</span>
+        <span id="modalAway"></span>
+      </div>
+
+      <div
+        class="modal-time"
+        id="modalTime"
+      ></div>
+
+    </div>
+
+    <div id="modalContent"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+  /*
+   * Tarih seçicinin açılıp kapanması
+   */
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+    const selector = document.getElementById("dateSelector");
+    const button = document.getElementById("dateButton");
+
+    if (!selector || !button) {
+      return;
+    }
+
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selector.classList.toggle("open");
+    });
+
+    document.addEventListener("click", (event) => {
+
+      if (!selector.contains(event.target)) {
+        selector.classList.remove("open");
+      }
+
+    });
+
+    /*
+     * Ay butonları takvimi kapatmasın.
+     */
+    document
+      .getElementById("prevMonth")
+      ?.addEventListener("click", e => {
+        e.stopPropagation();
+      });
+
+    document
+      .getElementById("nextMonth")
+      ?.addEventListener("click", e => {
+        e.stopPropagation();
+      });
+
+    /*
+     * basketbol.js tarih seçtiğinde takvimi kapat.
+     */
+    const oldRender =
+      window.renderBasketballDate;
+
+  });
+
+</script>
+
 <script src="basketbol.js"></script>
+
+<script>
+  /*
+   * basketbol.js yüklendikten sonra tarih seçimine
+   * tıklanınca paneli kapatabilmek için takvim alanını
+   * dinliyoruz.
+   */
+
+  document.addEventListener("click", (event) => {
+
+    const day = event.target.closest(".calendar-day");
+
+    if (!day) {
+      return;
+    }
+
+    const selector = document.getElementById("dateSelector");
+
+    if (selector) {
+      setTimeout(() => {
+        selector.classList.remove("open");
+      }, 50);
+    }
+
+  });
+</script>
 
 </body>
 </html>
