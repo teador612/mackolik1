@@ -92,41 +92,47 @@ jobs:
             git push
           fi
       # ==========================================
-      # GITHUB PAGES
+      # TÜM ANA DİZİNİ PAGES İÇİN HAZIRLA
       # ==========================================
       - name: Pages klasörünü hazırla
         run: |
           rm -rf _site
           mkdir -p _site
-          mkdir -p _site/data
-          # HTML DOSYALARI
-          cp ./*.html _site/ 2>/dev/null || true
-          # ROOT JS DOSYALARI
-          cp ./*.js _site/ 2>/dev/null || true
-          # ANA CSS DOSYASI
-          cp ./style.css _site/ 2>/dev/null || true
-          # CSS KLASÖRÜ
-          cp -r css _site/ 2>/dev/null || true
-          # JS KLASÖRÜ
-          cp -r js _site/ 2>/dev/null || true
-          # DATA
-          cp -r data/* _site/data/
-          # SCRIPTS YAYINLANMASIN
-          rm -rf _site/scripts
+          echo "======================================"
+          echo "TÜM ANA DİZİN DOSYALARI KOPYALANIYOR"
+          echo "======================================"
+          # Ana dizindeki her şeyi kopyala
+          # .git ve GitHub workflow dosyaları hariç
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='scripts' \
+            --exclude='_site' \
+            ./ _site/
+          echo ""
           echo "======================================"
           echo "PAGES DOSYALARI"
           echo "======================================"
-          find _site -maxdepth 3 -type f | sort
+          find _site -type f | sort
+          echo ""
           echo "======================================"
-          echo "STYLE.CSS KONTROL"
+          echo "DOSYA SAYISI"
           echo "======================================"
-          if [ -f _site/style.css ]; then
-            echo "✅ style.css başarıyla _site içine kopyalandı"
-            wc -c _site/style.css
-          else
-            echo "❌ style.css BULUNAMADI"
-            exit 1
-          fi
+          find _site -type f | wc -l
+          echo ""
+          echo "======================================"
+          echo "CSS DOSYALARI"
+          echo "======================================"
+          find _site -type f \( \
+            -name "*.css" \
+            -o -name "*.scss" \
+          \) | sort
+          echo ""
+          echo "======================================"
+          echo "HTML DOSYALARI"
+          echo "======================================"
+          find _site -type f -name "*.html" | sort
       # ==========================================
       # PAGES ARTIFACT
       # ==========================================
