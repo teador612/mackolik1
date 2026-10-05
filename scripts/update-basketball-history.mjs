@@ -1,127 +1,40 @@
-// scripts/update-basketball-history.mjs
-
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 
-const API_BASE =
-  "https://www.bilyoner.com/api/mobile/live-score";
-
-const EVENT_API =
-  `${API_BASE}/event/v2/basketball`;
-
-const DETAIL_API =
-  `${API_BASE}/event/sport-list`;
-
-const DATA_PATH =
-  path.resolve("data/basketball-history.json");
+const API = "https://www.bilyoner.com/api";
+const OUT = path.resolve("data/basketball-history.json");
 
 const START_DATE = "2026-08-01";
+const END_DATE = new Date().toISOString().slice(0, 10);
 
-const SEASON = "2026-2027";
+const EVENT_URL =
+  `${API}/mobile/live-score/event/v2/basketball`;
 
+const DETAIL_URL =
+  `${API}/mobile/live-score/event/sport-list`;
 
-// --------------------------------------------------
-// YARDIMCI
-// --------------------------------------------------
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function isObj(v) {
-  return v && typeof v === "object";
-}
-
-function num(v) {
-  if (typeof v === "number" && Number.isFinite(v)) {
-    return v;
-  }
-
-  if (typeof v === "string") {
-    const n = Number(v.replace(",", "."));
-    if (Number.isFinite(n)) return n;
-  }
-
-  return null;
-}
-
-function pair(v) {
-  if (!isObj(v)) return null;
-
-  const home =
-    num(v.home) ??
-    num(v.homeScore) ??
-    num(v.homeTeam) ??
-    num(v.h);
-
-  const away =
-    num(v.away) ??
-    num(v.awayScore) ??
-    num(v.awayTeam) ??
-    num(v.a);
-
-  if (home === null || away === null) {
-    return null;
-  }
-
-  return {
-    home,
-    away
-  };
-}
-
-function scoreText(v) {
-  if (!isObj(v)) return null;
-
-  const p = pair(v);
-
-  if (!p) return null;
-
-  return `${p.home}-${p.away}`;
-}
-
-function parseDate(value) {
-  if (!value) return null;
-
-  const d = new Date(value);
-
-  if (Number.isNaN(d.getTime())) {
-    return null;
-  }
-
-  return d;
-}
-
-function isoDate(d) {
-  return d.toISOString().slice(0, 10);
-}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function dateRange(start, end) {
-  const result = [];
-
+  const out = [];
   let d = new Date(`${start}T00:00:00Z`);
-  const last = new Date(`${end}T00:00:00Z`);
+  const e = new Date(`${end}T00:00:00Z`);
 
-  while (d <= last) {
-    result.push(isoDate(d));
+  while (d <= e) {
+    out.push(d.toISOString().slice(0, 10));
     d.setUTCDate(d.getUTCDate() + 1);
   }
 
-  return result;
+  return out;
 }
-
-
-// --------------------------------------------------
-// HTTP
-// --------------------------------------------------
 
 async function getJson(url, options = {}) {
   const res = await fetch(url, {
     ...options,
     headers: {
-      accept: "application/json, text/plain, */*",
-      "user-agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36",
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0",
       ...(options.headers || {})
     }
   });
@@ -130,605 +43,682 @@ async function getJson(url, options = {}) {
     throw new Error(`HTTP ${res.status}`);
   }
 
-  return await res.json();
+  return res.json();
 }
 
+function num(v) {
+  if (v === null || v === undefined || v === "") return null;
 
-// --------------------------------------------------
-// BİLYONER GÜNLÜK MAÇLAR
-// --------------------------------------------------
+  if (typeof v === "number" && Number.isFinite(v)) {
+    return v;
+  }
 
-async function getDay(date) {
-  const url =
-    `${EVENT_API}?date=${encodeURIComponent(date)}`;
+  const n = Number(
+    String(v)
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "")
+  );
 
-  const data = await getJson(url);
-
-  return Array.isArray(data?.competitions)
-    ? data.competitions
-    : [];
+  return Number.isFinite(n) ? n : null;
 }
 
+function scoreObject(v) {
+  if (!v || typeof v !== "object") return null;
 
-// --------------------------------------------------
-// DETAY SKOR API
-//
-// Bilyoner frontend kodundaki yapı:
-//
-// POST /mobile/live-score/event/sport-list
-//
-// {
-//   sports: [
-//     {
-//       sbsEventIds: [...],
-//       sportType: 2
-//     }
-//   ]
-// }
-// --------------------------------------------------
+  const home =
+    num(v.home) ??
+    num(v.homeScore) ??
+    num(v.homeTeam) ??
+    num(v.homePoints);
 
-async function getDetails(events) {
-  if (!events.length) return [];
+  const away =
+    num(v.away) ??
+    num(v.awayScore) ??
+    num(v.awayTeam) ??
+    num(v.awayPoints);
 
-  const ids = events
-    .map(e => e.sbsEventId || e.eventId)
-    .filter(Boolean)
-    .map(String);
+  if (home === null || away === null) return null;
 
-  if (!ids.length) return [];
+  return {
+    home,
+    away,
+    display: `${home}-${away}`
+  };
+}
 
-  const body = {
-    sports: [
-      {
-        sbsEventIds: ids,
-        sportType: 2
-      }
+function parseScore(v) {
+  if (!v) return null;
+
+  if (typeof v === "object") {
+    return scoreObject(v);
+  }
+
+  if (typeof v === "string") {
+    const m = v.match(/(\d+)\s*[-:]\s*(\d+)/);
+
+    if (m) {
+      return {
+        home: Number(m[1]),
+        away: Number(m[2]),
+        display: `${m[1]}-${m[2]}`
+      };
+    }
+  }
+
+  return null;
+}
+
+function findScoreDeep(obj, wanted) {
+  if (!obj || typeof obj !== "object") return null;
+
+  const keys = Object.keys(obj);
+
+  for (const key of keys) {
+    const lower = key.toLowerCase();
+
+    if (wanted.some(x => lower === x || lower.includes(x))) {
+      const s = parseScore(obj[key]);
+      if (s) return s;
+    }
+  }
+
+  for (const key of keys) {
+    const value = obj[key];
+
+    if (value && typeof value === "object") {
+      const found = findScoreDeep(value, wanted);
+      if (found) return found;
+    }
+  }
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const found = findScoreDeep(item, wanted);
+      if (found) return found;
+    }
+  }
+
+  return null;
+}
+
+function extractPeriods(event) {
+  const result = {
+    period1: null,
+    period2: null,
+    period3: null,
+    period4: null
+  };
+
+  const aliases = {
+    period1: [
+      "period1",
+      "period_1",
+      "quarter1",
+      "quarter_1",
+      "q1",
+      "firstperiod",
+      "firstquarter",
+      "1period",
+      "1quarter"
+    ],
+
+    period2: [
+      "period2",
+      "period_2",
+      "quarter2",
+      "quarter_2",
+      "q2",
+      "secondperiod",
+      "secondquarter",
+      "2period",
+      "2quarter"
+    ],
+
+    period3: [
+      "period3",
+      "period_3",
+      "quarter3",
+      "quarter_3",
+      "q3",
+      "thirdperiod",
+      "thirdquarter",
+      "3period",
+      "3quarter"
+    ],
+
+    period4: [
+      "period4",
+      "period_4",
+      "quarter4",
+      "quarter_4",
+      "q4",
+      "fourthperiod",
+      "fourthquarter",
+      "4period",
+      "4quarter"
     ]
   };
 
+  for (const [name, keys] of Object.entries(aliases)) {
+    result[name] = findScoreDeep(event, keys);
+  }
+
+  /*
+    Bazı Bilyoner cevaplarında periyotlar dizi halinde gelebilir.
+    Örnek:
+    [
+      { home: 20, away: 18 },
+      { home: 22, away: 20 },
+      ...
+    ]
+  */
+
+  const arrays = [];
+
+  function scanArrays(obj) {
+    if (!obj || typeof obj !== "object") return;
+
+    if (Array.isArray(obj)) {
+      if (obj.length >= 4) {
+        const parsed = obj
+          .slice(0, 4)
+          .map(parseScore);
+
+        if (parsed.filter(Boolean).length >= 2) {
+          arrays.push(parsed);
+        }
+      }
+
+      for (const item of obj) {
+        scanArrays(item);
+      }
+
+      return;
+    }
+
+    for (const value of Object.values(obj)) {
+      if (value && typeof value === "object") {
+        scanArrays(value);
+      }
+    }
+  }
+
+  scanArrays(event);
+
+  for (const arr of arrays) {
+    if (!result.period1 && arr[0]) result.period1 = arr[0];
+    if (!result.period2 && arr[1]) result.period2 = arr[1];
+    if (!result.period3 && arr[2]) result.period3 = arr[2];
+    if (!result.period4 && arr[3]) result.period4 = arr[3];
+
+    if (
+      result.period1 &&
+      result.period2 &&
+      result.period3 &&
+      result.period4
+    ) {
+      break;
+    }
+  }
+
+  /*
+    Eğer Bilyoner kümülatif skor döndürüyorsa:
+      Q1 = 20-18
+      Q2 = 42-38
+      Q3 = 61-57
+      Q4 = 82-75
+
+    Bunları çeyrek skorlarına çeviriyoruz.
+  */
+
+  if (
+    result.period1 &&
+    result.period2 &&
+    result.period3 &&
+    result.period4
+  ) {
+    const cumulative = [
+      result.period1,
+      result.period2,
+      result.period3,
+      result.period4
+    ];
+
+    const converted = [];
+
+    for (let i = 0; i < cumulative.length; i++) {
+      if (i === 0) {
+        converted.push(cumulative[i]);
+      } else {
+        converted.push({
+          home:
+            cumulative[i].home -
+            cumulative[i - 1].home,
+
+          away:
+            cumulative[i].away -
+            cumulative[i - 1].away
+        });
+      }
+    }
+
+    result.period1 = {
+      home: converted[0].home,
+      away: converted[0].away,
+      display: `${converted[0].home}-${converted[0].away}`
+    };
+
+    result.period2 = {
+      home: converted[1].home,
+      away: converted[1].away,
+      display: `${converted[1].home}-${converted[1].away}`
+    };
+
+    result.period3 = {
+      home: converted[2].home,
+      away: converted[2].away,
+      display: `${converted[2].home}-${converted[2].away}`
+    };
+
+    result.period4 = {
+      home: converted[3].home,
+      away: converted[3].away,
+      display: `${converted[3].home}-${converted[3].away}`
+    };
+  }
+
+  return result;
+}
+
+function getFullScore(event) {
+  return (
+    findScoreDeep(event, [
+      "fulltime",
+      "full_time",
+      "finalscore",
+      "final_score",
+      "officialresult",
+      "current_score",
+      "currentscore"
+    ]) ||
+    findScoreDeep(event, ["score"])
+  );
+}
+
+function getHalfScore(event) {
+  return (
+    findScoreDeep(event, [
+      "halftime",
+      "half_time",
+      "halfscore",
+      "half_score"
+    ])
+  );
+}
+
+function eventIdOf(e) {
+  return (
+    num(e.eventId) ??
+    num(e.id)
+  );
+}
+
+function sbsIdOf(e) {
+  return (
+    num(e.sbsEventId) ??
+    num(e.sbsId)
+  );
+}
+
+function keyOf(e) {
+  const id = eventIdOf(e);
+
+  if (id !== null) {
+    return `id:${id}`;
+  }
+
+  const home = String(e.homeTeam || "")
+    .trim()
+    .toLowerCase();
+
+  const away = String(e.awayTeam || "")
+    .trim()
+    .toLowerCase();
+
+  const date = String(e.matchDate || "")
+    .slice(0, 10);
+
+  return `${date}|${home}|${away}`;
+}
+
+async function getDayEvents(date) {
   try {
-    const data = await getJson(DETAIL_API, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify(body)
-    });
+    const data = await getJson(
+      `${EVENT_URL}?date=${date}`
+    );
 
-    if (Array.isArray(data?.events)) {
-      return data.events;
+    const competitions =
+      Array.isArray(data?.competitions)
+        ? data.competitions
+        : [];
+
+    const events = [];
+
+    for (const competition of competitions) {
+      const leagueName =
+        competition.name ||
+        competition.title ||
+        competition.competitionName ||
+        "";
+
+      const list =
+        Array.isArray(competition.events)
+          ? competition.events
+          : [];
+
+      for (const e of list) {
+        if (!e) continue;
+
+        events.push({
+          ...e,
+          league:
+            e.league ||
+            e.leagueName ||
+            leagueName
+        });
+      }
     }
 
-    if (Array.isArray(data?.body?.events)) {
-      return data.body.events;
-    }
-
-    if (Array.isArray(data?.data?.events)) {
-      return data.data.events;
-    }
-
-    return [];
+    return events;
   } catch {
     return [];
   }
 }
 
+async function getDetails(eventIds) {
+  const result = new Map();
 
-// --------------------------------------------------
-// DETAYLI SKOR BULMA
-// --------------------------------------------------
+  if (!eventIds.length) return result;
 
-function findPair(obj, names) {
-  if (!isObj(obj)) return null;
+  const CHUNK = 40;
 
-  for (const name of names) {
-    if (obj[name] !== undefined) {
-      const p = pair(obj[name]);
+  for (let i = 0; i < eventIds.length; i += CHUNK) {
+    const chunk = eventIds.slice(i, i + CHUNK);
 
-      if (p) return p;
+    try {
+      const body = {
+        sports: [
+          {
+            /*
+              ÖNEMLİ:
+              Bilyoner frontend'i sport-list çağrısında
+              eventId kullanıyor.
+            */
+            sbsEventIds: chunk,
+            sportType: 2
+          }
+        ]
+      };
+
+      const data = await getJson(
+        DETAIL_URL,
+        {
+          method: "POST",
+          body: JSON.stringify(body)
+        }
+      );
+
+      const events =
+        data?.events ||
+        data?.data?.events ||
+        data?.result?.events ||
+        [];
+
+      if (Array.isArray(events)) {
+        for (const e of events) {
+          const id =
+            eventIdOf(e) ??
+            sbsIdOf(e);
+
+          if (id !== null) {
+            result.set(String(id), e);
+          }
+
+          if (e?.sbsEventId !== undefined) {
+            result.set(
+              `sbs:${e.sbsEventId}`,
+              e
+            );
+          }
+
+          if (e?.eventId !== undefined) {
+            result.set(
+              `event:${e.eventId}`,
+              e
+            );
+          }
+        }
+      }
+    } catch {
+      // Sessiz geç
     }
+
+    await sleep(80);
   }
 
-  return null;
+  return result;
 }
 
-
-// --------------------------------------------------
-// PERİYOTLARI ÇIKAR
-// --------------------------------------------------
-
-function extractPeriods(event) {
-
-  let p1 = null;
-  let p2 = null;
-  let p3 = null;
-  let p4 = null;
-
-  // Direkt alanlar
-  p1 =
-    findPair(event, [
-      "period1",
-      "firstPeriod",
-      "firstQuarter",
-      "quarter1",
-      "q1",
-      "periodOne",
-      "quarterOne"
-    ]);
-
-  p2 =
-    findPair(event, [
-      "period2",
-      "secondPeriod",
-      "secondQuarter",
-      "quarter2",
-      "q2",
-      "periodTwo",
-      "quarterTwo"
-    ]);
-
-  p3 =
-    findPair(event, [
-      "period3",
-      "thirdPeriod",
-      "thirdQuarter",
-      "quarter3",
-      "q3",
-      "periodThree",
-      "quarterThree"
-    ]);
-
-  p4 =
-    findPair(event, [
-      "period4",
-      "fourthPeriod",
-      "fourthQuarter",
-      "quarter4",
-      "q4",
-      "periodFour",
-      "quarterFour"
-    ]);
-
-
-  // Dizi şeklindeki alanlar
-  const arrays = [
-    event.periodScores,
-    event.periods,
-    event.quarters,
-    event.quarterScores,
-    event.scores,
-    event.eventScores
-  ];
-
-  for (const arr of arrays) {
-
-    if (!Array.isArray(arr)) continue;
-
-    for (const item of arr) {
-
-      if (!isObj(item)) continue;
-
-      const index =
-        num(item.period) ??
-        num(item.periodNo) ??
-        num(item.periodNumber) ??
-        num(item.quarter) ??
-        num(item.quarterNo) ??
-        num(item.number) ??
-        num(item.order);
-
-      const p = pair(item);
-
-      if (!p) continue;
-
-      if (index === 1 && !p1) p1 = p;
-      if (index === 2 && !p2) p2 = p;
-      if (index === 3 && !p3) p3 = p;
-      if (index === 4 && !p4) p4 = p;
-    }
-  }
-
-  return {
-    p1,
-    p2,
-    p3,
-    p4
-  };
-}
-
-
-// --------------------------------------------------
-// İLK YARI
-// --------------------------------------------------
-
-function getHalfScore(event, periods) {
-
-  const direct =
-    findPair(event, [
-      "halfScore",
-      "halfTimeScore",
-      "firstHalf",
-      "firstHalfScore"
-    ]);
-
-  if (direct) {
-    return direct;
-  }
-
-  if (periods.p1 && periods.p2) {
-    return {
-      home:
-        periods.p1.home +
-        periods.p2.home,
-
-      away:
-        periods.p1.away +
-        periods.p2.away
-    };
-  }
-
-  return null;
-}
-
-
-// --------------------------------------------------
-// MAÇ SKORU
-// --------------------------------------------------
-
-function getFullScore(event) {
-
-  const direct =
-    findPair(event, [
-      "currentScore",
-      "fullTimeScore",
-      "score",
-      "officialResult"
-    ]);
-
-  if (direct) {
-    return direct;
-  }
-
-  if (isObj(event?.officialResult)) {
-
-    const p =
-      pair(event.officialResult.fullTime);
-
-    if (p) return p;
-  }
-
-  return null;
-}
-
-
-// --------------------------------------------------
-// DETAY EVENT EŞLEŞTİRME
-// --------------------------------------------------
-
-function mergeDetail(base, details) {
-
-  if (!details.length) {
-    return {
-      ...base,
-      period1: null,
-      period2: null,
-      period3: null,
-      period4: null
-    };
-  }
-
-  const id =
-    String(base.sbsEventId || base.eventId);
-
-  let detail =
-    details.find(x =>
-      String(
-        x.sbsEventId ||
-        x.eventId ||
-        x.id
-      ) === id
-    );
-
-  if (!detail) {
-
-    const home =
-      String(base.homeTeam || "")
-        .toLowerCase();
-
-    const away =
-      String(base.awayTeam || "")
-        .toLowerCase();
-
-    detail = details.find(x => {
-
-      const h =
-        String(x.homeTeam || "")
-          .toLowerCase();
-
-      const a =
-        String(x.awayTeam || "")
-          .toLowerCase();
-
-      return h === home && a === away;
-    });
-  }
-
-  if (!detail) {
-    return {
-      ...base,
-      period1: null,
-      period2: null,
-      period3: null,
-      period4: null
-    };
-  }
-
-  const periods =
-    extractPeriods(detail);
-
-  const half =
-    getHalfScore(detail, periods);
-
-  const full =
-    getFullScore(detail);
+function mergeDetail(base, detail) {
+  if (!detail) return base;
 
   return {
     ...base,
+    ...detail,
 
-    score:
-      full
-        ? `${full.home}-${full.away}`
-        : base.score,
+    homeTeam:
+      base.homeTeam ||
+      detail.homeTeam,
 
-    halfTimeScore:
-      half
-        ? `${half.home}-${half.away}`
-        : base.halfTimeScore,
+    awayTeam:
+      base.awayTeam ||
+      detail.awayTeam,
 
-    period1:
-      scoreText(periods.p1),
-
-    period2:
-      scoreText(periods.p2),
-
-    period3:
-      scoreText(periods.p3),
-
-    period4:
-      scoreText(periods.p4)
+    league:
+      base.league ||
+      detail.league ||
+      detail.competitionName
   };
 }
 
+function buildMatch(event, detail) {
+  const merged = mergeDetail(event, detail);
 
-// --------------------------------------------------
-// ANA MAÇ PARSER
-// --------------------------------------------------
+  const fullScore = getFullScore(merged);
+  const halfScore = getHalfScore(merged);
+  const periods = extractPeriods(merged);
 
-function parseCompetition(comp, date) {
+  const matchDate =
+    String(
+      merged.matchDate ||
+      merged.date ||
+      ""
+    ).slice(0, 10);
 
-  const league =
-    comp.title ||
-    comp.name ||
-    comp.competitionName ||
-    "Bilinmeyen Lig";
+  return {
+    eventId:
+      eventIdOf(merged),
 
-  const events =
-    Array.isArray(comp.events)
-      ? comp.events
-      : [];
+    sbsEventId:
+      sbsIdOf(merged),
 
-  return events
-    .map(event => {
+    date:
+      matchDate,
 
-      const matchDate =
-        parseDate(
-          event.matchDate ||
-          event.date ||
-          date
-        );
+    time:
+      merged.matchDate || null,
 
-      const homeTeam =
-        event.homeTeam ||
-        event.home ||
-        event.homeTeamName ||
-        "";
+    league:
+      merged.league ||
+      merged.leagueName ||
+      merged.competitionName ||
+      "",
 
-      const awayTeam =
-        event.awayTeam ||
-        event.away ||
-        event.awayTeamName ||
-        "";
+    homeTeam:
+      merged.homeTeam ||
+      merged.home ||
+      "",
 
-      if (!homeTeam || !awayTeam) {
-        return null;
-      }
+    awayTeam:
+      merged.awayTeam ||
+      merged.away ||
+      "",
 
-      const full =
-        pair(event.currentScore);
+    score:
+      fullScore,
 
-      const half =
-        pair(event.halfScore);
+    halfTimeScore:
+      halfScore,
 
-      return {
-        id:
-          String(
-            event.sbsEventId ||
-            event.eventId ||
-            `${date}-${homeTeam}-${awayTeam}`
-          ),
+    period1:
+      periods.period1,
 
-        sbsEventId:
-          event.sbsEventId
-            ? String(event.sbsEventId)
-            : null,
+    period2:
+      periods.period2,
 
-        eventId:
-          event.eventId
-            ? String(event.eventId)
-            : null,
+    period3:
+      periods.period3,
 
-        date:
-          matchDate
-            ? isoDate(matchDate)
-            : date,
+    period4:
+      periods.period4,
 
-        time:
-          matchDate
-            ? matchDate.toISOString().slice(11, 16)
-            : null,
+    status:
+      merged.matchStatus ||
+      merged.status ||
+      null,
 
-        league,
-
-        homeTeam,
-
-        awayTeam,
-
-        score:
-          full
-            ? `${full.home}-${full.away}`
-            : null,
-
-        halfTimeScore:
-          half
-            ? `${half.home}-${half.away}`
-            : null,
-
-        period1: null,
-        period2: null,
-        period3: null,
-        period4: null,
-
-        status:
-          event.matchStatus ||
-          event.status ||
-          null,
-
-        source: "Bilyoner"
-      };
-    })
-    .filter(Boolean);
+    completed:
+      Boolean(
+        fullScore &&
+        fullScore.home !== null &&
+        fullScore.away !== null
+      )
+  };
 }
 
-
-// --------------------------------------------------
-// ANA İŞLEM
-// --------------------------------------------------
-
-const today =
-  new Date().toISOString().slice(0, 10);
-
-const dates =
-  dateRange(
-    START_DATE,
-    today
+async function main() {
+  console.log("");
+  console.log("🏀 BİLYONER BASKETBOL GEÇMİŞİ");
+  console.log(
+    `📅 ${START_DATE} → ${END_DATE}`
   );
 
-console.log("");
-console.log("🏀 BİLYONER BASKETBOL GEÇMİŞİ");
-console.log(`📅 ${START_DATE} → ${today}`);
+  const dates = dateRange(
+    START_DATE,
+    END_DATE
+  );
 
+  const allEvents = [];
 
-// Eski dosya varsa SADECE Bilyoner verisini
-// kullanmak için yeniden oluşturuyoruz.
+  for (const date of dates) {
+    const events = await getDayEvents(date);
 
-const allMatches = new Map();
-
-let leagueCount = 0;
-let detailCount = 0;
-let periodCount = [0, 0, 0, 0];
-
-
-// --------------------------------------------------
-// GÜNLER
-// --------------------------------------------------
-
-for (const date of dates) {
-
-  let competitions = [];
-
-  try {
-    competitions =
-      await getDay(date);
-  } catch {
-    continue;
+    allEvents.push(...events);
   }
 
-  leagueCount += competitions.length;
+  const unique = new Map();
 
-  const dayMatches = [];
+  for (const event of allEvents) {
+    const key = keyOf(event);
 
-  for (const comp of competitions) {
+    if (!unique.has(key)) {
+      unique.set(key, event);
+    }
+  }
 
-    const matches =
-      parseCompetition(
-        comp,
-        date
-      );
+  const events = [...unique.values()];
 
-    dayMatches.push(
-      ...matches
+  /*
+    DETAY İÇİN EVENT ID KULLAN.
+    Bilyoner frontend'inin sport-list çağrısındaki
+    event kimliği budur.
+  */
+  const eventIds = [
+    ...new Set(
+      events
+        .map(eventIdOf)
+        .filter(x => x !== null)
+    )
+  ];
+
+  const details = await getDetails(
+    eventIds
+  );
+
+  const matches = [];
+
+  for (const event of events) {
+    const eventId = eventIdOf(event);
+    const sbsId = sbsIdOf(event);
+
+    let detail = null;
+
+    if (eventId !== null) {
+      detail =
+        details.get(String(eventId)) ||
+        details.get(`event:${eventId}`);
+    }
+
+    if (!detail && sbsId !== null) {
+      detail =
+        details.get(`sbs:${sbsId}`) ||
+        details.get(String(sbsId));
+    }
+
+    const match = buildMatch(
+      event,
+      detail
     );
-  }
 
-  // Detay API'yi çok büyük istek
-  // yapmaması için 40'arlı gönderiyoruz.
-
-  for (
-    let i = 0;
-    i < dayMatches.length;
-    i += 40
-  ) {
-
-    const batch =
-      dayMatches.slice(
-        i,
-        i + 40
-      );
-
-    const details =
-      await getDetails(batch);
-
-    if (details.length) {
-      detailCount += details.length;
+    /*
+      Sadece 2026-2027 sezonundaki
+      bu tarih aralığındaki kayıtları tut.
+    */
+    if (
+      !match.date ||
+      match.date < START_DATE ||
+      match.date > END_DATE
+    ) {
+      continue;
     }
 
-    for (const match of batch) {
-
-      const merged =
-        mergeDetail(
-          match,
-          details
-        );
-
-      const key =
-        `${merged.date}|${merged.homeTeam}|${merged.awayTeam}`
-          .toLowerCase();
-
-      allMatches.set(
-        key,
-        merged
-      );
+    if (
+      !match.homeTeam ||
+      !match.awayTeam
+    ) {
+      continue;
     }
 
-    await sleep(100);
+    matches.push(match);
   }
-}
 
+  /*
+    Son kez maçları benzersizleştir.
+  */
+  const finalMap = new Map();
 
-// --------------------------------------------------
-// SONUÇLARI DÜZENLE
-// --------------------------------------------------
+  for (const match of matches) {
+    const key =
+      match.eventId !== null
+        ? `id:${match.eventId}`
+        : `${match.date}|${match.homeTeam}|${match.awayTeam}`;
 
-const matches =
-  Array.from(
-    allMatches.values()
-  )
-  .filter(m =>
-    m.date >= START_DATE &&
-    m.date <= today
-  )
-  .sort((a, b) => {
+    finalMap.set(key, match);
+  }
 
+  const finalMatches = [
+    ...finalMap.values()
+  ].sort((a, b) => {
     const da =
       `${a.date} ${a.time || ""}`;
 
@@ -738,121 +728,126 @@ const matches =
     return da.localeCompare(db);
   });
 
+  const leagues = new Set(
+    finalMatches
+      .map(x => x.league)
+      .filter(Boolean)
+  );
 
-// --------------------------------------------------
-// İSTATİSTİK
-// --------------------------------------------------
+  const scored = finalMatches.filter(
+    x =>
+      x.score &&
+      x.score.home !== null &&
+      x.score.away !== null
+  );
 
-let scored = 0;
-let completed = 0;
+  const completed = finalMatches.filter(
+    x => x.completed
+  );
 
-for (const m of matches) {
+  const p1 = finalMatches.filter(
+    x => x.period1
+  ).length;
 
-  if (m.score) {
-    scored++;
-  }
+  const p2 = finalMatches.filter(
+    x => x.period2
+  ).length;
 
-  if (
-    m.score &&
-    /^\d+-\d+$/.test(m.score)
-  ) {
-    completed++;
-  }
+  const p3 = finalMatches.filter(
+    x => x.period3
+  ).length;
 
-  if (m.period1) periodCount[0]++;
-  if (m.period2) periodCount[1]++;
-  if (m.period3) periodCount[2]++;
-  if (m.period4) periodCount[3]++;
+  const p4 = finalMatches.filter(
+    x => x.period4
+  ).length;
+
+  const output = {
+    source:
+      "https://www.bilyoner.com/canli-skor/basketbol-canli-skor",
+
+    provider: "Bilyoner",
+
+    sport: "basketball",
+
+    season: "2026-2027",
+
+    updatedAt:
+      new Date().toISOString(),
+
+    dateRange: {
+      from: START_DATE,
+      to: END_DATE
+    },
+
+    stats: {
+      leagues: leagues.size,
+      matches: finalMatches.length,
+      scored: scored.length,
+      completed: completed.length,
+
+      periods: {
+        period1: p1,
+        period2: p2,
+        period3: p3,
+        period4: p4
+      },
+
+      detailRequests:
+        details.size
+    },
+
+    matches: finalMatches
+  };
+
+  await fs.mkdir(
+    path.dirname(OUT),
+    { recursive: true }
+  );
+
+  await fs.writeFile(
+    OUT,
+    JSON.stringify(
+      output,
+      null,
+      2
+    ),
+    "utf8"
+  );
+
+  console.log(
+    `🏆 Lig: ${leagues.size}`
+  );
+
+  console.log(
+    `🏀 Maç: ${finalMatches.length}`
+  );
+
+  console.log(
+    `✅ Skorlu: ${scored.length}`
+  );
+
+  console.log(
+    `🏁 Tamamlanan: ${completed.length}`
+  );
+
+  console.log(
+    `📊 Periyot: ${p1}/${p2}/${p3}/${p4}`
+  );
+
+  console.log(
+    `🔎 Detay: ${details.size}`
+  );
+
+  console.log(
+    `📁 ${OUT}`
+  );
 }
 
+main().catch(error => {
+  console.error(
+    "❌ HATA:",
+    error.message
+  );
 
-// --------------------------------------------------
-// DOSYA
-// --------------------------------------------------
-
-const output = {
-  source:
-    "https://www.bilyoner.com/canli-skor/basketbol-canli-skor",
-
-  season: SEASON,
-
-  updatedAt:
-    new Date().toISOString(),
-
-  dateRange: {
-    start: START_DATE,
-    end: today
-  },
-
-  stats: {
-    leagues:
-      new Set(
-        matches.map(m => m.league)
-      ).size,
-
-    matches:
-      matches.length,
-
-    scored,
-
-    completed,
-
-    periods: {
-      period1: periodCount[0],
-      period2: periodCount[1],
-      period3: periodCount[2],
-      period4: periodCount[3]
-    }
-  },
-
-  matches
-};
-
-
-fs.mkdirSync(
-  path.dirname(DATA_PATH),
-  { recursive: true }
-);
-
-fs.writeFileSync(
-  DATA_PATH,
-  JSON.stringify(
-    output,
-    null,
-    2
-  ),
-  "utf8"
-);
-
-
-// --------------------------------------------------
-// KISA LOG
-// --------------------------------------------------
-
-console.log(
-  `🏆 Lig: ${output.stats.leagues}`
-);
-
-console.log(
-  `🏀 Maç: ${output.stats.matches}`
-);
-
-console.log(
-  `✅ Skorlu: ${output.stats.scored}`
-);
-
-console.log(
-  `🏁 Tamamlanan: ${output.stats.completed}`
-);
-
-console.log(
-  `📊 Periyot: ${periodCount.join("/")}`
-);
-
-console.log(
-  `🔎 Detay: ${detailCount}`
-);
-
-console.log(
-  `📁 ${DATA_PATH}`
-);
+  process.exit(1);
+});
