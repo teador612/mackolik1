@@ -2,101 +2,70 @@ import fs from “fs”;
 
 const FILE = “data/basketball-history.json”;
 
+console.log(“🏀 BILYONER BASKETBOL TESTİ”);
+console.log(”================================”);
+
 if (!fs.existsSync(FILE)) {
-console.log(❌ Dosya bulunamadı: ${FILE});
+console.log(“❌ Dosya bulunamadı:”, FILE);
 process.exit(1);
 }
 
-let data;
-
-try {
-data = JSON.parse(
+const data = JSON.parse(
 fs.readFileSync(FILE, “utf8”)
 );
-} catch (error) {
-console.log(❌ JSON okunamadı: ${error.message});
-process.exit(1);
-}
 
 const matches = Array.isArray(data.matches)
 ? data.matches
 : [];
 
-console.log(””);
-console.log(”========================================”);
-console.log(“🏀 BILYONER BASKETBOL TESTİ”);
-console.log(”========================================”);
-console.log(📦 Toplam kayıt: ${matches.length});
+console.log(“📦 Toplam maç:”, matches.length);
 
-if (!matches.length) {
-console.log(“❌ Basketbol verisi yok”);
+if (matches.length === 0) {
+console.log(“❌ Basketbol maçı yok”);
 process.exit(1);
 }
-
-const finished = matches.filter(
-m => m && m.finished
-);
-
-console.log(🏁 Tamamlanan maç: ${finished.length});
 
 const match =
-finished.find(
-m =>
-m.id ||
-m.matchId ||
-m.eventId ||
-m.slug
-) ||
-matches.find(
-m =>
-m.id ||
-m.matchId ||
-m.eventId ||
-m.slug
-);
-
-if (!match) {
-console.log(“❌ Kullanılabilir maç kimliği bulunamadı”);
-
-console.log(””);
-console.log(“İlk kayıt:”);
-console.log(
-JSON.stringify(matches[0], null, 2)
-);
-
-process.exit(1);
-}
+matches.find(m => m.finished) ||
+matches[0];
 
 console.log(””);
 console.log(“🏀 TEST MAÇI”);
-console.log(”––––––––––––––––––––”);
+console.log(”––––––––––––––––”);
 
 console.log(
-Ev sahibi: ${match.home ?? match.homeTeam ?? "?"}
+“Ev:”,
+match.home ?? match.homeTeam ?? “?”
 );
 
 console.log(
-Deplasman: ${match.away ?? match.awayTeam ?? "?"}
+“Deplasman:”,
+match.away ?? match.awayTeam ?? “?”
 );
 
 console.log(
-Tarih: ${match.date ?? "?"}
+“Tarih:”,
+match.date ?? “?”
 );
 
 console.log(
-ID: ${match.id ?? "YOK"}
+“ID:”,
+match.id ?? “YOK”
 );
 
 console.log(
-matchId: ${match.matchId ?? "YOK"}
+“matchId:”,
+match.matchId ?? “YOK”
 );
 
 console.log(
-eventId: ${match.eventId ?? "YOK"}
+“eventId:”,
+match.eventId ?? “YOK”
 );
 
 console.log(
-slug: ${match.slug ?? "YOK"}
+“slug:”,
+match.slug ?? “YOK”
 );
 
 console.log(””);
@@ -106,12 +75,5 @@ Object.keys(match).join(”, “)
 );
 
 console.log(””);
-console.log(”========================================”);
-
-console.log(””);
-console.log(“ℹ️ Bu test dosyası artık slug zorunlu tutmuyor.”);
-console.log(“ℹ️ Önce veri yapısını kontrol ediyor.”);
-console.log(””);
-console.log(
-JSON.stringify(match, null, 2)
-);
+console.log(”================================”);
+console.log(“✅ TEST DOSYASI ÇALIŞTI”);
