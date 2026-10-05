@@ -4,43 +4,31 @@ const API =
 const res = await fetch(API);
 const data = await res.json();
 
-const events = [];
+const competitions = data.competitions || [];
 
-function walk(x) {
-  if (!x || typeof x !== "object") return;
+let event = null;
 
-  if (
-    x.sbsEventId ||
-    x.eventId ||
-    x.id
-  ) {
-    events.push(x);
-    return;
-  }
+for (const comp of competitions) {
+  if (Array.isArray(comp.events) && comp.events.length) {
+    event = comp.events.find(e =>
+      JSON.stringify(e).match(/period|quarter|halfScore|score/i)
+    );
 
-  if (Array.isArray(x)) {
-    for (const v of x) walk(v);
-  } else {
-    for (const v of Object.values(x)) walk(v);
+    if (event) break;
   }
 }
 
-walk(data);
+console.log("🏆 Lig:", competitions.length);
+console.log("🏀 Maç:", competitions.reduce((n, c) => n + (c.events?.length || 0), 0));
+console.log("📋 Alanlar:", event ? Object.keys(event).join(", ") : "bulunamadı");
 
-const e = events.find(x =>
-  JSON.stringify(x).match(/period|quarter|halfScore|score/i)
-);
-
-console.log("🏀 Event:", events.length);
-console.log("📋 Alanlar:", e ? Object.keys(e).join(", ") : "bulunamadı");
-
-if (e) {
+if (event) {
   console.log(
-    "📊 Skor alanları:",
-    Object.entries(e)
+    "📊 Skor:",
+    Object.entries(event)
       .filter(([k]) => /period|quarter|score|half/i.test(k))
       .map(([k, v]) => `${k}=${JSON.stringify(v)}`)
       .join(" | ")
-      .slice(0, 2500)
+      .slice(0, 3000)
   );
 }
