@@ -1,23 +1,23 @@
-name: 🏀 Bilyoner Basketbol API Keşif
+name: 🏀 Bilyoner Basketbol API Test
 
 on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  discover-bilyoner-api:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Repository checkout
+      - name: 📥 Repo
         uses: actions/checkout@v4
 
-      - name: 🟢 Node.js kurulumu
+      - name: 🟢 Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 🔎 Bilyoner API keşfi
-        run: node scripts/find-bilyoner-api.mjs
+      - name: 🏀 Bilyoner API
+        run: node scripts/test-bilyoner-basketball.mjs
