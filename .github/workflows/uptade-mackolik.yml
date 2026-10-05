@@ -1,89 +1,66 @@
 name: Mackolik skor güncelleme
-
 on:
   schedule:
     - cron: "*/15 * * * *"
-
   workflow_dispatch:
-
   repository_dispatch:
     types:
       - run-script
-
 permissions:
   contents: write
   pages: write
   id-token: write
-
 concurrency:
   group: pages
   cancel-in-progress: false
-
 jobs:
-
   update:
     runs-on: ubuntu-latest
-
     steps:
-
       # ==========================================
       # REPO
       # ==========================================
-
       - name: Repository checkout
         uses: actions/checkout@v4
-
       # ==========================================
       # NODE
       # ==========================================
-
       - name: Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
       # ==========================================
       # CHEERIO
       # ==========================================
-
       - name: Cheerio kur
         run: |
           npm install cheerio
-
       # ==========================================
       # FUTBOL
       # ==========================================
-
       - name: Futbol verilerini güncelle
         run: |
           node scripts/update-mackolik.mjs
-
       # ==========================================
       # BASKETBOL PROGRAM
       # ==========================================
-
       - name: Basketbol programını güncelle
         run: |
           node scripts/update-basketball.mjs
-
       # ==========================================
       # BASKETBOL GEÇMİŞ
       # ==========================================
-
       - name: Basketbol geçmiş verisini güncelle
         run: |
           node scripts/update-basketball-history.mjs
-
       # ==========================================
       # VERİLERİ KONTROL ET
       # ==========================================
-
       - name: Basketbol verilerini kontrol et
         run: |
           echo "======================================"
           echo "BASKETBOL DOSYALARI"
           echo "======================================"
-
           if [ -f data/basketball.json ]; then
             echo "basketball.json mevcut"
             wc -c data/basketball.json
@@ -91,75 +68,75 @@ jobs:
             echo "basketball.json BULUNAMADI"
             exit 1
           fi
-
           if [ -f data/basketball-history.json ]; then
             echo "basketball-history.json mevcut"
             wc -c data/basketball-history.json
           else
             echo "basketball-history.json bulunamadı"
           fi
-
       # ==========================================
       # COMMIT
       # ==========================================
-
       - name: Verileri commit et
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
           git add \
             data/matches.json \
             data/basketball.json \
             data/basketball-history.json
-
           if git diff --cached --quiet; then
             echo "Yeni veri değişikliği yok."
           else
             git commit -m "Mackolik futbol ve basketbol verilerini güncelle"
             git push
           fi
-
       # ==========================================
       # GITHUB PAGES
       # ==========================================
-
       - name: Pages klasörünü hazırla
         run: |
           rm -rf _site
-
           mkdir -p _site
           mkdir -p _site/data
-
+          # HTML DOSYALARI
           cp ./*.html _site/ 2>/dev/null || true
+          # ROOT JS DOSYALARI
           cp ./*.js _site/ 2>/dev/null || true
-
+          # ANA CSS DOSYASI
+          cp ./style.css _site/ 2>/dev/null || true
+          # CSS KLASÖRÜ
           cp -r css _site/ 2>/dev/null || true
+          # JS KLASÖRÜ
           cp -r js _site/ 2>/dev/null || true
-
+          # DATA
           cp -r data/* _site/data/
-
+          # SCRIPTS YAYINLANMASIN
           rm -rf _site/scripts
-
           echo "======================================"
           echo "PAGES DOSYALARI"
           echo "======================================"
-
           find _site -maxdepth 3 -type f | sort
-
+          echo "======================================"
+          echo "STYLE.CSS KONTROL"
+          echo "======================================"
+          if [ -f _site/style.css ]; then
+            echo "✅ style.css başarıyla _site içine kopyalandı"
+            wc -c _site/style.css
+          else
+            echo "❌ style.css BULUNAMADI"
+            exit 1
+          fi
       # ==========================================
       # PAGES ARTIFACT
       # ==========================================
-
       - name: Pages artifact oluştur
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
-
       # ==========================================
       # DEPLOY
       # ==========================================
-
       - name: GitHub Pages yayınla
         uses: actions/deploy-pages@v4
         id: deployment
