@@ -1,79 +1,80 @@
-import fs from “fs”;
+const fs = await import(“node:fs”);
 
 const FILE = “data/basketball-history.json”;
 
-console.log(“🏀 BILYONER BASKETBOL TESTİ”);
-console.log(”================================”);
+console.log(”========================================”);
+console.log(“BILYONER BASKETBOL TEST”);
+console.log(”========================================”);
 
 if (!fs.existsSync(FILE)) {
-console.log(“❌ Dosya bulunamadı:”, FILE);
+console.log(“DOSYA YOK:”, FILE);
 process.exit(1);
 }
 
-const data = JSON.parse(
-fs.readFileSync(FILE, “utf8”)
-);
+const raw = fs.readFileSync(FILE, “utf8”);
+
+const data = JSON.parse(raw);
 
 const matches = Array.isArray(data.matches)
 ? data.matches
 : [];
 
-console.log(“📦 Toplam maç:”, matches.length);
+console.log(“TOPLAM MAC:”, matches.length);
 
 if (matches.length === 0) {
-console.log(“❌ Basketbol maçı yok”);
+console.log(“MAC YOK”);
 process.exit(1);
 }
 
 const match =
-matches.find(m => m.finished) ||
-matches[0];
+matches.find(function (m) {
+return m && m.finished;
+}) || matches[0];
 
 console.log(””);
-console.log(“🏀 TEST MAÇI”);
-console.log(”––––––––––––––––”);
+console.log(“TEST MACI”);
+console.log(”––––––––––––––––––––”);
 
 console.log(
-“Ev:”,
-match.home ?? match.homeTeam ?? “?”
+“EV:”,
+match.home || match.homeTeam || “YOK”
 );
 
 console.log(
-“Deplasman:”,
-match.away ?? match.awayTeam ?? “?”
+“DEP:”,
+match.away || match.awayTeam || “YOK”
 );
 
 console.log(
-“Tarih:”,
-match.date ?? “?”
+“TARIH:”,
+match.date || “YOK”
 );
 
 console.log(
 “ID:”,
-match.id ?? “YOK”
+match.id || “YOK”
 );
 
 console.log(
-“matchId:”,
-match.matchId ?? “YOK”
+“MATCH ID:”,
+match.matchId || “YOK”
 );
 
 console.log(
-“eventId:”,
-match.eventId ?? “YOK”
+“EVENT ID:”,
+match.eventId || “YOK”
 );
 
 console.log(
-“slug:”,
-match.slug ?? “YOK”
+“SLUG:”,
+match.slug || “YOK”
 );
 
 console.log(””);
-console.log(“📋 ALANLAR:”);
-console.log(
-Object.keys(match).join(”, “)
-);
+console.log(“ALANLAR:”);
+console.log(Object.keys(match).join(”, “));
 
 console.log(””);
-console.log(”================================”);
-console.log(“✅ TEST DOSYASI ÇALIŞTI”);
+console.log(”========================================”);
+console.log(“TEST BASARILI”);
+console.log(”========================================”);
