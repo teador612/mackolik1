@@ -1,251 +1,630 @@
-import fs from "fs/promises";
+// scripts/update-basketball-history.mjs
+// Bilyoner 2026-2027 Basketbol Geçmişi
 
-const BASE = "https://www.bilyoner.com";
+import fs from "fs";
+import path from "path";
 
-const JS_URLS = [
-  "https://www.bilyoner.com/static/LiveScores.9c1b4952.js",
-  "https://www.bilyoner.com/static/main.be011cf9.js",
-];
+const API_BASE = "https://www.bilyoner.com/api";
+const API_PATH = "/mobile/live-score/event/v2/basketball";
 
-const SEARCH_TERMS = [
-  "/api/",
-  "api/",
-  "api.",
-  "fetch(",
-  "axios",
-  "live-score",
-  "liveScore",
-  "live-score/header",
-  "live-stream",
-  "basketball",
-  "basketbol",
-  "matches",
-  "events",
-  "scores",
-  "score",
-  "fixture",
-  "fixtures",
-  "results",
-  "result",
-  "match",
-  "event",
-  "league",
-  "lig-karti",
-  "mac-karti",
-  "spor-data",
-  "aggregator",
-];
+const DATA_PATH = path.resolve(
+  "data",
+  "basketball-history.json"
+);
 
-function unique(arr) {
-  return [...new Set(arr)];
+// 2026-2027 sezonu başlangıcı.
+// Geçmiş sezonlara kesinlikle girilmez.
+const SEASON_START = "2026-08-01";
+
+const today = new Date();
+const TODAY = today.toISOString().slice(0, 10);
+
+const HEADERS = {
+  "User-Agent": "Mozilla/5.0",
+  "Accept": "application/json, text/plain, */*",
+  "Referer": "https://www.bilyoner.com/",
+  "Origin": "https://www.bilyoner.com"
+};
+
+// ---------------------------------------------------------
+// YARDIMCILAR
+// ---------------------------------------------------------
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function extractUrls(text) {
-  const urls = [];
+function dateRange(start, end) {
+  const result = [];
 
-  const patterns = [
-    /https?:\/\/[^"'`\s\\]+/g,
-    /["'`]((?:\/|https?:\/\/)[^"'`]+)["'`]/g,
-  ];
+  const d = new Date(`${start}T00:00:00Z`);
+  const e = new Date(`${end}T00:00:00Z`);
 
-  for (const regex of patterns) {
-    for (const m of text.matchAll(regex)) {
-      const value = m[1] || m[0];
-
-      if (
-        value.includes("bilyoner") ||
-        value.startsWith("/api") ||
-        value.startsWith("/mobile") ||
-        value.startsWith("/v3") ||
-        value.startsWith("/sports-data") ||
-        value.startsWith("/lig-") ||
-        value.startsWith("/mac-") ||
-        value.startsWith("/canli-")
-      ) {
-        urls.push(value);
-      }
-    }
+  while (d <= e) {
+    result.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
   }
 
-  return unique(urls);
+  return result;
 }
 
-function context(text, index, radius = 500) {
-  const start = Math.max(0, index - radius);
-  const end = Math.min(text.length, index + radius);
+function cleanText(value) {
+  if (value === null || value === undefined) return "";
 
-  return text
-    .slice(start, end)
+  return String(value)
+    .replace(/<[^>]*>/g, "")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function normalizeUrl(url) {
-  if (!url) return null;
-
-  if (url.startsWith("http://") || url.startsWith("https://")) {
-    return url;
-  }
-
-  if (url.startsWith("/")) {
-    return BASE + url;
+function firstValue(...values) {
+  for (const value of values) {
+    if (
+      value !== undefined &&
+      value !== null &&
+      value !== ""
+    ) {
+      return value;
+    }
   }
 
   return null;
 }
 
-async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140 Safari/537.36",
-      Accept:
-        "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.8",
-    },
-    redirect: "follow",
-  });
+function toNumber(value) {
+  if (typeof value === "number") {
+    return Number.isFinite(value) ? value : null;
+  }
+
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const cleaned = value
+    .replace(",", ".")
+    .replace(/[^\d.-]/g, "");
+
+  if (!cleaned) return null;
+
+  const n = Number(cleaned);
+
+  return Number.isFinite(n) ? n : null;
+}
+
+function scoreObject(value) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const home = toNumber(
+    firstValue(
+      value.home,
+      value.homeScore,
+      value.homeTeamScore,
+      value.homeValue
+    )
+  );
+
+  const away = toNumber(
+    firstValue(
+      value.away,
+      value.awayScore,
+      value.awayTeamScore,
+      value.awayValue
+    )
+  );
+
+  if (home === null || away === null) {
+    return null;
+  }
 
   return {
-    status: res.status,
-    contentType: res.headers.get("content-type") || "",
-    text: await res.text(),
+    home,
+    away
   };
 }
 
-console.log("========================================");
-console.log("🏀 BILYONER GERÇEK API KEŞİF TESTİ");
-console.log("========================================\n");
+function findScore(obj, keys = []) {
+  if (!obj || typeof obj !== "object") {
+    return null;
+  }
 
-const allCandidates = [];
+  for (const key of keys) {
+    const score = scoreObject(obj[key]);
 
-for (const jsUrl of JS_URLS) {
-  console.log("\n========================================");
-  console.log("📦 JS:", jsUrl);
-  console.log("========================================");
+    if (score) {
+      return score;
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------
+// EVENT TESPİTİ
+// ---------------------------------------------------------
+
+function looksLikeEvent(obj) {
+  if (!obj || typeof obj !== "object") {
+    return false;
+  }
+
+  const id = firstValue(
+    obj.sbsEventId,
+    obj.eventId,
+    obj.id
+  );
+
+  const home = firstValue(
+    obj.homeTeam,
+    obj.homeTeamName,
+    obj.home
+  );
+
+  const away = firstValue(
+    obj.awayTeam,
+    obj.awayTeamName,
+    obj.away
+  );
+
+  return Boolean(
+    id &&
+    home &&
+    away &&
+    typeof home !== "object" &&
+    typeof away !== "object"
+  );
+}
+
+function collectEvents(node, output = []) {
+  if (!node || typeof node !== "object") {
+    return output;
+  }
+
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectEvents(item, output);
+    }
+
+    return output;
+  }
+
+  if (looksLikeEvent(node)) {
+    output.push(node);
+  }
+
+  for (const value of Object.values(node)) {
+    if (value && typeof value === "object") {
+      collectEvents(value, output);
+    }
+  }
+
+  return output;
+}
+
+// ---------------------------------------------------------
+// TAKIM / LİG / TARİH
+// ---------------------------------------------------------
+
+function getTeamName(team) {
+  if (!team) return "";
+
+  if (typeof team === "string") {
+    return cleanText(team);
+  }
+
+  return cleanText(
+    firstValue(
+      team.name,
+      team.teamName,
+      team.displayName,
+      team.title,
+      team.label
+    )
+  );
+}
+
+function getCompetition(event) {
+  const competition =
+    event.competition ||
+    event.competitionInfo ||
+    event.league ||
+    event.tournament ||
+    {};
+
+  if (typeof competition === "string") {
+    return cleanText(competition);
+  }
+
+  return cleanText(
+    firstValue(
+      competition.name,
+      competition.competitionName,
+      competition.leagueName,
+      competition.title,
+      event.competitionName,
+      event.leagueName,
+      event.league,
+      event.tournamentName
+    )
+  );
+}
+
+function getEventDate(event, fallbackDate) {
+  const raw = firstValue(
+    event.matchDate,
+    event.eventDate,
+    event.startDate,
+    event.startTime,
+    event.date,
+    event.scheduledDate
+  );
+
+  if (!raw) {
+    return fallbackDate;
+  }
+
+  const parsed = new Date(raw);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return fallbackDate;
+  }
+
+  return parsed.toISOString().slice(0, 10);
+}
+
+function getEventTime(event) {
+  const raw = firstValue(
+    event.matchDate,
+    event.eventDate,
+    event.startDate,
+    event.startTime,
+    event.scheduledDate
+  );
+
+  if (!raw) return "";
+
+  const parsed = new Date(raw);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return "";
+  }
+
+  return parsed.toISOString().slice(11, 16);
+}
+
+// ---------------------------------------------------------
+// SKOR
+// ---------------------------------------------------------
+
+function getScores(event) {
+  let fullTime =
+    findScore(event, [
+      "currentScore",
+      "finalScore",
+      "fullTimeScore",
+      "score",
+      "matchScore",
+      "result"
+    ]);
+
+  let halfTime =
+    findScore(event, [
+      "halfScore",
+      "halfTimeScore",
+      "htScore",
+      "firstHalfScore",
+      "firstPeriodScore"
+    ]);
+
+  // Bazı Bilyoner cevaplarında score doğrudan eventScores
+  // altında bulunabiliyor.
+  if (!fullTime && event.eventScores) {
+    fullTime =
+      findScore(event.eventScores, [
+        "currentScore",
+        "finalScore",
+        "fullTimeScore",
+        "score"
+      ]) ||
+      scoreObject(event.eventScores);
+  }
+
+  if (!halfTime && event.eventScores) {
+    halfTime =
+      findScore(event.eventScores, [
+        "halfScore",
+        "halfTimeScore",
+        "htScore"
+      ]);
+  }
+
+  return {
+    score: fullTime,
+    halfTime
+  };
+}
+
+function getStatus(event, score) {
+  const raw = cleanText(
+    firstValue(
+      event.matchStatus,
+      event.status,
+      event.eventStatus,
+      event.gameStatus,
+      event.state
+    )
+  ).toLowerCase();
+
+  if (score) {
+    if (
+      raw.includes("finished") ||
+      raw.includes("complete") ||
+      raw.includes("ended") ||
+      raw.includes("final")
+    ) {
+      return "finished";
+    }
+  }
+
+  if (
+    raw.includes("live") ||
+    raw.includes("playing") ||
+    raw.includes("started") ||
+    raw.includes("period")
+  ) {
+    return "live";
+  }
+
+  if (
+    raw.includes("cancel") ||
+    raw.includes("postpon")
+  ) {
+    return "cancelled";
+  }
+
+  if (
+    raw.includes("finished") ||
+    raw.includes("complete") ||
+    raw.includes("ended") ||
+    raw.includes("final")
+  ) {
+    return "finished";
+  }
+
+  return "not_started";
+}
+
+// ---------------------------------------------------------
+// EVENT -> KAYIT
+// ---------------------------------------------------------
+
+function normalizeEvent(event, requestDate) {
+  const id = String(
+    firstValue(
+      event.sbsEventId,
+      event.eventId,
+      event.id
+    )
+  );
+
+  const home = getTeamName(
+    firstValue(
+      event.homeTeam,
+      event.homeTeamInfo,
+      event.home
+    )
+  );
+
+  const away = getTeamName(
+    firstValue(
+      event.awayTeam,
+      event.awayTeamInfo,
+      event.away
+    )
+  );
+
+  if (!id || !home || !away) {
+    return null;
+  }
+
+  const date = getEventDate(event, requestDate);
+  const time = getEventTime(event);
+  const competition = getCompetition(event);
+
+  const scores = getScores(event);
+  const status = getStatus(
+    event,
+    scores.score
+  );
+
+  return {
+    id,
+    date,
+    time,
+    league: competition || "Bilinmiyor",
+    homeTeam: home,
+    awayTeam: away,
+
+    score: scores.score
+      ? `${scores.score.home}-${scores.score.away}`
+      : null,
+
+    halfTimeScore: scores.halfTime
+      ? `${scores.halfTime.home}-${scores.halfTime.away}`
+      : null,
+
+    status,
+
+    source: "bilyoner",
+
+    updatedAt: new Date().toISOString()
+  };
+}
+
+// ---------------------------------------------------------
+// API
+// ---------------------------------------------------------
+
+async function fetchDate(date) {
+  const url =
+    `${API_BASE}${API_PATH}?date=${date}`;
 
   try {
-    const result = await fetchText(jsUrl);
+    const response = await fetch(url, {
+      headers: HEADERS
+    });
 
-    console.log("HTTP:", result.status);
-    console.log("Content-Type:", result.contentType);
-    console.log("Uzunluk:", result.text.length);
-
-    if (result.status !== 200) {
-      continue;
+    if (!response.ok) {
+      return [];
     }
 
-    const js = result.text;
+    const data = await response.json();
 
-    const urls = extractUrls(js);
+    return collectEvents(data);
+  } catch {
+    return [];
+  }
+}
 
-    console.log("Bulunan URL adayı:", urls.length);
+// ---------------------------------------------------------
+// ANA İŞLEM
+// ---------------------------------------------------------
 
-    for (const url of urls) {
-      allCandidates.push(url);
-    }
+async function main() {
+  console.log("🏀 BİLYONER BASKETBOL GEÇMİŞİ");
+  console.log(`📅 Sezon: 2026-2027`);
+  console.log(`📅 Aralık: ${SEASON_START} → ${TODAY}`);
 
-    for (const term of SEARCH_TERMS) {
-      const lower = js.toLowerCase();
-      const needle = term.toLowerCase();
+  const dates = dateRange(
+    SEASON_START,
+    TODAY
+  );
 
-      let pos = 0;
-      let count = 0;
+  const allMatches = new Map();
 
-      while (true) {
-        const found = lower.indexOf(needle, pos);
+  let successfulDays = 0;
 
-        if (found === -1) break;
+  for (const date of dates) {
+    const events = await fetchDate(date);
 
-        count++;
+    if (events.length > 0) {
+      successfulDays++;
 
-        if (count <= 3) {
-          console.log(`\n🔎 "${term}" bulundu:`);
-          console.log(context(js, found, 700));
+      for (const event of events) {
+        const match = normalizeEvent(
+          event,
+          date
+        );
+
+        if (!match) continue;
+
+        // Geçmiş sezonların girmesini engelle.
+        if (match.date < SEASON_START) {
+          continue;
         }
 
-        pos = found + needle.length;
-      }
+        // ID benzersiz.
+        const key =
+          `${match.id}`;
 
-      if (count > 0) {
-        console.log(`➡️ "${term}" toplam: ${count}`);
+        const old = allMatches.get(key);
+
+        // Aynı maç tekrar geldiyse daha dolu
+        // olan kaydı tercih et.
+        if (!old) {
+          allMatches.set(key, match);
+        } else {
+          const oldScore =
+            old.score !== null;
+
+          const newScore =
+            match.score !== null;
+
+          if (
+            (!oldScore && newScore) ||
+            match.status === "finished"
+          ) {
+            allMatches.set(key, match);
+          }
+        }
       }
     }
 
-    console.log("\n--- URL ADAYLARI ---");
-
-    for (const url of unique(urls)) {
-      console.log(url);
-    }
-  } catch (err) {
-    console.log("❌ HATA:", err.message);
+    // API'yi gereksiz hızlandırmamak için.
+    await sleep(120);
   }
-}
 
-console.log("\n========================================");
-console.log("🌐 TOPLAM URL ADAYLARI");
-console.log("========================================");
+  const matches = Array.from(
+    allMatches.values()
+  ).sort((a, b) => {
+    const da =
+      `${a.date} ${a.time}`;
 
-const normalized = unique(
-  allCandidates
-    .map(normalizeUrl)
-    .filter(Boolean)
-);
+    const db =
+      `${b.date} ${b.time}`;
 
-for (const url of normalized) {
-  console.log(url);
-}
+    return da.localeCompare(db);
+  });
 
-console.log("\n========================================");
-console.log("🧪 MUHTEMEL API URL'LERİ TEST EDİLİYOR");
-console.log("========================================");
+  // -------------------------------------------------------
+  // ESKİ DOSYA BİLEREK YOK SAYILIYOR
+  // -------------------------------------------------------
 
-const likely = normalized.filter((url) => {
-  const x = url.toLowerCase();
+  const output = {
+    source:
+      "https://www.bilyoner.com",
+    season: "2026-2027",
+    updatedAt:
+      new Date().toISOString(),
+    totalMatches:
+      matches.length,
+    matches
+  };
 
-  return (
-    x.includes("/api") ||
-    x.includes("aggregator") ||
-    x.includes("sports-data") ||
-    x.includes("live-score") ||
-    x.includes("live-stream") ||
-    x.includes("match") ||
-    x.includes("event") ||
-    x.includes("score") ||
-    x.includes("fixture") ||
-    x.includes("result") ||
-    x.includes("league") ||
-    x.includes("lig-") ||
-    x.includes("mac-")
+  fs.mkdirSync(
+    path.dirname(DATA_PATH),
+    { recursive: true }
   );
-});
 
-for (const url of unique(likely)) {
-  try {
-    const result = await fetchText(url);
+  fs.writeFileSync(
+    DATA_PATH,
+    JSON.stringify(
+      output,
+      null,
+      2
+    ),
+    "utf8"
+  );
 
-    console.log("\n----------------------------------------");
-    console.log("URL:", url);
-    console.log("HTTP:", result.status);
-    console.log("Type:", result.contentType);
-    console.log("Length:", result.text.length);
+  const leagues = new Set(
+    matches.map(
+      m => m.league
+    )
+  );
 
-    if (
-      result.contentType.includes("json") ||
-      result.text.trim().startsWith("{") ||
-      result.text.trim().startsWith("[")
-    ) {
-      console.log(
-        result.text
-          .slice(0, 5000)
-          .replace(/\s+/g, " ")
-      );
-    }
-  } catch (err) {
-    console.log("❌", err.message);
-  }
+  const finished =
+    matches.filter(
+      m => m.status === "finished"
+    ).length;
+
+  const withScore =
+    matches.filter(
+      m => m.score
+    ).length;
+
+  console.log(`🏆 Lig: ${leagues.size}`);
+  console.log(`🏀 Maç: ${matches.length}`);
+  console.log(`✅ Skorlu: ${withScore}`);
+  console.log(`🏁 Tamamlanan: ${finished}`);
+  console.log(`📁 Kaydedildi: data/basketball-history.json`);
 }
 
-console.log("\n========================================");
-console.log("🏁 TEST BİTTİ");
-console.log("========================================");
+main().catch(error => {
+  console.error(
+    "❌ HATA:",
+    error.message
+  );
+
+  process.exit(1);
+});
