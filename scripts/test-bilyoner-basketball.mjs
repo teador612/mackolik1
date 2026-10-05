@@ -1,63 +1,101 @@
-const BASE = "https://sportscore.com/api/v1/fixtures/";
+import fs from "fs";
 
-const dates = [
-  "2026-10-05",
-  "2026-10-04",
-  "2026-10-03"
-];
+const FILE =
+  "data/basketball-history.json";
 
-console.log("🏀 SPORTScore BASKETBOL TESTİ");
+const data =
+  JSON.parse(
+    fs.readFileSync(FILE, "utf8")
+  );
 
-for (const date of dates) {
-  try {
-    const url =
-      `${BASE}?sport=basketball&date=${date}&limit=200`;
+const match =
+  data.matches.find(
+    m =>
+      m.finished &&
+      m.slug
+  );
 
-    const response = await fetch(url, {
+if (!match) {
+  console.log("❌ Slug bulunan maç yok");
+  process.exit(1);
+}
+
+console.log(
+  `🏀 ${match.home} - ${match.away}`
+);
+
+console.log(
+  `📅 ${match.date}`
+);
+
+console.log(
+  `🔗 ${match.slug}`
+);
+
+const url =
+  `https://sportscore.com/api/widget/match/` +
+  `?sport=basketball` +
+  `&slug=${encodeURIComponent(match.slug)}`;
+
+try {
+  const response =
+    await fetch(url, {
       headers: {
         accept: "application/json",
-        "user-agent": "Mozilla/5.0"
+        "user-agent":
+          "Mozilla/5.0"
       }
     });
 
-    if (!response.ok) {
-      console.log(`${date} | HTTP=${response.status}`);
-      continue;
-    }
+  console.log(
+    `HTTP=${response.status}`
+  );
 
-    const data = await response.json();
+  if (!response.ok) {
+    console.log("❌ Detay alınamadı");
+    process.exit(1);
+  }
 
-    const matches = Array.isArray(data?.matches)
-      ? data.matches
-      : Array.isArray(data?.data)
-        ? data.data
-        : [];
+  const data =
+    await response.json();
 
-    const finished = matches.filter(m =>
-      String(m?.status || "").toLowerCase() === "finished"
+  const matchData =
+    data?.match ??
+    data?.data ??
+    data;
+
+  console.log(
+    `SKOR=${matchData?.home_score ?? "?"}-${matchData?.away_score ?? "?"}`
+  );
+
+  const periods =
+    matchData?.periods ??
+    matchData?.scores ??
+    matchData?.quarters ??
+    matchData?.periodScores ??
+    null;
+
+  if (periods) {
+    console.log(
+      "✅ PERİYOT VERİSİ VAR"
     );
 
     console.log(
-      `${date} | MAC=${matches.length} | BITEN=${finished.length}`
+      JSON.stringify(periods)
+    );
+  } else {
+    console.log(
+      "❌ Periyot alanı bulunamadı"
     );
 
-    if (matches.length > 0) {
-      const m = matches[0];
-
-      console.log(
-        `ÖRNEK: ${m.home || m.home_team || "?"} - ${m.away || m.away_team || "?"}`
-      );
-
-      console.log(
-        `SKOR: ${m.home_score ?? "?"}-${m.away_score ?? "?"}`
-      );
-
-      console.log(
-        `DURUM: ${m.status || "?"}`
-      );
-    }
-
-  } catch (err) {
-    console.log(`${date} | HATA=${err.message}`);
+    console.log(
+      "ALANLAR=" +
+      Object.keys(matchData || {}).join(",")
+    );
   }
+
+} catch (error) {
+  console.log(
+    `❌ HATA=${error.message}`
+  );
 }
