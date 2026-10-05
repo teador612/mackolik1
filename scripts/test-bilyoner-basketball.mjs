@@ -1,32 +1,62 @@
-const ID = "3281968";
+const API = "https://www.bilyoner.com/api";
 
-const urls = [
-  `https://www.bilyoner.com/api/mobile/live-score/event/${ID}`,
-  `https://www.bilyoner.com/api/mobile/live-score/event/${ID}/detail`,
-  `https://www.bilyoner.com/api/mobile/live-score/event/${ID}/v2`,
-  `https://www.bilyoner.com/api/mobile/live-score/event/v2/${ID}`,
-  `https://www.bilyoner.com/api/mobile/live-score/event/${ID}/scores`
-];
+const EVENT_ID = 2391949;
 
-for (const url of urls) {
-  try {
-    const res = await fetch(url);
+async function main() {
+  const url =
+    `${API}/mobile/live-score/event/v2/sport-list?eventList=2:${EVENT_ID}`;
 
-    console.log(
-      res.status === 200 ? "✅" : "❌",
-      new URL(url).pathname
-    );
-
-    if (res.status === 200) {
-      const text = await res.text();
-
-      console.log("📦 Boyut:", text.length);
-
-      if (/period|quarter|score|half/i.test(text)) {
-        console.log("🏀 Skor verisi bulundu");
-      }
+  const res = await fetch(url, {
+    headers: {
+      Accept: "application/json",
+      "User-Agent": "Mozilla/5.0"
     }
-  } catch {
-    console.log("❌ Hata");
+  });
+
+  console.log(`HTTP: ${res.status}`);
+
+  if (!res.ok) {
+    console.log("❌ GET başarısız");
+    return;
   }
+
+  const data = await res.json();
+
+  const events =
+    data?.events ||
+    data?.data?.events ||
+    [];
+
+  console.log(`EVENT: ${Array.isArray(events) ? events.length : 0}`);
+
+  if (!Array.isArray(events) || !events.length) {
+    console.log("❌ Event bulunamadı");
+    return;
+  }
+
+  const e = events[0];
+
+  console.log(
+    `MAÇ: ${e.homeTeam || "?"} - ${e.awayTeam || "?"}`
+  );
+
+  console.log(
+    `SKOR: ${JSON.stringify(e.currentScore || null)}`
+  );
+
+  console.log(
+    `İY: ${JSON.stringify(e.halfScore || null)}`
+  );
+
+  const keys = Object.keys(e).filter(k =>
+    /period|quarter|score|result|official/i.test(k)
+  );
+
+  console.log(
+    `ALANLAR: ${keys.join(",") || "YOK"}`
+  );
 }
+
+main().catch(e => {
+  console.log(`❌ ${e.message}`);
+});
