@@ -1516,50 +1516,46 @@ function getDayMatches() {
    BUGÜN BAŞARI
 ========================================================= */
 
-function calculateTodaySummary(
-    predictedMatches
-) {
+function calculateTodaySummary(predictedMatches) {
 
     let success = 0;
     let total = 0;
 
-    for (
-        const item
-        of predictedMatches
-    ) {
+    for (const item of predictedMatches) {
 
-        if (
-            !isPlayed(
-                item.match
-            )
-        ) {
+        if (!isPlayed(item.match)) {
             continue;
         }
 
-        for (
-            const rec
-            of item.recommendations
-        ) {
+        /*
+         * SADECE ANA TAHMİN
+         * recommendations[0] = kartta ilk görünen tahmin
+         *
+         * + altında bulunan ek tahminler
+         * başarı oranına dahil edilmez.
+         */
+        const mainRecommendation =
+            item.recommendations &&
+            item.recommendations[0];
 
-            const result =
-                getMarketOutcome(
-                    item.match,
-                    rec.targetMarket
-                );
+        if (!mainRecommendation) {
+            continue;
+        }
 
-            if (
-                result === null
-            ) {
-                continue;
-            }
+        const result =
+            getMarketOutcome(
+                item.match,
+                mainRecommendation.targetMarket
+            );
 
-            total++;
+        if (result === null) {
+            continue;
+        }
 
-            if (
-                result === true
-            ) {
-                success++;
-            }
+        total++;
+
+        if (result === true) {
+            success++;
         }
     }
 
@@ -1568,14 +1564,10 @@ function calculateTodaySummary(
         total,
         percentage:
             total
-                ? (
-                    success /
-                    total
-                ) * 100
+                ? (success / total) * 100
                 : null
     };
 }
-
 /* =========================================================
    SON 60 GÜN BAŞARI
 ========================================================= */
