@@ -1,19 +1,7 @@
 // scripts/update-basketball-history.mjs
-// SportScore - 2026/27 Basketbol Geçmişi
-//
-// Kaynak:
-// https://sportscore.com/
-// API:
-// https://sportscore.com/api/v1/fixtures/
-//
-// Amaç:
-// - Sadece 2026/27 sezonu
-// - 60 gün sınırı YOK
-// - 01.08.2026'dan bugüne kadar
-// - Basketbol maçlarını toplar
-// - Bitmiş maçların skorlarını kaydeder
-// - Aynı maçı tekrar eklemez
-// - Eski Mackolik/Bilyoner verilerini kullanmaz
+// SPORTScore Basketbol Geçmişi
+// 2026-2027 sezonu
+// 200 maç/gün sınırını competition filtresi ile aşar
 
 import fs from "fs";
 import path from "path";
@@ -28,18 +16,21 @@ const OUTPUT =
     "basketball-history.json"
   );
 
-// 2026/27 sezon başlangıcı
+// SADECE 2026/27 SEZONU
 const START_DATE = "2026-08-01";
 
+// İstekler arasında küçük bekleme
+const REQUEST_DELAY = 120;
+
 // --------------------------------------------------
-// YARDIMCILAR
+// YARDIMCI
 // --------------------------------------------------
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function isoDate(date) {
+function formatDate(date) {
   return date.toISOString().slice(0, 10);
 }
 
@@ -53,18 +44,42 @@ function normalize(value) {
     .trim();
 }
 
-function getTeamName(match, side) {
-  if (side === "home") {
-    return (
-      match.home ??
-      match.home_team ??
-      match.homeTeam ??
-      match.home_name ??
-      match.teams?.home?.name ??
-      ""
+function getDates(start, end) {
+  const dates = [];
+
+  let current =
+    new Date(`${start}T00:00:00Z`);
+
+  const last =
+    new Date(`${end}T00:00:00Z`);
+
+  while (current <= last) {
+    dates.push(formatDate(current));
+
+    current = new Date(
+      current.getTime() + 86400000
     );
   }
 
+  return dates;
+}
+
+// --------------------------------------------------
+// TAKIM
+// --------------------------------------------------
+
+function getHome(match) {
+  return (
+    match.home ??
+    match.home_team ??
+    match.homeTeam ??
+    match.home_name ??
+    match.teams?.home?.name ??
+    ""
+  );
+}
+
+function getAway(match) {
   return (
     match.away ??
     match.away_team ??
@@ -75,25 +90,20 @@ function getTeamName(match, side) {
   );
 }
 
-function getScore(match, side) {
-  const direct =
-    side === "home"
-      ? [
-          match.home_score,
-          match.homeScore,
-          match.score?.home,
-          match.scores?.home,
-          match.teams?.home?.score
-        ]
-      : [
-          match.away_score,
-          match.awayScore,
-          match.score?.away,
-          match.scores?.away,
-          match.teams?.away?.score
-        ];
+// --------------------------------------------------
+// SKOR
+// --------------------------------------------------
 
-  for (const value of direct) {
+function getHomeScore(match) {
+  const values = [
+    match.home_score,
+    match.homeScore,
+    match.score?.home,
+    match.scores?.home,
+    match.teams?.home?.score
+  ];
+
+  for (const value of values) {
     const n = Number(value);
 
     if (Number.isFinite(n)) {
@@ -103,6 +113,30 @@ function getScore(match, side) {
 
   return null;
 }
+
+function getAwayScore(match) {
+  const values = [
+    match.away_score,
+    match.awayScore,
+    match.score?.away,
+    match.scores?.away,
+    match.teams?.away?.score
+  ];
+
+  for (const value of values) {
+    const n = Number(value);
+
+    if (Number.isFinite(n)) {
+      return n;
+    }
+  }
+
+  return null;
+}
+
+// --------------------------------------------------
+// DURUM
+// --------------------------------------------------
 
 function getStatus(match) {
   return String(
@@ -116,44 +150,78 @@ function getStatus(match) {
 function isFinished(match) {
   const status = getStatus(match);
 
-  return [
-    "finished",
-    "ended",
-    "final",
-    "completed",
-    "ft"
-  ].includes(status);
-}
-
-// --------------------------------------------------
-// TARİH LİSTESİ
-// --------------------------------------------------
-
-function makeDates(start, end) {
-  const result = [];
-
-  let current = new Date(`${start}T00:00:00Z`);
-  const last = new Date(`${end}T00:00:00Z`);
-
-  while (current <= last) {
-    result.push(isoDate(current));
-
-    current = new Date(
-      current.getTime() + 86400000
-    );
+  if (
+    [
+      "finished",
+      "ended",
+      "final",
+      "completed",
+      "ft"
+    ].includes(status)
+  ) {
+    return true;
   }
 
-  return result;
+  const home = getHomeScore(match);
+  const away = getAwayScore(match);
+
+  return (
+    home !== null &&
+    away !== null
+  );
 }
 
 // --------------------------------------------------
-// SPORT SCORE
+// LİG / COMPETITION
 // --------------------------------------------------
 
-async function fetchDay(date) {
-  const url =
-    `${API}?sport=basketball&date=${date}&limit=200`;
+function getCompetition(match) {
+  const value =
+    match.competition ??
+    match.league ??
+    match.tournament ??
+    match.competition_name ??
+    null;
 
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return {
+      name: value,
+      slug: normalize(value).replace(/ /g, "-")
+    };
+  }
+
+  return {
+    id:
+      value.id ??
+      value.competition_id ??
+      null,
+
+    name:
+      value.name ??
+      value.title ??
+      value.label ??
+      "",
+
+    slug:
+      value.slug ??
+      value.competition_slug ??
+      normalize(
+        value.name ??
+        value.title ??
+        ""
+      ).replace(/ /g, "-")
+  };
+}
+
+// --------------------------------------------------
+// API
+// --------------------------------------------------
+
+async function request(url) {
   const response = await fetch(url, {
     headers: {
       accept: "application/json",
@@ -168,42 +236,104 @@ async function fetchDay(date) {
     );
   }
 
-  const data = await response.json();
-
-  return Array.isArray(data?.matches)
-    ? data.matches
-    : Array.isArray(data?.data)
-      ? data.data
-      : [];
+  return response.json();
 }
 
 // --------------------------------------------------
-// MAÇ DÖNÜŞÜMÜ
+// GÜNÜN GENEL LİSTESİ
 // --------------------------------------------------
 
-function convertMatch(match, date) {
-  const home = getTeamName(match, "home");
-  const away = getTeamName(match, "away");
+async function getDayMatches(date) {
+  const url =
+    `${API}?sport=basketball` +
+    `&date=${date}` +
+    `&limit=200`;
+
+  const data =
+    await request(url);
+
+  if (Array.isArray(data?.matches)) {
+    return data.matches;
+  }
+
+  if (Array.isArray(data?.data)) {
+    return data.data;
+  }
+
+  return [];
+}
+
+// --------------------------------------------------
+// LİGE GÖRE TÜM MAÇLAR
+// --------------------------------------------------
+
+async function getCompetitionMatches(
+  date,
+  competition
+) {
+  const slug =
+    competition?.slug;
+
+  if (!slug) {
+    return [];
+  }
+
+  const url =
+    `${API}?sport=basketball` +
+    `&date=${date}` +
+    `&competition=${encodeURIComponent(slug)}` +
+    `&limit=200`;
+
+  try {
+    const data =
+      await request(url);
+
+    if (Array.isArray(data?.matches)) {
+      return data.matches;
+    }
+
+    if (Array.isArray(data?.data)) {
+      return data.data;
+    }
+
+    return [];
+  } catch {
+    return [];
+  }
+}
+
+// --------------------------------------------------
+// MAÇI KAYIT FORMATINA ÇEVİR
+// --------------------------------------------------
+
+function convertMatch(
+  match,
+  date
+) {
+  const home =
+    getHome(match);
+
+  const away =
+    getAway(match);
 
   if (!home || !away) {
     return null;
   }
 
-  const homeScore = getScore(match, "home");
-  const awayScore = getScore(match, "away");
+  const homeScore =
+    getHomeScore(match);
 
-  const status = getStatus(match);
+  const awayScore =
+    getAwayScore(match);
 
-  const slug =
-    match.slug ??
-    match.match_slug ??
-    "";
+  const competition =
+    getCompetition(match);
 
   const id =
     match.id ??
     match.match_id ??
     match.fixture_id ??
-    slug ??
+    match.slug ??
     `${date}-${normalize(home)}-${normalize(away)}`;
 
   return {
@@ -220,119 +350,171 @@ function convertMatch(match, date) {
     home,
     away,
 
-    homeNormalized: normalize(home),
-    awayNormalized: normalize(away),
+    homeNormalized:
+      normalize(home),
+
+    awayNormalized:
+      normalize(away),
 
     score: {
       home: homeScore,
       away: awayScore
     },
 
-    status,
+    status:
+      getStatus(match),
 
     finished:
-      isFinished(match) ||
-      (
-        homeScore !== null &&
-        awayScore !== null
-      ),
+      isFinished(match),
 
-    slug,
+    competition,
 
-    competition:
-      match.competition ??
-      match.league ??
-      match.tournament ??
-      match.competition_name ??
-      null,
+    slug:
+      match.slug ??
+      match.match_slug ??
+      "",
 
-    source: "sportscore"
+    source:
+      "sportscore"
   };
 }
 
 // --------------------------------------------------
-// ANA İŞLEM
+// ANA
 // --------------------------------------------------
 
 async function main() {
-  const today = isoDate(new Date());
+  const today =
+    formatDate(new Date());
 
-  const dates = makeDates(
-    START_DATE,
-    today
-  );
+  const dates =
+    getDates(
+      START_DATE,
+      today
+    );
+
+  const allMatches =
+    new Map();
+
+  const competitionsSeen =
+    new Set();
+
+  let failedDays = 0;
 
   console.log("");
-  console.log("🏀 SPORTScore BASKETBOL GEÇMİŞİ");
+  console.log(
+    "🏀 SPORTScore BASKETBOL GEÇMİŞİ"
+  );
+
   console.log(
     `📅 ${START_DATE} → ${today}`
   );
 
-  const all = new Map();
+  console.log(
+    `📆 Gün: ${dates.length}`
+  );
 
-  let finishedCount = 0;
-  let scoredCount = 0;
-  let failedDays = 0;
+  // ------------------------------------------------
+  // HER GÜN
+  // ------------------------------------------------
 
   for (const date of dates) {
     try {
-      const matches = await fetchDay(date);
+      // Önce günü alıyoruz.
+      const baseMatches =
+        await getDayMatches(date);
 
-      let dayFinished = 0;
+      // Genel listeden ligleri bul.
+      const competitions =
+        new Map();
 
-      for (const match of matches) {
-        const converted =
-          convertMatch(match, date);
+      for (
+        const match of baseMatches
+      ) {
+        const competition =
+          getCompetition(match);
 
-        if (!converted) {
-          continue;
+        if (
+          competition?.slug
+        ) {
+          competitions.set(
+            competition.slug,
+            competition
+          );
         }
+      }
 
-        const old =
-          all.get(converted.id);
+      // Eğer 200 veya daha az maç varsa
+      // genel liste yeterli.
+      if (
+        baseMatches.length < 200
+      ) {
+        for (
+          const match of baseMatches
+        ) {
+          const converted =
+            convertMatch(
+              match,
+              date
+            );
 
-        // Aynı maç daha önce geldiyse
-        // daha dolu olan kaydı tercih et.
-        if (!old) {
-          all.set(
+          if (!converted) {
+            continue;
+          }
+
+          allMatches.set(
             converted.id,
             converted
           );
-        } else {
-          const oldScore =
-            old.score?.home !== null &&
-            old.score?.away !== null;
+        }
+      }
 
-          const newScore =
-            converted.score?.home !== null &&
-            converted.score?.away !== null;
+      // 200'e ulaştıysa veya daha fazlaysa
+      // bütün ligleri ayrı ayrı çekiyoruz.
+      else {
+        for (
+          const competition
+          of competitions.values()
+        ) {
+          const matches =
+            await getCompetitionMatches(
+              date,
+              competition
+            );
 
-          if (!oldScore && newScore) {
-            all.set(
+          for (
+            const match of matches
+          ) {
+            const converted =
+              convertMatch(
+                match,
+                date
+              );
+
+            if (!converted) {
+              continue;
+            }
+
+            allMatches.set(
               converted.id,
               converted
             );
           }
-        }
 
-        if (
-          converted.score.home !== null &&
-          converted.score.away !== null
-        ) {
-          scoredCount++;
-        }
+          competitionsSeen.add(
+            competition.slug
+          );
 
-        if (converted.finished) {
-          dayFinished++;
+          await sleep(
+            REQUEST_DELAY
+          );
         }
       }
 
-      finishedCount += dayFinished;
+      await sleep(
+        REQUEST_DELAY
+      );
 
-      // Her gün için gereksiz log basmıyoruz.
-      // GitHub Actions logu kısa kalacak.
-
-      await sleep(100);
     } catch (error) {
       failedDays++;
 
@@ -343,12 +525,14 @@ async function main() {
   }
 
   // ------------------------------------------------
-  // SONUÇ
+  // SIRALA
   // ------------------------------------------------
 
   const matches =
-    Array.from(all.values())
-      .sort((a, b) => {
+    Array.from(
+      allMatches.values()
+    ).sort(
+      (a, b) => {
         const da =
           `${a.date} ${a.time || ""}`;
 
@@ -356,54 +540,75 @@ async function main() {
           `${b.date} ${b.time || ""}`;
 
         return da.localeCompare(db);
-      });
+      }
+    );
 
-  const leagues = new Set();
+  // ------------------------------------------------
+  // İSTATİSTİK
+  // ------------------------------------------------
 
-  for (const match of matches) {
-    if (match.competition) {
-      leagues.add(
-        typeof match.competition === "string"
-          ? match.competition
-          : JSON.stringify(match.competition)
+  const leagueSet =
+    new Set();
+
+  for (
+    const match of matches
+  ) {
+    if (
+      match.competition?.slug
+    ) {
+      leagueSet.add(
+        match.competition.slug
       );
     }
   }
 
-  const finalFinished =
+  const scored =
     matches.filter(
-      m => m.finished
+      match =>
+        match.score.home !== null &&
+        match.score.away !== null
     ).length;
 
-  const finalScored =
+  const finished =
     matches.filter(
-      m =>
-        m.score?.home !== null &&
-        m.score?.away !== null
+      match =>
+        match.finished
     ).length;
+
+  // ------------------------------------------------
+  // JSON
+  // ------------------------------------------------
 
   const output = {
-    source: "SportScore",
-    sport: "basketball",
-    season: "2026-2027",
+    source:
+      "SportScore",
 
-    startDate: START_DATE,
-    endDate: today,
+    sport:
+      "basketball",
+
+    season:
+      "2026-2027",
+
+    startDate:
+      START_DATE,
+
+    endDate:
+      today,
 
     updatedAt:
       new Date().toISOString(),
 
     totalLeagues:
-      leagues.size,
+      leagueSet.size,
 
     totalMatches:
       matches.length,
 
     scoredMatches:
-      finalScored,
+      scored,
 
     finishedMatches:
-      finalFinished,
+      finished,
 
     matches
   };
@@ -425,8 +630,13 @@ async function main() {
     "utf8"
   );
 
+  // ------------------------------------------------
+  // KISA LOG
+  // ------------------------------------------------
+
+  console.log("");
   console.log(
-    `🏆 Lig: ${leagues.size}`
+    `🏆 Lig: ${leagueSet.size}`
   );
 
   console.log(
@@ -434,14 +644,14 @@ async function main() {
   );
 
   console.log(
-    `✅ Skorlu: ${finalScored}`
+    `✅ Skorlu: ${scored}`
   );
 
   console.log(
-    `🏁 Tamamlanan: ${finalFinished}`
+    `🏁 Tamamlanan: ${finished}`
   );
 
-  if (failedDays > 0) {
+  if (failedDays) {
     console.log(
       `⚠️ Hatalı gün: ${failedDays}`
     );
@@ -456,8 +666,7 @@ async function main() {
 
 main().catch(error => {
   console.error(
-    "❌ HATA:",
-    error.message
+    `❌ ${error.message}`
   );
 
   process.exit(1);
