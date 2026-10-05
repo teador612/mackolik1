@@ -1,56 +1,82 @@
-// scripts/test-bilyoner-basketball.mjs
+// scripts/find-bilyoner-gateway.mjs
 
-const API = "https://aping.bilyoner.com";
-const date = new Date().toISOString().slice(0, 10);
+const PAGE = "https://www.bilyoner.com/canli-skor/basketbol-canli-skor";
 
-console.log("🏀 Bilyoner test");
-console.log(`📅 ${date}`);
+console.log("🔎 Bilyoner gateway");
 
 try {
-  const url =
-    `${API}/mobile/live-score/event/v2/basketball?date=${date}`;
-
-  const response = await fetch(url, {
-    method: "GET",
+  const res = await fetch(PAGE, {
     headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json",
-      "Referer": "https://www.bilyoner.com/"
+      "User-Agent": "Mozilla/5.0"
     },
     signal: AbortSignal.timeout(15000)
   });
 
-  console.log(`🌐 HTTP: ${response.status}`);
-
-  if (!response.ok) {
-    console.log("❌ API erişilemedi");
+  if (!res.ok) {
+    console.log(`❌ Sayfa: ${res.status}`);
     process.exit(1);
   }
 
-  const data = await response.json();
+  const html = await res.text();
 
-  const competitions = Array.isArray(data?.competitions)
-    ? data.competitions
-    : [];
+  const scripts = [
+    ...html.matchAll(
+      /<script[^>]+src=["']([^"']+\.js)["']/gi
+    )
+  ].map(x => x[1]);
 
-  let matches = 0;
+  const urls = scripts.map(x =>
+    x.startsWith("http")
+      ? x
+      : new URL(x, PAGE).href
+  );
 
-  for (const league of competitions) {
-    if (Array.isArray(league?.events)) {
-      matches += league.events.length;
-    }
+  let found = new Set();
+
+  for (const url of urls) {
+    try {
+      const r = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0"
+        },
+        signal: AbortSignal.timeout(15000)
+      });
+
+      if (!r.ok) continue;
+
+      const js = await r.text();
+
+      const patterns = [
+        /API_GATEWAY\s*[:=]\s*["']([^"']+)["']/g,
+        /API_GATEWAY.{0,150}?(https?:\/\/[^"'\\]+)/g,
+        /aping\.bilyoner\.com/gi,
+        /https?:\/\/[^"'\\\s]+/g
+      ];
+
+      for (const pattern of patterns) {
+        for (const m of js.matchAll(pattern)) {
+          const value = m[1] || m[0];
+
+          if (
+            value.includes("api") ||
+            value.includes("bilyoner") ||
+            value.includes("gateway")
+          ) {
+            found.add(value);
+          }
+        }
+      }
+    } catch {}
   }
 
-  console.log(`🏀 Lig: ${competitions.length}`);
-  console.log(`🏀 Maç: ${matches}`);
-
-  if (matches > 0) {
-    console.log("✅ Bilyoner çalışıyor");
-  } else {
-    console.log("⚠️ Veri yok");
+  if (found.size === 0) {
+    console.log("❌ Gateway bulunamadı");
+    process.exit(1);
   }
 
-} catch (error) {
-  console.log("❌ Bağlantı başarısız");
+  console.log(`✅ Bulundu: ${[...found].slice(0, 5).join(" | ")}`);
+
+} catch {
+  console.log("❌ Bilyoner bağlantısı başarısız");
   process.exit(1);
 }
