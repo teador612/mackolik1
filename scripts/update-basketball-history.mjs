@@ -1,5 +1,4 @@
 // scripts/update-basketball-history.mjs
-// Bilyoner 2026-2027 Basketbol Geçmişi
 
 import fs from "fs";
 import path from "path";
@@ -12,12 +11,8 @@ const DATA_PATH = path.resolve(
   "basketball-history.json"
 );
 
-// 2026-2027 sezonu başlangıcı.
-// Geçmiş sezonlara kesinlikle girilmez.
 const SEASON_START = "2026-08-01";
-
-const today = new Date();
-const TODAY = today.toISOString().slice(0, 10);
+const TODAY = new Date().toISOString().slice(0, 10);
 
 const HEADERS = {
   "User-Agent": "Mozilla/5.0",
@@ -26,29 +21,11 @@ const HEADERS = {
   "Origin": "https://www.bilyoner.com"
 };
 
-// ---------------------------------------------------------
+// --------------------------------------------------
 // YARDIMCILAR
-// ---------------------------------------------------------
+// --------------------------------------------------
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function dateRange(start, end) {
-  const result = [];
-
-  const d = new Date(`${start}T00:00:00Z`);
-  const e = new Date(`${end}T00:00:00Z`);
-
-  while (d <= e) {
-    result.push(d.toISOString().slice(0, 10));
-    d.setUTCDate(d.getUTCDate() + 1);
-  }
-
-  return result;
-}
-
-function cleanText(value) {
+function clean(value) {
   if (value === null || value === undefined) return "";
 
   return String(value)
@@ -57,21 +34,21 @@ function cleanText(value) {
     .trim();
 }
 
-function firstValue(...values) {
-  for (const value of values) {
+function first(...values) {
+  for (const v of values) {
     if (
-      value !== undefined &&
-      value !== null &&
-      value !== ""
+      v !== undefined &&
+      v !== null &&
+      v !== ""
     ) {
-      return value;
+      return v;
     }
   }
 
   return null;
 }
 
-function toNumber(value) {
+function number(value) {
   if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
   }
@@ -80,141 +57,51 @@ function toNumber(value) {
     return null;
   }
 
-  const cleaned = value
-    .replace(",", ".")
-    .replace(/[^\d.-]/g, "");
-
-  if (!cleaned) return null;
-
-  const n = Number(cleaned);
+  const n = Number(
+    value
+      .replace(",", ".")
+      .replace(/[^\d.-]/g, "")
+  );
 
   return Number.isFinite(n) ? n : null;
 }
 
-function scoreObject(value) {
-  if (!value || typeof value !== "object") {
-    return null;
-  }
-
-  const home = toNumber(
-    firstValue(
-      value.home,
-      value.homeScore,
-      value.homeTeamScore,
-      value.homeValue
-    )
-  );
-
-  const away = toNumber(
-    firstValue(
-      value.away,
-      value.awayScore,
-      value.awayTeamScore,
-      value.awayValue
-    )
-  );
-
-  if (home === null || away === null) {
-    return null;
-  }
-
-  return {
-    home,
-    away
-  };
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-function findScore(obj, keys = []) {
-  if (!obj || typeof obj !== "object") {
-    return null;
+function dateRange(start, end) {
+  const dates = [];
+
+  const d = new Date(`${start}T00:00:00Z`);
+  const e = new Date(`${end}T00:00:00Z`);
+
+  while (d <= e) {
+    dates.push(
+      d.toISOString().slice(0, 10)
+    );
+
+    d.setUTCDate(
+      d.getUTCDate() + 1
+    );
   }
 
-  for (const key of keys) {
-    const score = scoreObject(obj[key]);
-
-    if (score) {
-      return score;
-    }
-  }
-
-  return null;
+  return dates;
 }
 
-// ---------------------------------------------------------
-// EVENT TESPİTİ
-// ---------------------------------------------------------
+// --------------------------------------------------
+// TAKIM
+// --------------------------------------------------
 
-function looksLikeEvent(obj) {
-  if (!obj || typeof obj !== "object") {
-    return false;
-  }
-
-  const id = firstValue(
-    obj.sbsEventId,
-    obj.eventId,
-    obj.id
-  );
-
-  const home = firstValue(
-    obj.homeTeam,
-    obj.homeTeamName,
-    obj.home
-  );
-
-  const away = firstValue(
-    obj.awayTeam,
-    obj.awayTeamName,
-    obj.away
-  );
-
-  return Boolean(
-    id &&
-    home &&
-    away &&
-    typeof home !== "object" &&
-    typeof away !== "object"
-  );
-}
-
-function collectEvents(node, output = []) {
-  if (!node || typeof node !== "object") {
-    return output;
-  }
-
-  if (Array.isArray(node)) {
-    for (const item of node) {
-      collectEvents(item, output);
-    }
-
-    return output;
-  }
-
-  if (looksLikeEvent(node)) {
-    output.push(node);
-  }
-
-  for (const value of Object.values(node)) {
-    if (value && typeof value === "object") {
-      collectEvents(value, output);
-    }
-  }
-
-  return output;
-}
-
-// ---------------------------------------------------------
-// TAKIM / LİG / TARİH
-// ---------------------------------------------------------
-
-function getTeamName(team) {
+function teamName(team) {
   if (!team) return "";
 
   if (typeof team === "string") {
-    return cleanText(team);
+    return clean(team);
   }
 
-  return cleanText(
-    firstValue(
+  return clean(
+    first(
       team.name,
       team.teamName,
       team.displayName,
@@ -224,57 +111,121 @@ function getTeamName(team) {
   );
 }
 
-function getCompetition(event) {
-  const competition =
-    event.competition ||
-    event.competitionInfo ||
-    event.league ||
-    event.tournament ||
-    {};
+// --------------------------------------------------
+// SKOR
+// --------------------------------------------------
 
-  if (typeof competition === "string") {
-    return cleanText(competition);
+function scoreFrom(value) {
+  if (!value || typeof value !== "object") {
+    return null;
   }
 
-  return cleanText(
-    firstValue(
-      competition.name,
-      competition.competitionName,
-      competition.leagueName,
-      competition.title,
-      event.competitionName,
-      event.leagueName,
-      event.league,
-      event.tournamentName
+  const home = number(
+    first(
+      value.home,
+      value.homeScore,
+      value.homeTeamScore,
+      value.homeValue
     )
   );
+
+  const away = number(
+    first(
+      value.away,
+      value.awayScore,
+      value.awayTeamScore,
+      value.awayValue
+    )
+  );
+
+  if (
+    home === null ||
+    away === null
+  ) {
+    return null;
+  }
+
+  return {
+    home,
+    away
+  };
 }
 
-function getEventDate(event, fallbackDate) {
-  const raw = firstValue(
+function getScore(event) {
+  const candidates = [
+    event.currentScore,
+    event.finalScore,
+    event.fullTimeScore,
+    event.score,
+    event.matchScore,
+    event.result,
+    event.eventScores?.currentScore,
+    event.eventScores?.finalScore,
+    event.eventScores?.score
+  ];
+
+  for (const candidate of candidates) {
+    const score = scoreFrom(candidate);
+
+    if (score) {
+      return score;
+    }
+  }
+
+  return null;
+}
+
+function getHalfScore(event) {
+  const candidates = [
+    event.halfScore,
+    event.halfTimeScore,
+    event.htScore,
+    event.firstHalfScore,
+    event.firstPeriodScore,
+    event.eventScores?.halfScore,
+    event.eventScores?.halfTimeScore
+  ];
+
+  for (const candidate of candidates) {
+    const score = scoreFrom(candidate);
+
+    if (score) {
+      return score;
+    }
+  }
+
+  return null;
+}
+
+// --------------------------------------------------
+// TARİH
+// --------------------------------------------------
+
+function getDate(event, requestedDate) {
+  const raw = first(
     event.matchDate,
     event.eventDate,
     event.startDate,
     event.startTime,
-    event.date,
-    event.scheduledDate
+    event.scheduledDate,
+    event.date
   );
 
   if (!raw) {
-    return fallbackDate;
+    return requestedDate;
   }
 
-  const parsed = new Date(raw);
+  const d = new Date(raw);
 
-  if (Number.isNaN(parsed.getTime())) {
-    return fallbackDate;
+  if (Number.isNaN(d.getTime())) {
+    return requestedDate;
   }
 
-  return parsed.toISOString().slice(0, 10);
+  return d.toISOString().slice(0, 10);
 }
 
-function getEventTime(event) {
-  const raw = firstValue(
+function getTime(event) {
+  const raw = first(
     event.matchDate,
     event.eventDate,
     event.startDate,
@@ -284,70 +235,51 @@ function getEventTime(event) {
 
   if (!raw) return "";
 
-  const parsed = new Date(raw);
+  const d = new Date(raw);
 
-  if (Number.isNaN(parsed.getTime())) {
+  if (Number.isNaN(d.getTime())) {
     return "";
   }
 
-  return parsed.toISOString().slice(11, 16);
+  return d.toISOString().slice(11, 16);
 }
 
-// ---------------------------------------------------------
-// SKOR
-// ---------------------------------------------------------
+// --------------------------------------------------
+// LİG
+// --------------------------------------------------
 
-function getScores(event) {
-  let fullTime =
-    findScore(event, [
-      "currentScore",
-      "finalScore",
-      "fullTimeScore",
-      "score",
-      "matchScore",
-      "result"
-    ]);
-
-  let halfTime =
-    findScore(event, [
-      "halfScore",
-      "halfTimeScore",
-      "htScore",
-      "firstHalfScore",
-      "firstPeriodScore"
-    ]);
-
-  // Bazı Bilyoner cevaplarında score doğrudan eventScores
-  // altında bulunabiliyor.
-  if (!fullTime && event.eventScores) {
-    fullTime =
-      findScore(event.eventScores, [
-        "currentScore",
-        "finalScore",
-        "fullTimeScore",
-        "score"
-      ]) ||
-      scoreObject(event.eventScores);
+function getCompetitionName(competition) {
+  if (!competition) {
+    return "Bilinmiyor";
   }
 
-  if (!halfTime && event.eventScores) {
-    halfTime =
-      findScore(event.eventScores, [
-        "halfScore",
-        "halfTimeScore",
-        "htScore"
-      ]);
+  if (typeof competition === "string") {
+    return clean(competition);
   }
 
-  return {
-    score: fullTime,
-    halfTime
-  };
+  return clean(
+    first(
+      competition.name,
+      competition.competitionName,
+      competition.leagueName,
+      competition.title,
+      competition.displayName,
+      competition.label
+    )
+  ) || "Bilinmiyor";
 }
 
-function getStatus(event, score) {
-  const raw = cleanText(
-    firstValue(
+// --------------------------------------------------
+// STATUS
+// --------------------------------------------------
+
+function getStatus(
+  event,
+  date,
+  fullScore
+) {
+  const raw = clean(
+    first(
       event.matchStatus,
       event.status,
       event.eventStatus,
@@ -356,35 +288,38 @@ function getStatus(event, score) {
     )
   ).toLowerCase();
 
-  if (score) {
-    if (
-      raw.includes("finished") ||
-      raw.includes("complete") ||
-      raw.includes("ended") ||
-      raw.includes("final")
-    ) {
-      return "finished";
-    }
-  }
-
-  if (
-    raw.includes("live") ||
-    raw.includes("playing") ||
-    raw.includes("started") ||
-    raw.includes("period")
-  ) {
-    return "live";
-  }
-
+  // Açıkça iptal/ertelenmişse
   if (
     raw.includes("cancel") ||
-    raw.includes("postpon")
+    raw.includes("postpon") ||
+    raw.includes("abandon")
   ) {
     return "cancelled";
   }
 
+  // Bilyoner status değerini yakalayamazsak
+  // skor + geçmiş tarih üzerinden tamamlandı.
   if (
-    raw.includes("finished") ||
+    fullScore &&
+    date < TODAY
+  ) {
+    return "finished";
+  }
+
+  // Yaygın canlı ifadeleri
+  if (
+    raw.includes("live") ||
+    raw.includes("playing") ||
+    raw.includes("period") ||
+    raw.includes("started") ||
+    raw.includes("quarter")
+  ) {
+    return "live";
+  }
+
+  // Yaygın tamamlanmış ifadeleri
+  if (
+    raw.includes("finish") ||
     raw.includes("complete") ||
     raw.includes("ended") ||
     raw.includes("final")
@@ -395,196 +330,436 @@ function getStatus(event, score) {
   return "not_started";
 }
 
-// ---------------------------------------------------------
-// EVENT -> KAYIT
-// ---------------------------------------------------------
+// --------------------------------------------------
+// EVENT ÇIKARMA
+// --------------------------------------------------
 
-function normalizeEvent(event, requestDate) {
-  const id = String(
-    firstValue(
-      event.sbsEventId,
-      event.eventId,
-      event.id
-    )
-  );
-
-  const home = getTeamName(
-    firstValue(
-      event.homeTeam,
-      event.homeTeamInfo,
-      event.home
-    )
-  );
-
-  const away = getTeamName(
-    firstValue(
-      event.awayTeam,
-      event.awayTeamInfo,
-      event.away
-    )
-  );
-
-  if (!id || !home || !away) {
-    return null;
+function isEvent(obj) {
+  if (!obj || typeof obj !== "object") {
+    return false;
   }
 
-  const date = getEventDate(event, requestDate);
-  const time = getEventTime(event);
-  const competition = getCompetition(event);
-
-  const scores = getScores(event);
-  const status = getStatus(
-    event,
-    scores.score
+  const id = first(
+    obj.sbsEventId,
+    obj.eventId,
+    obj.id
   );
 
-  return {
-    id,
-    date,
-    time,
-    league: competition || "Bilinmiyor",
-    homeTeam: home,
-    awayTeam: away,
+  const home = first(
+    obj.homeTeam,
+    obj.homeTeamInfo,
+    obj.home
+  );
 
-    score: scores.score
-      ? `${scores.score.home}-${scores.score.away}`
-      : null,
+  const away = first(
+    obj.awayTeam,
+    obj.awayTeamInfo,
+    obj.away
+  );
 
-    halfTimeScore: scores.halfTime
-      ? `${scores.halfTime.home}-${scores.halfTime.away}`
-      : null,
-
-    status,
-
-    source: "bilyoner",
-
-    updatedAt: new Date().toISOString()
-  };
+  return Boolean(
+    id &&
+    home &&
+    away
+  );
 }
 
-// ---------------------------------------------------------
+// --------------------------------------------------
+// COMPETITION -> EVENT
+// --------------------------------------------------
+
+function extractCompetitionEvents(
+  competition,
+  fallbackLeague
+) {
+  const league =
+    getCompetitionName(
+      competition
+    ) || fallbackLeague;
+
+  const events = [];
+
+  const possibleArrays = [
+    competition.events,
+    competition.basketballEvents,
+    competition.matches,
+    competition.games
+  ];
+
+  for (const list of possibleArrays) {
+    if (!Array.isArray(list)) {
+      continue;
+    }
+
+    for (const event of list) {
+      if (isEvent(event)) {
+        events.push({
+          event,
+          league
+        });
+      }
+    }
+  }
+
+  // Bazı cevaplarda events daha derinde olabilir.
+  if (events.length === 0) {
+    scanObject(
+      competition,
+      league,
+      events
+    );
+  }
+
+  return events;
+}
+
+function scanObject(
+  obj,
+  league,
+  output
+) {
+  if (!obj || typeof obj !== "object") {
+    return;
+  }
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      scanObject(
+        item,
+        league,
+        output
+      );
+    }
+
+    return;
+  }
+
+  if (isEvent(obj)) {
+    output.push({
+      event: obj,
+      league
+    });
+
+    return;
+  }
+
+  for (const value of Object.values(obj)) {
+    if (
+      value &&
+      typeof value === "object"
+    ) {
+      scanObject(
+        value,
+        league,
+        output
+      );
+    }
+  }
+}
+
+// --------------------------------------------------
 // API
-// ---------------------------------------------------------
+// --------------------------------------------------
 
 async function fetchDate(date) {
   const url =
     `${API_BASE}${API_PATH}?date=${date}`;
 
   try {
-    const response = await fetch(url, {
-      headers: HEADERS
-    });
+    const response = await fetch(
+      url,
+      {
+        headers: HEADERS
+      }
+    );
 
     if (!response.ok) {
       return [];
     }
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
-    return collectEvents(data);
+    const competitions =
+      Array.isArray(
+        data?.competitions
+      )
+        ? data.competitions
+        : [];
+
+    const result = [];
+
+    for (
+      const competition
+      of competitions
+    ) {
+      result.push(
+        ...extractCompetitionEvents(
+          competition,
+          "Bilinmiyor"
+        )
+      );
+    }
+
+    return result;
+
   } catch {
     return [];
   }
 }
 
-// ---------------------------------------------------------
-// ANA İŞLEM
-// ---------------------------------------------------------
+// --------------------------------------------------
+// NORMALIZE
+// --------------------------------------------------
 
-async function main() {
-  console.log("🏀 BİLYONER BASKETBOL GEÇMİŞİ");
-  console.log(`📅 Sezon: 2026-2027`);
-  console.log(`📅 Aralık: ${SEASON_START} → ${TODAY}`);
-
-  const dates = dateRange(
-    SEASON_START,
-    TODAY
+function normalize(
+  event,
+  league,
+  requestedDate
+) {
+  const id = String(
+    first(
+      event.sbsEventId,
+      event.eventId,
+      event.id
+    ) || ""
   );
 
-  const allMatches = new Map();
+  const home = teamName(
+    first(
+      event.homeTeam,
+      event.homeTeamInfo,
+      event.home
+    )
+  );
 
-  let successfulDays = 0;
+  const away = teamName(
+    first(
+      event.awayTeam,
+      event.awayTeamInfo,
+      event.away
+    )
+  );
 
-  for (const date of dates) {
-    const events = await fetchDate(date);
+  if (
+    !id ||
+    !home ||
+    !away
+  ) {
+    return null;
+  }
 
-    if (events.length > 0) {
-      successfulDays++;
+  const date =
+    getDate(
+      event,
+      requestedDate
+    );
 
-      for (const event of events) {
-        const match = normalizeEvent(
-          event,
+  // 2026-27 sezon sınırı
+  if (
+    date < SEASON_START
+  ) {
+    return null;
+  }
+
+  if (
+    date > TODAY
+  ) {
+    return null;
+  }
+
+  const fullScore =
+    getScore(event);
+
+  const halfScore =
+    getHalfScore(event);
+
+  const status =
+    getStatus(
+      event,
+      date,
+      fullScore
+    );
+
+  return {
+    id,
+
+    date,
+
+    time:
+      getTime(event),
+
+    league:
+      league || "Bilinmiyor",
+
+    homeTeam:
+      home,
+
+    awayTeam:
+      away,
+
+    score:
+      fullScore
+        ? `${fullScore.home}-${fullScore.away}`
+        : null,
+
+    halfTimeScore:
+      halfScore
+        ? `${halfScore.home}-${halfScore.away}`
+        : null,
+
+    status,
+
+    source:
+      "bilyoner",
+
+    updatedAt:
+      new Date().toISOString()
+  };
+}
+
+// --------------------------------------------------
+// ANA
+// --------------------------------------------------
+
+async function main() {
+  console.log(
+    "🏀 BİLYONER BASKETBOL GEÇMİŞİ"
+  );
+
+  console.log(
+    `📅 2026-08-01 → ${TODAY}`
+  );
+
+  const dates =
+    dateRange(
+      SEASON_START,
+      TODAY
+    );
+
+  const matches =
+    new Map();
+
+  let daysWithData = 0;
+
+  for (
+    const date of dates
+  ) {
+    const items =
+      await fetchDate(date);
+
+    if (
+      items.length > 0
+    ) {
+      daysWithData++;
+    }
+
+    for (
+      const item of items
+    ) {
+      const match =
+        normalize(
+          item.event,
+          item.league,
           date
         );
 
-        if (!match) continue;
+      if (!match) {
+        continue;
+      }
 
-        // Geçmiş sezonların girmesini engelle.
-        if (match.date < SEASON_START) {
-          continue;
-        }
+      const old =
+        matches.get(match.id);
 
-        // ID benzersiz.
-        const key =
-          `${match.id}`;
+      if (!old) {
+        matches.set(
+          match.id,
+          match
+        );
+        continue;
+      }
 
-        const old = allMatches.get(key);
+      // Skor sonradan geldiyse güncelle.
+      if (
+        !old.score &&
+        match.score
+      ) {
+        matches.set(
+          match.id,
+          match
+        );
+        continue;
+      }
 
-        // Aynı maç tekrar geldiyse daha dolu
-        // olan kaydı tercih et.
-        if (!old) {
-          allMatches.set(key, match);
-        } else {
-          const oldScore =
-            old.score !== null;
-
-          const newScore =
-            match.score !== null;
-
-          if (
-            (!oldScore && newScore) ||
-            match.status === "finished"
-          ) {
-            allMatches.set(key, match);
-          }
-        }
+      // Tamamlanmış kayıt öncelikli.
+      if (
+        match.status === "finished" &&
+        old.status !== "finished"
+      ) {
+        matches.set(
+          match.id,
+          match
+        );
       }
     }
 
-    // API'yi gereksiz hızlandırmamak için.
-    await sleep(120);
+    await sleep(100);
   }
 
-  const matches = Array.from(
-    allMatches.values()
-  ).sort((a, b) => {
-    const da =
-      `${a.date} ${a.time}`;
+  const list =
+    Array.from(
+      matches.values()
+    ).sort((a, b) => {
+      const A =
+        `${a.date} ${a.time}`;
 
-    const db =
-      `${b.date} ${b.time}`;
+      const B =
+        `${b.date} ${b.time}`;
 
-    return da.localeCompare(db);
-  });
+      return A.localeCompare(B);
+    });
 
-  // -------------------------------------------------------
-  // ESKİ DOSYA BİLEREK YOK SAYILIYOR
-  // -------------------------------------------------------
+  const leagues =
+    new Set(
+      list.map(
+        x => x.league
+      )
+    );
+
+  const scored =
+    list.filter(
+      x => x.score
+    ).length;
+
+  const finished =
+    list.filter(
+      x =>
+        x.status ===
+        "finished"
+    ).length;
 
   const output = {
     source:
       "https://www.bilyoner.com",
-    season: "2026-2027",
+
+    season:
+      "2026-2027",
+
     updatedAt:
       new Date().toISOString(),
+
     totalMatches:
-      matches.length,
-    matches
+      list.length,
+
+    matches:
+      list
   };
 
   fs.mkdirSync(
     path.dirname(DATA_PATH),
-    { recursive: true }
+    {
+      recursive: true
+    }
   );
 
   fs.writeFileSync(
@@ -597,27 +772,25 @@ async function main() {
     "utf8"
   );
 
-  const leagues = new Set(
-    matches.map(
-      m => m.league
-    )
+  console.log(
+    `🏆 Lig: ${leagues.size}`
   );
 
-  const finished =
-    matches.filter(
-      m => m.status === "finished"
-    ).length;
+  console.log(
+    `🏀 Maç: ${list.length}`
+  );
 
-  const withScore =
-    matches.filter(
-      m => m.score
-    ).length;
+  console.log(
+    `✅ Skorlu: ${scored}`
+  );
 
-  console.log(`🏆 Lig: ${leagues.size}`);
-  console.log(`🏀 Maç: ${matches.length}`);
-  console.log(`✅ Skorlu: ${withScore}`);
-  console.log(`🏁 Tamamlanan: ${finished}`);
-  console.log(`📁 Kaydedildi: data/basketball-history.json`);
+  console.log(
+    `🏁 Tamamlanan: ${finished}`
+  );
+
+  console.log(
+    "📁 data/basketball-history.json"
+  );
 }
 
 main().catch(error => {
