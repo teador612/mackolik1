@@ -1,85 +1,69 @@
-// scripts/find-bilyoner-gateway.mjs
+// scripts/test-bilyoner-basketball.mjs
 
-const PAGE = "https://www.bilyoner.com/canli-skor/basketbol-canli-skor";
+const DATE = new Date().toISOString().slice(0, 10);
 
-console.log("🔎 Bilyoner API gateway");
+const API =
+  `https://www.bilyoner.com/api/mobile/live-score/event/v2/basketball?date=${DATE}`;
+
+console.log("🏀 Bilyoner Basketbol API");
+console.log(`📅 ${DATE}`);
 
 try {
-  const page = await fetch(PAGE, {
-    headers: { "User-Agent": "Mozilla/5.0" }
+  const res = await fetch(API, {
+    headers: {
+      "User-Agent": "Mozilla/5.0",
+      "Accept": "application/json, text/plain, */*",
+      "Referer": "https://www.bilyoner.com/",
+      "Origin": "https://www.bilyoner.com"
+    }
   });
 
-  const html = await page.text();
+  console.log(`🌐 HTTP: ${res.status}`);
 
-  const scripts = [
-    ...html.matchAll(/<script[^>]+src=["']([^"']+\.js)["']/gi)
-  ].map(x => new URL(x[1], PAGE).href);
+  const text = await res.text();
 
-  let found = null;
-
-  for (const url of scripts) {
-    try {
-      const r = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0" }
-      });
-
-      if (!r.ok) continue;
-
-      const js = await r.text();
-
-      // API_GATEWAY tanımını ara
-      const patterns = [
-        /API_GATEWAY\s*[:=]\s*["'`](https?:\/\/[^"'`]+)["'`]/,
-        /API_GATEWAY\s*=\s*["'`](https?:\/\/[^"'`]+)["'`]/,
-        /API_GATEWAY\s*:\s*["'`](https?:\/\/[^"'`]+)["'`]/
-      ];
-
-      for (const pattern of patterns) {
-        const m = js.match(pattern);
-
-        if (m && m[1]) {
-          found = m[1];
-          break;
-        }
-      }
-
-      if (found) break;
-
-      // API_GATEWAY geçiyor ama değer başka değişkenden geliyor olabilir
-      const pos = js.indexOf("API_GATEWAY");
-
-      if (pos !== -1) {
-        const context = js.slice(
-          Math.max(0, pos - 500),
-          pos + 1000
-        );
-
-        const urls = context.match(/https?:\/\/[^"'`\\\s]+/g) || [];
-
-        const candidate = urls.find(u =>
-          !u.includes("gateway.efilli.com") &&
-          !u.includes("mixpanel") &&
-          !u.includes("ipify") &&
-          !u.includes("/static/")
-        );
-
-        if (candidate) {
-          found = candidate;
-          break;
-        }
-      }
-
-    } catch {}
-  }
-
-  if (found) {
-    console.log(`✅ API: ${found}`);
-  } else {
-    console.log("❌ API_GATEWAY değeri bulunamadı");
+  if (!res.ok) {
+    console.log("❌ API cevap vermedi");
+    console.log(text.slice(0, 300));
     process.exit(1);
   }
 
-} catch {
-  console.log("❌ Bilyoner bağlantısı başarısız");
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    console.log("❌ JSON değil");
+    console.log(text.slice(0, 200));
+    process.exit(1);
+  }
+
+  const competitions = data?.competitions || [];
+
+  let matches = 0;
+
+  for (const competition of competitions) {
+    const events =
+      competition?.events ||
+      competition?.basketballEvents ||
+      [];
+
+    if (Array.isArray(events)) {
+      matches += events.length;
+    }
+  }
+
+  console.log(`🏆 Lig: ${competitions.length}`);
+  console.log(`🏀 Maç: ${matches}`);
+
+  if (matches > 0) {
+    console.log("✅ Bilyoner API ÇALIŞIYOR");
+  } else {
+    console.log("⚠️ API çalışıyor ama maç verisi yok");
+  }
+
+} catch (err) {
+  console.log("❌ Bağlantı hatası");
+  console.log(err.message);
   process.exit(1);
 }
