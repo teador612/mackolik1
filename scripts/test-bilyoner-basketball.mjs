@@ -2,79 +2,82 @@
 
 const PAGE = "https://www.bilyoner.com/canli-skor/basketbol-canli-skor";
 
-console.log("🔎 Bilyoner gateway");
+console.log("🔎 Bilyoner API gateway");
 
 try {
-  const res = await fetch(PAGE, {
-    headers: {
-      "User-Agent": "Mozilla/5.0"
-    },
-    signal: AbortSignal.timeout(15000)
+  const page = await fetch(PAGE, {
+    headers: { "User-Agent": "Mozilla/5.0" }
   });
 
-  if (!res.ok) {
-    console.log(`❌ Sayfa: ${res.status}`);
-    process.exit(1);
-  }
-
-  const html = await res.text();
+  const html = await page.text();
 
   const scripts = [
-    ...html.matchAll(
-      /<script[^>]+src=["']([^"']+\.js)["']/gi
-    )
-  ].map(x => x[1]);
+    ...html.matchAll(/<script[^>]+src=["']([^"']+\.js)["']/gi)
+  ].map(x => new URL(x[1], PAGE).href);
 
-  const urls = scripts.map(x =>
-    x.startsWith("http")
-      ? x
-      : new URL(x, PAGE).href
-  );
+  let found = null;
 
-  let found = new Set();
-
-  for (const url of urls) {
+  for (const url of scripts) {
     try {
       const r = await fetch(url, {
-        headers: {
-          "User-Agent": "Mozilla/5.0"
-        },
-        signal: AbortSignal.timeout(15000)
+        headers: { "User-Agent": "Mozilla/5.0" }
       });
 
       if (!r.ok) continue;
 
       const js = await r.text();
 
+      // API_GATEWAY tanımını ara
       const patterns = [
-        /API_GATEWAY\s*[:=]\s*["']([^"']+)["']/g,
-        /API_GATEWAY.{0,150}?(https?:\/\/[^"'\\]+)/g,
-        /aping\.bilyoner\.com/gi,
-        /https?:\/\/[^"'\\\s]+/g
+        /API_GATEWAY\s*[:=]\s*["'`](https?:\/\/[^"'`]+)["'`]/,
+        /API_GATEWAY\s*=\s*["'`](https?:\/\/[^"'`]+)["'`]/,
+        /API_GATEWAY\s*:\s*["'`](https?:\/\/[^"'`]+)["'`]/
       ];
 
       for (const pattern of patterns) {
-        for (const m of js.matchAll(pattern)) {
-          const value = m[1] || m[0];
+        const m = js.match(pattern);
 
-          if (
-            value.includes("api") ||
-            value.includes("bilyoner") ||
-            value.includes("gateway")
-          ) {
-            found.add(value);
-          }
+        if (m && m[1]) {
+          found = m[1];
+          break;
         }
       }
+
+      if (found) break;
+
+      // API_GATEWAY geçiyor ama değer başka değişkenden geliyor olabilir
+      const pos = js.indexOf("API_GATEWAY");
+
+      if (pos !== -1) {
+        const context = js.slice(
+          Math.max(0, pos - 500),
+          pos + 1000
+        );
+
+        const urls = context.match(/https?:\/\/[^"'`\\\s]+/g) || [];
+
+        const candidate = urls.find(u =>
+          !u.includes("gateway.efilli.com") &&
+          !u.includes("mixpanel") &&
+          !u.includes("ipify") &&
+          !u.includes("/static/")
+        );
+
+        if (candidate) {
+          found = candidate;
+          break;
+        }
+      }
+
     } catch {}
   }
 
-  if (found.size === 0) {
-    console.log("❌ Gateway bulunamadı");
+  if (found) {
+    console.log(`✅ API: ${found}`);
+  } else {
+    console.log("❌ API_GATEWAY değeri bulunamadı");
     process.exit(1);
   }
-
-  console.log(`✅ Bulundu: ${[...found].slice(0, 5).join(" | ")}`);
 
 } catch {
   console.log("❌ Bilyoner bağlantısı başarısız");
