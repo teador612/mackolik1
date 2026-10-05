@@ -1,62 +1,83 @@
+import fs from "node:fs/promises";
+
+const FILE = "data/basketball-history.json";
 const API = "https://www.bilyoner.com/api";
 
-const EVENT_ID = 2391949;
-
 async function main() {
-  const url =
-    `${API}/mobile/live-score/event/v2/sport-list?eventList=2:${EVENT_ID}`;
+  const data = JSON.parse(
+    await fs.readFile(FILE, "utf8")
+  );
 
-  const res = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      "User-Agent": "Mozilla/5.0"
+  const match = data.matches.find(
+    x =>
+      x.completed &&
+      x.eventId &&
+      x.sbsEventId
+  );
+
+  if (!match) {
+    console.log("❌ Test maçı bulunamadı");
+    return;
+  }
+
+  console.log(
+    `MAÇ: ${match.homeTeam} - ${match.awayTeam}`
+  );
+
+  console.log(
+    `ID: event=${match.eventId} sbs=${match.sbsEventId}`
+  );
+
+  const urls = [
+    `${API}/mobile/live-score/event/v2/sport-list?eventList=2:${match.eventId}`,
+    `${API}/mobile/live-score/event/v2/sport-list?eventList=2:${match.sbsEventId}`
+  ];
+
+  for (let i = 0; i < urls.length; i++) {
+    try {
+      const res = await fetch(urls[i], {
+        headers: {
+          Accept: "application/json",
+          "User-Agent": "Mozilla/5.0"
+        }
+      });
+
+      const json = await res.json();
+
+      const events =
+        json?.events ||
+        json?.data?.events ||
+        [];
+
+      console.log(
+        `TEST ${i + 1}: HTTP=${res.status} EVENT=${Array.isArray(events) ? events.length : 0}`
+      );
+
+      if (Array.isArray(events) && events.length) {
+        const e = events[0];
+
+        console.log(
+          `BULUNDU: ${e.homeTeam || "?"}-${e.awayTeam || "?"}`
+        );
+
+        console.log(
+          `ALANLAR: ${Object.keys(e)
+            .filter(k =>
+              /period|quarter|score|result/i.test(k)
+            )
+            .join(",") || "YOK"}`
+        );
+
+        break;
+      }
+    } catch (err) {
+      console.log(
+        `TEST ${i + 1}: HATA`
+      );
     }
-  });
-
-  console.log(`HTTP: ${res.status}`);
-
-  if (!res.ok) {
-    console.log("❌ GET başarısız");
-    return;
   }
-
-  const data = await res.json();
-
-  const events =
-    data?.events ||
-    data?.data?.events ||
-    [];
-
-  console.log(`EVENT: ${Array.isArray(events) ? events.length : 0}`);
-
-  if (!Array.isArray(events) || !events.length) {
-    console.log("❌ Event bulunamadı");
-    return;
-  }
-
-  const e = events[0];
-
-  console.log(
-    `MAÇ: ${e.homeTeam || "?"} - ${e.awayTeam || "?"}`
-  );
-
-  console.log(
-    `SKOR: ${JSON.stringify(e.currentScore || null)}`
-  );
-
-  console.log(
-    `İY: ${JSON.stringify(e.halfScore || null)}`
-  );
-
-  const keys = Object.keys(e).filter(k =>
-    /period|quarter|score|result|official/i.test(k)
-  );
-
-  console.log(
-    `ALANLAR: ${keys.join(",") || "YOK"}`
-  );
 }
 
-main().catch(e => {
-  console.log(`❌ ${e.message}`);
+main().catch(() => {
+  console.log("❌ Test başarısız");
 });
