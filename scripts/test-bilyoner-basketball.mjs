@@ -1,69 +1,19 @@
-// scripts/test-bilyoner-basketball.mjs
-
-const DATE = new Date().toISOString().slice(0, 10);
-
 const API =
-  `https://www.bilyoner.com/api/mobile/live-score/event/v2/basketball?date=${DATE}`;
+  "https://www.bilyoner.com/api/mobile/live-score/event/v2/basketball?date=2026-10-05";
 
-console.log("🏀 Bilyoner Basketbol API");
-console.log(`📅 ${DATE}`);
+const res = await fetch(API);
+const data = await res.json();
 
-try {
-  const res = await fetch(API, {
-    headers: {
-      "User-Agent": "Mozilla/5.0",
-      "Accept": "application/json, text/plain, */*",
-      "Referer": "https://www.bilyoner.com/",
-      "Origin": "https://www.bilyoner.com"
-    }
-  });
+const event = data.competitions
+  ?.flatMap(c => c.events || [])
+  ?.find(e => e.sbsEventId);
 
-  console.log(`🌐 HTTP: ${res.status}`);
-
-  const text = await res.text();
-
-  if (!res.ok) {
-    console.log("❌ API cevap vermedi");
-    console.log(text.slice(0, 300));
-    process.exit(1);
-  }
-
-  let data;
-
-  try {
-    data = JSON.parse(text);
-  } catch {
-    console.log("❌ JSON değil");
-    console.log(text.slice(0, 200));
-    process.exit(1);
-  }
-
-  const competitions = data?.competitions || [];
-
-  let matches = 0;
-
-  for (const competition of competitions) {
-    const events =
-      competition?.events ||
-      competition?.basketballEvents ||
-      [];
-
-    if (Array.isArray(events)) {
-      matches += events.length;
-    }
-  }
-
-  console.log(`🏆 Lig: ${competitions.length}`);
-  console.log(`🏀 Maç: ${matches}`);
-
-  if (matches > 0) {
-    console.log("✅ Bilyoner API ÇALIŞIYOR");
-  } else {
-    console.log("⚠️ API çalışıyor ama maç verisi yok");
-  }
-
-} catch (err) {
-  console.log("❌ Bağlantı hatası");
-  console.log(err.message);
-  process.exit(1);
+if (!event) {
+  console.log("❌ Maç bulunamadı");
+  process.exit(0);
 }
+
+console.log("🏀 Maç:", event.homeTeam, "-", event.awayTeam);
+console.log("🆔 sbsEventId:", event.sbsEventId);
+console.log("🆔 eventId:", event.eventId);
+console.log("📊 İlk skor:", JSON.stringify(event.halfScore));
