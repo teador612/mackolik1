@@ -1,0 +1,23 @@
+name: 🏀 Bilyoner Basketbol API Keşif
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  discover-bilyoner-api:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Repository checkout
+        uses: actions/checkout@v4
+
+      - name: 🟢 Node.js kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 🔎 Bilyoner API keşfi
+        run: node scripts/find-bilyoner-api.mjs
