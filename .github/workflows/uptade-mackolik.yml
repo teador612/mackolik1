@@ -1,148 +1,105 @@
 name: Mackolik skor güncelleme
+
 on:
   schedule:
     - cron: "*/15 * * * *"
+
   workflow_dispatch:
+
   repository_dispatch:
     types:
       - run-script
+
 permissions:
   contents: write
   pages: write
   id-token: write
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
-      # ==========================================
+
+      # ================================
       # REPO
-      # ==========================================
-      - name: Repository checkout
+      # ================================
+      - name: 📥 Repo indir
         uses: actions/checkout@v4
-      # ==========================================
+        with:
+          fetch-depth: 0
+
+      # ================================
       # NODE
-      # ==========================================
-      - name: Node.js
+      # ================================
+      - name: 🟢 Node.js kur
         uses: actions/setup-node@v4
         with:
           node-version: 20
-      # ==========================================
-      # CHEERIO
-      # ==========================================
-      - name: Cheerio kur
-        run: |
-          npm install cheerio
-      # ==========================================
-      # FUTBOL
-      # ==========================================
-      - name: Futbol verilerini güncelle
+
+      # ================================
+      # FUTBOL + BASKETBOL VERİLERİ
+      # ================================
+      - name: ⚽🏀 Verileri güncelle
         run: |
           node scripts/update-mackolik.mjs
-      # ==========================================
-      # BASKETBOL PROGRAM
-      # ==========================================
-      - name: Basketbol programını güncelle
+
+      # ================================
+      # DEĞİŞİKLİK VAR MI?
+      # ================================
+      - name: 🔎 Değişiklik kontrolü
+        id: changes
         run: |
-          node scripts/update-basketball.mjs
-      # ==========================================
-      # BASKETBOL GEÇMİŞ
-      # ==========================================
-      - name: Basketbol geçmiş verisini güncelle
-        run: |
-          node scripts/update-basketball-history.mjs
-      # ==========================================
-      # VERİLERİ KONTROL ET
-      # ==========================================
-      - name: Basketbol verilerini kontrol et
-        run: |
-          echo "======================================"
-          echo "BASKETBOL DOSYALARI"
-          echo "======================================"
-          if [ -f data/basketball.json ]; then
-            echo "basketball.json mevcut"
-            wc -c data/basketball.json
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Değişiklik yok."
           else
-            echo "basketball.json BULUNAMADI"
-            exit 1
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Değişiklik bulundu."
           fi
-          if [ -f data/basketball-history.json ]; then
-            echo "basketball-history.json mevcut"
-            wc -c data/basketball-history.json
-          else
-            echo "basketball-history.json bulunamadı"
-          fi
-      # ==========================================
+
+      # ================================
       # COMMIT
-      # ==========================================
-      - name: Verileri commit et
+      # ================================
+      - name: 💾 Değişiklikleri commit et
+        if: steps.changes.outputs.changed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            data/matches.json \
-            data/basketball.json \
-            data/basketball-history.json
-          if git diff --cached --quiet; then
-            echo "Yeni veri değişikliği yok."
-          else
-            git commit -m "Mackolik futbol ve basketbol verilerini güncelle"
-            git push
-          fi
-      # ==========================================
-      # TÜM ANA DİZİNİ PAGES İÇİN HAZIRLA
-      # ==========================================
-      - name: Pages klasörünü hazırla
+
+          git add -A
+
+          git commit -m "Mackolik futbol ve basketbol verilerini güncelle"
+
+      # ================================
+      # REMOTE SENKRONİZASYON
+      # ================================
+      - name: 🔄 GitHub ile senkronize et
+        if: steps.changes.outputs.changed == 'true'
         run: |
-          rm -rf _site
-          mkdir -p _site
-          echo "======================================"
-          echo "TÜM ANA DİZİN DOSYALARI KOPYALANIYOR"
-          echo "======================================"
-          # Ana dizindeki her şeyi kopyala
-          # .git ve GitHub workflow dosyaları hariç
-          rsync -av \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='scripts' \
-            --exclude='_site' \
-            ./ _site/
-          echo ""
-          echo "======================================"
-          echo "PAGES DOSYALARI"
-          echo "======================================"
-          find _site -type f | sort
-          echo ""
-          echo "======================================"
-          echo "DOSYA SAYISI"
-          echo "======================================"
-          find _site -type f | wc -l
-          echo ""
-          echo "======================================"
-          echo "CSS DOSYALARI"
-          echo "======================================"
-          find _site -type f \( \
-            -name "*.css" \
-            -o -name "*.scss" \
-          \) | sort
-          echo ""
-          echo "======================================"
-          echo "HTML DOSYALARI"
-          echo "======================================"
-          find _site -type f -name "*.html" | sort
-      # ==========================================
-      # PAGES ARTIFACT
-      # ==========================================
-      - name: Pages artifact oluştur
+          git fetch origin main
+
+          git rebase origin/main
+
+      # ================================
+      # PUSH
+      # ================================
+      - name: 🚀 GitHub'a gönder
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          git push origin HEAD:main
+
+      # ================================
+      # PAGES DEPLOY
+      # ================================
+      - name: 📦 GitHub Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
-      # ==========================================
-      # DEPLOY
-      # ==========================================
-      - name: GitHub Pages yayınla
+          path: .
+
+      - name: 🌐 GitHub Pages yayınla
         uses: actions/deploy-pages@v4
-        id: deployment
