@@ -1,7 +1,13 @@
 /* =========================================================
    BUGÜNÜN MAÇLARI - MACKOLIK1
    Açılış oranlarından son 60 gün analizi
+
+   BAŞARI HESAPLAMASI:
+   - Günlük başarı = sadece ana tahminler
+   - 60 günlük başarı = sadece ana tahminler
+   - Ana tahmin = analysis.best
    ========================================================= */
+
 (function () {
   'use strict';
 
@@ -96,7 +102,7 @@
       }
     },
     {
-      key: 'au25Ust',
+      key: 'au15Ust',
       label: '1,5 Üst',
       test: function (f) {
         return f ? (f[0] + f[1]) > 1.5 : null;
@@ -127,203 +133,234 @@
     'au25Ust'
   ];
 
-  function $(id) {
-    return document.getElementById(id);
+  function $(selector) {
+    return document.querySelector(selector);
   }
 
-  function esc(v) {
-    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
-      return {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#39;'
-      }[c];
-    });
+  function esc(value) {
+    return String(value == null ? '' : value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
-  function num(v) {
-    if (v == null || String(v).trim() === '') return NaN;
-    var n = Number(String(v).replace(',', '.'));
-    return isFinite(n) ? n : NaN;
-  }
-
-  function score(v) {
-    if (v == null) return null;
-
-    var s = String(v).trim();
-
-    var m = s.match(/^(\d+)\s*[-:]\s*(\d+)$/);
-    if (m) return [+m[1], +m[2]];
-
-    return null;
-  }
-
-  function getDate(m) {
-    if (!m) return '';
-
-    var d = String(m.date || '');
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
-      return d;
+  function num(value) {
+    if (value === null || value === undefined || value === '') {
+      return null;
     }
 
-    var p = d.split('.');
+    var n = Number(
+      String(value)
+        .replace(',', '.')
+        .replace(/[^\d.-]/g, '')
+    );
 
-    if (p.length === 3) {
-      return p[2] + '-' +
-             String(p[1]).padStart(2, '0') + '-' +
-             String(p[0]).padStart(2, '0');
-    }
-
-    return d;
+    return Number.isFinite(n) ? n : null;
   }
 
-  function formatDate(d) {
-    var p = String(d || '').split('-');
-
-    if (p.length === 3) {
-      return p[2] + '.' + p[1] + '.' + p[0];
+  function score(value) {
+    if (value === null || value === undefined) {
+      return null;
     }
 
-    return d || '';
+    if (Array.isArray(value) && value.length >= 2) {
+      var a = num(value[0]);
+      var b = num(value[1]);
+
+      if (a !== null && b !== null) {
+        return [a, b];
+      }
+    }
+
+    var text = String(value).trim();
+
+    var m = text.match(/(-?\d+)\s*[-:]\s*(-?\d+)/);
+
+    if (!m) {
+      m = text.match(/(-?\d+)\s*-\s*(-?\d+)/);
+    }
+
+    if (!m) {
+      return null;
+    }
+
+    return [Number(m[1]), Number(m[2])];
+  }
+
+  function getDate(match) {
+    return match.date ||
+      match.tarih ||
+      match.matchDate ||
+      match.macTarihi ||
+      '';
+  }
+
+  function formatDate(value) {
+    if (!value) {
+      return '';
+    }
+
+    var text = String(value);
+
+    var m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+
+    if (m) {
+      return m[3] + '-' + m[2] + '-' + m[1];
+    }
+
+    m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+    if (m) {
+      return m[1] + '-' + m[2] + '-' + m[3];
+    }
+
+    var d = new Date(text);
+
+    if (!Number.isNaN(d.getTime())) {
+      return d.getFullYear() +
+        '-' +
+        String(d.getMonth() + 1).padStart(2, '0') +
+        '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
+    return text;
   }
 
   function todayISO() {
     var d = new Date();
 
-    return d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    return d.getFullYear() +
+      '-' +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      '-' +
       String(d.getDate()).padStart(2, '0');
   }
 
   function daysAgoISO(days) {
     var d = new Date();
+
+    d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - days);
 
-    return d.getFullYear() + '-' +
-      String(d.getMonth() + 1).padStart(2, '0') + '-' +
+    return d.getFullYear() +
+      '-' +
+      String(d.getMonth() + 1).padStart(2, '0') +
+      '-' +
       String(d.getDate()).padStart(2, '0');
   }
 
-  function getOpeningOdds(m) {
-    if (!m) return {};
-
-    return m.openingOdds ||
-           m.odds ||
-           {};
+  function getOpeningOdds(match) {
+    return match.openingOdds ||
+      match.opening ||
+      match.oddsOpening ||
+      match.odds ||
+      match.oranlar ||
+      match.openOdds ||
+      {};
   }
 
-  function getFT(m) {
-    if (!m) return null;
+  function getFT(match) {
+    return score(
+      match.ft ||
+      match.fullTime ||
+      match.score ||
+      match.skor ||
+      match.result ||
+      null
+    );
+  }
 
-    if (
-      m.score &&
-      /^\d+$/.test(String(m.score.home)) &&
-      /^\d+$/.test(String(m.score.away))
-    ) {
-      return [
-        Number(m.score.home),
-        Number(m.score.away)
-      ];
+  function getHT(match) {
+    return score(
+      match.ht ||
+      match.halfTime ||
+      match.halfTimeScore ||
+      match.iySkor ||
+      match.ilkYari ||
+      null
+    );
+  }
+
+  function normalizeMatch(match) {
+    var m = Object.assign({}, match);
+
+    m.date = formatDate(getDate(match));
+    m.ft = getFT(match);
+    m.ht = getHT(match);
+    m.openingOdds = getOpeningOdds(match);
+
+    return m;
+  }
+
+  function isPlayed(match) {
+    return !!getFT(match);
+  }
+
+  function getOdd(match, key) {
+    var odds = getOpeningOdds(match);
+
+    if (!odds) {
+      return null;
     }
 
-    if (m.scoreFT) {
-      return score(m.scoreFT);
+    var value = odds[key];
+
+    if (value === undefined || value === null || value === '') {
+      return null;
     }
 
-    return null;
+    return num(value);
   }
 
-  function getHT(m) {
-    if (!m) return null;
-
-    if (
-      m.halfTimeScore &&
-      /^\d+$/.test(String(m.halfTimeScore.home)) &&
-      /^\d+$/.test(String(m.halfTimeScore.away))
-    ) {
-      return [
-        Number(m.halfTimeScore.home),
-        Number(m.halfTimeScore.away)
-      ];
-    }
-
-    if (m.scoreHT) {
-      return score(m.scoreHT);
-    }
-
-    return null;
-  }
-
-  function isPlayed(m) {
-    return !!getFT(m);
-  }
-
-  function normalizeMatch(m) {
-    return {
-      raw: m,
-      date: getDate(m),
-      league: m.league || '',
-      home: m.home || '',
-      away: m.away || '',
-      time: m.time || '',
-      code: m.code || '',
-      ft: getFT(m),
-      ht: getHT(m),
-      odds: getOpeningOdds(m)
-    };
-  }
-
-  /* ---------------------------------------------------------
-     INDEX
-     Aynı ORAN TÜRÜ + aynı ORAN değerine sahip maçlar
-     --------------------------------------------------------- */
-
-  function buildIndex() {
+  function buildIndex(history) {
     INDEX = Object.create(null);
 
-    DATA.forEach(function (m) {
-      if (!m.ft) return;
+    history.forEach(function (match) {
+      var odds = getOpeningOdds(match);
 
-      Object.keys(m.odds || {}).forEach(function (key) {
-        var n = num(m.odds[key]);
+      MARKET_KEYS.forEach(function (marketKey) {
+        var odd = num(odds && odds[marketKey]);
 
-        if (!(n > 0)) return;
-
-        var indexKey = key + '|' + n;
-
-        if (!INDEX[indexKey]) {
-          INDEX[indexKey] = [];
+        if (odd === null || odd < CFG.minOdd) {
+          return;
         }
 
-        INDEX[indexKey].push(m);
+        var key = marketKey + '|' + odd.toFixed(2);
+
+        if (!INDEX[key]) {
+          INDEX[key] = [];
+        }
+
+        INDEX[key].push(match);
       });
     });
   }
 
-  /* ---------------------------------------------------------
-     13 SONUCUN TAMAMINI HESAPLA
-     --------------------------------------------------------- */
-
   function calculateStats(hist) {
     return RESULTS.map(function (result) {
-
       var success = 0;
       var total = 0;
 
-      hist.forEach(function (m) {
+      hist.forEach(function (match) {
+        var ft = getFT(match);
+        var ht = getHT(match);
 
-        var value = result.test(m.ft, m.ht);
+        if (!ft) {
+          return;
+        }
 
-        if (value === null || value === undefined) {
+        var ok = result.test(ft, ht);
+
+        if (ok === null) {
           return;
         }
 
         total++;
 
-        if (value) {
+        if (ok) {
           success++;
         }
       });
@@ -345,863 +382,1216 @@
     });
   }
 
-  /* ---------------------------------------------------------
-     HER ORAN GRUBU İÇİN ANALİZ
-
-     ÖNEMLİ:
-     MS1 oranı 1.80 ise:
-       MS1 1.80 olan geçmiş maçları bul
-       sonra bu maçların:
-       MS1
-       MSX
-       MS2
-       KG Var
-       İY1
-       İYX
-       ...
-       2,5 Üst
-
-     sonuçlarının HEPSİNİ hesapla.
-     --------------------------------------------------------- */
-
   function analyzeMatch(match) {
-
-    var odds = match.odds || {};
+    var odds = getOpeningOdds(match);
     var groups = [];
-    var seen = Object.create(null);
-
-    Object.keys(odds).forEach(function (marketKey) {
-
-      if (MARKET_KEYS.indexOf(marketKey) === -1) {
-        return;
-      }
-
-      var odd = num(odds[marketKey]);
-
-      if (!(odd >= CFG.minOdd)) {
-        return;
-      }
-
-      var indexKey = marketKey + '|' + odd;
-      var hist = INDEX[indexKey];
-
-      if (!hist || !hist.length) {
-        return;
-      }
-
-      /*
-       Aynı oran grubunu tekrar hesaplama.
-      */
-      var signature = hist
-        .map(function (m) {
-          return m.date + '|' +
-                 m.home + '|' +
-                 m.away;
-        })
-        .sort()
-        .join('||');
-
-      var uniqueKey = marketKey + '|' + odd + '|' + signature;
-
-      if (seen[uniqueKey]) {
-        return;
-      }
-
-      seen[uniqueKey] = true;
-
-      var stats = calculateStats(hist);
-
-      var ideals = stats.filter(function (x) {
-        return x.ideal;
-      });
-
-      groups.push({
-        marketKey: marketKey,
-        odd: odd,
-        hist: hist,
-        stats: stats,
-        ideals: ideals
-      });
-    });
-
-    /*
-     Aynı tahmin birden fazla oran grubundan çıkabilir.
-     En güçlü olanı bırakıyoruz.
-     */
     var predictionMap = Object.create(null);
 
-    groups.forEach(function (group) {
+    MARKET_KEYS.forEach(function (marketKey) {
+      var odd = num(odds && odds[marketKey]);
 
-      group.ideals.forEach(function (p) {
+      if (odd === null || odd < CFG.minOdd) {
+        return;
+      }
 
-        var old = predictionMap[p.label];
+      var indexKey = marketKey + '|' + odd.toFixed(2);
+      var history = INDEX[indexKey] || [];
 
-        var item = {
-          key: p.key,
-          label: p.label,
-          percent: p.percent,
-          success: p.success,
-          total: p.total,
-          sourceMarket: group.marketKey,
-          sourceOdd: group.odd
+      if (history.length < CFG.minMatches) {
+        return;
+      }
+
+      var stats = calculateStats(history);
+
+      stats.forEach(function (stat) {
+        if (!stat.ideal) {
+          return;
+        }
+
+        var prediction = {
+          key: stat.key,
+          label: stat.label,
+          odd: odd,
+          success: stat.success,
+          total: stat.total,
+          percent: stat.percent,
+          marketKey: marketKey
         };
 
+        groups.push(prediction);
+
+        var existing = predictionMap[stat.label];
+
         if (
-          !old ||
-          item.percent > old.percent ||
+          !existing ||
+          prediction.percent > existing.percent ||
           (
-            item.percent === old.percent &&
-            item.total > old.total
+            prediction.percent === existing.percent &&
+            prediction.total > existing.total
           )
         ) {
-          predictionMap[p.label] = item;
+          predictionMap[stat.label] = prediction;
         }
       });
     });
 
     var predictions = Object.keys(predictionMap)
-      .map(function (k) {
-        return predictionMap[k];
+      .map(function (key) {
+        return predictionMap[key];
       })
       .sort(function (a, b) {
-        return (
-          b.percent - a.percent ||
-          b.total - a.total
-        );
+        if (b.percent !== a.percent) {
+          return b.percent - a.percent;
+        }
+
+        return b.total - a.total;
       });
 
     return {
       groups: groups,
       predictions: predictions,
-      best: predictions.length
-        ? predictions[0]
-        : null
+      best: predictions.length ? predictions[0] : null
     };
   }
 
-  /* ---------------------------------------------------------
-     CSS
-     --------------------------------------------------------- */
-
-  var css = `
-    .bm-wrap{
-      background:#07111f;
-      color:#eaf1ff;
-      padding:14px;
-      border-radius:14px;
-      margin:12px 0;
+  /*
+   * Ana tahmin sonucu
+   *
+   * Sadece analysis.best kullanılır.
+   *
+   * success = yeşil
+   * fail    = kırmızı
+   * pending = sarı
+   */
+  function getPredictionStatus(prediction, match) {
+    if (!prediction) {
+      return 'pending';
     }
 
-    .bm-title{
-      font-size:18px;
-      font-weight:800;
-      margin-bottom:12px;
+    var result = RESULTS.find(function (item) {
+      return item.key === prediction.key &&
+        item.label === prediction.label;
+    });
+
+    if (!result) {
+      return 'pending';
     }
 
-    .bm-controls{
-      display:grid;
-      grid-template-columns:repeat(5,1fr);
-      gap:8px;
-      margin-bottom:10px;
+    var ft = getFT(match);
+    var ht = getHT(match);
+
+    if (!ft) {
+      return 'pending';
     }
 
-    .bm-field{
-      display:flex;
-      flex-direction:column;
-      gap:4px;
+    var answer = result.test(ft, ht);
+
+    if (answer === true) {
+      return 'success';
     }
 
-    .bm-field label{
-      font-size:11px;
-      color:#8fa1bd;
+    if (answer === false) {
+      return 'fail';
     }
 
-    .bm-field input,
-    .bm-field select{
-      width:100%;
-      box-sizing:border-box;
-      background:#101d30;
-      border:1px solid #263852;
-      color:#fff;
-      border-radius:8px;
-      padding:9px;
-      outline:none;
-    }
-
-    .bm-checks{
-      display:flex;
-      gap:16px;
-      flex-wrap:wrap;
-      font-size:12px;
-      color:#aab9cf;
-      margin:10px 0;
-    }
-
-    .bm-stats{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:7px;
-      margin:10px 0;
-    }
-
-    .bm-stat{
-      background:#0d1929;
-      border:1px solid #1d2d46;
-      border-radius:9px;
-      padding:9px;
-    }
-
-    .bm-stat small{
-      display:block;
-      color:#8191a9;
-      font-size:10px;
-    }
-
-    .bm-stat b{
-      display:block;
-      margin-top:3px;
-      font-size:16px;
-    }
-
-    .bm-card{
-      background:#0c1727;
-      border:1px solid #1d2d46;
-      border-radius:11px;
-      margin:7px 0;
-      overflow:hidden;
-    }
-
-    .bm-head{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      padding:9px;
-    }
-
-    .bm-plus{
-      width:32px;
-      height:32px;
-      flex:0 0 32px;
-      border-radius:8px;
-      border:1px solid #304766;
-      background:#122139;
-      color:#9bb2d0;
-      font-size:20px;
-      cursor:pointer;
-    }
-
-    .bm-card.open .bm-plus{
-      background:#1769e8;
-      border-color:#1769e8;
-      color:#fff;
-    }
-
-    .bm-info{
-      min-width:0;
-      flex:1;
-    }
-
-    .bm-meta{
-      font-size:10px;
-      color:#7f90aa;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .bm-teams{
-      margin-top:3px;
-      font-size:13px;
-      font-weight:800;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
-
-    .bm-score{
-      background:#14243a;
-      border:1px solid #28425f;
-      color:#50e4d4;
-      border-radius:7px;
-      padding:5px 7px;
-      font-weight:800;
-      font-size:12px;
-      white-space:nowrap;
-    }
-
-    .bm-best{
-      background:#122c27;
-      border:1px solid #246b5e;
-      color:#55e1ca;
-      border-radius:7px;
-      padding:5px 7px;
-      font-size:11px;
-      font-weight:800;
-      white-space:nowrap;
-    }
-
-    .bm-none{
-      background:#161d29;
-      border-color:#2a3445;
-      color:#738198;
-    }
-
-    .bm-body{
-      display:none;
-      padding:9px;
-      border-top:1px solid #19283d;
-      background:#091321;
-    }
-
-    .bm-card.open .bm-body{
-      display:block;
-    }
-
-    .bm-note{
-      color:#8191a9;
-      font-size:10px;
-      line-height:1.5;
-      margin-bottom:8px;
-    }
-
-    .bm-preds{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:6px;
-    }
-
-    .bm-pred{
-      background:#101f32;
-      border:1px solid #24405e;
-      border-radius:8px;
-      padding:8px 5px;
-      text-align:center;
-    }
-
-    .bm-pred b{
-      display:block;
-      color:#5fe3d0;
-      font-size:15px;
-    }
-
-    .bm-pred span{
-      display:block;
-      font-size:10px;
-      color:#dbe5f4;
-      margin-top:2px;
-    }
-
-    .bm-pred small{
-      display:block;
-      font-size:9px;
-      color:#7f91aa;
-      margin-top:3px;
-    }
-
-    .bm-empty{
-      text-align:center;
-      padding:22px 10px;
-      color:#7f90a8;
-      font-size:13px;
-    }
-
-    @media(max-width:800px){
-      .bm-controls{
-        grid-template-columns:repeat(2,1fr);
-      }
-    }
-
-    @media(max-width:520px){
-      .bm-wrap{
-        padding:10px;
-      }
-
-      .bm-controls{
-        grid-template-columns:1fr 1fr;
-      }
-
-      .bm-preds{
-        grid-template-columns:repeat(2,1fr);
-      }
-
-      .bm-best{
-        font-size:10px;
-        padding:4px 5px;
-      }
-
-      .bm-teams{
-        font-size:12px;
-      }
-    }
-  `;
-
-  var style = document.createElement('style');
-  style.textContent = css;
-  document.head.appendChild(style);
-
-  /* ---------------------------------------------------------
-     HTML
-     --------------------------------------------------------- */
-
-  function createUI() {
-
-    var old = document.getElementById('bugununMaclariStandalone');
-
-    if (old) {
-      old.remove();
-    }
-
-    var wrap = document.createElement('section');
-    wrap.id = 'bugununMaclariStandalone';
-
-    wrap.innerHTML = `
-      <div class="bm-wrap">
-
-        <div class="bm-title">
-          Bugünün Maçları
-        </div>
-
-        <div class="bm-controls">
-
-          <div class="bm-field">
-            <label>Maç günü</label>
-            <input id="bmDate" type="date">
-          </div>
-
-          <div class="bm-field">
-            <label>Eşleştirme</label>
-            <select id="bmMatch">
-              <option value="each">Her oran türü tek tek</option>
-            </select>
-          </div>
-
-          <div class="bm-field">
-            <label>İdeal eşik (%)</label>
-            <input id="bmThreshold" type="number"
-                   min="0" max="100" value="${CFG.threshold}">
-          </div>
-
-          <div class="bm-field">
-            <label>Min. geçmiş maç</label>
-            <input id="bmMin" type="number"
-                   min="1" value="${CFG.minMatches}">
-          </div>
-
-          <div class="bm-field">
-            <label>Min. oran</label>
-            <input id="bmOdd" type="number"
-                   min="1" step="0.01" value="${CFG.minOdd}">
-          </div>
-
-        </div>
-
-        <div class="bm-checks">
-
-          <label>
-            <input id="bmOnly" type="checkbox">
-            Sadece ideal sonucu olan maçlar
-          </label>
-
-          <label>
-            <input id="bmAll" type="checkbox" checked>
-            Tüm sonuçları göster
-          </label>
-
-        </div>
-
-        <div id="bmStats"></div>
-
-        <div id="bmList"></div>
-
-      </div>
-    `;
-
-    document.body.appendChild(wrap);
-
-    $('bmDate').value = todayISO();
-
-    ['bmDate', 'bmThreshold', 'bmMin', 'bmOdd', 'bmOnly', 'bmAll']
-      .forEach(function (id) {
-        $(id).addEventListener('change', render);
-        $(id).addEventListener('input', render);
-      });
+    return 'pending';
   }
 
-  /* ---------------------------------------------------------
-     KART
-     --------------------------------------------------------- */
+  /*
+   * =========================================================
+   * 60 GÜN ANA TAHMİN BAŞARISI
+   *
+   * Her maçtan SADECE analysis.best alınır.
+   * Diğer tahminler hesaba katılmaz.
+   * =========================================================
+   */
+  function calculateMainPredictionStats(history) {
+    var success = 0;
+    var total = 0;
+
+    history.forEach(function (match) {
+      if (!isPlayed(match)) {
+        return;
+      }
+
+      var analysis = analyzeMatch(match);
+
+      if (!analysis || !analysis.best) {
+        return;
+      }
+
+      var status = getPredictionStatus(
+        analysis.best,
+        match
+      );
+
+      if (status === 'success') {
+        success++;
+        total++;
+      } else if (status === 'fail') {
+        total++;
+      }
+    });
+
+    return {
+      success: success,
+      total: total,
+      percent: total
+        ? (success / total) * 100
+        : 0
+    };
+  }
+
+  /*
+   * =========================================================
+   * GÜNLÜK ANA TAHMİN BAŞARISI
+   *
+   * Seçilen güne ait oynanmış maçlar.
+   * Her maçtan SADECE analysis.best alınır.
+   * =========================================================
+   */
+  function calculateDailyMainPredictionStats(matches) {
+    var success = 0;
+    var total = 0;
+
+    matches.forEach(function (match) {
+      if (!isPlayed(match)) {
+        return;
+      }
+
+      var analysis = analyzeMatch(match);
+
+      if (!analysis || !analysis.best) {
+        return;
+      }
+
+      var status = getPredictionStatus(
+        analysis.best,
+        match
+      );
+
+      if (status === 'success') {
+        success++;
+        total++;
+      } else if (status === 'fail') {
+        total++;
+      }
+    });
+
+    return {
+      success: success,
+      total: total,
+      percent: total
+        ? (success / total) * 100
+        : 0
+    };
+  }
+
+  function statusClass(status) {
+    if (status === 'success') {
+      return 'success';
+    }
+
+    if (status === 'fail') {
+      return 'fail';
+    }
+
+    return 'pending';
+  }
+
+  function statusIcon(status) {
+    if (status === 'success') {
+      return '✓';
+    }
+
+    if (status === 'fail') {
+      return '✕';
+    }
+
+    return '•';
+  }
+
+  function predictionHtml(prediction, match, isBest) {
+    var status = getPredictionStatus(
+      prediction,
+      match
+    );
+
+    var cls = statusClass(status);
+    var icon = statusIcon(status);
+
+    return (
+      '<div class="bm-pred ' +
+      cls +
+      (isBest ? ' main' : '') +
+      '">' +
+
+        '<div class="bm-pred-left">' +
+          '<span class="bm-pred-icon">' +
+            icon +
+          '</span>' +
+
+          '<span class="bm-pred-label">' +
+            esc(prediction.label) +
+          '</span>' +
+
+          '<span class="bm-pred-odd">' +
+            Number(prediction.odd).toFixed(2) +
+          '</span>' +
+        '</div>' +
+
+        '<div class="bm-pred-right">' +
+          '<strong>' +
+            prediction.percent.toFixed(1) +
+            '%' +
+          '</strong>' +
+
+          '<span>' +
+            prediction.success +
+            '/' +
+            prediction.total +
+          '</span>' +
+        '</div>' +
+
+      '</div>'
+    );
+  }
+
+  function predictionHtmlList(analysis, match) {
+    if (!analysis || !analysis.predictions.length) {
+      return (
+        '<div class="bm-empty">' +
+          'İdeal tahmin bulunamadı' +
+        '</div>'
+      );
+    }
+
+    return analysis.predictions.map(function (prediction, index) {
+      return predictionHtml(
+        prediction,
+        match,
+        index === 0
+      );
+    }).join('');
+  }
 
   function cardHtml(match, analysis, index) {
+    var ft = getFT(match);
+    var ht = getHT(match);
 
-    var best = analysis.best;
+    var home =
+      match.home ||
+      match.homeTeam ||
+      match.ev ||
+      match.evSahibi ||
+      'Ev Sahibi';
 
-    var scoreHtml = '';
+    var away =
+      match.away ||
+      match.awayTeam ||
+      match.deplasman ||
+      match.misafir ||
+      'Deplasman';
 
-    if (match.ft) {
-      scoreHtml =
-        '<div class="bm-score">' +
-        match.ft[0] + ' - ' + match.ft[1] +
-        '</div>';
-    }
+    var league =
+      match.league ||
+      match.lig ||
+      '';
 
-    var bestHtml = best
-      ? '<div class="bm-best">' +
-          esc(best.label) +
-          ' %' +
-          best.percent.toFixed(0) +
-        '</div>'
-      : '<div class="bm-best bm-none">Tahmin yok</div>';
+    var best = analysis && analysis.best
+      ? analysis.best
+      : null;
 
-    return `
-      <div class="bm-card" data-index="${index}">
+    var bestStatus = best
+      ? getPredictionStatus(best, match)
+      : 'pending';
 
-        <div class="bm-head">
+    var bestClass = statusClass(bestStatus);
 
-          <button class="bm-plus" type="button">
-            +
-          </button>
+    var scoreText = ft
+      ? ft[0] + ' - ' + ft[1]
+      : 'vs';
 
-          <div class="bm-info">
+    var htText = ht
+      ? 'İY ' + ht[0] + '-' + ht[1]
+      : '';
 
-            <div class="bm-meta">
-              ${esc(match.time)}
-              ${match.league ? ' · ' + esc(match.league) : ''}
-            </div>
+    return (
+      '<div class="bm-card" data-index="' +
+        index +
+      '">' +
 
-            <div class="bm-teams">
-              ${esc(match.home)}
-              -
-              ${esc(match.away)}
-            </div>
+        '<div class="bm-card-head">' +
 
-          </div>
+          '<div class="bm-teams">' +
 
-          ${scoreHtml}
+            '<div class="bm-league">' +
+              esc(league) +
+            '</div>' +
 
-          ${bestHtml}
+            '<div class="bm-team">' +
+              esc(home) +
+            '</div>' +
 
-        </div>
+            '<div class="bm-team">' +
+              esc(away) +
+            '</div>' +
 
-        <div class="bm-body">
+          '</div>' +
 
-          ${
-            best
-            ? predictionHtml(analysis)
-            : '<div class="bm-empty">Bu maç için kriterlere uygun tahmin bulunamadı.</div>'
-          }
+          '<div class="bm-score">' +
+            '<strong>' +
+              scoreText +
+            '</strong>' +
 
-        </div>
+            (
+              htText
+                ? '<small>' + htText + '</small>'
+                : ''
+            ) +
 
-      </div>
-    `;
+          '</div>' +
+
+        '</div>' +
+
+        (
+          best
+            ? (
+              '<div class="bm-best ' +
+                bestClass +
+                '">' +
+
+                '<div class="bm-best-main">' +
+
+                  '<span class="bm-status-icon">' +
+                    statusIcon(bestStatus) +
+                  '</span>' +
+
+                  '<span class="bm-best-label">' +
+                    esc(best.label) +
+                  '</span>' +
+
+                  '<span class="bm-best-odd">' +
+                    Number(best.odd).toFixed(2) +
+                  '</span>' +
+
+                '</div>' +
+
+                '<div class="bm-best-percent">' +
+                  best.percent.toFixed(1) +
+                  '%' +
+
+                  '<small>' +
+                    best.success +
+                    '/' +
+                    best.total +
+                  '</small>' +
+
+                '</div>' +
+
+              '</div>'
+            )
+            : (
+              '<div class="bm-no-best">' +
+                'Ana tahmin bulunamadı' +
+              '</div>'
+            )
+        ) +
+
+        '<div class="bm-details">' +
+          predictionHtmlList(analysis, match) +
+        '</div>' +
+
+      '</div>'
+    );
   }
 
-  function predictionHtml(analysis) {
+  function createUI() {
+    document.body.innerHTML =
+      '<div class="bm-wrap">' +
 
-    var predictions = analysis.predictions || [];
+        '<div class="bm-top">' +
 
-    if (!predictions.length) {
-      return '<div class="bm-empty">Tahmin yok.</div>';
-    }
+          '<div>' +
+            '<h1>Bugünün Maçları</h1>' +
+            '<div class="bm-sub">' +
+              'Açılış oranlarından son 60 gün analizi' +
+            '</div>' +
+          '</div>' +
 
-    var html =
-      '<div class="bm-note">' +
-      'Aynı oran grubundaki geçmiş maçlardan 13 sonuç türü hesaplandı. ' +
-      'Eşik: %' + CFG.threshold +
-      ' · Minimum geçmiş: ' + CFG.minMatches +
-      ' maç' +
-      '</div>';
+          '<div class="bm-controls">' +
 
-    html += '<div class="bm-preds">';
+            '<label>' +
+              '<span>Tarih</span>' +
+              '<input type="date" id="dateFilter">' +
+            '</label>' +
 
-    predictions.forEach(function (p) {
+            '<label class="bm-check">' +
+              '<input type="checkbox" id="bmOnly">' +
+              '<span>Sadece ideal sonucu olan maçlar</span>' +
+            '</label>' +
 
-      html += `
-        <div class="bm-pred">
+          '</div>' +
 
-          <b>%${p.percent.toFixed(0)}</b>
+        '</div>' +
 
-          <span>
-            ${esc(p.label)}
-          </span>
+        '<div id="bmStats" class="bm-stats"></div>' +
 
-          <small>
-            ${p.success}/${p.total}
-            · oran ${p.sourceOdd}
-          </small>
+        '<div id="bmInfo" class="bm-info"></div>' +
 
-        </div>
-      `;
-    });
+        '<div id="bmList" class="bm-list"></div>' +
 
-    html += '</div>';
+      '</div>' +
 
-    return html;
+      '<style>' +
+
+        '*{box-sizing:border-box}' +
+
+        'body{' +
+          'background:#080f20;' +
+          'color:#e7edf8;' +
+        '}' +
+
+        '.bm-wrap{' +
+          'width:100%;' +
+          'max-width:1100px;' +
+          'margin:0 auto;' +
+          'padding:14px;' +
+        '}' +
+
+        '.bm-top{' +
+          'display:flex;' +
+          'justify-content:space-between;' +
+          'gap:14px;' +
+          'align-items:flex-start;' +
+          'margin-bottom:14px;' +
+        '}' +
+
+        'h1{' +
+          'font-size:23px;' +
+          'margin:0 0 4px;' +
+        '}' +
+
+        '.bm-sub{' +
+          'font-size:12px;' +
+          'color:#8d9ab2;' +
+        '}' +
+
+        '.bm-controls{' +
+          'display:flex;' +
+          'gap:10px;' +
+          'align-items:end;' +
+          'flex-wrap:wrap;' +
+          'justify-content:flex-end;' +
+        '}' +
+
+        '.bm-controls label{' +
+          'display:flex;' +
+          'flex-direction:column;' +
+          'gap:5px;' +
+          'font-size:11px;' +
+          'color:#91a0ba;' +
+        '}' +
+
+        '.bm-controls input[type=date]{' +
+          'background:#101a31;' +
+          'border:1px solid #263452;' +
+          'color:#fff;' +
+          'border-radius:9px;' +
+          'padding:8px 9px;' +
+          'outline:none;' +
+        '}' +
+
+        '.bm-check{' +
+          'flex-direction:row !important;' +
+          'align-items:center;' +
+          'margin-top:19px;' +
+        '}' +
+
+        '.bm-check input{' +
+          'accent-color:#4f8cff;' +
+        '}' +
+
+        '.bm-stats{' +
+          'display:grid;' +
+          'grid-template-columns:repeat(5,1fr);' +
+          'gap:8px;' +
+          'margin-bottom:10px;' +
+        '}' +
+
+        '.bm-stat{' +
+          'background:#0e172b;' +
+          'border:1px solid #1c2944;' +
+          'border-radius:12px;' +
+          'padding:11px;' +
+          'min-height:82px;' +
+        '}' +
+
+        '.bm-stat-title{' +
+          'font-size:10px;' +
+          'color:#8290aa;' +
+          'text-transform:uppercase;' +
+          'letter-spacing:.3px;' +
+        '}' +
+
+        '.bm-stat-value{' +
+          'font-size:22px;' +
+          'font-weight:800;' +
+          'margin-top:5px;' +
+        '}' +
+
+        '.bm-stat-sub{' +
+          'font-size:10px;' +
+          'color:#77849d;' +
+          'margin-top:3px;' +
+        '}' +
+
+        '.bm-stat.success-stat .bm-stat-value{' +
+          'color:#35d07f;' +
+        '}' +
+
+        '.bm-stat.fail-stat .bm-stat-value{' +
+          'color:#ff6262;' +
+        '}' +
+
+        '.bm-info{' +
+          'font-size:12px;' +
+          'color:#8d9ab2;' +
+          'margin:8px 2px 10px;' +
+        '}' +
+
+        '.bm-list{' +
+          'display:flex;' +
+          'flex-direction:column;' +
+          'gap:9px;' +
+        '}' +
+
+        '.bm-card{' +
+          'background:#0d1629;' +
+          'border:1px solid #1b2944;' +
+          'border-radius:14px;' +
+          'overflow:hidden;' +
+        '}' +
+
+        '.bm-card-head{' +
+          'display:flex;' +
+          'justify-content:space-between;' +
+          'gap:10px;' +
+          'padding:13px;' +
+          'cursor:pointer;' +
+        '}' +
+
+        '.bm-teams{' +
+          'min-width:0;' +
+          'flex:1;' +
+        '}' +
+
+        '.bm-league{' +
+          'font-size:10px;' +
+          'color:#6f7e99;' +
+          'margin-bottom:6px;' +
+        '}' +
+
+        '.bm-team{' +
+          'font-size:14px;' +
+          'font-weight:700;' +
+          'line-height:1.5;' +
+          'white-space:nowrap;' +
+          'overflow:hidden;' +
+          'text-overflow:ellipsis;' +
+        '}' +
+
+        '.bm-score{' +
+          'min-width:62px;' +
+          'text-align:center;' +
+          'display:flex;' +
+          'flex-direction:column;' +
+          'justify-content:center;' +
+        '}' +
+
+        '.bm-score strong{' +
+          'font-size:18px;' +
+        '}' +
+
+        '.bm-score small{' +
+          'font-size:10px;' +
+          'color:#8190aa;' +
+          'margin-top:2px;' +
+        '}' +
+
+        '.bm-best{' +
+          'margin:0 10px 10px;' +
+          padding:10px 11px;' +
+          border:1px solid #283957;' +
+          border-radius:10px;' +
+          display:flex;' +
+          'justify-content:space-between;' +
+          'align-items:center;' +
+          'gap:10px;' +
+        '}' +
+
+        '.bm-best.success,' +
+        '.bm-pred.success{' +
+          'background:rgba(34,197,94,.11);' +
+          'border-color:rgba(34,197,94,.55);' +
+        '}' +
+
+        '.bm-best.fail,' +
+        '.bm-pred.fail{' +
+          'background:rgba(239,68,68,.11);' +
+          'border-color:rgba(239,68,68,.55);' +
+        '}' +
+
+        '.bm-best.pending,' +
+        '.bm-pred.pending{' +
+          'background:rgba(234,179,8,.10);' +
+          'border-color:rgba(234,179,8,.50);' +
+        '}' +
+
+        '.bm-best-main{' +
+          'display:flex;' +
+          'align-items:center;' +
+          'gap:8px;' +
+          'min-width:0;' +
+        '}' +
+
+        '.bm-status-icon{' +
+          'width:23px;' +
+          'height:23px;' +
+          'border-radius:50%;' +
+          'display:flex;' +
+          'align-items:center;' +
+          'justify-content:center;' +
+          'font-weight:900;' +
+          'font-size:13px;' +
+          'background:rgba(255,255,255,.08);' +
+        '}' +
+
+        '.success .bm-status-icon{' +
+          'color:#35d07f;' +
+        '}' +
+
+        '.fail .bm-status-icon{' +
+          'color:#ff6262;' +
+        '}' +
+
+        '.pending .bm-status-icon{' +
+          'color:#f1c84b;' +
+        '}' +
+
+        '.bm-best-label{' +
+          'font-weight:800;' +
+          'font-size:14px;' +
+        '}' +
+
+        '.bm-best-odd{' +
+          'font-size:11px;' +
+          'color:#9ba8bf;' +
+          background:#111c32;' +
+          padding:3px 6px;' +
+          border-radius:6px;' +
+        '}' +
+
+        '.bm-best-percent{' +
+          'font-size:18px;' +
+          'font-weight:900;' +
+          white-space:nowrap;' +
+          'display:flex;' +
+          'flex-direction:column;' +
+          'align-items:flex-end;' +
+        '}' +
+
+        '.bm-best-percent small{' +
+          'font-size:9px;' +
+          'font-weight:500;' +
+          'color:#7e8ba2;' +
+          margin-top:2px;' +
+        '}' +
+
+        '.bm-no-best{' +
+          'margin:0 10px 10px;' +
+          'padding:9px 11px;' +
+          'font-size:11px;' +
+          'color:#68758e;' +
+          'background:#0a1222;' +
+          'border-radius:9px;' +
+        '}' +
+
+        '.bm-details{' +
+          'display:none;' +
+          padding:0 10px 10px;' +
+        '}' +
+
+        '.bm-card.open .bm-details{' +
+          'display:block;' +
+        '}' +
+
+        '.bm-pred{' +
+          'display:flex;' +
+          'align-items:center;' +
+          'justify-content:space-between;' +
+          gap:10px;' +
+          'padding:8px 9px;' +
+          'border:1px solid #1d2a43;' +
+          'border-radius:9px;' +
+          'margin-top:6px;' +
+        '}' +
+
+        '.bm-pred-left{' +
+          'display:flex;' +
+          'align-items:center;' +
+          'gap:7px;' +
+          'min-width:0;' +
+        '}' +
+
+        '.bm-pred-icon{' +
+          'width:19px;' +
+          'height:19px;' +
+          'border-radius:50%;' +
+          'display:flex;' +
+          'align-items:center;' +
+          'justify-content:center;' +
+          'font-size:11px;' +
+          'font-weight:900;' +
+        '}' +
+
+        '.success .bm-pred-icon{' +
+          'color:#35d07f;' +
+        '}' +
+
+        '.fail .bm-pred-icon{' +
+          'color:#ff6262;' +
+        '}' +
+
+        '.pending .bm-pred-icon{' +
+          'color:#f1c84b;' +
+        '}' +
+
+        '.bm-pred-label{' +
+          'font-size:12px;' +
+          'font-weight:700;' +
+        '}' +
+
+        '.bm-pred-odd{' +
+          'font-size:10px;' +
+          'color:#7e8ba2;' +
+        '}' +
+
+        '.bm-pred-right{' +
+          'display:flex;' +
+          'align-items:center;' +
+          'gap:7px;' +
+        '}' +
+
+        '.bm-pred-right strong{' +
+          'font-size:13px;' +
+        '}' +
+
+        '.bm-pred-right span{' +
+          'font-size:9px;' +
+          'color:#74829b;' +
+        '}' +
+
+        '.bm-empty{' +
+          'padding:10px;' +
+          'text-align:center;' +
+          'font-size:11px;' +
+          'color:#69768d;' +
+          'background:#0a1221;' +
+          'border-radius:9px;' +
+        '}' +
+
+        '@media(max-width:760px){' +
+
+          '.bm-top{' +
+            'flex-direction:column;' +
+          '}' +
+
+          '.bm-controls{' +
+            'width:100%;' +
+            'justify-content:flex-start;' +
+          '}' +
+
+          '.bm-stats{' +
+            'grid-template-columns:repeat(2,1fr);' +
+          '}' +
+
+          '.bm-stat:last-child{' +
+            'grid-column:span 2;' +
+          '}' +
+
+        '}' +
+
+        '@media(max-width:430px){' +
+
+          '.bm-wrap{' +
+            padding:9px;' +
+          '}' +
+
+          .bm-stats{' +
+            'grid-template-columns:repeat(2,1fr);' +
+          '}' +
+
+          '.bm-stat-value{' +
+            'font-size:19px;' +
+          '}' +
+
+          '.bm-best-percent{' +
+            'font-size:16px;' +
+          '}' +
+
+        '}' +
+
+      '</style>';
   }
-
-  /* ---------------------------------------------------------
-     RENDER
-     --------------------------------------------------------- */
 
   function render() {
-
-    if (!DATA.length) {
-      return;
-    }
-
-    CFG.threshold =
-      Math.max(
-        0,
-        Math.min(
-          100,
-          num($('bmThreshold').value) || 70
-        )
-      );
-
-    CFG.minMatches =
-      Math.max(
-        1,
-        parseInt($('bmMin').value, 10) || 5
-      );
-
-    CFG.minOdd =
-      Math.max(
-        1,
-        num($('bmOdd').value) || 1.40
-      );
+    var dateInput = $('#dateFilter');
+    var onlyIdeal = $('#bmOnly');
 
     var selectedDate =
-      $('bmDate').value || todayISO();
+      dateInput && dateInput.value
+        ? dateInput.value
+        : todayISO();
 
-    var startDate =
-      daysAgoISO(CFG.days);
+    if (dateInput) {
+      dateInput.value = selectedDate;
+    }
 
-    var currentMatches =
-      DATA.filter(function (m) {
-        return m.date === selectedDate;
-      });
-
-    var playedHistory =
-      DATA.filter(function (m) {
-        return (
-          m.ft &&
-          m.date >= startDate &&
-          m.date < selectedDate
-        );
-      });
+    var startDate = daysAgoISO(CFG.days);
 
     /*
-     Analiz indeksini sadece son 60 gün için kur.
+     * Seçilen güne kadar olan son 60 günlük
+     * tamamlanmış maçlar.
      */
-    var oldIndex = INDEX;
+    var playedHistory = DATA.filter(function (match) {
+      var d = getDate(match);
 
-    INDEX = Object.create(null);
-
-    playedHistory.forEach(function (m) {
-
-      Object.keys(m.odds || {}).forEach(function (key) {
-
-        var odd = num(m.odds[key]);
-
-        if (!(odd > 0)) return;
-
-        var k = key + '|' + odd;
-
-        if (!INDEX[k]) {
-          INDEX[k] = [];
-        }
-
-        INDEX[k].push(m);
-      });
+      return isPlayed(match) &&
+        d >= startDate &&
+        d < selectedDate;
     });
 
-    var analyzed = currentMatches.map(function (m) {
+    /*
+     * Tahmin havuzu.
+     */
+    buildIndex(playedHistory);
+
+    /*
+     * Seçilen günün maçları.
+     */
+    var currentMatches = DATA.filter(function (match) {
+      return getDate(match) === selectedDate;
+    });
+
+    /*
+     * Günlük analiz:
+     * Seçilen günün tamamlanmış maçları.
+     */
+    var dailyStats =
+      calculateDailyMainPredictionStats(
+        currentMatches
+      );
+
+    /*
+     * 60 günlük ana tahmin başarısı.
+     */
+    var mainStats =
+      calculateMainPredictionStats(
+        playedHistory
+      );
+
+    /*
+     * Günün maçlarını analiz et.
+     */
+    var analyzed = currentMatches.map(function (match) {
       return {
-        match: m,
-        analysis: analyzeMatch(m)
+        match: match,
+        analysis: analyzeMatch(match)
       };
     });
 
-    /*
-     Sadece ideal seçiliyse tahminsizleri kaldır.
-     */
-    if ($('bmOnly').checked) {
-      analyzed = analyzed.filter(function (x) {
-        return !!x.analysis.best;
+    if (onlyIdeal && onlyIdeal.checked) {
+      analyzed = analyzed.filter(function (item) {
+        return !!item.analysis.best;
       });
     }
 
-    var idealCount =
-      analyzed.filter(function (x) {
-        return !!x.analysis.best;
-      }).length;
+    analyzed.sort(function (a, b) {
+      var ap = a.analysis.best;
+      var bp = b.analysis.best;
 
-    var poolCount =
-      playedHistory.length;
+      if (bp && !ap) {
+        return 1;
+      }
 
-    $('bmStats').innerHTML = `
-      <div class="bm-stats">
+      if (ap && !bp) {
+        return -1;
+      }
 
-        <div class="bm-stat">
-          <small>Oynanmamış / Seçilen Gün</small>
-          <b>${currentMatches.length}</b>
-        </div>
+      if (ap && bp) {
+        if (bp.percent !== ap.percent) {
+          return bp.percent - ap.percent;
+        }
 
-        <div class="bm-stat">
-          <small>İdeal Sonuçlu</small>
-          <b>${idealCount}</b>
-        </div>
+        return bp.total - ap.total;
+      }
 
-        <div class="bm-stat">
-          <small>60 Gün Analiz Havuzu</small>
-          <b>${poolCount}</b>
-        </div>
+      return 0;
+    });
 
-      </div>
-    `;
+    var idealCount = analyzed.filter(function (item) {
+      return !!item.analysis.best;
+    }).length;
+
+    var unplayedCount = currentMatches.filter(function (match) {
+      return !isPlayed(match);
+    }).length;
+
+    /*
+     * =====================================================
+     * İSTATİSTİKLER
+     * =====================================================
+     */
+    var statsHtml =
+
+      '<div class="bm-stat">' +
+        '<div class="bm-stat-title">' +
+          'Oynanmamış' +
+        '</div>' +
+        '<div class="bm-stat-value">' +
+          unplayedCount +
+        '</div>' +
+        '<div class="bm-stat-sub">' +
+          'Seçilen gün' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="bm-stat">' +
+        '<div class="bm-stat-title">' +
+          'İdeal Sonuçlu' +
+        '</div>' +
+        '<div class="bm-stat-value">' +
+          idealCount +
+        '</div>' +
+        '<div class="bm-stat-sub">' +
+          'Ana tahmin bulunan maç' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="bm-stat">' +
+        '<div class="bm-stat-title">' +
+          '60 Gün Analiz Havuzu' +
+        '</div>' +
+        '<div class="bm-stat-value">' +
+          playedHistory.length +
+        '</div>' +
+        '<div class="bm-stat-sub">' +
+          'Tamamlanmış maç' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="bm-stat ' +
+        (
+          dailyStats.total
+            ? (
+              dailyStats.percent >= CFG.threshold
+                ? 'success-stat'
+                : 'fail-stat'
+            )
+            : ''
+        ) +
+      '">' +
+
+        '<div class="bm-stat-title">' +
+          'Günlük Ana Tahmin Başarısı' +
+        '</div>' +
+
+        '<div class="bm-stat-value">' +
+          (
+            dailyStats.total
+              ? dailyStats.percent.toFixed(1) + '%'
+              : '-'
+          ) +
+        '</div>' +
+
+        '<div class="bm-stat-sub">' +
+          dailyStats.success +
+          '/' +
+          dailyStats.total +
+          ' ana tahmin' +
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="bm-stat ' +
+        (
+          mainStats.total
+            ? (
+              mainStats.percent >= CFG.threshold
+                ? 'success-stat'
+                : 'fail-stat'
+            )
+            : ''
+        ) +
+      '">' +
+
+        '<div class="bm-stat-title">' +
+          '60 Gün Ana Tahmin Başarısı' +
+        '</div>' +
+
+        '<div class="bm-stat-value">' +
+          (
+            mainStats.total
+              ? mainStats.percent.toFixed(1) + '%'
+              : '-'
+          ) +
+        '</div>' +
+
+        '<div class="bm-stat-sub">' +
+          mainStats.success +
+          '/' +
+          mainStats.total +
+          ' ana tahmin' +
+        '</div>' +
+
+      '</div>';
+
+    var statsBox = $('#bmStats');
+
+    if (statsBox) {
+      statsBox.innerHTML = statsHtml;
+    }
+
+    var info = $('#bmInfo');
+
+    if (info) {
+      info.innerHTML =
+        esc(formatDate(selectedDate)) +
+        ' · ' +
+        currentMatches.length +
+        ' maç · ' +
+        analyzed.length +
+        ' gösteriliyor';
+    }
+
+    var list = $('#bmList');
+
+    if (!list) {
+      return;
+    }
 
     if (!analyzed.length) {
-
-      $('bmList').innerHTML =
+      list.innerHTML =
         '<div class="bm-empty">' +
-        formatDate(selectedDate) +
-        ' tarihinde kriterlere uygun maç bulunamadı.' +
+          'Bu tarihte gösterilecek maç bulunamadı.' +
         '</div>';
 
       return;
     }
 
-    /*
-     Tahminli maçları önce göster.
-     */
-    analyzed.sort(function (a, b) {
-
-      var ap = a.analysis.best;
-      var bp = b.analysis.best;
-
-      if (!!bp !== !!ap) {
-        return bp ? 1 : -1;
-      }
-
-      if (ap && bp) {
-        return bp.percent - ap.percent;
-      }
-
-      return a.match.time.localeCompare(b.match.time);
-    });
-
-    $('bmList').innerHTML =
-      analyzed.map(function (x, i) {
-        return cardHtml(
-          x.match,
-          x.analysis,
-          i
-        );
-      }).join('');
-
-    INDEX = oldIndex;
+    list.innerHTML = analyzed.map(function (item, index) {
+      return cardHtml(
+        item.match,
+        item.analysis,
+        index
+      );
+    }).join('');
   }
 
-  /* ---------------------------------------------------------
-     TIKLAMA
-     --------------------------------------------------------- */
-
-  document.addEventListener('click', function (e) {
-
-    var btn = e.target.closest('.bm-plus');
-
-    if (!btn) return;
-
-    var card = btn.closest('.bm-card');
-
-    if (!card) return;
-
-    card.classList.toggle('open');
-
-    btn.textContent =
-      card.classList.contains('open')
-        ? '−'
-        : '+';
-  });
-
-  /* ---------------------------------------------------------
-     JSON YÜKLE
-     --------------------------------------------------------- */
-
   function loadData() {
-
-    fetch(
-      DATA_URL + '?v=' + Date.now(),
-      {
-        cache: 'no-store'
-      }
-    )
-      .then(function (res) {
-
-        if (!res.ok) {
+    fetch(DATA_URL + '?v=' + Date.now(), {
+      cache: 'no-store'
+    })
+      .then(function (response) {
+        if (!response.ok) {
           throw new Error(
-            'matches.json yüklenemedi: ' +
-            res.status
+            'Veri alınamadı: ' +
+            response.status
           );
         }
 
-        return res.json();
+        return response.json();
       })
       .then(function (json) {
 
         var matches =
           Array.isArray(json)
             ? json
-            : (json.matches || []);
+            : (
+              Array.isArray(json.matches)
+                ? json.matches
+                : []
+            );
 
-        DATA =
-          matches
-            .map(normalizeMatch)
-            .filter(function (m) {
-              return m.date;
-            });
-
-        buildIndex();
+        DATA = matches.map(normalizeMatch);
 
         createUI();
 
+        var dateInput = $('#dateFilter');
+
+        if (dateInput) {
+          dateInput.value = todayISO();
+
+          dateInput.addEventListener(
+            'change',
+            render
+          );
+        }
+
+        var onlyIdeal = $('#bmOnly');
+
+        if (onlyIdeal) {
+          onlyIdeal.addEventListener(
+            'change',
+            render
+          );
+        }
+
+        var list = $('#bmList');
+
+        if (list) {
+          list.addEventListener(
+            'click',
+            function (event) {
+
+              var card =
+                event.target.closest('.bm-card');
+
+              if (!card) {
+                return;
+              }
+
+              card.classList.toggle('open');
+            }
+          );
+        }
+
         render();
       })
-      .catch(function (err) {
+      .catch(function (error) {
 
-        console.error(
-          'Bugünün maçları veri hatası:',
-          err
-        );
+        console.error(error);
 
-        var box =
-          document.createElement('div');
+        document.body.innerHTML =
+          '<div style="' +
+            'padding:30px;' +
+            'background:#080f20;' +
+            'color:#ff7777;' +
+            'font-family:Arial;' +
+            'min-height:100vh' +
+          '">' +
 
-        box.className = 'bm-empty';
+            '<h2>Veriler yüklenemedi</h2>' +
 
-        box.innerHTML =
-          'Veriler yüklenemedi.<br>' +
-          '<small>' +
-          esc(err.message) +
-          '</small>';
+            '<div style="color:#9aa7bd">' +
+              esc(error.message) +
+            '</div>' +
 
-        document.body.appendChild(box);
+          '</div>';
       });
   }
 
-  /* ---------------------------------------------------------
-     BAŞLAT
-     --------------------------------------------------------- */
-
-  if (
-    document.readyState === 'loading'
-  ) {
-    document.addEventListener(
-      'DOMContentLoaded',
-      loadData
-    );
-  } else {
-    loadData();
-  }
+  loadData();
 
 })();
