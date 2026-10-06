@@ -1,11 +1,6 @@
 /* =========================================================
    BUGÜNÜN MAÇLARI - MACKOLIK1
    Açılış oranlarından son 60 gün analizi
-
-   BAŞARI HESAPLAMASI:
-   - Günlük başarı = sadece ana tahminler
-   - 60 günlük başarı = sadece ana tahminler
-   - Ana tahmin = analysis.best
    ========================================================= */
 
 (function () {
@@ -179,22 +174,23 @@
     var m = text.match(/(-?\d+)\s*[-:]\s*(-?\d+)/);
 
     if (!m) {
-      m = text.match(/(-?\d+)\s*-\s*(-?\d+)/);
-    }
-
-    if (!m) {
       return null;
     }
 
-    return [Number(m[1]), Number(m[2])];
+    return [
+      Number(m[1]),
+      Number(m[2])
+    ];
   }
 
   function getDate(match) {
-    return match.date ||
+    return (
+      match.date ||
       match.tarih ||
       match.matchDate ||
       match.macTarihi ||
-      '';
+      ''
+    );
   }
 
   function formatDate(value) {
@@ -207,23 +203,37 @@
     var m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
 
     if (m) {
-      return m[3] + '-' + m[2] + '-' + m[1];
+      return (
+        m[3] +
+        '-' +
+        m[2] +
+        '-' +
+        m[1]
+      );
     }
 
     m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
 
     if (m) {
-      return m[1] + '-' + m[2] + '-' + m[3];
+      return (
+        m[1] +
+        '-' +
+        m[2] +
+        '-' +
+        m[3]
+      );
     }
 
     var d = new Date(text);
 
     if (!Number.isNaN(d.getTime())) {
-      return d.getFullYear() +
+      return (
+        d.getFullYear() +
         '-' +
         String(d.getMonth() + 1).padStart(2, '0') +
         '-' +
-        String(d.getDate()).padStart(2, '0');
+        String(d.getDate()).padStart(2, '0')
+      );
     }
 
     return text;
@@ -232,11 +242,13 @@
   function todayISO() {
     var d = new Date();
 
-    return d.getFullYear() +
+    return (
+      d.getFullYear() +
       '-' +
       String(d.getMonth() + 1).padStart(2, '0') +
       '-' +
-      String(d.getDate()).padStart(2, '0');
+      String(d.getDate()).padStart(2, '0')
+    );
   }
 
   function daysAgoISO(days) {
@@ -245,21 +257,25 @@
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - days);
 
-    return d.getFullYear() +
+    return (
+      d.getFullYear() +
       '-' +
       String(d.getMonth() + 1).padStart(2, '0') +
       '-' +
-      String(d.getDate()).padStart(2, '0');
+      String(d.getDate()).padStart(2, '0')
+    );
   }
 
   function getOpeningOdds(match) {
-    return match.openingOdds ||
+    return (
+      match.openingOdds ||
       match.opening ||
       match.oddsOpening ||
       match.odds ||
       match.oranlar ||
       match.openOdds ||
-      {};
+      {}
+    );
   }
 
   function getFT(match) {
@@ -299,22 +315,6 @@
     return !!getFT(match);
   }
 
-  function getOdd(match, key) {
-    var odds = getOpeningOdds(match);
-
-    if (!odds) {
-      return null;
-    }
-
-    var value = odds[key];
-
-    if (value === undefined || value === null || value === '') {
-      return null;
-    }
-
-    return num(value);
-  }
-
   function buildIndex(history) {
     INDEX = Object.create(null);
 
@@ -322,13 +322,18 @@
       var odds = getOpeningOdds(match);
 
       MARKET_KEYS.forEach(function (marketKey) {
-        var odd = num(odds && odds[marketKey]);
+        var odd = num(
+          odds && odds[marketKey]
+        );
 
         if (odd === null || odd < CFG.minOdd) {
           return;
         }
 
-        var key = marketKey + '|' + odd.toFixed(2);
+        var key =
+          marketKey +
+          '|' +
+          odd.toFixed(2);
 
         if (!INDEX[key]) {
           INDEX[key] = [];
@@ -339,12 +344,12 @@
     });
   }
 
-  function calculateStats(hist) {
+  function calculateStats(history) {
     return RESULTS.map(function (result) {
       var success = 0;
       var total = 0;
 
-      hist.forEach(function (match) {
+      history.forEach(function (match) {
         var ft = getFT(match);
         var ht = getHT(match);
 
@@ -352,22 +357,23 @@
           return;
         }
 
-        var ok = result.test(ft, ht);
+        var answer = result.test(ft, ht);
 
-        if (ok === null) {
+        if (answer === null) {
           return;
         }
 
         total++;
 
-        if (ok) {
+        if (answer === true) {
           success++;
         }
       });
 
-      var percent = total
-        ? (success / total) * 100
-        : 0;
+      var percent =
+        total > 0
+          ? (success / total) * 100
+          : 0;
 
       return {
         key: result.key,
@@ -384,24 +390,33 @@
 
   function analyzeMatch(match) {
     var odds = getOpeningOdds(match);
+
     var groups = [];
     var predictionMap = Object.create(null);
 
     MARKET_KEYS.forEach(function (marketKey) {
-      var odd = num(odds && odds[marketKey]);
+      var odd = num(
+        odds && odds[marketKey]
+      );
 
       if (odd === null || odd < CFG.minOdd) {
         return;
       }
 
-      var indexKey = marketKey + '|' + odd.toFixed(2);
-      var history = INDEX[indexKey] || [];
+      var indexKey =
+        marketKey +
+        '|' +
+        odd.toFixed(2);
+
+      var history =
+        INDEX[indexKey] || [];
 
       if (history.length < CFG.minMatches) {
         return;
       }
 
-      var stats = calculateStats(history);
+      var stats =
+        calculateStats(history);
 
       stats.forEach(function (stat) {
         if (!stat.ideal) {
@@ -420,7 +435,8 @@
 
         groups.push(prediction);
 
-        var existing = predictionMap[stat.label];
+        var existing =
+          predictionMap[stat.label];
 
         if (
           !existing ||
@@ -435,43 +451,44 @@
       });
     });
 
-    var predictions = Object.keys(predictionMap)
-      .map(function (key) {
-        return predictionMap[key];
-      })
-      .sort(function (a, b) {
-        if (b.percent !== a.percent) {
-          return b.percent - a.percent;
-        }
+    var predictions =
+      Object.keys(predictionMap)
+        .map(function (key) {
+          return predictionMap[key];
+        })
+        .sort(function (a, b) {
+          if (b.percent !== a.percent) {
+            return b.percent - a.percent;
+          }
 
-        return b.total - a.total;
-      });
+          return b.total - a.total;
+        });
 
     return {
       groups: groups,
       predictions: predictions,
-      best: predictions.length ? predictions[0] : null
+      best:
+        predictions.length
+          ? predictions[0]
+          : null
     };
   }
 
-  /*
-   * Ana tahmin sonucu
-   *
-   * Sadece analysis.best kullanılır.
-   *
-   * success = yeşil
-   * fail    = kırmızı
-   * pending = sarı
-   */
-  function getPredictionStatus(prediction, match) {
+  function getPredictionStatus(
+    prediction,
+    match
+  ) {
     if (!prediction) {
       return 'pending';
     }
 
-    var result = RESULTS.find(function (item) {
-      return item.key === prediction.key &&
-        item.label === prediction.label;
-    });
+    var result =
+      RESULTS.find(function (item) {
+        return (
+          item.key === prediction.key &&
+          item.label === prediction.label
+        );
+      });
 
     if (!result) {
       return 'pending';
@@ -484,7 +501,8 @@
       return 'pending';
     }
 
-    var answer = result.test(ft, ht);
+    var answer =
+      result.test(ft, ht);
 
     if (answer === true) {
       return 'success';
@@ -498,12 +516,13 @@
   }
 
   /*
-   * =========================================================
-   * 60 GÜN ANA TAHMİN BAŞARISI
+   * =====================================================
+   * SADECE ANA TAHMİNLER
    *
-   * Her maçtan SADECE analysis.best alınır.
-   * Diğer tahminler hesaba katılmaz.
-   * =========================================================
+   * 60 günlük başarı hesabı.
+   *
+   * Her maçta yalnızca analysis.best sayılır.
+   * =====================================================
    */
   function calculateMainPredictionStats(history) {
     var success = 0;
@@ -514,16 +533,21 @@
         return;
       }
 
-      var analysis = analyzeMatch(match);
+      var analysis =
+        analyzeMatch(match);
 
-      if (!analysis || !analysis.best) {
+      if (
+        !analysis ||
+        !analysis.best
+      ) {
         return;
       }
 
-      var status = getPredictionStatus(
-        analysis.best,
-        match
-      );
+      var status =
+        getPredictionStatus(
+          analysis.best,
+          match
+        );
 
       if (status === 'success') {
         success++;
@@ -536,21 +560,24 @@
     return {
       success: success,
       total: total,
-      percent: total
-        ? (success / total) * 100
-        : 0
+      percent:
+        total > 0
+          ? (success / total) * 100
+          : 0
     };
   }
 
   /*
-   * =========================================================
+   * =====================================================
    * GÜNLÜK ANA TAHMİN BAŞARISI
    *
-   * Seçilen güne ait oynanmış maçlar.
-   * Her maçtan SADECE analysis.best alınır.
-   * =========================================================
+   * Seçilen gündeki oynanmış maçlardan yalnızca
+   * ana tahminler hesaba katılır.
+   * =====================================================
    */
-  function calculateDailyMainPredictionStats(matches) {
+  function calculateDailyMainPredictionStats(
+    matches
+  ) {
     var success = 0;
     var total = 0;
 
@@ -559,16 +586,21 @@
         return;
       }
 
-      var analysis = analyzeMatch(match);
+      var analysis =
+        analyzeMatch(match);
 
-      if (!analysis || !analysis.best) {
+      if (
+        !analysis ||
+        !analysis.best
+      ) {
         return;
       }
 
-      var status = getPredictionStatus(
-        analysis.best,
-        match
-      );
+      var status =
+        getPredictionStatus(
+          analysis.best,
+          match
+        );
 
       if (status === 'success') {
         success++;
@@ -581,9 +613,10 @@
     return {
       success: success,
       total: total,
-      percent: total
-        ? (success / total) * 100
-        : 0
+      percent:
+        total > 0
+          ? (success / total) * 100
+          : 0
     };
   }
 
@@ -611,14 +644,19 @@
     return '•';
   }
 
-  function predictionHtml(prediction, match, isBest) {
-    var status = getPredictionStatus(
-      prediction,
-      match
-    );
+  function predictionHtml(
+    prediction,
+    match,
+    isBest
+  ) {
+    var status =
+      getPredictionStatus(
+        prediction,
+        match
+      );
 
-    var cls = statusClass(status);
-    var icon = statusIcon(status);
+    var cls =
+      statusClass(status);
 
     return (
       '<div class="bm-pred ' +
@@ -627,8 +665,9 @@
       '">' +
 
         '<div class="bm-pred-left">' +
+
           '<span class="bm-pred-icon">' +
-            icon +
+            statusIcon(status) +
           '</span>' +
 
           '<span class="bm-pred-label">' +
@@ -638,9 +677,11 @@
           '<span class="bm-pred-odd">' +
             Number(prediction.odd).toFixed(2) +
           '</span>' +
+
         '</div>' +
 
         '<div class="bm-pred-right">' +
+
           '<strong>' +
             prediction.percent.toFixed(1) +
             '%' +
@@ -651,14 +692,22 @@
             '/' +
             prediction.total +
           '</span>' +
+
         '</div>' +
 
       '</div>'
     );
   }
 
-  function predictionHtmlList(analysis, match) {
-    if (!analysis || !analysis.predictions.length) {
+  function predictionHtmlList(
+    analysis,
+    match
+  ) {
+    if (
+      !analysis ||
+      !analysis.predictions ||
+      !analysis.predictions.length
+    ) {
       return (
         '<div class="bm-empty">' +
           'İdeal tahmin bulunamadı' +
@@ -666,16 +715,22 @@
       );
     }
 
-    return analysis.predictions.map(function (prediction, index) {
-      return predictionHtml(
-        prediction,
-        match,
-        index === 0
-      );
-    }).join('');
+    return analysis.predictions
+      .map(function (prediction, index) {
+        return predictionHtml(
+          prediction,
+          match,
+          index === 0
+        );
+      })
+      .join('');
   }
 
-  function cardHtml(match, analysis, index) {
+  function cardHtml(
+    match,
+    analysis,
+    index
+  ) {
     var ft = getFT(match);
     var ht = getHT(match);
 
@@ -698,27 +753,35 @@
       match.lig ||
       '';
 
-    var best = analysis && analysis.best
-      ? analysis.best
-      : null;
+    var best =
+      analysis && analysis.best
+        ? analysis.best
+        : null;
 
-    var bestStatus = best
-      ? getPredictionStatus(best, match)
-      : 'pending';
+    var bestStatus =
+      best
+        ? getPredictionStatus(
+            best,
+            match
+          )
+        : 'pending';
 
-    var bestClass = statusClass(bestStatus);
+    var bestClass =
+      statusClass(bestStatus);
 
-    var scoreText = ft
-      ? ft[0] + ' - ' + ft[1]
-      : 'vs';
+    var scoreText =
+      ft
+        ? ft[0] + ' - ' + ft[1]
+        : 'vs';
 
-    var htText = ht
-      ? 'İY ' + ht[0] + '-' + ht[1]
-      : '';
+    var htText =
+      ht
+        ? 'İY ' + ht[0] + '-' + ht[1]
+        : '';
 
     return (
       '<div class="bm-card" data-index="' +
-        index +
+      index +
       '">' +
 
         '<div class="bm-card-head">' +
@@ -740,13 +803,16 @@
           '</div>' +
 
           '<div class="bm-score">' +
+
             '<strong>' +
               scoreText +
             '</strong>' +
 
             (
               htText
-                ? '<small>' + htText + '</small>'
+                ? '<small>' +
+                    htText +
+                  '</small>'
                 : ''
             ) +
 
@@ -758,8 +824,8 @@
           best
             ? (
               '<div class="bm-best ' +
-                bestClass +
-                '">' +
+              bestClass +
+              '">' +
 
                 '<div class="bm-best-main">' +
 
@@ -778,6 +844,7 @@
                 '</div>' +
 
                 '<div class="bm-best-percent">' +
+
                   best.percent.toFixed(1) +
                   '%' +
 
@@ -799,7 +866,10 @@
         ) +
 
         '<div class="bm-details">' +
-          predictionHtmlList(analysis, match) +
+          predictionHtmlList(
+            analysis,
+            match
+          ) +
         '</div>' +
 
       '</div>'
@@ -814,9 +884,11 @@
 
           '<div>' +
             '<h1>Bugünün Maçları</h1>' +
+
             '<div class="bm-sub">' +
               'Açılış oranlarından son 60 gün analizi' +
             '</div>' +
+
           '</div>' +
 
           '<div class="bm-controls">' +
@@ -845,399 +917,397 @@
 
       '<style>' +
 
-        '*{box-sizing:border-box}' +
-
-        'body{' +
-          'background:#080f20;' +
-          'color:#e7edf8;' +
+        '* {' +
+          'box-sizing: border-box;' +
         '}' +
 
-        '.bm-wrap{' +
-          'width:100%;' +
-          'max-width:1100px;' +
-          'margin:0 auto;' +
-          'padding:14px;' +
+        'body {' +
+          'background: #080f20;' +
+          'color: #e7edf8;' +
         '}' +
 
-        '.bm-top{' +
-          'display:flex;' +
-          'justify-content:space-between;' +
-          'gap:14px;' +
-          'align-items:flex-start;' +
-          'margin-bottom:14px;' +
+        '.bm-wrap {' +
+          'width: 100%;' +
+          'max-width: 1100px;' +
+          'margin: 0 auto;' +
+          'padding: 14px;' +
         '}' +
 
-        'h1{' +
-          'font-size:23px;' +
-          'margin:0 0 4px;' +
+        '.bm-top {' +
+          'display: flex;' +
+          'justify-content: space-between;' +
+          'gap: 14px;' +
+          'align-items: flex-start;' +
+          'margin-bottom: 14px;' +
         '}' +
 
-        '.bm-sub{' +
-          'font-size:12px;' +
-          'color:#8d9ab2;' +
+        'h1 {' +
+          'font-size: 23px;' +
+          'margin: 0 0 4px;' +
         '}' +
 
-        '.bm-controls{' +
-          'display:flex;' +
-          'gap:10px;' +
-          'align-items:end;' +
-          'flex-wrap:wrap;' +
-          'justify-content:flex-end;' +
+        '.bm-sub {' +
+          'font-size: 12px;' +
+          'color: #8d9ab2;' +
         '}' +
 
-        '.bm-controls label{' +
-          'display:flex;' +
-          'flex-direction:column;' +
-          'gap:5px;' +
-          'font-size:11px;' +
-          'color:#91a0ba;' +
+        '.bm-controls {' +
+          'display: flex;' +
+          'gap: 10px;' +
+          'align-items: flex-end;' +
+          'flex-wrap: wrap;' +
+          'justify-content: flex-end;' +
         '}' +
 
-        '.bm-controls input[type=date]{' +
-          'background:#101a31;' +
-          'border:1px solid #263452;' +
-          'color:#fff;' +
-          'border-radius:9px;' +
-          'padding:8px 9px;' +
-          'outline:none;' +
+        '.bm-controls label {' +
+          'display: flex;' +
+          'flex-direction: column;' +
+          'gap: 5px;' +
+          'font-size: 11px;' +
+          'color: #91a0ba;' +
         '}' +
 
-        '.bm-check{' +
-          'flex-direction:row !important;' +
-          'align-items:center;' +
-          'margin-top:19px;' +
+        '.bm-controls input[type="date"] {' +
+          'background: #101a31;' +
+          'border: 1px solid #263452;' +
+          'color: #fff;' +
+          'border-radius: 9px;' +
+          'padding: 8px 9px;' +
+          'outline: none;' +
         '}' +
 
-        '.bm-check input{' +
-          'accent-color:#4f8cff;' +
+        '.bm-check {' +
+          'flex-direction: row !important;' +
+          'align-items: center;' +
+          'margin-top: 19px;' +
         '}' +
 
-        '.bm-stats{' +
-          'display:grid;' +
-          'grid-template-columns:repeat(5,1fr);' +
-          'gap:8px;' +
-          'margin-bottom:10px;' +
+        '.bm-check input {' +
+          'accent-color: #4f8cff;' +
         '}' +
 
-        '.bm-stat{' +
-          'background:#0e172b;' +
-          'border:1px solid #1c2944;' +
-          'border-radius:12px;' +
-          'padding:11px;' +
-          'min-height:82px;' +
+        '.bm-stats {' +
+          'display: grid;' +
+          'grid-template-columns: repeat(5, 1fr);' +
+          'gap: 8px;' +
+          'margin-bottom: 10px;' +
         '}' +
 
-        '.bm-stat-title{' +
-          'font-size:10px;' +
-          'color:#8290aa;' +
-          'text-transform:uppercase;' +
-          'letter-spacing:.3px;' +
+        '.bm-stat {' +
+          'background: #0e172b;' +
+          'border: 1px solid #1c2944;' +
+          'border-radius: 12px;' +
+          'padding: 11px;' +
+          'min-height: 82px;' +
         '}' +
 
-        '.bm-stat-value{' +
-          'font-size:22px;' +
-          'font-weight:800;' +
-          'margin-top:5px;' +
+        '.bm-stat-title {' +
+          'font-size: 10px;' +
+          'color: #8290aa;' +
+          'text-transform: uppercase;' +
+          'letter-spacing: .3px;' +
         '}' +
 
-        '.bm-stat-sub{' +
-          'font-size:10px;' +
-          'color:#77849d;' +
-          'margin-top:3px;' +
+        '.bm-stat-value {' +
+          'font-size: 22px;' +
+          'font-weight: 800;' +
+          'margin-top: 5px;' +
         '}' +
 
-        '.bm-stat.success-stat .bm-stat-value{' +
-          'color:#35d07f;' +
+        '.bm-stat-sub {' +
+          'font-size: 10px;' +
+          'color: #77849d;' +
+          'margin-top: 3px;' +
         '}' +
 
-        '.bm-stat.fail-stat .bm-stat-value{' +
-          'color:#ff6262;' +
+        '.bm-stat.success-stat .bm-stat-value {' +
+          'color: #35d07f;' +
         '}' +
 
-        '.bm-info{' +
-          'font-size:12px;' +
-          'color:#8d9ab2;' +
-          'margin:8px 2px 10px;' +
+        '.bm-stat.fail-stat .bm-stat-value {' +
+          'color: #ff6262;' +
         '}' +
 
-        '.bm-list{' +
-          'display:flex;' +
-          'flex-direction:column;' +
-          'gap:9px;' +
+        '.bm-info {' +
+          'font-size: 12px;' +
+          'color: #8d9ab2;' +
+          'margin: 8px 2px 10px;' +
         '}' +
 
-        '.bm-card{' +
-          'background:#0d1629;' +
-          'border:1px solid #1b2944;' +
-          'border-radius:14px;' +
-          'overflow:hidden;' +
+        '.bm-list {' +
+          'display: flex;' +
+          'flex-direction: column;' +
+          'gap: 9px;' +
         '}' +
 
-        '.bm-card-head{' +
-          'display:flex;' +
-          'justify-content:space-between;' +
-          'gap:10px;' +
-          'padding:13px;' +
-          'cursor:pointer;' +
+        '.bm-card {' +
+          'background: #0d1629;' +
+          'border: 1px solid #1b2944;' +
+          'border-radius: 14px;' +
+          'overflow: hidden;' +
         '}' +
 
-        '.bm-teams{' +
-          'min-width:0;' +
-          'flex:1;' +
+        '.bm-card-head {' +
+          'display: flex;' +
+          'justify-content: space-between;' +
+          'gap: 10px;' +
+          'padding: 13px;' +
+          'cursor: pointer;' +
         '}' +
 
-        '.bm-league{' +
-          'font-size:10px;' +
-          'color:#6f7e99;' +
-          'margin-bottom:6px;' +
+        '.bm-teams {' +
+          'min-width: 0;' +
+          'flex: 1;' +
         '}' +
 
-        '.bm-team{' +
-          'font-size:14px;' +
-          'font-weight:700;' +
-          'line-height:1.5;' +
-          'white-space:nowrap;' +
-          'overflow:hidden;' +
-          'text-overflow:ellipsis;' +
+        '.bm-league {' +
+          'font-size: 10px;' +
+          'color: #6f7e99;' +
+          'margin-bottom: 6px;' +
         '}' +
 
-        '.bm-score{' +
-          'min-width:62px;' +
-          'text-align:center;' +
-          'display:flex;' +
-          'flex-direction:column;' +
-          'justify-content:center;' +
+        '.bm-team {' +
+          'font-size: 14px;' +
+          'font-weight: 700;' +
+          'line-height: 1.5;' +
+          'white-space: nowrap;' +
+          'overflow: hidden;' +
+          'text-overflow: ellipsis;' +
         '}' +
 
-        '.bm-score strong{' +
-          'font-size:18px;' +
+        '.bm-score {' +
+          'min-width: 62px;' +
+          'text-align: center;' +
+          'display: flex;' +
+          'flex-direction: column;' +
+          'justify-content: center;' +
         '}' +
 
-        '.bm-score small{' +
-          'font-size:10px;' +
-          'color:#8190aa;' +
-          'margin-top:2px;' +
+        '.bm-score strong {' +
+          'font-size: 18px;' +
         '}' +
 
-        '.bm-best{' +
-          'margin:0 10px 10px;' +
-          padding:10px 11px;' +
-          border:1px solid #283957;' +
-          border-radius:10px;' +
-          display:flex;' +
-          'justify-content:space-between;' +
-          'align-items:center;' +
-          'gap:10px;' +
+        '.bm-score small {' +
+          'font-size: 10px;' +
+          'color: #8190aa;' +
+          'margin-top: 2px;' +
+        '}' +
+
+        '.bm-best {' +
+          'margin: 0 10px 10px;' +
+          'padding: 10px 11px;' +
+          'border: 1px solid #283957;' +
+          'border-radius: 10px;' +
+          'display: flex;' +
+          'justify-content: space-between;' +
+          'align-items: center;' +
+          'gap: 10px;' +
         '}' +
 
         '.bm-best.success,' +
-        '.bm-pred.success{' +
-          'background:rgba(34,197,94,.11);' +
-          'border-color:rgba(34,197,94,.55);' +
+        '.bm-pred.success {' +
+          'background: rgba(34, 197, 94, .11);' +
+          'border-color: rgba(34, 197, 94, .55);' +
         '}' +
 
         '.bm-best.fail,' +
-        '.bm-pred.fail{' +
-          'background:rgba(239,68,68,.11);' +
-          'border-color:rgba(239,68,68,.55);' +
+        '.bm-pred.fail {' +
+          'background: rgba(239, 68, 68, .11);' +
+          'border-color: rgba(239, 68, 68, .55);' +
         '}' +
 
         '.bm-best.pending,' +
-        '.bm-pred.pending{' +
-          'background:rgba(234,179,8,.10);' +
-          'border-color:rgba(234,179,8,.50);' +
+        '.bm-pred.pending {' +
+          'background: rgba(234, 179, 8, .10);' +
+          'border-color: rgba(234, 179, 8, .50);' +
         '}' +
 
-        '.bm-best-main{' +
-          'display:flex;' +
-          'align-items:center;' +
-          'gap:8px;' +
-          'min-width:0;' +
+        '.bm-best-main {' +
+          'display: flex;' +
+          'align-items: center;' +
+          'gap: 8px;' +
+          'min-width: 0;' +
         '}' +
 
-        '.bm-status-icon{' +
-          'width:23px;' +
-          'height:23px;' +
-          'border-radius:50%;' +
-          'display:flex;' +
-          'align-items:center;' +
-          'justify-content:center;' +
-          'font-weight:900;' +
-          'font-size:13px;' +
-          'background:rgba(255,255,255,.08);' +
+        '.bm-status-icon {' +
+          'width: 23px;' +
+          'height: 23px;' +
+          'border-radius: 50%;' +
+          'display: flex;' +
+          'align-items: center;' +
+          'justify-content: center;' +
+          'font-weight: 900;' +
+          'font-size: 13px;' +
+          'background: rgba(255, 255, 255, .08);' +
         '}' +
 
-        '.success .bm-status-icon{' +
-          'color:#35d07f;' +
+        '.success .bm-status-icon {' +
+          'color: #35d07f;' +
         '}' +
 
-        '.fail .bm-status-icon{' +
-          'color:#ff6262;' +
+        '.fail .bm-status-icon {' +
+          'color: #ff6262;' +
         '}' +
 
-        '.pending .bm-status-icon{' +
-          'color:#f1c84b;' +
+        '.pending .bm-status-icon {' +
+          'color: #f1c84b;' +
         '}' +
 
-        '.bm-best-label{' +
-          'font-weight:800;' +
-          'font-size:14px;' +
+        '.bm-best-label {' +
+          'font-weight: 800;' +
+          'font-size: 14px;' +
         '}' +
 
-        '.bm-best-odd{' +
-          'font-size:11px;' +
-          'color:#9ba8bf;' +
-          background:#111c32;' +
-          padding:3px 6px;' +
-          border-radius:6px;' +
+        '.bm-best-odd {' +
+          'font-size: 11px;' +
+          'color: #9ba8bf;' +
+          'background: #111c32;' +
+          'padding: 3px 6px;' +
+          'border-radius: 6px;' +
         '}' +
 
-        '.bm-best-percent{' +
-          'font-size:18px;' +
-          'font-weight:900;' +
-          white-space:nowrap;' +
-          'display:flex;' +
-          'flex-direction:column;' +
-          'align-items:flex-end;' +
+        '.bm-best-percent {' +
+          'font-size: 18px;' +
+          'font-weight: 900;' +
+          'white-space: nowrap;' +
+          'display: flex;' +
+          'flex-direction: column;' +
+          'align-items: flex-end;' +
         '}' +
 
-        '.bm-best-percent small{' +
-          'font-size:9px;' +
-          'font-weight:500;' +
-          'color:#7e8ba2;' +
-          margin-top:2px;' +
+        '.bm-best-percent small {' +
+          'font-size: 9px;' +
+          'font-weight: 500;' +
+          'color: #7e8ba2;' +
+          'margin-top: 2px;' +
         '}' +
 
-        '.bm-no-best{' +
-          'margin:0 10px 10px;' +
-          'padding:9px 11px;' +
-          'font-size:11px;' +
-          'color:#68758e;' +
-          'background:#0a1222;' +
-          'border-radius:9px;' +
+        '.bm-no-best {' +
+          'margin: 0 10px 10px;' +
+          'padding: 9px 11px;' +
+          'font-size: 11px;' +
+          'color: #68758e;' +
+          'background: #0a1222;' +
+          'border-radius: 9px;' +
         '}' +
 
-        '.bm-details{' +
-          'display:none;' +
-          padding:0 10px 10px;' +
+        '.bm-details {' +
+          'display: none;' +
+          'padding: 0 10px 10px;' +
         '}' +
 
-        '.bm-card.open .bm-details{' +
-          'display:block;' +
+        '.bm-card.open .bm-details {' +
+          'display: block;' +
         '}' +
 
-        '.bm-pred{' +
-          'display:flex;' +
-          'align-items:center;' +
-          'justify-content:space-between;' +
-          gap:10px;' +
-          'padding:8px 9px;' +
-          'border:1px solid #1d2a43;' +
-          'border-radius:9px;' +
-          'margin-top:6px;' +
+        '.bm-pred {' +
+          'display: flex;' +
+          'align-items: center;' +
+          'justify-content: space-between;' +
+          'gap: 10px;' +
+          'padding: 8px 9px;' +
+          'border: 1px solid #1d2a43;' +
+          'border-radius: 9px;' +
+          'margin-top: 6px;' +
         '}' +
 
-        '.bm-pred-left{' +
-          'display:flex;' +
-          'align-items:center;' +
-          'gap:7px;' +
-          'min-width:0;' +
+        '.bm-pred-left {' +
+          'display: flex;' +
+          'align-items: center;' +
+          'gap: 7px;' +
+          'min-width: 0;' +
         '}' +
 
-        '.bm-pred-icon{' +
-          'width:19px;' +
-          'height:19px;' +
-          'border-radius:50%;' +
-          'display:flex;' +
-          'align-items:center;' +
-          'justify-content:center;' +
-          'font-size:11px;' +
-          'font-weight:900;' +
+        '.bm-pred-icon {' +
+          'width: 19px;' +
+          'height: 19px;' +
+          'border-radius: 50%;' +
+          'display: flex;' +
+          'align-items: center;' +
+          'justify-content: center;' +
+          'font-size: 11px;' +
+          'font-weight: 900;' +
         '}' +
 
-        '.success .bm-pred-icon{' +
-          'color:#35d07f;' +
+        '.success .bm-pred-icon {' +
+          'color: #35d07f;' +
         '}' +
 
-        '.fail .bm-pred-icon{' +
-          'color:#ff6262;' +
+        '.fail .bm-pred-icon {' +
+          'color: #ff6262;' +
         '}' +
 
-        '.pending .bm-pred-icon{' +
-          'color:#f1c84b;' +
+        '.pending .bm-pred-icon {' +
+          'color: #f1c84b;' +
         '}' +
 
-        '.bm-pred-label{' +
-          'font-size:12px;' +
-          'font-weight:700;' +
+        '.bm-pred-label {' +
+          'font-size: 12px;' +
+          'font-weight: 700;' +
         '}' +
 
-        '.bm-pred-odd{' +
-          'font-size:10px;' +
-          'color:#7e8ba2;' +
+        '.bm-pred-odd {' +
+          'font-size: 10px;' +
+          'color: #7e8ba2;' +
         '}' +
 
-        '.bm-pred-right{' +
-          'display:flex;' +
-          'align-items:center;' +
-          'gap:7px;' +
+        '.bm-pred-right {' +
+          'display: flex;' +
+          'align-items: center;' +
+          'gap: 7px;' +
         '}' +
 
-        '.bm-pred-right strong{' +
-          'font-size:13px;' +
+        '.bm-pred-right strong {' +
+          'font-size: 13px;' +
         '}' +
 
-        '.bm-pred-right span{' +
-          'font-size:9px;' +
-          'color:#74829b;' +
+        '.bm-pred-right span {' +
+          'font-size: 9px;' +
+          'color: #74829b;' +
         '}' +
 
-        '.bm-empty{' +
-          'padding:10px;' +
-          'text-align:center;' +
-          'font-size:11px;' +
-          'color:#69768d;' +
-          'background:#0a1221;' +
-          'border-radius:9px;' +
+        '.bm-empty {' +
+          'padding: 12px;' +
+          'text-align: center;' +
+          'font-size: 11px;' +
+          'color: #69768d;' +
+          'background: #0a1221;' +
+          'border-radius: 9px;' +
         '}' +
 
-        '@media(max-width:760px){' +
+        '@media (max-width: 760px) {' +
 
-          '.bm-top{' +
-            'flex-direction:column;' +
+          '.bm-top {' +
+            'flex-direction: column;' +
           '}' +
 
-          '.bm-controls{' +
-            'width:100%;' +
-            'justify-content:flex-start;' +
+          '.bm-controls {' +
+            'width: 100%;' +
+            'justify-content: flex-start;' +
           '}' +
 
-          '.bm-stats{' +
-            'grid-template-columns:repeat(2,1fr);' +
+          '.bm-stats {' +
+            'grid-template-columns: repeat(2, 1fr);' +
           '}' +
 
-          '.bm-stat:last-child{' +
-            'grid-column:span 2;' +
+          '.bm-stat:last-child {' +
+            'grid-column: span 2;' +
           '}' +
 
         '}' +
 
-        '@media(max-width:430px){' +
+        '@media (max-width: 430px) {' +
 
-          '.bm-wrap{' +
-            padding:9px;' +
+          '.bm-wrap {' +
+            'padding: 9px;' +
           '}' +
 
-          .bm-stats{' +
-            'grid-template-columns:repeat(2,1fr);' +
+          '.bm-stat-value {' +
+            'font-size: 19px;' +
           '}' +
 
-          '.bm-stat-value{' +
-            'font-size:19px;' +
-          '}' +
-
-          '.bm-best-percent{' +
-            'font-size:16px;' +
+          '.bm-best-percent {' +
+            'font-size: 16px;' +
           '}' +
 
         '}' +
@@ -1258,35 +1328,41 @@
       dateInput.value = selectedDate;
     }
 
-    var startDate = daysAgoISO(CFG.days);
+    var startDate =
+      daysAgoISO(CFG.days);
 
     /*
-     * Seçilen güne kadar olan son 60 günlük
-     * tamamlanmış maçlar.
+     * Son 60 günün tamamlanmış maçları.
      */
-    var playedHistory = DATA.filter(function (match) {
-      var d = getDate(match);
+    var playedHistory =
+      DATA.filter(function (match) {
+        var d = getDate(match);
 
-      return isPlayed(match) &&
-        d >= startDate &&
-        d < selectedDate;
-    });
+        return (
+          isPlayed(match) &&
+          d >= startDate &&
+          d < selectedDate
+        );
+      });
 
     /*
-     * Tahmin havuzu.
+     * Açılış oranı analiz havuzu.
      */
     buildIndex(playedHistory);
 
     /*
      * Seçilen günün maçları.
      */
-    var currentMatches = DATA.filter(function (match) {
-      return getDate(match) === selectedDate;
-    });
+    var currentMatches =
+      DATA.filter(function (match) {
+        return (
+          getDate(match) ===
+          selectedDate
+        );
+      });
 
     /*
-     * Günlük analiz:
-     * Seçilen günün tamamlanmış maçları.
+     * Günlük sadece ana tahmin başarı.
      */
     var dailyStats =
       calculateDailyMainPredictionStats(
@@ -1294,7 +1370,7 @@
       );
 
     /*
-     * 60 günlük ana tahmin başarısı.
+     * 60 günlük sadece ana tahmin başarı.
      */
     var mainStats =
       calculateMainPredictionStats(
@@ -1304,19 +1380,30 @@
     /*
      * Günün maçlarını analiz et.
      */
-    var analyzed = currentMatches.map(function (match) {
-      return {
-        match: match,
-        analysis: analyzeMatch(match)
-      };
-    });
-
-    if (onlyIdeal && onlyIdeal.checked) {
-      analyzed = analyzed.filter(function (item) {
-        return !!item.analysis.best;
+    var analyzed =
+      currentMatches.map(function (match) {
+        return {
+          match: match,
+          analysis: analyzeMatch(match)
+        };
       });
+
+    /*
+     * Sadece ideal sonucu olanlar.
+     */
+    if (
+      onlyIdeal &&
+      onlyIdeal.checked
+    ) {
+      analyzed =
+        analyzed.filter(function (item) {
+          return !!item.analysis.best;
+        });
     }
 
+    /*
+     * Ana tahmin yüzdesine göre sırala.
+     */
     analyzed.sort(function (a, b) {
       var ap = a.analysis.best;
       var bp = b.analysis.best;
@@ -1331,37 +1418,65 @@
 
       if (ap && bp) {
         if (bp.percent !== ap.percent) {
-          return bp.percent - ap.percent;
+          return (
+            bp.percent -
+            ap.percent
+          );
         }
 
-        return bp.total - ap.total;
+        return (
+          bp.total -
+          ap.total
+        );
       }
 
       return 0;
     });
 
-    var idealCount = analyzed.filter(function (item) {
-      return !!item.analysis.best;
-    }).length;
+    var idealCount =
+      analyzed.filter(function (item) {
+        return !!item.analysis.best;
+      }).length;
 
-    var unplayedCount = currentMatches.filter(function (match) {
-      return !isPlayed(match);
-    }).length;
+    var unplayedCount =
+      currentMatches.filter(function (match) {
+        return !isPlayed(match);
+      }).length;
 
     /*
      * =====================================================
-     * İSTATİSTİKLER
+     * İSTATİSTİK KUTULARI
      * =====================================================
      */
+    var dailyClass = '';
+
+    if (dailyStats.total > 0) {
+      dailyClass =
+        dailyStats.percent >= CFG.threshold
+          ? 'success-stat'
+          : 'fail-stat';
+    }
+
+    var mainClass = '';
+
+    if (mainStats.total > 0) {
+      mainClass =
+        mainStats.percent >= CFG.threshold
+          ? 'success-stat'
+          : 'fail-stat';
+    }
+
     var statsHtml =
 
       '<div class="bm-stat">' +
         '<div class="bm-stat-title">' +
           'Oynanmamış' +
         '</div>' +
+
         '<div class="bm-stat-value">' +
           unplayedCount +
         '</div>' +
+
         '<div class="bm-stat-sub">' +
           'Seçilen gün' +
         '</div>' +
@@ -1371,9 +1486,11 @@
         '<div class="bm-stat-title">' +
           'İdeal Sonuçlu' +
         '</div>' +
+
         '<div class="bm-stat-value">' +
           idealCount +
         '</div>' +
+
         '<div class="bm-stat-sub">' +
           'Ana tahmin bulunan maç' +
         '</div>' +
@@ -1383,24 +1500,18 @@
         '<div class="bm-stat-title">' +
           '60 Gün Analiz Havuzu' +
         '</div>' +
+
         '<div class="bm-stat-value">' +
           playedHistory.length +
         '</div>' +
+
         '<div class="bm-stat-sub">' +
           'Tamamlanmış maç' +
         '</div>' +
       '</div>' +
 
       '<div class="bm-stat ' +
-        (
-          dailyStats.total
-            ? (
-              dailyStats.percent >= CFG.threshold
-                ? 'success-stat'
-                : 'fail-stat'
-            )
-            : ''
-        ) +
+        dailyClass +
       '">' +
 
         '<div class="bm-stat-title">' +
@@ -1409,7 +1520,7 @@
 
         '<div class="bm-stat-value">' +
           (
-            dailyStats.total
+            dailyStats.total > 0
               ? dailyStats.percent.toFixed(1) + '%'
               : '-'
           ) +
@@ -1425,15 +1536,7 @@
       '</div>' +
 
       '<div class="bm-stat ' +
-        (
-          mainStats.total
-            ? (
-              mainStats.percent >= CFG.threshold
-                ? 'success-stat'
-                : 'fail-stat'
-            )
-            : ''
-        ) +
+        mainClass +
       '">' +
 
         '<div class="bm-stat-title">' +
@@ -1442,7 +1545,7 @@
 
         '<div class="bm-stat-value">' +
           (
-            mainStats.total
+            mainStats.total > 0
               ? mainStats.percent.toFixed(1) + '%'
               : '-'
           ) +
@@ -1457,17 +1560,20 @@
 
       '</div>';
 
-    var statsBox = $('#bmStats');
+    var statsBox =
+      $('#bmStats');
 
     if (statsBox) {
-      statsBox.innerHTML = statsHtml;
+      statsBox.innerHTML =
+        statsHtml;
     }
 
-    var info = $('#bmInfo');
+    var info =
+      $('#bmInfo');
 
     if (info) {
       info.innerHTML =
-        esc(formatDate(selectedDate)) +
+        esc(selectedDate) +
         ' · ' +
         currentMatches.length +
         ' maç · ' +
@@ -1475,7 +1581,8 @@
         ' gösteriliyor';
     }
 
-    var list = $('#bmList');
+    var list =
+      $('#bmList');
 
     if (!list) {
       return;
@@ -1490,19 +1597,25 @@
       return;
     }
 
-    list.innerHTML = analyzed.map(function (item, index) {
-      return cardHtml(
-        item.match,
-        item.analysis,
-        index
-      );
-    }).join('');
+    list.innerHTML =
+      analyzed.map(function (item, index) {
+        return cardHtml(
+          item.match,
+          item.analysis,
+          index
+        );
+      }).join('');
   }
 
   function loadData() {
-    fetch(DATA_URL + '?v=' + Date.now(), {
-      cache: 'no-store'
-    })
+    fetch(
+      DATA_URL +
+      '?v=' +
+      Date.now(),
+      {
+        cache: 'no-store'
+      }
+    )
       .then(function (response) {
         if (!response.ok) {
           throw new Error(
@@ -1524,14 +1637,19 @@
                 : []
             );
 
-        DATA = matches.map(normalizeMatch);
+        DATA =
+          matches.map(
+            normalizeMatch
+          );
 
         createUI();
 
-        var dateInput = $('#dateFilter');
+        var dateInput =
+          $('#dateFilter');
 
         if (dateInput) {
-          dateInput.value = todayISO();
+          dateInput.value =
+            todayISO();
 
           dateInput.addEventListener(
             'change',
@@ -1539,7 +1657,8 @@
           );
         }
 
-        var onlyIdeal = $('#bmOnly');
+        var onlyIdeal =
+          $('#bmOnly');
 
         if (onlyIdeal) {
           onlyIdeal.addEventListener(
@@ -1548,7 +1667,8 @@
           );
         }
 
-        var list = $('#bmList');
+        var list =
+          $('#bmList');
 
         if (list) {
           list.addEventListener(
@@ -1556,13 +1676,17 @@
             function (event) {
 
               var card =
-                event.target.closest('.bm-card');
+                event.target.closest(
+                  '.bm-card'
+                );
 
               if (!card) {
                 return;
               }
 
-              card.classList.toggle('open');
+              card.classList.toggle(
+                'open'
+              );
             }
           );
         }
@@ -1579,12 +1703,12 @@
             'background:#080f20;' +
             'color:#ff7777;' +
             'font-family:Arial;' +
-            'min-height:100vh' +
+            'min-height:100vh;' +
           '">' +
 
             '<h2>Veriler yüklenemedi</h2>' +
 
-            '<div style="color:#9aa7bd">' +
+            '<div style="color:#9aa7bd;">' +
               esc(error.message) +
             '</div>' +
 
