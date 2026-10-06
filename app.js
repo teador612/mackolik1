@@ -1570,101 +1570,125 @@ function calculateTodaySummary(predictedMatches) {
 }
 /* =========================================================
    SON 60 GÜN BAŞARI
-========================================================= */
+   SADECE ANA TAHMİNLER HESAPLANIR
+   ========================================================= */
 
 function calculate60DaySummary() {
 
-    const index =
-        buildAnalysisIndex(
-            selectedDate
+    const end = new Date(selectedDate);
+
+    end.setHours(
+        0,
+        0,
+        0,
+        0
+    );
+
+    const start =
+        addDays(
+            end,
+            -HISTORY_DAYS
         );
 
     let success = 0;
     let total = 0;
 
+    /*
+       Son 60 gündeki oynanmış maçları al.
+       Bugünün kendisini dahil etme.
+    */
+    const historicalDays =
+        allMatches.filter(match => {
+
+            const date =
+                parseDate(
+                    getDate(match)
+                );
+
+            if (!date) {
+                return false;
+            }
+
+            date.setHours(
+                0,
+                0,
+                0,
+                0
+            );
+
+            return (
+                date >= start &&
+                date < end &&
+                isPlayed(match)
+            );
+        });
+
+    /*
+       Her maç için o günün sisteminin
+       ürettiği tahminleri hesapla.
+
+       recommendations[0]
+       = SADECE ANA TAHMİN
+    */
     for (
-        const [
-            key,
-            historicalMatches
-        ]
-        of index.entries()
+        const match
+        of historicalDays
     ) {
 
+        const matchDate =
+            parseDate(
+                getDate(match)
+            );
+
+        if (!matchDate) {
+            continue;
+        }
+
+        const recommendations =
+            getRecommendations(
+                match,
+                matchDate
+            );
+
+        /*
+           Tahmin yoksa bu maç
+           başarı hesabına girmez.
+        */
         if (
-            historicalMatches.length <
-            MIN_SAMPLE
+            !recommendations ||
+            !recommendations.length
         ) {
             continue;
         }
 
-        const sourceMarket =
-            key.split("|")[0];
+        /*
+           SADECE İLK / ANA TAHMİN
+        */
+        const mainRecommendation =
+            recommendations[0];
 
-        for (
-            const target
-            of MARKETS
-        ) {
+        if (!mainRecommendation) {
+            continue;
+        }
 
-            if (
-                target.id ===
-                sourceMarket
-            ) {
-                continue;
-            }
+        const result =
+            getMarketOutcome(
+                match,
+                mainRecommendation.targetMarket
+            );
 
-            let localSuccess = 0;
-            let localTotal = 0;
+        /*
+           Sonuç hesaplanamıyorsa
+           hesaba katma.
+        */
+        if (result === null) {
+            continue;
+        }
 
-            for (
-                const match
-                of historicalMatches
-            ) {
+        total++;
 
-                const result =
-                    getMarketOutcome(
-                        match,
-                        target.id
-                    );
-
-                if (
-                    result === null
-                ) {
-                    continue;
-                }
-
-                localTotal++;
-
-                if (
-                    result === true
-                ) {
-                    localSuccess++;
-                }
-            }
-
-            if (
-                localTotal <
-                MIN_SAMPLE
-            ) {
-                continue;
-            }
-
-            const percentage =
-                (
-                    localSuccess /
-                    localTotal
-                ) * 100;
-
-            if (
-                percentage >=
-                MIN_SUCCESS
-            ) {
-
-                success +=
-                    localSuccess;
-
-                total +=
-                    localTotal;
-            }
+        if (result === true) {
+            success++;
         }
     }
 
