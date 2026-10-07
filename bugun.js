@@ -1,16 +1,8 @@
-/* =========================================================
-   BUGÜNÜN MAÇLARI MENÜSÜ
-   Birebir Eşleşme + Filtre + Canlı Skor
-
-   NOT:
-   - Tahmin oranı %0 olan tahminler GÖSTERİLMEZ.
-   - Diğer tahminler aynı maç içinde gösterilmeye devam eder.
-   - Maçın tamamı %0 bir tahmin yüzünden silinmez.
-========================================================= */
 (function () {
   'use strict';
 
   var START = '2026-09-01';
+
   var CUR = {
     items: [],
     idxPlayed: {},
@@ -21,7 +13,9 @@
 
   var LIVE_JSON_URL = 'data/matches.json';
 
-  /* ---------- Yardımcılar ---------- */
+  /* =========================================================
+     YARDIMCILAR
+  ========================================================= */
 
   function $(id) {
     return document.getElementById(id);
@@ -44,9 +38,8 @@
   }
 
   function num(v) {
-    return isEmpty(v)
-      ? NaN
-      : Number(String(v).trim().replace(',', '.'));
+    if (isEmpty(v)) return NaN;
+    return Number(String(v).trim().replace(',', '.'));
   }
 
   function sc(v) {
@@ -62,17 +55,18 @@
 
   function fmtDate(s) {
     var p = String(s).split('-');
+
     return p.length === 3
       ? p[2] + '.' + p[1] + '.' + p[0]
       : s;
   }
 
   function fmtRate(p) {
-    return String(+p.toFixed(1));
+    return Number(p).toFixed(2);
   }
 
   function hue(p) {
-    return Math.round(p * 1.2);
+    return Math.round(Math.max(0, Math.min(100, p)) * 1.2);
   }
 
   function marketsMap() {
@@ -85,26 +79,40 @@
 
   function defMinOdd() {
     return (
-      typeof MIN_ODD !== 'undefined' && isFinite(MIN_ODD)
+      typeof MIN_ODD !== 'undefined' &&
+      isFinite(MIN_ODD)
         ? MIN_ODD
         : 1.4
     );
   }
 
   /*
-   * SADECE %0 OLAN TAHMİNLERİ GİZLEMEK İÇİN
+   * EKRANDA 0.00 OLACAKSA GÖSTERME.
    *
-   * 0.00 / 0 / %0 / 0.0 -> false
-   * 0'dan büyük tüm oranlar -> true
+   * Örnek:
+   * 0       -> gizle
+   * 0.004   -> gizle çünkü 0.00 görünür
+   * 0.009   -> gizle çünkü 0.01 altına yuvarlanır
+   * 0.01    -> göster
+   * 65.20   -> göster
    */
-  function isPositivePrediction(x) {
-    return x && Number(x.p) > 0;
+  function hasVisibleRate(x) {
+    if (!x) return false;
+
+    var p = Number(x.p);
+
+    if (!isFinite(p)) return false;
+
+    return Number(p.toFixed(2)) > 0;
   }
 
   function cleanTeamName(name) {
     return String(name || '')
       .toLowerCase()
-      .replace(/fc|sc|cd|de|club|atletico|deportivo|fk|sk|sporting/g, '')
+      .replace(
+        /fc|sc|cd|de|club|atletico|deportivo|fk|sk|sporting/g,
+        ''
+      )
       .replace(/[^a-z0-9ğüşıöç]/g, '')
       .trim();
   }
@@ -114,6 +122,7 @@
     var c2 = cleanTeamName(t2);
 
     if (!c1 || !c2) return false;
+
     if (c1 === c2) return true;
 
     if (c1.length > 3 && c2.length > 3) {
@@ -123,7 +132,9 @@
     return false;
   }
 
-  /* ---------- Sonuç Türleri ---------- */
+  /* =========================================================
+     SONUÇ TÜRLERİ
+  ========================================================= */
 
   var RES = [
     {
@@ -152,7 +163,7 @@
       odd: 'kgVar',
       t: function (f) {
         return f
-          ? (f[0] > 0 && f[1] > 0)
+          ? f[0] > 0 && f[1] > 0
           : null;
       }
     },
@@ -161,7 +172,7 @@
       odd: 'over25',
       t: function (f) {
         return f
-          ? (f[0] + f[1]) > 2.5
+          ? f[0] + f[1] > 2.5
           : null;
       }
     },
@@ -170,7 +181,7 @@
       odd: 'iyOver05',
       t: function (f, h) {
         return h
-          ? (h[0] + h[1]) > 0.5
+          ? h[0] + h[1] > 0.5
           : null;
       }
     },
@@ -179,7 +190,7 @@
       odd: 'iyOver15',
       t: function (f, h) {
         return h
-          ? (h[0] + h[1]) > 1.5
+          ? h[0] + h[1] > 1.5
           : null;
       }
     }
@@ -222,7 +233,9 @@
     'all'
   ];
 
-  /* ---------- CSS ---------- */
+  /* =========================================================
+     CSS
+  ========================================================= */
 
   var css = '' +
     '.td-panel{background:#0d1422;border:1px solid #1d2a3d;border-radius:8px;padding:16px;margin:14px 0}' +
@@ -293,26 +306,33 @@
   st.textContent = css;
   document.head.appendChild(st);
 
-  /* ---------- Sekme ---------- */
+  /* =========================================================
+     SEKME
+  ========================================================= */
 
   var tabs = document.querySelector('.tabs');
 
   var btn = document.createElement('button');
+
   btn.className = 'tab active';
   btn.dataset.tab = 'todayTab';
   btn.textContent = 'Bugünün maçları';
 
   btn.onclick = function () {
+
     if (typeof showTab === 'function') {
       showTab('todayTab');
     } else {
-      document.querySelectorAll('.tab').forEach(function (x) {
-        x.classList.remove('active');
-      });
 
-      document.querySelectorAll('section').forEach(function (x) {
-        x.hidden = true;
-      });
+      document.querySelectorAll('.tab')
+        .forEach(function (x) {
+          x.classList.remove('active');
+        });
+
+      document.querySelectorAll('section')
+        .forEach(function (x) {
+          x.hidden = true;
+        });
 
       btn.classList.add('active');
       sec.hidden = false;
@@ -322,22 +342,32 @@
   };
 
   if (tabs) {
-    document.querySelectorAll('.tab').forEach(function (t) {
-      t.classList.remove('active');
-    });
 
-    tabs.insertBefore(btn, tabs.firstChild);
+    document.querySelectorAll('.tab')
+      .forEach(function (t) {
+        t.classList.remove('active');
+      });
+
+    tabs.insertBefore(
+      btn,
+      tabs.firstChild
+    );
   }
 
-  /* ---------- Bölüm ---------- */
+  /* =========================================================
+     BÖLÜM
+  ========================================================= */
 
   var sec = document.createElement('section');
+
   sec.id = 'todayTab';
   sec.hidden = false;
 
   sec.innerHTML =
     '<div class="td-panel">' +
+
       '<h2>Bugünün maçları</h2>' +
+
       '<div class="notice">' +
         'Oynanmamış maçlar listelenir. Maçın yanındaki <b>+</b> butonuna basınca her oran türü için, aynı oranla ' +
         '<b>' + fmtDate(START) + ' ve sonrası</b> oynanmış maçların sonuç yüzdeleri çıkar. ' +
@@ -376,6 +406,7 @@
       '</div>' +
 
       '<div class="td-checks">' +
+
         '<label>' +
           '<input type="checkbox" id="tdOnly">' +
           ' Sadece ideal sonucu olan maçlar' +
@@ -385,7 +416,9 @@
           '<input type="checkbox" id="tdAll">' +
           ' Tüm sonuçları göster' +
         '</label>' +
+
       '</div>' +
+
     '</div>' +
 
     '<div id="tdStats"></div>' +
@@ -394,22 +427,37 @@
   var filterTab = $('filterTab');
 
   if (filterTab && filterTab.parentNode) {
-    document.querySelectorAll('section').forEach(function (s) {
-      s.hidden = true;
-    });
 
-    filterTab.parentNode.insertBefore(sec, filterTab);
+    document.querySelectorAll('section')
+      .forEach(function (s) {
+        s.hidden = true;
+      });
+
+    filterTab.parentNode.insertBefore(
+      sec,
+      filterTab
+    );
+
   } else {
+
     document.body.appendChild(sec);
+
   }
 
   $('tdDate').value = iso(new Date());
 
-  $('tdBasis').innerHTML = BASIS.map(function (b) {
-    return '<option value="' + b.v + '">' +
-      E(b.l) +
-      '</option>';
-  }).join('');
+  $('tdBasis').innerHTML =
+    BASIS.map(function (b) {
+
+      return (
+        '<option value="' +
+        b.v +
+        '">' +
+        E(b.l) +
+        '</option>'
+      );
+
+    }).join('');
 
   [
     'tdDate',
@@ -420,7 +468,12 @@
     'tdOnly',
     'tdAll'
   ].forEach(function (id) {
-    $(id).addEventListener('change', render);
+
+    $(id).addEventListener(
+      'change',
+      render
+    );
+
   });
 
   [
@@ -428,30 +481,48 @@
     'tdMin',
     'tdOdd'
   ].forEach(function (id) {
-    $(id).addEventListener('input', render);
+
+    $(id).addEventListener(
+      'input',
+      render
+    );
+
   });
 
-  /* ---------- Canlı Skor ---------- */
+  /* =========================================================
+     CANLI SKOR
+  ========================================================= */
 
   function fetchLiveScores() {
+
     fetch(
-      LIVE_JSON_URL + '?_=' + Date.now(),
+      LIVE_JSON_URL +
+      '?_=' +
+      Date.now(),
       {
         cache: 'no-store'
       }
     )
       .then(function (res) {
+
         if (!res.ok) {
-          throw new Error('JSON yüklenemedi');
+          throw new Error(
+            'JSON yüklenemedi'
+          );
         }
 
         return res.json();
+
       })
       .then(function (data) {
 
-        var matches = Array.isArray(data)
-          ? data
-          : (data.matches || Object.values(data).flat());
+        var matches =
+          Array.isArray(data)
+            ? data
+            : (
+                data.matches ||
+                Object.values(data).flat()
+              );
 
         var scores = [];
 
@@ -462,27 +533,35 @@
             m.score.home !== null &&
             m.score.home !== undefined
           ) {
+
             scores.push({
               home: m.home,
               away: m.away,
+
               score:
                 (m.score.home ?? 0) +
                 ' - ' +
                 (m.score.away ?? 0),
+
               code: m.code
             });
+
           }
 
         });
 
         CUR.liveScores = scores;
+
         updateScoresOnUI();
+
       })
       .catch(function (err) {
+
         console.log(
           'Skor senkronizasyon hatası:',
           err
         );
+
       });
   }
 
@@ -500,147 +579,204 @@
       var home = it.r.home;
       var away = it.r.away;
 
-      var found = CUR.liveScores.find(function (s) {
+      var found =
+        CUR.liveScores.find(function (s) {
 
-        return (
-          (
-            it.r.code &&
-            String(s.code) === String(it.r.code)
-          ) ||
-          (
-            isTeamMatch(s.home, home) &&
-            isTeamMatch(s.away, away)
-          )
+          return (
+            (
+              it.r.code &&
+              String(s.code) ===
+              String(it.r.code)
+            ) ||
+            (
+              isTeamMatch(
+                s.home,
+                home
+              ) &&
+              isTeamMatch(
+                s.away,
+                away
+              )
+            )
+          );
+
+        });
+
+      var card =
+        document.querySelector(
+          '.td-card[data-i="' +
+          i +
+          '"]'
         );
-
-      });
-
-      var card = document.querySelector(
-        '.td-card[data-i="' + i + '"]'
-      );
 
       if (!card) return;
 
       var existingScore =
-        card.querySelector('.td-score');
+        card.querySelector(
+          '.td-score'
+        );
 
       if (found) {
 
         if (!existingScore) {
 
           existingScore =
-            document.createElement('div');
+            document.createElement(
+              'div'
+            );
 
           var chip =
-            card.querySelector('.td-chip');
+            card.querySelector(
+              '.td-chip'
+            );
 
           card
-            .querySelector('.td-head')
+            .querySelector(
+              '.td-head'
+            )
             .insertBefore(
               existingScore,
               chip
             );
         }
 
-        existingScore.className = 'td-score';
-        existingScore.textContent = found.score;
+        existingScore.className =
+          'td-score';
+
+        existingScore.textContent =
+          found.score;
       }
 
     });
   }
 
-  /* ---------- Tıklama ---------- */
+  /* =========================================================
+     TIKLAMALAR
+  ========================================================= */
 
-  sec.addEventListener('click', function (e) {
+  sec.addEventListener(
+    'click',
+    function (e) {
 
-    var t = e.target;
+      var t = e.target;
 
-    if (!t.closest) return;
+      if (!t.closest) return;
 
-    var p2 = t.closest('.td-p2');
+      var p2 =
+        t.closest('.td-p2');
 
-    if (p2) {
+      if (p2) {
 
-      var row = p2.closest('.td-row');
-      var card = p2.closest('.td-card');
+        var row =
+          p2.closest('.td-row');
 
-      row.classList.toggle('open');
+        var card =
+          p2.closest('.td-card');
 
-      if (
-        row.classList.contains('open') &&
-        !row.getAttribute('data-f')
-      ) {
+        row.classList.toggle(
+          'open'
+        );
 
-        var it =
-          CUR.items[
-            +card.getAttribute('data-i')
-          ];
+        if (
+          row.classList.contains('open') &&
+          !row.getAttribute('data-f')
+        ) {
 
-        var rw =
-          it &&
-          it.shown &&
-          it.shown[
-            +row.getAttribute('data-r')
-          ];
+          var it =
+            CUR.items[
+              +card.getAttribute(
+                'data-i'
+              )
+            ];
 
-        if (rw) {
+          var rw =
+            it &&
+            it.shown &&
+            it.shown[
+              +row.getAttribute(
+                'data-r'
+              )
+            ];
 
-          row.querySelector('.td-det').innerHTML =
-            detailHtml(it.r, rw);
+          if (rw) {
 
-          row.setAttribute(
-            'data-f',
+            row.querySelector(
+              '.td-det'
+            ).innerHTML =
+              detailHtml(
+                it.r,
+                rw
+              );
+
+            row.setAttribute(
+              'data-f',
+              '1'
+            );
+          }
+        }
+
+        return;
+      }
+
+      var p =
+        t.closest('.td-plus');
+
+      if (p) {
+
+        var c =
+          p.closest('.td-card');
+
+        c.classList.toggle(
+          'open'
+        );
+
+        if (
+          c.classList.contains('open') &&
+          !c.getAttribute('data-b')
+        ) {
+
+          c.querySelector(
+            '.td-body'
+          ).innerHTML =
+            bodyHtml(
+              CUR.items[
+                +c.getAttribute(
+                  'data-i'
+                )
+              ]
+            );
+
+          c.setAttribute(
+            'data-b',
             '1'
           );
         }
+
+        return;
       }
 
-      return;
-    }
+      var d =
+        t.closest('[data-d]');
 
-    var p = t.closest('.td-plus');
+      if (d) {
 
-    if (p) {
-
-      var c = p.closest('.td-card');
-
-      c.classList.toggle('open');
-
-      if (
-        c.classList.contains('open') &&
-        !c.getAttribute('data-b')
-      ) {
-
-        c.querySelector('.td-body').innerHTML =
-          bodyHtml(
-            CUR.items[
-              +c.getAttribute('data-i')
-            ]
+        $('tdDate').value =
+          d.getAttribute(
+            'data-d'
           );
 
-        c.setAttribute(
-          'data-b',
-          '1'
-        );
+        render();
       }
 
-      return;
     }
+  );
 
-    var d = t.closest('[data-d]');
-
-    if (d) {
-      $('tdDate').value =
-        d.getAttribute('data-d');
-
-      render();
-    }
-
-  });
-
-  /* ---------- Veri Hazırlama ---------- */
+  /* =========================================================
+     VERİ
+  ========================================================= */
 
   function mk(x) {
+
     return {
       r: x,
       date: x.date,
@@ -657,24 +793,28 @@
 
   function buildIndex(arr) {
 
-    var m = Object.create(null);
+    var m =
+      Object.create(null);
 
     arr.forEach(function (x) {
 
-      Object.keys(x.odds).forEach(function (k) {
+      Object.keys(x.odds)
+        .forEach(function (k) {
 
-        var n = num(x.odds[k]);
+          var n =
+            num(x.odds[k]);
 
-        if (!(n > 0)) return;
+          if (!(n > 0)) return;
 
-        var key = k + '|' + n;
+          var key =
+            k + '|' + n;
 
-        (
-          m[key] ||
-          (m[key] = [])
-        ).push(x);
+          (
+            m[key] ||
+            (m[key] = [])
+          ).push(x);
 
-      });
+        });
 
     });
 
@@ -688,159 +828,186 @@
     min
   ) {
 
-    var list = RES.map(function (d) {
+    var list =
+      RES.map(function (d) {
 
-      var n = 0;
-      var t = 0;
+        var n = 0;
+        var t = 0;
 
-      hist.forEach(function (x) {
+        hist.forEach(function (x) {
 
-        var v = d.t(
-          x.f,
-          x.h
-        );
+          var v =
+            d.t(
+              x.f,
+              x.h
+            );
 
-        if (
-          v === null ||
-          v === undefined
-        ) {
-          return;
-        }
+          if (
+            v === null ||
+            v === undefined
+          ) {
+            return;
+          }
 
-        t++;
+          t++;
 
-        if (v) n++;
+          if (v) n++;
+
+        });
+
+        return {
+          d: d,
+          n: n,
+          t: t,
+
+          p:
+            t
+              ? 100 * n / t
+              : 0,
+
+          odd:
+            oddsOfMatch
+              ? oddsOfMatch[d.odd]
+              : ''
+        };
 
       });
 
-      return {
-        d: d,
-        n: n,
-        t: t,
-        p: t
-          ? 100 * n / t
-          : 0,
-        odd:
-          oddsOfMatch
-            ? oddsOfMatch[d.odd]
-            : ''
-      };
-
-    });
-
     list.forEach(function (x) {
+
       x.ideal =
         x.t >= min &&
         x.p >= thr;
+
     });
 
     list.sort(function (a, b) {
+
       return (
         (b.ideal - a.ideal) ||
         (b.p - a.p) ||
         (b.t - a.t)
       );
+
     });
 
     return list;
   }
 
-  function analyzeEach(r, cfg) {
+  function analyzeEach(
+    r,
+    cfg
+  ) {
 
     var rows = [];
     var M = marketsMap();
     var odds = r.odds || {};
     var seenHistKeys = {};
 
-    Object.keys(odds).forEach(function (k) {
+    Object.keys(odds)
+      .forEach(function (k) {
 
-      if (!(k in M)) return;
+        if (!(k in M)) return;
 
-      var n = num(odds[k]);
+        var n =
+          num(odds[k]);
 
-      if (!(n >= cfg.minOdd)) return;
+        if (!(n >= cfg.minOdd)) {
+          return;
+        }
 
-      var hist =
-        CUR.idxPlayed[
-          k + '|' + n
-        ];
+        var hist =
+          CUR.idxPlayed[
+            k + '|' + n
+          ];
 
-      if (
-        !hist ||
-        !hist.length
-      ) {
-        return;
-      }
+        if (
+          !hist ||
+          !hist.length
+        ) {
+          return;
+        }
 
-      var histSignature =
-        hist
-          .map(function (m) {
-            return (
-              m.date +
-              '_' +
-              m.home +
-              '_' +
-              m.away
-            );
-          })
-          .sort()
-          .join('|');
+        var histSignature =
+          hist
+            .map(function (m) {
 
-      var uniqueKey =
-        n + '::' +
-        histSignature;
+              return (
+                m.date +
+                '_' +
+                m.home +
+                '_' +
+                m.away
+              );
 
-      if (seenHistKeys[uniqueKey]) {
-        return;
-      }
+            })
+            .sort()
+            .join('|');
 
-      seenHistKeys[uniqueKey] = true;
+        var uniqueKey =
+          n +
+          '::' +
+          histSignature;
 
-      var list =
-        statsOf(
-          hist,
-          null,
-          cfg.thr,
-          cfg.min
-        );
+        if (seenHistKeys[uniqueKey]) {
+          return;
+        }
 
-      rows.push({
-        k: k,
-        label: M[k],
-        odd: odds[k],
-        n: n,
-        hist: hist,
-        list: list,
+        seenHistKeys[uniqueKey] = true;
 
-        /*
-         * BURADA 0% sonuçları analizden silmiyoruz.
-         * Sadece ekranda göstermiyoruz.
-         */
-        ideal: list.filter(function (x) {
-          return x.ideal;
-        }),
+        var list =
+          statsOf(
+            hist,
+            null,
+            cfg.thr,
+            cfg.min
+          );
 
-        top: list[0]
+        rows.push({
+
+          k: k,
+          label: M[k],
+          odd: odds[k],
+          n: n,
+          hist: hist,
+          list: list,
+
+          ideal:
+            list.filter(function (x) {
+              return x.ideal;
+            }),
+
+          top: list[0]
+
+        });
+
       });
 
-    });
-
     rows.sort(function (a, b) {
+
       return (
-        ((b.ideal.length > 0) -
-          (a.ideal.length)) ||
+        (
+          (b.ideal.length > 0) -
+          (a.ideal.length > 0)
+        ) ||
         (b.top.p - a.top.p) ||
         (b.top.t - a.top.t)
       );
+
     });
 
     var best = null;
 
     rows.forEach(function (rw) {
 
-      if (!rw.ideal.length) return;
+      var valid =
+        rw.ideal.filter(
+          hasVisibleRate
+        );
 
-      var t = rw.ideal[0];
+      if (!valid.length) return;
+
+      var t = valid[0];
 
       if (
         !best ||
@@ -857,7 +1024,11 @@
 
     var idealRows =
       rows.filter(function (x) {
-        return x.ideal.length;
+
+        return x.ideal.some(
+          hasVisibleRate
+        );
+
       });
 
     return {
@@ -877,7 +1048,8 @@
     cfg
   ) {
 
-    var odds = r.odds || {};
+    var odds =
+      r.odds || {};
 
     var mode =
       NOODDS.indexOf(keys[0]) >= 0
@@ -888,7 +1060,11 @@
 
       var has =
         keys.every(function (k) {
-          return !isEmpty(odds[k]);
+
+          return !isEmpty(
+            odds[k]
+          );
+
         });
 
       if (!has) return null;
@@ -902,6 +1078,7 @@
         }
 
         if (mode === 'league') {
+
           return (
             !!r.league &&
             x.league === r.league
@@ -909,6 +1086,7 @@
         }
 
         if (mode === 'team') {
+
           return (
             x.home === r.home ||
             x.away === r.home ||
@@ -917,12 +1095,16 @@
           );
         }
 
-        return keys.every(function (k) {
-          return (
-            num(x.odds[k]) ===
-            num(odds[k])
-          );
-        });
+        return keys.every(
+          function (k) {
+
+            return (
+              num(x.odds[k]) ===
+              num(odds[k])
+            );
+
+          }
+        );
 
       });
 
@@ -936,7 +1118,12 @@
 
     var ideal =
       list.filter(function (x) {
-        return x.ideal;
+
+        return (
+          x.ideal &&
+          hasVisibleRate(x)
+        );
+
       });
 
     return {
@@ -945,13 +1132,16 @@
       hist: hist.length,
       list: list,
       ideal: ideal,
-      best: ideal[0] || null,
+      best:
+        ideal[0] || null,
       hasIdeal:
         ideal.length > 0
     };
   }
 
-  /* ---------- Kutu ---------- */
+  /* =========================================================
+     TAHMİN KUTUSU
+  ========================================================= */
 
   function boxHtml(
     x,
@@ -959,20 +1149,22 @@
   ) {
 
     /*
-     * ANA FİLTRE:
+     * EN ÖNEMLİ FİLTRE:
      *
-     * Tahmin oranı 0 ise hiçbir HTML
-     * üretmiyoruz.
+     * Ekranda 0.00 görünecekse
+     * kutuyu hiç oluşturma.
      */
-    if (!isPositivePrediction(x)) {
+    if (!hasVisibleRate(x)) {
       return '';
     }
 
     return (
       '<div class="td-box' +
-      (x.ideal
-        ? ' ideal'
-        : ' dim') +
+      (
+        x.ideal
+          ? ' ideal'
+          : ' dim'
+      ) +
       '" style="--h:' +
       hue(x.p) +
       '">' +
@@ -1004,7 +1196,9 @@
     );
   }
 
-  /* ---------- Detay ---------- */
+  /* =========================================================
+     DETAY
+  ========================================================= */
 
   function detailHtml(
     cur,
@@ -1015,10 +1209,12 @@
       rw.hist
         .slice()
         .sort(function (a, b) {
+
           return String(b.date)
             .localeCompare(
               String(a.date)
             );
+
         });
 
     var unp =
@@ -1029,13 +1225,17 @@
         []
       )
         .filter(function (x) {
+
           return x.r !== cur;
+
         })
         .sort(function (a, b) {
+
           return String(a.date)
             .localeCompare(
               String(b.date)
             );
+
         });
 
     var LIM = 80;
@@ -1047,10 +1247,15 @@
 
       return (
         '<div class="td-m' +
-        (isUnp ? ' unp' : '') +
+        (
+          isUnp
+            ? ' unp'
+            : ''
+        ) +
         '">' +
 
           '<div class="td-mt">' +
+
             '<b>' +
               E(x.home) +
               ' - ' +
@@ -1093,13 +1298,16 @@
 
     return (
       '<div class="td-dh">' +
+
         '<b>' +
           E(rw.label) +
           ' = ' +
           E(rw.odd) +
         '</b> · ' +
+
         played.length +
         ' oynanmış' +
+
         (
           unp.length
             ? ' · ' +
@@ -1107,33 +1315,48 @@
               ' oynanmamış'
             : ''
         ) +
+
       '</div>' +
 
       played
         .slice(0, LIM)
         .map(function (x) {
-          return line(x, false);
+
+          return line(
+            x,
+            false
+          );
+
         })
         .join('') +
 
       (
         played.length > LIM
-          ? '<div class="td-note">İlk ' +
-            LIM +
-            ' maç gösteriliyor.</div>'
+          ? '<div class="td-note">' +
+              'İlk ' +
+              LIM +
+              ' maç gösteriliyor.' +
+            '</div>'
           : ''
       ) +
 
       unp
         .slice(0, 30)
         .map(function (x) {
-          return line(x, true);
+
+          return line(
+            x,
+            true
+          );
+
         })
         .join('')
     );
   }
 
-  /* ---------- Maç Detayı ---------- */
+  /* =========================================================
+     MAÇ DETAYI
+  ========================================================= */
 
   function bodyHtml(it) {
 
@@ -1141,6 +1364,7 @@
     var cfg = CUR.cfg;
 
     if (!a) {
+
       return (
         '<div class="td-note">' +
           'Bu maçta seçilen eşleştirme oranları bulunamadı.' +
@@ -1156,28 +1380,24 @@
           : a.idealRows;
 
       /*
-       * Sadece içinde en az bir
-       * %0'dan büyük tahmin bulunan
-       * oran satırlarını göster.
-       *
-       * Böylece:
-       *
-       * İY 1.5 Alt 0.00
-       *
-       * kaybolur ama aynı oran satırındaki
-       * başka tahminler kalır.
+       * ORAN SATIRI İÇİN:
+       * İçinde en az bir tane 0'dan büyük
+       * ve ekranda 0.00 görünmeyecek tahmin
+       * varsa satırı göster.
        */
-      shown = shown.filter(function (rw) {
+      shown =
+        shown.filter(function (rw) {
 
-        var source =
-          cfg.showAll
-            ? rw.list
-            : rw.ideal;
+          var source =
+            cfg.showAll
+              ? rw.list
+              : rw.ideal;
 
-        return source.some(
-          isPositivePrediction
-        );
-      });
+          return source.some(
+            hasVisibleRate
+          );
+
+        });
 
       it.shown = shown;
 
@@ -1185,11 +1405,7 @@
 
         return (
           '<div class="td-note">' +
-          (
-            a.rows.length
-              ? 'Görüntülenecek pozitif tahmin bulunamadı.'
-              : 'Bu maçın oranlarıyla eşleşen geçmiş maç bulunamadı.'
-          ) +
+            'Görüntülenecek pozitif tahmin bulunamadı.' +
           '</div>'
         );
       }
@@ -1208,7 +1424,7 @@
         shown.map(function (rw, i) {
 
           /*
-           * 0% tahminleri burada da çıkarılıyor.
+           * SADECE 0.00 OLMAYANLAR.
            */
           var boxes =
             (
@@ -1216,7 +1432,7 @@
                 ? rw.list
                 : rw.ideal
             ).filter(
-              isPositivePrediction
+              hasVisibleRate
             );
 
           if (!boxes.length) {
@@ -1253,22 +1469,29 @@
               '</div>' +
 
               '<div class="td-grid">' +
+
                 boxes.map(function (x) {
-                  return boxHtml(x, false);
+
+                  return boxHtml(
+                    x,
+                    false
+                  );
+
                 }).join('') +
+
               '</div>' +
 
               '<div class="td-det"></div>' +
 
             '</div>'
           );
+
         }).join('')
       );
     }
 
     /*
-     * Tekli analiz.
-     * Burada da %0 tahminler gizleniyor.
+     * TEKLİ ANALİZ
      */
     var shownS =
       (
@@ -1276,32 +1499,42 @@
           ? a.list
           : a.ideal
       ).filter(
-        isPositivePrediction
+        hasVisibleRate
       );
 
     return (
       '<div class="td-sub">' +
+
         (
           a.noOdds
             ? 'Geçmiş maç'
             : 'Aynı oranlı geçmiş maç'
         ) +
+
         ': <b>' +
-        a.hist +
+          a.hist +
         '</b> · Eşik %' +
-        cfg.thr +
+          cfg.thr +
         ' · En az ' +
-        cfg.min +
+          cfg.min +
         ' maç' +
+
       '</div>' +
 
       (
         shownS.length
 
           ? '<div class="td-grid">' +
+
               shownS.map(function (x) {
-                return boxHtml(x, true);
+
+                return boxHtml(
+                  x,
+                  true
+                );
+
               }).join('') +
+
             '</div>'
 
           : '<div class="td-note">' +
@@ -1311,7 +1544,9 @@
     );
   }
 
-  /* ---------- Render ---------- */
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   function render() {
 
@@ -1330,16 +1565,22 @@
     var cfg = {
 
       thr:
-        Number($('tdThr').value) || 0,
+        Number(
+          $('tdThr').value
+        ) || 0,
 
       min:
         Math.max(
           1,
-          Number($('tdMin').value) || 1
+          Number(
+            $('tdMin').value
+          ) || 1
         ),
 
       minOdd:
-        Number($('tdOdd').value) || 0,
+        Number(
+          $('tdOdd').value
+        ) || 0,
 
       showAll:
         $('tdAll').checked,
@@ -1361,17 +1602,21 @@
     var pool =
       src
         .filter(function (x) {
+
           return (
             x.played &&
             String(x.date) >= START
           );
+
         })
         .map(mk);
 
     var unpAll =
       src
         .filter(function (x) {
+
           return !x.played;
+
         })
         .map(mk);
 
@@ -1384,32 +1629,36 @@
     var today =
       src
         .filter(function (x) {
+
           return (
             !x.played &&
             x.date === date
           );
+
         })
         .sort(function (a, b) {
+
           return String(a.time)
             .localeCompare(
               String(b.time)
             );
+
         });
 
     /*
-     * ÖNEMLİ:
+     * BURADA MAÇ FİLTRESİ YOK.
      *
-     * Burada maçları %0 tahmin yüzünden
-     * filtrelemiyoruz.
-     *
-     * Bütün maçlar korunuyor.
+     * %0 tahmin yüzünden maç silinmez.
      */
     var items =
       today.map(function (r) {
 
         var a =
           keys[0] === 'each'
-            ? analyzeEach(r, cfg)
+            ? analyzeEach(
+                r,
+                cfg
+              )
             : analyzeSingle(
                 r,
                 keys,
@@ -1421,24 +1670,29 @@
           r: r,
           a: a
         };
+
       });
 
     var idealCount =
       items.filter(function (i) {
+
         return (
           i.a &&
           i.a.hasIdeal
         );
+
       }).length;
 
     if (cfg.onlyIdeal) {
 
       items =
         items.filter(function (i) {
+
           return (
             i.a &&
             i.a.hasIdeal
           );
+
         });
 
     }
@@ -1465,7 +1719,9 @@
         '<div class="td-stat">' +
           '<span>Analiz havuzu</span>' +
           '<b>' +
-            pool.length.toLocaleString('tr-TR') +
+            pool.length.toLocaleString(
+              'tr-TR'
+            ) +
           '</b>' +
         '</div>' +
 
@@ -1492,6 +1748,7 @@
 
       out.innerHTML =
         '<div class="td-empty">' +
+
           fmtDate(date) +
           ' tarihi için oynanmamış maç bulunamadı.' +
 
@@ -1499,6 +1756,7 @@
             dates.length
 
               ? '<br>Maç olan günler:<br>' +
+
                 dates
                   .slice(0, 6)
                   .map(function (d) {
@@ -1540,29 +1798,32 @@
         var a = it.a;
         var chip;
 
-        if (!a) {
+        /*
+         * Kart başlığındaki tahmin de
+         * 0.00 ise gösterilmeyecek.
+         */
+        if (
+          !a ||
+          !a.best ||
+          !hasVisibleRate(a.best)
+        ) {
 
           chip =
             '<span class="td-chip none">' +
-              'Oran yok' +
-            '</span>';
-
-        } else if (a.best) {
-
-          chip =
-            '<span class="td-chip" style="--h:' +
-              hue(a.best.p) +
-            '">' +
-              E(a.best.d.l) +
-              ' %' +
-              fmtRate(a.best.p) +
+              'İdeal yok' +
             '</span>';
 
         } else {
 
           chip =
-            '<span class="td-chip none">' +
-              'İdeal yok' +
+            '<span class="td-chip" style="--h:' +
+              hue(a.best.p) +
+            '">' +
+
+              E(a.best.d.l) +
+              ' %' +
+              fmtRate(a.best.p) +
+
             '</span>';
         }
 
@@ -1614,7 +1875,9 @@
     fetchLiveScores();
   }
 
-  /* ---------- Başlat ---------- */
+  /* =========================================================
+     BAŞLAT
+  ========================================================= */
 
   setTimeout(
     render,
