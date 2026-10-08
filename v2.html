@@ -7,13 +7,11 @@
     content="width=device-width, initial-scale=1.0"
   >
   <title>Maç Oran Analizi V2</title>
-  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
   <meta
     name="theme-color"
     content="#0b0f14"
   >
-  <!-- iPhone / iOS -->
   <meta
     name="apple-mobile-web-app-capable"
     content="yes"
@@ -30,7 +28,6 @@
     rel="apple-touch-icon"
     href="icon-180.png"
   >
-  <!-- MEVCUT CSS -->
   <link
     rel="stylesheet"
     href="style.css"
@@ -71,26 +68,6 @@
         padding: 9px 11px;
       }
     }
-    /*
-      V2 TAKVİM
-      v2.js doğrudan #calendar elemanına
-      günleri basıyor.
-    */
-    #calendar {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-    }
-    #calendar .calendar-day,
-    #calendar .calendar-empty {
-      min-height: 38px;
-    }
-    /*
-      Takvim aç/kapat
-    */
-    .calendar-popup.hidden {
-      display: none;
-    }
   </style>
 </head>
 <body>
@@ -109,28 +86,24 @@
     </div>
   </div>
   <div class="top-actions">
-    <!-- ANA SİSTEM -->
     <a
       href="index.html"
       class="sport-toto-btn"
     >
       ⚽ Ana Sistem
     </a>
-    <!-- SONUÇTAN ANALİZ -->
     <a
       href="sonuc-analizi.html"
       class="sport-toto-btn"
     >
       📊 Sonuçtan Analiz
     </a>
-    <!-- KUPONLAR -->
     <a
       href="kupon.html"
       class="coupon-btn"
     >
       🎟️ Kuponlar
     </a>
-    <!-- YENİLE -->
     <button
       id="refreshButton"
       class="refresh-btn"
@@ -141,7 +114,6 @@
   </div>
 </header>
 <main class="container">
-  <!-- BAŞLIK -->
   <section class="hero">
     <div>
       <div class="eyebrow">
@@ -162,7 +134,9 @@
       class="calendar-button"
       type="button"
     >
-      <span>📅</span>
+      <span>
+        📅
+      </span>
       <span id="selectedDateText">
         Tarih seç
       </span>
@@ -172,7 +146,7 @@
     </button>
     <div
       id="calendarPopup"
-      class="calendar-popup"
+      class="calendar-popup hidden"
     >
       <div class="calendar-header">
         <button
@@ -182,8 +156,7 @@
         >
           ‹
         </button>
-        <!-- ÖNEMLİ:
-             v2.js burayı calendarTitle olarak arıyor -->
+        <!-- v2.js -> calendarTitle -->
         <strong id="calendarTitle">
           -
         </strong>
@@ -204,8 +177,7 @@
         <div>Cmt</div>
         <div>Paz</div>
       </div>
-      <!-- ÖNEMLİ:
-           v2.js günleri #calendar içine basıyor -->
+      <!-- v2.js -> calendar -->
       <div
         id="calendar"
         class="calendar-days"
@@ -218,8 +190,6 @@
       <label for="searchInput">
         Maç / Takım
       </label>
-      <!-- ÖNEMLİ:
-           v2.js searchInput arıyor -->
       <input
         id="searchInput"
         type="text"
@@ -256,7 +226,7 @@
       -
     </div>
   </section>
-  <!-- BAŞARI ORANLARI -->
+  <!-- ÖZET -->
   <div id="summary"></div>
   <!-- MAÇLAR -->
   <section id="content"></section>
@@ -269,60 +239,35 @@
   ·
   V2
 </footer>
-<!-- MEVCUT V2 MOTORU -->
 <script src="v2.js"></script>
-<!--
-  SADECE TAKVİMİ AÇIP KAPATMAK İÇİN.
-  V2 MOTORUNA DOKUNMUYOR.
--->
+<!-- TAKVİM AÇ / KAPAT -->
 <script>
-  (function () {
-    "use strict";
-    const toggle =
-      document.getElementById("calendarToggle");
-    const popup =
-      document.getElementById("calendarPopup");
-    const dateText =
-      document.getElementById("selectedDateText");
-    if (!toggle || !popup) {
+(function () {
+  "use strict";
+  const toggle =
+    document.getElementById("calendarToggle");
+  const popup =
+    document.getElementById("calendarPopup");
+  if (!toggle || !popup) {
+    return;
+  }
+  toggle.addEventListener("click", function () {
+    popup.classList.toggle("hidden");
+  });
+  /*
+   * Takvim dışında bir yere
+   * basıldığında kapat.
+   */
+  document.addEventListener("click", function (event) {
+    if (
+      popup.contains(event.target) ||
+      toggle.contains(event.target)
+    ) {
       return;
     }
-    toggle.addEventListener("click", function () {
-      popup.classList.toggle("hidden");
-    });
-    /*
-      Takvimde bir gün seçildiğinde
-      aktif günü buton üzerinde göster.
-    */
-    const observer =
-      new MutationObserver(function () {
-        const active =
-          popup.querySelector(
-            ".calendar-day.active"
-          );
-        if (!active || !dateText) {
-          return;
-        }
-        const value =
-          active.dataset.date || "";
-        if (!value) {
-          return;
-        }
-        const parts =
-          value.split("-");
-        if (parts.length === 3) {
-          dateText.textContent =
-            `${parts[2]}.${parts[1]}.${parts[0]}`;
-        }
-      });
-    observer.observe(
-      popup,
-      {
-        childList: true,
-        subtree: true
-      }
-    );
-  })();
+    popup.classList.add("hidden");
+  });
+})();
 </script>
 </body>
 </html>
