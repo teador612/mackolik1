@@ -1,935 +1,343 @@
 <!DOCTYPE html>
 <html lang="tr">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>⌬ NEXUS</title>
-
-  <meta
-    name="theme-color"
-    content="#07111f"
-  >
-
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
-
-  <meta
-    name="apple-mobile-web-app-capable"
-    content="yes"
-  >
-
-  <meta
-    name="apple-mobile-web-app-status-bar-style"
-    content="black-translucent"
-  >
-
-  <meta
-    name="apple-mobile-web-app-title"
-    content="Maç Analiz"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="icon-180.png"
-  >
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  >
-
-
+  <meta name="theme-color" content="#07111f">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Maç Analiz">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <link rel="stylesheet" href="style.css">
   <style>
-
-    /* =====================================================
-       RENK PALETİ
-    ===================================================== */
-
     :root {
-
       --blue: #2563eb;
       --blue-light: #60a5fa;
-
       --cyan: #06b6d4;
-
       --green: #16a34a;
       --green-light: #4ade80;
-
       --purple: #a855f7;
-
       --yellow: #fbbf24;
-
       --dark: #07111f;
       --dark-2: #0f172a;
       --dark-3: #111c2e;
-
       --text: #f8fafc;
       --muted: #94a3b8;
-
       --border: rgba(96,165,250,.18);
-
     }
-
-
-    /* =====================================================
-       GENEL
-    ===================================================== */
-
     body {
-
       min-height: 100vh;
-
       background:
-        radial-gradient(
-          circle at top left,
-          rgba(37,99,235,.18),
-          transparent 32%
-        ),
-        radial-gradient(
-          circle at top right,
-          rgba(168,85,247,.12),
-          transparent 28%
-        ),
-        linear-gradient(
-          180deg,
-          #07111f 0%,
-          #0b1424 50%,
-          #0f172a 100%
-        ) !important;
-
+        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 32%),
+        radial-gradient(circle at top right, rgba(168,85,247,.12), transparent 28%),
+        linear-gradient(180deg, #07111f 0%, #0b1424 50%, #0f172a 100%) !important;
       color: var(--text);
-
     }
-
-
-    /* =====================================================
-       ÜST BAR
-    ===================================================== */
-
     .topbar {
-
-      background:
-        linear-gradient(
-          135deg,
-          #0b1f3a,
-          #102d52,
-          #172554
-        ) !important;
-
-      border-bottom:
-        1px solid var(--border) !important;
-
-      box-shadow:
-        0 8px 30px rgba(0,0,0,.28);
-
+      background: linear-gradient(135deg, #0b1f3a, #102d52, #172554) !important;
+      border-bottom: 1px solid var(--border) !important;
+      box-shadow: 0 8px 30px rgba(0,0,0,.28);
     }
-
-
     .brand-icon {
-
-      background:
-        linear-gradient(
-          135deg,
-          var(--blue),
-          var(--cyan)
-        ) !important;
-
-      border:
-        1px solid rgba(255,255,255,.15);
-
-      box-shadow:
-        0 8px 22px rgba(37,99,235,.30);
-
+      background: linear-gradient(135deg, var(--blue), var(--cyan)) !important;
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 8px 22px rgba(37,99,235,.30);
     }
-
-
     .brand h1 {
-
       color: #fff !important;
-
     }
-
-
     .brand span {
-
       color: #bfdbfe !important;
-
     }
-
-
-    /* =====================================================
-       ÜST MENÜ
-    ===================================================== */
-
+    /* ÜST MENÜ */
     .top-actions {
-
       display: flex;
-
       align-items: center;
-
       gap: 8px;
-
       flex-wrap: wrap;
-
     }
-
-
     .top-actions a,
     .top-actions button {
-
       box-sizing: border-box;
-
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       min-height: 40px;
-
       padding: 9px 14px;
-
       border-radius: 10px;
-
-      font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        Roboto,
-        Arial,
-        sans-serif;
-
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       font-size: 13px;
-
       font-weight: 700;
-
       line-height: 1.2;
-
       letter-spacing: 0;
-
       white-space: nowrap;
-
       text-decoration: none;
-
       color: #fff !important;
-
-      border:
-        1px solid rgba(255,255,255,.14);
-
+      border: 1px solid rgba(255,255,255,.14);
       cursor: pointer;
-
-      transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        opacity .18s ease;
-
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
     }
-
-
-    /* =====================================================
-       ANALİZ V2
-    ===================================================== */
-
+    /* PROTON */
     .top-actions .sport-toto-btn {
-
-      background:
-        linear-gradient(
-          135deg,
-          #2563eb,
-          #1d4ed8
-        ) !important;
-
-      box-shadow:
-        0 5px 16px rgba(37,99,235,.20);
-
+      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+      box-shadow: 0 5px 16px rgba(37,99,235,.20);
     }
-
-
-    /* =====================================================
-       KUPONLAR
-    ===================================================== */
-
+    /* LABORATUVAR */
     .top-actions .coupon-btn {
-
-      background:
-        linear-gradient(
-          135deg,
-          #7c3aed,
-          #a855f7
-        ) !important;
-
-      box-shadow:
-        0 5px 16px rgba(168,85,247,.20);
-
+      background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+      box-shadow: 0 5px 16px rgba(168,85,247,.20);
     }
-
-
-    /* =====================================================
-       YENİLE
-    ===================================================== */
-
+    /* BASKETBOL */
+    .top-actions .basketball-btn {
+      background: linear-gradient(135deg, #15803d, #16a34a) !important;
+      box-shadow: 0 5px 16px rgba(22,163,74,.22);
+    }
+    /* YENİLE */
     .top-actions .refresh-btn {
-
-      background:
-        linear-gradient(
-          135deg,
-          #0891b2,
-          #06b6d4
-        ) !important;
-
-      box-shadow:
-        0 5px 16px rgba(6,182,212,.18);
-
+      background: linear-gradient(135deg, #0891b2, #06b6d4) !important;
+      box-shadow: 0 5px 16px rgba(6,182,212,.18);
     }
-
-
     .top-actions a:hover,
     .top-actions button:hover {
-
       transform: translateY(-1px);
-
       opacity: .95;
-
     }
-
-
     .top-actions a:active,
     .top-actions button:active {
-
       transform: translateY(0);
-
     }
-
-
-    /* =====================================================
-       HERO
-    ===================================================== */
-
+    /* HERO */
     .hero {
-
       position: relative;
-
       overflow: hidden;
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(37,99,235,.18),
-          rgba(6,182,212,.10),
-          rgba(168,85,247,.10)
-        ) !important;
-
-      border:
-        1px solid var(--border) !important;
-
-      box-shadow:
-        0 14px 40px rgba(0,0,0,.20);
-
+      background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(6,182,212,.10), rgba(168,85,247,.10)) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: 0 14px 40px rgba(0,0,0,.20);
     }
-
-
     .hero::after {
-
       content: "";
-
       position: absolute;
-
       width: 220px;
-
       height: 220px;
-
       right: -100px;
-
       top: -100px;
-
-      background:
-        radial-gradient(
-          circle,
-          rgba(96,165,250,.18),
-          transparent 70%
-        );
-
+      background: radial-gradient(circle, rgba(96,165,250,.18), transparent 70%);
       pointer-events: none;
-
     }
-
-
     .eyebrow {
-
-      color:
-        var(--blue-light) !important;
-
+      color: var(--blue-light) !important;
       font-weight: 800;
-
       letter-spacing: .08em;
-
     }
-
-
     .hero h2 {
-
       color: #fff !important;
-
     }
-
-
     .hero p {
-
       color: #cbd5e1 !important;
-
     }
-
-
-    /* =====================================================
-       TAKVİM
-    ===================================================== */
-
+    /* TAKVİM */
     .calendar-button {
-
-      background:
-        linear-gradient(
-          135deg,
-          #2563eb,
-          #1d4ed8
-        ) !important;
-
+      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
       color: #fff !important;
-
-      border:
-        1px solid rgba(147,197,253,.30) !important;
-
-      box-shadow:
-        0 7px 22px rgba(37,99,235,.20);
-
-      transition:
-        transform .18s ease,
-        box-shadow .18s ease;
-
+      border: 1px solid rgba(147,197,253,.30) !important;
+      box-shadow: 0 7px 22px rgba(37,99,235,.20);
+      transition: transform .18s ease, box-shadow .18s ease;
     }
-
-
     .calendar-button:hover {
-
       transform: translateY(-1px);
-
-      box-shadow:
-        0 10px 28px rgba(37,99,235,.30);
-
+      box-shadow: 0 10px 28px rgba(37,99,235,.30);
     }
-
-
     .calendar-popup {
-
-      background:
-        linear-gradient(
-          180deg,
-          #101d31,
-          #0f172a
-        ) !important;
-
-      border:
-        1px solid var(--border) !important;
-
-      box-shadow:
-        0 20px 50px rgba(0,0,0,.42) !important;
-
+      background: linear-gradient(180deg, #101d31, #0f172a) !important;
+      border: 1px solid var(--border) !important;
+      box-shadow: 0 20px 50px rgba(0,0,0,.42) !important;
     }
-
-
     .calendar-header {
-
-      background:
-        linear-gradient(
-          135deg,
-          #172554,
-          #1e3a8a
-        ) !important;
-
-      border-bottom:
-        1px solid var(--border) !important;
-
+      background: linear-gradient(135deg, #172554, #1e3a8a) !important;
+      border-bottom: 1px solid var(--border) !important;
     }
-
-
     .calendar-header strong {
-
       color: #fff !important;
-
     }
-
-
     .month-btn {
-
-      background:
-        rgba(255,255,255,.08) !important;
-
+      background: rgba(255,255,255,.08) !important;
       color: #fff !important;
-
-      border:
-        1px solid rgba(255,255,255,.12) !important;
-
+      border: 1px solid rgba(255,255,255,.12) !important;
     }
-
-
     .month-btn:hover {
-
-      background:
-        rgba(96,165,250,.22) !important;
-
+      background: rgba(96,165,250,.22) !important;
     }
-
-
     .weekdays {
-
-      color:
-        #93c5fd !important;
-
+      color: #93c5fd !important;
     }
-
-
     .calendar-days button {
-
-      color:
-        #e2e8f0 !important;
-
+      color: #e2e8f0 !important;
     }
-
-
     .calendar-days button:hover {
-
-      background:
-        rgba(37,99,235,.22) !important;
-
+      background: rgba(37,99,235,.22) !important;
     }
-
-
-    /* =====================================================
-       FİLTRELER
-    ===================================================== */
-
+    /* FİLTRELER */
     .filters {
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(15,23,42,.96),
-          rgba(17,24,39,.92)
-        ) !important;
-
-      border:
-        1px solid rgba(255,255,255,.08) !important;
-
-      box-shadow:
-        0 10px 30px rgba(0,0,0,.18);
-
+      background: linear-gradient(135deg, rgba(15,23,42,.96), rgba(17,24,39,.92)) !important;
+      border: 1px solid rgba(255,255,255,.08) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
     }
-
-
     .filter-box label,
     .check-box {
-
-      color:
-        #cbd5e1 !important;
-
+      color: #cbd5e1 !important;
     }
-
-
     .filter-box input,
     .filter-box select {
-
-      background:
-        rgba(255,255,255,.055) !important;
-
-      color:
-        #fff !important;
-
-      border:
-        1px solid rgba(96,165,250,.18) !important;
-
+      background: rgba(255,255,255,.055) !important;
+      color: #fff !important;
+      border: 1px solid rgba(96,165,250,.18) !important;
     }
-
-
     .filter-box input::placeholder {
-
-      color:
-        #64748b !important;
-
+      color: #64748b !important;
     }
-
-
     .filter-box input:focus,
     .filter-box select:focus {
-
-      border-color:
-        rgba(96,165,250,.65) !important;
-
-      box-shadow:
-        0 0 0 3px rgba(37,99,235,.13);
-
+      border-color: rgba(96,165,250,.65) !important;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.13);
       outline: none;
-
     }
-
-
     .filter-box select option {
-
       background: #0f172a;
-
       color: #fff;
-
     }
-
-
     .check-box input {
-
-      accent-color:
-        var(--green);
-
+      accent-color: var(--green);
     }
-
-
-    /* =====================================================
-       DURUM
-    ===================================================== */
-
+    /* DURUM */
     .status-bar {
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(6,182,212,.08),
-          rgba(37,99,235,.07)
-        ) !important;
-
-      border:
-        1px solid rgba(96,165,250,.13) !important;
-
-      color:
-        #cbd5e1 !important;
-
+      background: linear-gradient(135deg, rgba(6,182,212,.08), rgba(37,99,235,.07)) !important;
+      border: 1px solid rgba(96,165,250,.13) !important;
+      color: #cbd5e1 !important;
     }
-
-
     #message {
-
-      color:
-        #bfdbfe !important;
-
+      color: #bfdbfe !important;
     }
-
-
     #updatedAt {
-
-      color:
-        var(--muted) !important;
-
+      color: var(--muted) !important;
     }
-
-
-    /* =====================================================
-       ÖZET
-    ===================================================== */
-
+    /* ÖZET */
     #summary > * {
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(15,23,42,.94),
-          rgba(30,41,59,.90)
-        ) !important;
-
-      border-color:
-        rgba(96,165,250,.16) !important;
-
-      box-shadow:
-        0 8px 24px rgba(0,0,0,.16);
-
+      background: linear-gradient(135deg, rgba(15,23,42,.94), rgba(30,41,59,.90)) !important;
+      border-color: rgba(96,165,250,.16) !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,.16);
     }
-
-
-    /* =====================================================
-       MAÇ KARTLARI
-    ===================================================== */
-
+    /* MAÇ KARTLARI */
     #content > * {
-
-      background:
-        linear-gradient(
-          145deg,
-          rgba(15,23,42,.97),
-          rgba(17,24,39,.94)
-        ) !important;
-
-      border-color:
-        rgba(96,165,250,.14) !important;
-
-      box-shadow:
-        0 10px 30px rgba(0,0,0,.18);
-
-      transition:
-        transform .18s ease,
-        box-shadow .18s ease,
-        border-color .18s ease;
-
+      background: linear-gradient(145deg, rgba(15,23,42,.97), rgba(17,24,39,.94)) !important;
+      border-color: rgba(96,165,250,.14) !important;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
-
-
     #content > *:hover {
-
-      transform:
-        translateY(-2px);
-
-      border-color:
-        rgba(96,165,250,.30) !important;
-
-      box-shadow:
-        0 15px 35px rgba(0,0,0,.27);
-
+      transform: translateY(-2px);
+      border-color: rgba(96,165,250,.30) !important;
+      box-shadow: 0 15px 35px rgba(0,0,0,.27);
     }
-
-
-    /* =====================================================
-       BAŞARI ORANI
-    ===================================================== */
-
+    /* BAŞARI ORANI */
     #content [class*="success"],
     #content [class*="rate"],
     #content [class*="percent"] {
-
-      color:
-        var(--green-light) !important;
-
-      font-weight:
-        800;
-
+      color: var(--green-light) !important;
+      font-weight: 800;
     }
-
-
-    /* =====================================================
-       ORAN
-    ===================================================== */
-
+    /* ORAN */
     #content [class*="odd"],
     #content [class*="odds"] {
-
-      color:
-        var(--blue-light) !important;
-
-      font-weight:
-        800;
-
+      color: var(--blue-light) !important;
+      font-weight: 800;
     }
-
-
-    /* =====================================================
-       TAHMİN
-    ===================================================== */
-
+    /* TAHMİN */
     #content [class*="prediction"],
     #content [class*="predict"],
     #content [class*="pick"] {
-
-      color:
-        var(--green-light) !important;
-
-      font-weight:
-        800;
-
+      color: var(--green-light) !important;
+      font-weight: 800;
     }
-
-
-    /* =====================================================
-       SKOR
-    ===================================================== */
-
+    /* SKOR */
     #content [class*="score"] {
-
-      color:
-        #fff !important;
-
-      font-weight:
-        900;
-
+      color: #fff !important;
+      font-weight: 900;
     }
-
-
-    /* =====================================================
-       FOOTER
-    ===================================================== */
-
+    /* FOOTER */
     footer {
-
-      color:
-        #64748b !important;
-
-      border-top:
-        1px solid rgba(96,165,250,.10);
-
+      color: #64748b !important;
+      border-top: 1px solid rgba(96,165,250,.10);
     }
-
-
-    /* =====================================================
-       MOBİL
-    ===================================================== */
-
+    /* MOBİL */
     @media (max-width: 700px) {
-
       .top-actions {
-
         width: 100%;
-
         display: grid;
-
-        grid-template-columns:
-          1fr 1fr;
-
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
-
       }
-
-
       .top-actions a,
       .top-actions button {
-
         width: 100%;
-
+        min-width: 0;
         min-height: 38px;
-
-        padding: 8px 9px;
-
+        padding: 8px 6px;
         font-size: 12px;
-
       }
-
-
       .top-actions .refresh-btn {
-
-        grid-column:
-          1 / -1;
-
+        grid-column: 1 / -1;
       }
-
-
       .hero h2 {
-
-        font-size:
-          21px !important;
-
+        font-size: 21px !important;
       }
-
-
       .hero p {
-
-        font-size:
-          13px !important;
-
+        font-size: 13px !important;
       }
-
-
       .calendar-popup {
-
-        width:
-          min(94vw, 360px) !important;
-
+        width: min(94vw, 360px) !important;
       }
-
     }
-
-
     @media (max-width: 430px) {
-
       .brand h1 {
-
-        font-size:
-          17px !important;
-
+        font-size: 17px !important;
       }
-
-
       .brand span {
-
-        font-size:
-          11px !important;
-
+        font-size: 11px !important;
       }
-
-
       .top-actions a,
       .top-actions button {
-
-        font-size:
-          11.5px;
-
+        font-size: 11.5px;
       }
-
     }
-
   </style>
-
 </head>
-
-
 <body>
-
-
-  <!-- =====================================================
-       ÜST BAR
-  ===================================================== -->
-
+  <!-- ÜST BAR -->
   <header class="topbar">
-
-
     <div class="brand">
-
-      <div class="brand-icon">
-        ⚽
-      </div>
-
-
+      <div class="brand-icon">⚽</div>
       <div>
-
-        <h1>
-          ⌬ NEXUS
-        </h1>
-
-        <span>
-          
-        </span>
-
+        <h1>⌬ NEXUS</h1>
+        <span></span>
       </div>
-
     </div>
-
-
     <div class="top-actions">
-
-
-      <a
-        href="v2.html"
-        class="sport-toto-btn"
-      >
+      <a href="v2.html" class="sport-toto-btn">
         ⚽ Proton
       </a>
-
-
-      <a
-        href="kupon.html"
-        class="coupon-btn"
-      >
+      <a href="kupon.html" class="coupon-btn">
         🎟️ Laboratuvar
       </a>
-
-
+      <a
+        href="https://teador612.github.io/Basketbol/"
+        class="basketball-btn"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        🏀 Basketbol
+      </a>
       <button
         id="refreshButton"
         class="refresh-btn"
@@ -937,112 +345,35 @@
       >
         ↻ Yenile
       </button>
-
-
     </div>
-
   </header>
-
-
-  <!-- =====================================================
-       ANA İÇERİK
-  ===================================================== -->
-
+  <!-- ANA İÇERİK -->
   <main class="container">
-
-
-    <!-- HERO -->
-
     <section class="hero">
-
       <div>
-
-        <div class="eyebrow">
-          NEXUS VERİ MERKEZİ
-        </div>
-
-
-        <h2 id="pageTitle">
-          Bugünün Maçları
-        </h2>
-
-
-        <p id="pageDescription">
-          
-        </p>
-
+        <div class="eyebrow">NEXUS VERİ MERKEZİ</div>
+        <h2 id="pageTitle">Bugünün Maçları</h2>
+        <p id="pageDescription"></p>
       </div>
-
     </section>
-
-
-    <!-- ===================================================
-         TAKVİM
-    ==================================================== -->
-
+    <!-- TAKVİM -->
     <section class="calendar-section">
-
-
       <button
         id="calendarToggle"
         class="calendar-button"
         type="button"
       >
-
-        <span>
-          📅
-        </span>
-
-
-        <span id="selectedDateText">
-          Tarih seç
-        </span>
-
-
-        <span class="calendar-arrow">
-          ⌄
-        </span>
-
+        <span>📅</span>
+        <span id="selectedDateText">Tarih seç</span>
+        <span class="calendar-arrow">⌄</span>
       </button>
-
-
-      <div
-        id="calendarPopup"
-        class="calendar-popup hidden"
-      >
-
-
+      <div id="calendarPopup" class="calendar-popup hidden">
         <div class="calendar-header">
-
-
-          <button
-            id="prevMonth"
-            class="month-btn"
-            type="button"
-          >
-            ‹
-          </button>
-
-
-          <strong id="calendarMonth">
-            -
-          </strong>
-
-
-          <button
-            id="nextMonth"
-            class="month-btn"
-            type="button"
-          >
-            ›
-          </button>
-
-
+          <button id="prevMonth" class="month-btn" type="button">‹</button>
+          <strong id="calendarMonth">-</strong>
+          <button id="nextMonth" class="month-btn" type="button">›</button>
         </div>
-
-
         <div class="weekdays">
-
           <div>Pzt</div>
           <div>Sal</div>
           <div>Çar</div>
@@ -1050,136 +381,47 @@
           <div>Cum</div>
           <div>Cmt</div>
           <div>Paz</div>
-
         </div>
-
-
-        <div
-          id="calendarDays"
-          class="calendar-days"
-        ></div>
-
-
+        <div id="calendarDays" class="calendar-days"></div>
       </div>
-
     </section>
-
-
-    <!-- ===================================================
-         FİLTRELER
-    ==================================================== -->
-
+    <!-- FİLTRELER -->
     <section class="filters">
-
-
       <div class="filter-box">
-
-        <label for="search">
-          Maç / Takım
-        </label>
-
-
+        <label for="search">Maç / Takım</label>
         <input
           id="search"
           type="text"
           placeholder="Takım ara..."
           autocomplete="off"
         >
-
       </div>
-
-
       <div class="filter-box">
-
-        <label for="leagueFilter">
-          Lig
-        </label>
-
-
+        <label for="leagueFilter">Lig</label>
         <select id="leagueFilter">
-
-          <option value="">
-            Tüm Ligler
-          </option>
-
+          <option value="">Tüm Ligler</option>
         </select>
-
       </div>
-
-
       <label class="check-box">
-
-        <input
-          type="checkbox"
-          id="unplayedOnly"
-        >
-
-
-        <span>
-          Sadece oynanmamış
-        </span>
-
+        <input type="checkbox" id="unplayedOnly">
+        <span>Sadece oynanmamış</span>
       </label>
-
-
     </section>
-
-
-    <!-- ===================================================
-         DURUM
-    ==================================================== -->
-
+    <!-- DURUM -->
     <section class="status-bar">
-
-
-      <div id="message">
-        Veriler yükleniyor...
-      </div>
-
-
-      <div id="updatedAt">
-        -
-      </div>
-
-
+      <div id="message">Veriler yükleniyor...</div>
+      <div id="updatedAt">-</div>
     </section>
-
-
-    <!-- ===================================================
-         ÖZET
-    ==================================================== -->
-
+    <!-- ÖZET -->
     <div id="summary"></div>
-
-
-    <!-- ===================================================
-         MAÇLAR
-    ==================================================== -->
-
+    <!-- MAÇLAR -->
     <section id="content"></section>
-
-
   </main>
-
-
-  <!-- =====================================================
-       FOOTER
-  ===================================================== -->
-
+  <!-- FOOTER -->
   <footer>
-
     Ne kadar emek verdiğini sadece sen bilirsin..
-
   </footer>
-
-
-  <!-- =====================================================
-       MEVCUT ANA SİSTEM
-       DEĞİŞTİRİLMEDİ
-  ===================================================== -->
-
+  <!-- MEVCUT ANA SİSTEM -->
   <script src="app.js"></script>
-
-
 </body>
 </html>
