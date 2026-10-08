@@ -35,7 +35,6 @@
     rel="stylesheet"
     href="style.css"
   >
-  <!-- SPOR TOTO / V2 BUTONU STİLİ -->
   <style>
     .sport-toto-btn {
       display: inline-flex;
@@ -72,6 +71,26 @@
         padding: 9px 11px;
       }
     }
+    /*
+      V2 TAKVİM
+      v2.js doğrudan #calendar elemanına
+      günleri basıyor.
+    */
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    #calendar .calendar-day,
+    #calendar .calendar-empty {
+      min-height: 38px;
+    }
+    /*
+      Takvim aç/kapat
+    */
+    .calendar-popup.hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +109,7 @@
     </div>
   </div>
   <div class="top-actions">
-    <!-- V1'E DÖN -->
+    <!-- ANA SİSTEM -->
     <a
       href="index.html"
       class="sport-toto-btn"
@@ -143,9 +162,7 @@
       class="calendar-button"
       type="button"
     >
-      <span>
-        📅
-      </span>
+      <span>📅</span>
       <span id="selectedDateText">
         Tarih seç
       </span>
@@ -155,7 +172,7 @@
     </button>
     <div
       id="calendarPopup"
-      class="calendar-popup hidden"
+      class="calendar-popup"
     >
       <div class="calendar-header">
         <button
@@ -165,7 +182,9 @@
         >
           ‹
         </button>
-        <strong id="calendarMonth">
+        <!-- ÖNEMLİ:
+             v2.js burayı calendarTitle olarak arıyor -->
+        <strong id="calendarTitle">
           -
         </strong>
         <button
@@ -185,8 +204,10 @@
         <div>Cmt</div>
         <div>Paz</div>
       </div>
+      <!-- ÖNEMLİ:
+           v2.js günleri #calendar içine basıyor -->
       <div
-        id="calendarDays"
+        id="calendar"
         class="calendar-days"
       ></div>
     </div>
@@ -194,11 +215,13 @@
   <!-- FİLTRELER -->
   <section class="filters">
     <div class="filter-box">
-      <label for="search">
+      <label for="searchInput">
         Maç / Takım
       </label>
+      <!-- ÖNEMLİ:
+           v2.js searchInput arıyor -->
       <input
-        id="search"
+        id="searchInput"
         type="text"
         placeholder="Takım ara..."
         autocomplete="off"
@@ -246,7 +269,60 @@
   ·
   V2
 </footer>
-<!-- V2 JAVASCRIPT -->
+<!-- MEVCUT V2 MOTORU -->
 <script src="v2.js"></script>
+<!--
+  SADECE TAKVİMİ AÇIP KAPATMAK İÇİN.
+  V2 MOTORUNA DOKUNMUYOR.
+-->
+<script>
+  (function () {
+    "use strict";
+    const toggle =
+      document.getElementById("calendarToggle");
+    const popup =
+      document.getElementById("calendarPopup");
+    const dateText =
+      document.getElementById("selectedDateText");
+    if (!toggle || !popup) {
+      return;
+    }
+    toggle.addEventListener("click", function () {
+      popup.classList.toggle("hidden");
+    });
+    /*
+      Takvimde bir gün seçildiğinde
+      aktif günü buton üzerinde göster.
+    */
+    const observer =
+      new MutationObserver(function () {
+        const active =
+          popup.querySelector(
+            ".calendar-day.active"
+          );
+        if (!active || !dateText) {
+          return;
+        }
+        const value =
+          active.dataset.date || "";
+        if (!value) {
+          return;
+        }
+        const parts =
+          value.split("-");
+        if (parts.length === 3) {
+          dateText.textContent =
+            `${parts[2]}.${parts[1]}.${parts[0]}`;
+        }
+      });
+    observer.observe(
+      popup,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+  })();
+</script>
 </body>
 </html>
