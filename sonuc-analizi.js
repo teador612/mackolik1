@@ -5,18 +5,21 @@
    ---------------------------------------------------------
    - V2 MOTORUNDAN BAĞIMSIZDIR
    - V2 TAHMİNLERİNE DOKUNMAZ
-   - SON 60 GÜN
+   - SON 30 GÜN
    - BİREBİR AÇILIŞ ORANI
    - ORAN TOLERANSI YOK
    - ORAN KOMBİNASYONU YOK
    - MİNİMUM ÖRNEK: 5
+   - MİNİMUM BAŞARI: %80
+   - SADECE %80 VE ÜZERİ GRUPLAR GÖSTERİLİR
    - TIKLANAN ORANDA OYNANMAMIŞ MAÇLARI GÖSTERİR
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
 
-const HISTORY_DAYS = 60;
+const HISTORY_DAYS = 30;
 const MIN_SAMPLE = 5;
+const MIN_SUCCESS = 80;
 
 
 /* =========================================================
@@ -221,55 +224,64 @@ const RESULTS = {
   KG_VAR: {
     label: "KG Var",
     type: "ft",
-    test: (s) => s.home > 0 && s.away > 0
+    test: (s) =>
+      s.home > 0 && s.away > 0
   },
 
   KG_YOK: {
     label: "KG Yok",
     type: "ft",
-    test: (s) => s.home === 0 || s.away === 0
+    test: (s) =>
+      s.home === 0 || s.away === 0
   },
 
   IY_KG_VAR: {
     label: "İY KG Var",
     type: "ht",
-    test: (s) => s.home > 0 && s.away > 0
+    test: (s) =>
+      s.home > 0 && s.away > 0
   },
 
   IY_KG_YOK: {
     label: "İY KG Yok",
     type: "ht",
-    test: (s) => s.home === 0 || s.away === 0
+    test: (s) =>
+      s.home === 0 || s.away === 0
   },
 
   IY15_ALT: {
     label: "İY 1.5 Alt",
     type: "ht",
-    test: (s) => (s.home + s.away) <= 1
+    test: (s) =>
+      s.home + s.away <= 1
   },
 
   IY15_UST: {
     label: "İY 1.5 Üst",
     type: "ht",
-    test: (s) => (s.home + s.away) >= 2
+    test: (s) =>
+      s.home + s.away >= 2
   },
 
   "15_ALT": {
     label: "1.5 Alt",
     type: "ft",
-    test: (s) => (s.home + s.away) <= 1
+    test: (s) =>
+      s.home + s.away <= 1
   },
 
   "15_UST": {
     label: "1.5 Üst",
     type: "ft",
-    test: (s) => (s.home + s.away) >= 2
+    test: (s) =>
+      s.home + s.away >= 2
   },
 
   "25_UST": {
     label: "2.5 Üst",
     type: "ft",
-    test: (s) => (s.home + s.away) >= 3
+    test: (s) =>
+      s.home + s.away >= 3
   }
 };
 
@@ -298,7 +310,7 @@ function normalizeOdd(value) {
     return null;
   }
 
-  let text = String(value)
+  const text = String(value)
     .trim()
     .replace(",", ".");
 
@@ -330,8 +342,12 @@ function parseDateKey(value) {
 
   if (match) {
 
-    const day = String(match[1]).padStart(2, "0");
-    const month = String(match[2]).padStart(2, "0");
+    const day =
+      String(match[1]).padStart(2, "0");
+
+    const month =
+      String(match[2]).padStart(2, "0");
+
     const year = match[3];
 
     return `${year}-${month}-${day}`;
@@ -344,8 +360,12 @@ function parseDateKey(value) {
   if (match) {
 
     const year = match[1];
-    const month = String(match[2]).padStart(2, "0");
-    const day = String(match[3]).padStart(2, "0");
+
+    const month =
+      String(match[2]).padStart(2, "0");
+
+    const day =
+      String(match[3]).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   }
@@ -367,7 +387,8 @@ function getDateKey(match) {
 
   for (const value of candidates) {
 
-    const result = parseDateKey(value);
+    const result =
+      parseDateKey(value);
 
     if (result) {
       return result;
@@ -380,9 +401,10 @@ function getDateKey(match) {
 
 function dateToNumber(dateKey) {
 
-  const parts = String(dateKey)
-    .split("-")
-    .map(Number);
+  const parts =
+    String(dateKey)
+      .split("-")
+      .map(Number);
 
   if (parts.length !== 3) {
     return NaN;
@@ -398,9 +420,10 @@ function dateToNumber(dateKey) {
 
 function addDays(dateKey, days) {
 
-  const date = new Date(
-    dateToNumber(dateKey)
-  );
+  const date =
+    new Date(
+      dateToNumber(dateKey)
+    );
 
   date.setUTCDate(
     date.getUTCDate() + days
@@ -408,8 +431,12 @@ function addDays(dateKey, days) {
 
   return [
     date.getUTCFullYear(),
-    String(date.getUTCMonth() + 1).padStart(2, "0"),
-    String(date.getUTCDate()).padStart(2, "0")
+    String(
+      date.getUTCMonth() + 1
+    ).padStart(2, "0"),
+    String(
+      date.getUTCDate()
+    ).padStart(2, "0")
   ].join("-");
 }
 
@@ -420,8 +447,12 @@ function todayKey() {
 
   return [
     now.getFullYear(),
-    String(now.getMonth() + 1).padStart(2, "0"),
-    String(now.getDate()).padStart(2, "0")
+    String(
+      now.getMonth() + 1
+    ).padStart(2, "0"),
+    String(
+      now.getDate()
+    ).padStart(2, "0")
   ].join("-");
 }
 
@@ -432,7 +463,8 @@ function formatDate(dateKey) {
     return "-";
   }
 
-  const parts = dateKey.split("-");
+  const parts =
+    dateKey.split("-");
 
   if (parts.length !== 3) {
     return dateKey;
@@ -499,18 +531,22 @@ function getTime(match) {
       continue;
     }
 
-    const text = String(value).trim();
+    const text =
+      String(value).trim();
 
-    const matchTime = text.match(
-      /(\d{1,2}):(\d{2})/
-    );
+    const timeMatch =
+      text.match(
+        /(\d{1,2}):(\d{2})/
+      );
 
-    if (matchTime) {
+    if (timeMatch) {
 
       return (
-        String(matchTime[1]).padStart(2, "0") +
+        String(
+          timeMatch[1]
+        ).padStart(2, "0") +
         ":" +
-        matchTime[2]
+        timeMatch[2]
       );
     }
   }
@@ -520,7 +556,7 @@ function getTime(match) {
 
 
 /* =========================================================
-   SKOR PARSE
+   SKOR
    ========================================================= */
 
 function parseScore(value) {
@@ -533,11 +569,13 @@ function parseScore(value) {
     return null;
   }
 
-  const text = String(value).trim();
+  const text =
+    String(value).trim();
 
-  const match = text.match(
-    /(\d+)\s*[-:]\s*(\d+)/
-  );
+  const match =
+    text.match(
+      /(\d+)\s*[-:]\s*(\d+)/
+    );
 
   if (!match) {
     return null;
@@ -575,7 +613,8 @@ function getScore(match, type) {
 
   for (const value of candidates) {
 
-    const score = parseScore(value);
+    const score =
+      parseScore(value);
 
     if (score) {
       return score;
@@ -645,9 +684,10 @@ function getOdds(match, market) {
         )
       ) {
 
-        const odd = normalizeOdd(
-          container[field]
-        );
+        const odd =
+          normalizeOdd(
+            container[field]
+          );
 
         if (odd) {
           return odd;
@@ -664,18 +704,23 @@ function getOdds(match, market) {
    SONUÇ TESTİ
    ========================================================= */
 
-function getTargetResult(match, resultId) {
+function getTargetResult(
+  match,
+  resultId
+) {
 
-  const definition = RESULTS[resultId];
+  const definition =
+    RESULTS[resultId];
 
   if (!definition) {
     return null;
   }
 
-  const score = getScore(
-    match,
-    definition.type
-  );
+  const score =
+    getScore(
+      match,
+      definition.type
+    );
 
   if (!score) {
     return null;
@@ -697,20 +742,23 @@ async function loadData() {
   const url =
     `${DATA_URL}?t=${Date.now()}`;
 
-  const response = await fetch(
-    url,
-    {
-      cache: "no-store"
-    }
-  );
+  const response =
+    await fetch(
+      url,
+      {
+        cache: "no-store"
+      }
+    );
 
   if (!response.ok) {
+
     throw new Error(
       `Veri alınamadı: ${response.status}`
     );
   }
 
-  const json = await response.json();
+  const json =
+    await response.json();
 
   if (Array.isArray(json)) {
     return json;
@@ -740,7 +788,8 @@ function buildFutureIndex(
 
   for (const match of matches) {
 
-    const date = getDateKey(match);
+    const date =
+      getDateKey(match);
 
     if (date !== targetDate) {
       continue;
@@ -752,10 +801,11 @@ function buildFutureIndex(
 
     for (const market of MARKETS) {
 
-      const odd = getOdds(
-        match,
-        market
-      );
+      const odd =
+        getOdds(
+          match,
+          market
+        );
 
       if (!odd) {
         continue;
@@ -768,7 +818,9 @@ function buildFutureIndex(
         index.set(key, []);
       }
 
-      index.get(key).push(match);
+      index
+        .get(key)
+        .push(match);
     }
   }
 
@@ -785,30 +837,33 @@ function runAnalysis(
   resultId
 ) {
 
-  const startDate = addDays(
-    targetDate,
-    -HISTORY_DAYS
-  );
+  const startDate =
+    addDays(
+      targetDate,
+      -HISTORY_DAYS
+    );
 
-  const history = allMatches.filter(
-    (match) => {
+  const history =
+    allMatches.filter(
+      (match) => {
 
-      const date = getDateKey(match);
+        const date =
+          getDateKey(match);
 
-      if (!date) {
-        return false;
+        if (!date) {
+          return false;
+        }
+
+        if (
+          date < startDate ||
+          date >= targetDate
+        ) {
+          return false;
+        }
+
+        return isPlayed(match);
       }
-
-      if (
-        date < startDate ||
-        date >= targetDate
-      ) {
-        return false;
-      }
-
-      return isPlayed(match);
-    }
-  );
+    );
 
   const futureIndex =
     buildFutureIndex(
@@ -816,7 +871,8 @@ function runAnalysis(
       targetDate
     );
 
-  const groups = new Map();
+  const groups =
+    new Map();
 
   for (const match of history) {
 
@@ -871,17 +927,42 @@ function runAnalysis(
   }
 
   const rows =
-    Array.from(groups.values())
-      .filter(
-        (item) =>
-          item.total >= MIN_SAMPLE &&
-          item.success > 0
-      );
+    Array.from(
+      groups.values()
+    )
+    .filter(
+      (item) => {
+
+        if (
+          item.total <
+          MIN_SAMPLE
+        ) {
+          return false;
+        }
+
+        if (
+          item.success <= 0
+        ) {
+          return false;
+        }
+
+        const rate =
+          (
+            item.success /
+            item.total
+          ) * 100;
+
+        return rate >= MIN_SUCCESS;
+      }
+    );
 
   for (const row of rows) {
 
     row.rate =
-      (row.success / row.total) * 100;
+      (
+        row.success /
+        row.total
+      ) * 100;
 
     row.future =
       futureIndex.get(
@@ -892,15 +973,21 @@ function runAnalysis(
   rows.sort(
     (a, b) => {
 
-      if (b.rate !== a.rate) {
+      if (
+        b.rate !== a.rate
+      ) {
         return b.rate - a.rate;
       }
 
-      if (b.total !== a.total) {
+      if (
+        b.total !== a.total
+      ) {
         return b.total - a.total;
       }
 
-      if (b.success !== a.success) {
+      if (
+        b.success !== a.success
+      ) {
         return b.success - a.success;
       }
 
@@ -924,9 +1011,12 @@ function runAnalysis(
 
 function formatPercent(value) {
 
-  return Number(value)
-    .toFixed(1)
-    .replace(".0", "") + "%";
+  return (
+    Number(value)
+      .toFixed(1)
+      .replace(".0", "") +
+    "%"
+  );
 }
 
 
@@ -970,9 +1060,15 @@ function renderAnalysis(
 
   period.textContent =
     `${formatDate(
-      addDays(targetDate, -HISTORY_DAYS)
+      addDays(
+        targetDate,
+        -HISTORY_DAYS
+      )
     )} - ${formatDate(
-      addDays(targetDate, -1)
+      addDays(
+        targetDate,
+        -1
+      )
     )}`;
 
   historyCount.textContent =
@@ -981,16 +1077,27 @@ function renderAnalysis(
   oddsCount.textContent =
     analysis.rows.length;
 
-  status.textContent =
-    `${result.label} için ${analysis.rows.length} farklı birebir oran bulundu. ` +
-    `Minimum örneklem: ${MIN_SAMPLE}.`;
+  status.innerHTML =
+    `<strong>${escapeHtml(
+      result.label
+    )}</strong> için ` +
+    `<strong>${analysis.rows.length}</strong> ` +
+    `farklı birebir oran bulundu. ` +
+    `Minimum örnek: <strong>${MIN_SAMPLE}</strong> · ` +
+    `Minimum başarı: <strong>%${MIN_SUCCESS}</strong>`;
 
   if (!analysis.rows.length) {
 
     content.innerHTML = `
       <div class="sa-empty">
-        Bu sonuç için yeterli örneklem bulunan
-        birebir oran bulunamadı.
+        <div class="sa-empty-icon">🔎</div>
+        <strong>Uygun oran bulunamadı</strong>
+        <span>
+          Son ${HISTORY_DAYS} gün içinde
+          en az ${MIN_SAMPLE} örneğe sahip
+          ve başarı oranı en az %${MIN_SUCCESS}
+          olan birebir açılış oranı bulunamadı.
+        </span>
       </div>
     `;
 
@@ -1002,12 +1109,15 @@ function renderAnalysis(
 
   for (const row of analysis.rows) {
 
-    if (!marketMap.has(row.marketId)) {
+    if (!marketMap.has(
+      row.marketId
+    )) {
 
       marketMap.set(
         row.marketId,
         {
-          label: row.marketLabel,
+          label:
+            row.marketLabel,
           rows: []
         }
       );
@@ -1024,7 +1134,9 @@ function renderAnalysis(
   for (const market of MARKETS) {
 
     const group =
-      marketMap.get(market.id);
+      marketMap.get(
+        market.id
+      );
 
     if (!group) {
       continue;
@@ -1034,13 +1146,25 @@ function renderAnalysis(
       <section class="sa-market">
 
         <div class="sa-market-title">
-          ${escapeHtml(group.label)}
+          <span>
+            ${escapeHtml(
+              group.label
+            )}
+          </span>
+
+          <span class="sa-market-count">
+            ${group.rows.length} oran
+          </span>
         </div>
 
         <div class="sa-row sa-head">
           <div>ORAN</div>
           <div>ÖRNEK</div>
-          <div>${escapeHtml(result.label)}</div>
+          <div>
+            ${escapeHtml(
+              result.label
+            )}
+          </div>
           <div>BAŞARI</div>
           <div>GELECEK</div>
         </div>
@@ -1060,7 +1184,10 @@ function renderAnalysis(
 
       const rowId =
         `sa-${market.id}-${index}`
-          .replace(/[^a-zA-Z0-9_-]/g, "");
+          .replace(
+            /[^a-zA-Z0-9_-]/g,
+            ""
+          );
 
       html += `
         <div
@@ -1085,9 +1212,11 @@ function renderAnalysis(
           </div>
 
           <div class="sa-expand">
-            ${futureCount > 0
-              ? `▶ ${futureCount} maç`
-              : "Oynanmamış yok"}
+            ${
+              futureCount > 0
+                ? `▶ ${futureCount} maç`
+                : "Oynanmamış yok"
+            }
           </div>
 
         </div>
@@ -1109,7 +1238,8 @@ function renderAnalysis(
     `;
   }
 
-  content.innerHTML = html;
+  content.innerHTML =
+    html;
 
   bindRows();
 }
@@ -1127,37 +1257,55 @@ function renderFutureMatches(
   if (!row.future.length) {
 
     return `
-      <div class="sa-empty">
+      <div class="sa-empty sa-empty-small">
         Bu birebir oranla
         ${formatDate(
-          document.getElementById("saDate").value
+          document.getElementById(
+            "saDate"
+          ).value
         )}
-        tarihinde oynanmamış maç bulunmuyor.
+        tarihinde oynanmamış maç
+        bulunmuyor.
       </div>
     `;
   }
 
   let html = `
     <div class="sa-details-title">
-      ${escapeHtml(row.marketLabel)}
-      ${escapeHtml(row.odd)}
-      →
-      ${escapeHtml(result.label)}
-      ${formatPercent(row.rate)}
+      <span>
+        ${escapeHtml(
+          row.marketLabel
+        )}
+        ·
+        ${escapeHtml(row.odd)}
+      </span>
+
+      <strong>
+        ${formatPercent(
+          row.rate
+        )}
+      </strong>
     </div>
 
-    <div style="margin-bottom:10px;opacity:.65;font-size:12px;">
-      Aynı açılış oranına sahip oynanmamış maçlar
+    <div class="sa-details-subtitle">
+      Aynı açılış oranına sahip
+      oynanmamış maçlar
     </div>
   `;
 
   for (const match of row.future) {
 
     const home =
-      getTeamName(match, "home");
+      getTeamName(
+        match,
+        "home"
+      );
 
     const away =
-      getTeamName(match, "away");
+      getTeamName(
+        match,
+        "away"
+      );
 
     const league =
       getLeague(match);
@@ -1168,13 +1316,15 @@ function renderFutureMatches(
     html += `
       <div class="sa-match">
 
+        <div class="sa-match-time">
+          ${escapeHtml(time)}
+        </div>
+
         <div class="sa-match-main">
 
           <div class="sa-match-teams">
-            ${escapeHtml(time)}
-            ·
             ${escapeHtml(home)}
-            -
+            <span>vs</span>
             ${escapeHtml(away)}
           </div>
 
@@ -1185,8 +1335,12 @@ function renderFutureMatches(
         </div>
 
         <div class="sa-match-odd">
-          ${escapeHtml(row.marketLabel)}
-          ${escapeHtml(row.odd)}
+          ${escapeHtml(
+            row.marketLabel
+          )}
+          <strong>
+            ${escapeHtml(row.odd)}
+          </strong>
         </div>
 
       </div>
@@ -1219,7 +1373,9 @@ function bindRows() {
             row.dataset.rowId;
 
           const details =
-            document.getElementById(id);
+            document.getElementById(
+              id
+            );
 
           if (!details) {
             return;
@@ -1236,11 +1392,31 @@ function bindRows() {
             )
             .forEach(
               (item) =>
-                item.classList.remove("open")
+                item.classList.remove(
+                  "open"
+                )
+            );
+
+          document
+            .querySelectorAll(
+              "#saContent .sa-row.active"
+            )
+            .forEach(
+              (item) =>
+                item.classList.remove(
+                  "active"
+                )
             );
 
           if (!isOpen) {
-            details.classList.add("open");
+
+            details.classList.add(
+              "open"
+            );
+
+            row.classList.add(
+              "active"
+            );
           }
         }
       );
@@ -1292,8 +1468,8 @@ async function executeAnalysis() {
     return;
   }
 
-  status.textContent =
-    "60 günlük geçmiş analiz ediliyor...";
+  status.innerHTML =
+    `⏳ Son ${HISTORY_DAYS} günlük geçmiş analiz ediliyor...`;
 
   try {
 
@@ -1320,8 +1496,11 @@ async function executeAnalysis() {
       "saContent"
     ).innerHTML = `
       <div class="sa-empty">
-        Analiz yapılamadı.
-        Veri yapısını kontrol edin.
+        <div class="sa-empty-icon">⚠️</div>
+        <strong>Analiz yapılamadı</strong>
+        <span>
+          Veri yapısını kontrol edin.
+        </span>
       </div>
     `;
   }
@@ -1365,8 +1544,9 @@ async function init() {
     allMatches =
       await loadData();
 
-    status.textContent =
-      `${allMatches.length} maç verisi yüklendi. Analiz hazırlanıyor...`;
+    status.innerHTML =
+      `<strong>${allMatches.length}</strong> maç verisi yüklendi. ` +
+      `Analiz hazırlanıyor...`;
 
     await executeAnalysis();
 
@@ -1381,7 +1561,11 @@ async function init() {
       "saContent"
     ).innerHTML = `
       <div class="sa-empty">
-        data/v2-data.json yüklenemedi.
+        <div class="sa-empty-icon">⚠️</div>
+        <strong>Veriler yüklenemedi</strong>
+        <span>
+          data/v2-data.json kontrol edin.
+        </span>
       </div>
     `;
   }
