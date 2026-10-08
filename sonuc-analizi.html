@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Sonuçtan Oran Analizi</title>
+
+  <meta name="theme-color" content="#0b0f14">
+
+  <link rel="stylesheet" href="style.css">
+
+  <style>
+    .sa-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .sa-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .sa-back {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      color: #fff;
+      background: #1d9bf0;
+    }
+
+    .sa-hero {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      margin-bottom: 16px;
+    }
+
+    .sa-hero h1 {
+      margin: 0 0 7px;
+      font-size: 24px;
+    }
+
+    .sa-hero p {
+      margin: 0;
+      opacity: .72;
+      line-height: 1.5;
+    }
+
+    .sa-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .sa-control {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .sa-control label {
+      font-size: 12px;
+      font-weight: 700;
+      opacity: .7;
+    }
+
+    .sa-control select,
+    .sa-control input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: inherit;
+      font-size: 14px;
+    }
+
+    .sa-control select option {
+      background: #111820;
+      color: #fff;
+    }
+
+    .sa-run {
+      align-self: end;
+      padding: 11px 16px;
+      border: 0;
+      border-radius: 10px;
+      background: #22c55e;
+      color: #fff;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .sa-status {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.04);
+      font-size: 13px;
+    }
+
+    .sa-market {
+      margin: 0 0 18px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.025);
+    }
+
+    .sa-market-title {
+      padding: 13px 15px;
+      font-size: 15px;
+      font-weight: 800;
+      background: rgba(255,255,255,.05);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .sa-row {
+      display: grid;
+      grid-template-columns: 1.3fr .8fr .8fr .8fr .8fr;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 15px;
+      cursor: pointer;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      transition: background .15s ease;
+    }
+
+    .sa-row:last-child {
+      border-bottom: 0;
+    }
+
+    .sa-row:hover {
+      background: rgba(255,255,255,.05);
+    }
+
+    .sa-head {
+      opacity: .55;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: default;
+    }
+
+    .sa-odd {
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .sa-value {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .sa-rate {
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .sa-expand {
+      text-align: center;
+      font-size: 12px;
+      opacity: .7;
+    }
+
+    .sa-details {
+      display: none;
+      padding: 13px 15px 15px;
+      background: rgba(0,0,0,.12);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .sa-details.open {
+      display: block;
+    }
+
+    .sa-details-title {
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .sa-match {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      font-size: 13px;
+    }
+
+    .sa-match:last-child {
+      border-bottom: 0;
+    }
+
+    .sa-match-main {
+      min-width: 0;
+    }
+
+    .sa-match-teams {
+      font-weight: 700;
+      line-height: 1.4;
+    }
+
+    .sa-match-meta {
+      margin-top: 3px;
+      font-size: 11px;
+      opacity: .6;
+    }
+
+    .sa-match-odd {
+      flex: 0 0 auto;
+      font-weight: 900;
+    }
+
+    .sa-empty {
+      padding: 25px;
+      text-align: center;
+      opacity: .65;
+    }
+
+    .sa-info {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .sa-info-box {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .sa-info-label {
+      display: block;
+      font-size: 11px;
+      opacity: .6;
+      margin-bottom: 4px;
+    }
+
+    .sa-info-value {
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 700px) {
+      .sa-controls {
+        grid-template-columns: 1fr;
+      }
+
+      .sa-run {
+        width: 100%;
+      }
+
+      .sa-info {
+        grid-template-columns: 1fr;
+      }
+
+      .sa-row {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+      }
+
+      .sa-row .sa-sample,
+      .sa-row .sa-success,
+      .sa-row .sa-rate {
+        text-align: right;
+      }
+
+      .sa-head {
+        display: none;
+      }
+
+      .sa-expand {
+        grid-column: 1 / -1;
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">📊</div>
+
+      <div>
+        <h1>Sonuçtan Oran Analizi</h1>
+        <span>Son 60 gün birebir açılış oranı analizi</span>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <a href="v2.html" class="sa-back">
+        ⚽ V2 Ana Sistem
+      </a>
+    </div>
+  </header>
+
+  <main class="sa-container">
+
+    <section class="sa-hero">
+      <h1>Sonuçtan Oran Analizi</h1>
+
+      <p>
+        Seçilen sonucun son 60 gündeki gerçekleşme oranını,
+        birebir aynı açılış oranlarına göre analiz eder.
+        Oran kombinasyonu ve oran toleransı kullanılmaz.
+      </p>
+    </section>
+
+    <section class="sa-controls">
+
+      <div class="sa-control">
+        <label for="saResult">
+          ANALİZ EDİLECEK SONUÇ
+        </label>
+
+        <select id="saResult">
+          <option value="MS1">MS1</option>
+          <option value="MSX">MSX</option>
+          <option value="MS2" selected>MS2</option>
+
+          <option value="IY1">İY1</option>
+          <option value="IYX">İYX</option>
+          <option value="IY2">İY2</option>
+
+          <option value="KG_VAR">KG Var</option>
+          <option value="KG_YOK">KG Yok</option>
+
+          <option value="IY_KG_VAR">İY KG Var</option>
+          <option value="IY_KG_YOK">İY KG Yok</option>
+
+          <option value="IY15_ALT">İY 1.5 Alt</option>
+          <option value="IY15_UST">İY 1.5 Üst</option>
+
+          <option value="15_ALT">1.5 Alt</option>
+          <option value="15_UST">1.5 Üst</option>
+          <option value="25_UST">2.5 Üst</option>
+        </select>
+      </div>
+
+      <div class="sa-control">
+        <label for="saDate">
+          ANALİZ TARİHİ
+        </label>
+
+        <input
+          id="saDate"
+          type="date"
+        >
+      </div>
+
+      <button
+        id="saRun"
+        class="sa-run"
+        type="button"
+      >
+        🔎 Analiz Et
+      </button>
+
+    </section>
+
+    <section class="sa-info">
+
+      <div class="sa-info-box">
+        <span class="sa-info-label">
+          ANALİZ DÖNEMİ
+        </span>
+
+        <span
+          id="saPeriod"
+          class="sa-info-value"
+        >
+          -
+        </span>
+      </div>
+
+      <div class="sa-info-box">
+        <span class="sa-info-label">
+          GEÇMİŞ MAÇ
+        </span>
+
+        <span
+          id="saHistoryCount"
+          class="sa-info-value"
+        >
+          -
+        </span>
+      </div>
+
+      <div class="sa-info-box">
+        <span class="sa-info-label">
+          BULUNAN ORAN
+        </span>
+
+        <span
+          id="saOddsCount"
+          class="sa-info-value"
+        >
+          -
+        </span>
+      </div>
+
+    </section>
+
+    <div
+      id="saStatus"
+      class="sa-status"
+    >
+      Veriler yükleniyor...
+    </div>
+
+    <section id="saContent"></section>
+
+  </main>
+
+  <script src="sonuc-analizi.js"></script>
+
+</body>
+</html>
