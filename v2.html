@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
-
 <head>
-
   <meta charset="UTF-8">
 
   <meta
@@ -12,18 +10,10 @@
 
   <title>Maç Oran Analizi V2</title>
 
-  <!-- PWA -->
-  <link
-    rel="manifest"
-    href="manifest.json"
-  >
+  <meta name="theme-color" content="#07111f">
 
-  <meta
-    name="theme-color"
-    content="#07111f"
-  >
+  <link rel="manifest" href="manifest.json">
 
-  <!-- iPhone / iOS -->
   <meta
     name="apple-mobile-web-app-capable"
     content="yes"
@@ -44,77 +34,84 @@
     href="icon-180.png"
   >
 
-  <!-- MEVCUT CSS -->
   <link
     rel="stylesheet"
     href="style.css"
   >
 
-
-  <!-- =====================================================
-       V2 RENKLİ TEMA
-       ===================================================== -->
-
   <style>
 
     /* =====================================================
-       GENEL
-       ===================================================== */
+       RENKLER
+    ===================================================== */
 
     :root {
-      --v2-blue: #2563eb;
-      --v2-blue-light: #60a5fa;
-      --v2-green: #16a34a;
-      --v2-green-light: #4ade80;
-      --v2-cyan: #06b6d4;
-      --v2-purple: #a855f7;
-      --v2-yellow: #fbbf24;
-      --v2-dark: #07111f;
-      --v2-dark-2: #0f172a;
-      --v2-border: rgba(96, 165, 250, .18);
+      --blue: #2563eb;
+      --blue-light: #60a5fa;
+      --cyan: #06b6d4;
+      --green: #16a34a;
+      --green-light: #4ade80;
+      --purple: #a855f7;
+      --yellow: #fbbf24;
+
+      --dark: #07111f;
+      --dark-2: #0f172a;
+      --dark-3: #111c2e;
+
+      --text: #f8fafc;
+      --muted: #94a3b8;
+
+      --border: rgba(96, 165, 250, .18);
     }
 
 
     /* =====================================================
-       BODY
-       ===================================================== */
+       GENEL
+    ===================================================== */
 
     body {
+      min-height: 100vh;
+
       background:
         radial-gradient(
-          circle at 10% 0%,
-          rgba(37, 99, 235, .10),
-          transparent 30%
+          circle at top left,
+          rgba(37, 99, 235, .18),
+          transparent 32%
         ),
         radial-gradient(
-          circle at 90% 15%,
-          rgba(22, 163, 74, .08),
-          transparent 30%
+          circle at top right,
+          rgba(168, 85, 247, .12),
+          transparent 28%
         ),
-        #07111f !important;
+        linear-gradient(
+          180deg,
+          #07111f 0%,
+          #0b1424 50%,
+          #0f172a 100%
+        ) !important;
+
+      color: var(--text);
     }
 
 
     /* =====================================================
-       TOPBAR
-       ===================================================== */
+       ÜST BAR
+    ===================================================== */
 
     .topbar {
       background:
         linear-gradient(
           135deg,
-          #0b1220 0%,
-          #111d35 52%,
-          #0b3028 100%
+          #0b1f3a,
+          #102d52,
+          #172554
         ) !important;
 
       border-bottom:
-        1px solid
-        rgba(96, 165, 250, .18) !important;
+        1px solid var(--border) !important;
 
       box-shadow:
-        0 8px 28px
-        rgba(0, 0, 0, .25) !important;
+        0 8px 30px rgba(0, 0, 0, .28);
     }
 
 
@@ -122,608 +119,602 @@
       background:
         linear-gradient(
           135deg,
-          #2563eb,
-          #16a34a
+          var(--blue),
+          var(--cyan)
         ) !important;
 
+      border:
+        1px solid rgba(255, 255, 255, .15);
+
       box-shadow:
-        0 7px 20px
-        rgba(37, 99, 235, .25);
+        0 8px 22px rgba(37, 99, 235, .30);
     }
 
 
     .brand h1 {
-      color: #f8fafc !important;
+      color: #fff !important;
     }
 
 
     .brand span {
-      color: #93c5fd !important;
+      color: #bfdbfe !important;
     }
 
 
     /* =====================================================
-       ÜST BUTONLAR
-       ===================================================== */
+       ÜST MENÜ BUTONLARI
+    ===================================================== */
 
-    .sport-toto-btn,
-    .coupon-btn,
-    .refresh-btn {
-
-      border:
-        1px solid
-        rgba(255,255,255,.10) !important;
-
-      box-shadow:
-        0 6px 18px
-        rgba(0, 0, 0, .18);
-
-      transition:
-        transform .15s ease,
-        filter .15s ease,
-        box-shadow .15s ease !important;
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
 
-    .sport-toto-btn {
+    .top-actions a,
+    .top-actions button {
+      box-sizing: border-box;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 40px;
+
+      padding: 9px 14px;
+
+      border-radius: 10px;
+
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+
+      letter-spacing: 0;
+
+      white-space: nowrap;
+      text-decoration: none;
+
+      color: #fff !important;
+
+      border:
+        1px solid rgba(255, 255, 255, .14);
+
+      cursor: pointer;
+
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        opacity .18s ease;
+    }
+
+
+    /* Ana Sistem */
+
+    .top-actions .sport-toto-btn {
       background:
         linear-gradient(
           135deg,
           #2563eb,
-          #06b6d4
+          #1d4ed8
         ) !important;
+
+      box-shadow:
+        0 5px 16px rgba(37, 99, 235, .20);
     }
 
 
-    .coupon-btn {
+    /* Sonuçtan Analiz */
+
+    .top-actions .sport-toto-btn:nth-child(2) {
+      background:
+        linear-gradient(
+          135deg,
+          #0891b2,
+          #06b6d4
+        ) !important;
+
+      box-shadow:
+        0 5px 16px rgba(6, 182, 212, .18);
+    }
+
+
+    /* Kuponlar */
+
+    .top-actions .coupon-btn {
       background:
         linear-gradient(
           135deg,
           #7c3aed,
           #a855f7
         ) !important;
+
+      box-shadow:
+        0 5px 16px rgba(168, 85, 247, .20);
     }
 
 
-    .refresh-btn {
+    /* Yenile */
+
+    .top-actions .refresh-btn {
       background:
         linear-gradient(
           135deg,
-          #166534,
-          #16a34a
+          #0891b2,
+          #06b6d4
         ) !important;
 
-      color: #fff !important;
-    }
-
-
-    .sport-toto-btn:hover,
-    .coupon-btn:hover,
-    .refresh-btn:hover {
-
-      opacity: 1 !important;
-
-      filter:
-        brightness(1.08);
-
-      transform:
-        translateY(-1px);
-
       box-shadow:
-        0 9px 24px
-        rgba(37, 99, 235, .20);
+        0 5px 16px rgba(6, 182, 212, .18);
     }
 
 
-    /* =====================================================
-       ANA CONTAINER
-       ===================================================== */
+    .top-actions a:hover,
+    .top-actions button:hover {
+      transform: translateY(-1px);
+      opacity: .95;
+    }
 
-    .container {
-      position: relative;
+
+    .top-actions a:active,
+    .top-actions button:active {
+      transform: translateY(0);
     }
 
 
     /* =====================================================
        HERO
-       ===================================================== */
+    ===================================================== */
 
     .hero {
-
       position: relative;
-
       overflow: hidden;
 
       background:
         linear-gradient(
           135deg,
-          #111827 0%,
-          #172554 48%,
-          #064e3b 100%
+          rgba(37, 99, 235, .18),
+          rgba(6, 182, 212, .10),
+          rgba(168, 85, 247, .10)
         ) !important;
 
       border:
-        1px solid
-        rgba(96, 165, 250, .28) !important;
+        1px solid var(--border) !important;
 
       box-shadow:
-        0 15px 40px
-        rgba(0, 0, 0, .25) !important;
+        0 14px 40px rgba(0, 0, 0, .20);
     }
 
 
     .hero::after {
-
       content: "";
 
       position: absolute;
 
-      width: 190px;
-      height: 190px;
+      width: 220px;
+      height: 220px;
 
-      right: -75px;
-      top: -85px;
-
-      border-radius: 50%;
+      right: -100px;
+      top: -100px;
 
       background:
-        rgba(34, 197, 94, .13);
+        radial-gradient(
+          circle,
+          rgba(96, 165, 250, .18),
+          transparent 70%
+        );
 
       pointer-events: none;
     }
 
 
     .eyebrow {
-      color: #60a5fa !important;
+      color: var(--blue-light) !important;
 
-      font-weight: 900 !important;
-
-      letter-spacing: .8px;
+      font-weight: 800;
+      letter-spacing: .08em;
     }
 
 
     .hero h2 {
-      color: #f8fafc !important;
-
-      text-shadow:
-        0 2px 15px
-        rgba(0,0,0,.20);
+      color: #fff !important;
     }
 
 
     .hero p {
-      color: #bfdbfe !important;
+      color: #cbd5e1 !important;
+    }
+
+
+    /* =====================================================
+       TAKVİM BUTONU
+    ===================================================== */
+
+    .calendar-button {
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #1d4ed8
+        ) !important;
+
+      color: #fff !important;
+
+      border:
+        1px solid rgba(147, 197, 253, .30) !important;
+
+      box-shadow:
+        0 7px 22px rgba(37, 99, 235, .20);
+
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease;
+    }
+
+
+    .calendar-button:hover {
+      transform: translateY(-1px);
+
+      box-shadow:
+        0 10px 28px rgba(37, 99, 235, .30);
     }
 
 
     /* =====================================================
        TAKVİM
-       ===================================================== */
-
-    .calendar-section {
-      position: relative;
-    }
-
-
-    .calendar-button {
-
-      background:
-        linear-gradient(
-          135deg,
-          rgba(30, 64, 175, .92),
-          rgba(6, 78, 59, .92)
-        ) !important;
-
-      border:
-        1px solid
-        rgba(96, 165, 250, .25) !important;
-
-      color: #fff !important;
-
-      box-shadow:
-        0 8px 22px
-        rgba(0,0,0,.18);
-
-      transition:
-        transform .15s ease,
-        filter .15s ease,
-        box-shadow .15s ease !important;
-    }
-
-
-    .calendar-button:hover {
-
-      filter:
-        brightness(1.08);
-
-      transform:
-        translateY(-1px);
-
-      box-shadow:
-        0 10px 25px
-        rgba(37, 99, 235, .20);
-    }
-
+    ===================================================== */
 
     .calendar-popup {
-
       background:
         linear-gradient(
-          145deg,
-          #111827,
+          180deg,
+          #101d31,
           #0f172a
         ) !important;
 
       border:
-        1px solid
-        rgba(96, 165, 250, .22) !important;
+        1px solid var(--border) !important;
 
       box-shadow:
-        0 18px 45px
-        rgba(0,0,0,.35) !important;
+        0 20px 50px rgba(0, 0, 0, .42) !important;
     }
 
 
     .calendar-header {
-
       background:
         linear-gradient(
-          90deg,
-          rgba(30,64,175,.75),
-          rgba(6,78,59,.75)
+          135deg,
+          #172554,
+          #1e3a8a
         ) !important;
+
+      border-bottom:
+        1px solid var(--border) !important;
     }
 
 
-    .month-btn {
-
-      background:
-        rgba(59,130,246,.15) !important;
-
-      color:
-        #93c5fd !important;
-
-      border:
-        1px solid
-        rgba(96,165,250,.16) !important;
-    }
-
-
-    .month-btn:hover {
-
-      background:
-        rgba(59,130,246,.28) !important;
-
+    .calendar-header strong {
       color: #fff !important;
     }
 
 
-    .weekdays {
-
-      color:
-        #60a5fa !important;
-
-      font-weight:
-        800 !important;
-    }
-
-
-    .calendar-days > div {
-
-      transition:
-        background .15s ease,
-        transform .15s ease;
-    }
-
-
-    .calendar-days > div:hover {
-
+    .month-btn {
       background:
-        rgba(59,130,246,.15) !important;
+        rgba(255, 255, 255, .08) !important;
 
-      transform:
-        translateY(-1px);
+      color: #fff !important;
+
+      border:
+        1px solid rgba(255, 255, 255, .12) !important;
+    }
+
+
+    .month-btn:hover {
+      background:
+        rgba(96, 165, 250, .22) !important;
+    }
+
+
+    .weekdays {
+      color: #93c5fd !important;
+    }
+
+
+    .calendar-days button {
+      color: #e2e8f0 !important;
+    }
+
+
+    .calendar-days button:hover {
+      background:
+        rgba(37, 99, 235, .22) !important;
     }
 
 
     /* =====================================================
        FİLTRELER
-       ===================================================== */
+    ===================================================== */
 
     .filters {
-
       background:
         linear-gradient(
-          145deg,
-          rgba(17,24,39,.96),
-          rgba(15,23,42,.96)
+          135deg,
+          rgba(15, 23, 42, .96),
+          rgba(17, 24, 39, .92)
         ) !important;
 
       border:
-        1px solid
-        rgba(96,165,250,.15) !important;
+        1px solid rgba(255, 255, 255, .08) !important;
 
       box-shadow:
-        0 9px 25px
-        rgba(0,0,0,.15) !important;
+        0 10px 30px rgba(0, 0, 0, .18);
     }
 
 
-    .filter-box label {
-
-      color:
-        #93c5fd !important;
-
-      font-weight:
-        800 !important;
+    .filter-box label,
+    .check-box {
+      color: #cbd5e1 !important;
     }
 
 
     .filter-box input,
     .filter-box select {
-
       background:
-        rgba(15,23,42,.85) !important;
+        rgba(255, 255, 255, .055) !important;
+
+      color: #fff !important;
 
       border:
-        1px solid
-        rgba(96,165,250,.18) !important;
+        1px solid rgba(96, 165, 250, .18) !important;
+    }
 
-      color:
-        #f8fafc !important;
 
-      outline: none !important;
-
-      transition:
-        border-color .15s ease,
-        box-shadow .15s ease;
+    .filter-box input::placeholder {
+      color: #64748b !important;
     }
 
 
     .filter-box input:focus,
     .filter-box select:focus {
-
       border-color:
-        rgba(59,130,246,.70) !important;
+        rgba(96, 165, 250, .65) !important;
 
       box-shadow:
-        0 0 0 3px
-        rgba(59,130,246,.10);
+        0 0 0 3px rgba(37, 99, 235, .13);
     }
 
 
-    .filter-box input::placeholder {
-      color:
-        #64748b !important;
-    }
-
-
-    .check-box {
-
-      color:
-        #cbd5e1 !important;
+    .filter-box select option {
+      background: #0f172a;
+      color: #fff;
     }
 
 
     .check-box input {
-
-      accent-color:
-        #2563eb;
+      accent-color: var(--green);
     }
 
 
     /* =====================================================
        DURUM
-       ===================================================== */
+    ===================================================== */
 
     .status-bar {
-
       background:
         linear-gradient(
           135deg,
-          rgba(30,64,175,.12),
-          rgba(22,163,74,.09)
+          rgba(6, 182, 212, .08),
+          rgba(37, 99, 235, .07)
         ) !important;
 
       border:
-        1px solid
-        rgba(59,130,246,.18) !important;
+        1px solid rgba(96, 165, 250, .13) !important;
 
-      box-shadow:
-        0 6px 18px
-        rgba(0,0,0,.10);
+      color: #cbd5e1 !important;
     }
 
 
     #message {
-      color:
-        #dbeafe !important;
+      color: #bfdbfe !important;
     }
 
 
     #updatedAt {
-      color:
-        #4ade80 !important;
+      color: var(--muted) !important;
     }
 
 
     /* =====================================================
        ÖZET
-       ===================================================== */
-
-    #summary {
-
-      margin-top:
-        14px;
-    }
-
+    ===================================================== */
 
     #summary > * {
+      background:
+        linear-gradient(
+          135deg,
+          rgba(15, 23, 42, .94),
+          rgba(30, 41, 59, .90)
+        ) !important;
 
       border-color:
-        rgba(96,165,250,.18) !important;
+        rgba(96, 165, 250, .16) !important;
 
       box-shadow:
-        0 8px 22px
-        rgba(0,0,0,.14);
+        0 8px 24px rgba(0, 0, 0, .16);
     }
 
 
     /* =====================================================
-       MAÇ KARTLARI
-       ===================================================== */
-
-    #content {
-
-      margin-top:
-        14px;
-    }
-
+       MAÇLAR
+    ===================================================== */
 
     #content > * {
+      background:
+        linear-gradient(
+          145deg,
+          rgba(15, 23, 42, .97),
+          rgba(17, 24, 39, .94)
+        ) !important;
+
+      border-color:
+        rgba(96, 165, 250, .14) !important;
+
+      box-shadow:
+        0 10px 30px rgba(0, 0, 0, .18);
 
       transition:
-        border-color .15s ease,
-        box-shadow .15s ease,
-        transform .15s ease;
+        transform .18s ease,
+        box-shadow .18s ease,
+        border-color .18s ease;
     }
 
 
     #content > *:hover {
+      transform: translateY(-2px);
 
       border-color:
-        rgba(59,130,246,.30) !important;
+        rgba(96, 165, 250, .30) !important;
 
       box-shadow:
-        0 12px 30px
-        rgba(0,0,0,.20);
+        0 15px 35px rgba(0, 0, 0, .27);
     }
 
 
-    /* =====================================================
-       GENEL ORAN RENKLERİ
-       ===================================================== */
+    /* Başarı oranı */
 
-    #content .odd,
-    #content .odds,
-    #content .rate,
-    #content .prediction,
-    #content .market-odd {
-
-      color:
-        #60a5fa;
+    #content [class*="success"],
+    #content [class*="rate"],
+    #content [class*="percent"] {
+      color: var(--green-light) !important;
+      font-weight: 800;
     }
 
 
-    /* =====================================================
-       BAŞARI YÜZDELERİ
-       ===================================================== */
+    /* Oran */
 
-    #content .success,
-    #content .success-rate,
-    #content .percentage,
-    #content .rate-value {
-
-      color:
-        #4ade80 !important;
-
-      font-weight:
-        900;
+    #content [class*="odd"],
+    #content [class*="odds"] {
+      color: var(--blue-light) !important;
+      font-weight: 800;
     }
 
 
-    /* =====================================================
-       TAHMİN VURGUSU
-       ===================================================== */
+    /* Tahmin */
 
-    #content .prediction,
-    #content .main-prediction {
+    #content [class*="prediction"],
+    #content [class*="predict"],
+    #content [class*="pick"] {
+      color: var(--green-light) !important;
+      font-weight: 800;
+    }
 
-      background:
-        linear-gradient(
-          135deg,
-          rgba(37,99,235,.13),
-          rgba(22,163,74,.10)
-        );
 
-      border-radius:
-        8px;
+    /* Skor */
+
+    #content [class*="score"] {
+      color: #fff !important;
+      font-weight: 900;
     }
 
 
     /* =====================================================
        FOOTER
-       ===================================================== */
+    ===================================================== */
 
     footer {
-
-      color:
-        #64748b !important;
+      color: #64748b !important;
 
       border-top:
-        1px solid
-        rgba(96,165,250,.10);
-
-      margin-top:
-        25px;
-
-      padding-top:
-        15px;
+        1px solid rgba(96, 165, 250, .10);
     }
 
 
     /* =====================================================
        MOBİL
-       ===================================================== */
+    ===================================================== */
 
-    @media (max-width: 600px) {
+    @media (max-width: 700px) {
 
       .top-actions {
+        width: 100%;
 
-        gap: 6px;
+        display: grid;
 
-        flex-wrap: wrap;
+        grid-template-columns: 1fr 1fr;
+
+        gap: 7px;
       }
 
 
-      .sport-toto-btn,
-      .coupon-btn,
-      .refresh-btn {
+      .top-actions a,
+      .top-actions button {
+        width: 100%;
 
-        font-size:
-          13px !important;
+        min-height: 38px;
 
-        padding:
-          9px 11px !important;
+        padding: 8px 9px;
+
+        font-size: 12px;
       }
 
 
-      .hero {
-
-        border-radius:
-          15px !important;
+      .top-actions .refresh-btn {
+        grid-column: 1 / -1;
       }
 
 
-      .filters {
-
-        border-radius:
-          14px !important;
+      .hero h2 {
+        font-size: 21px !important;
       }
 
+
+      .hero p {
+        font-size: 13px !important;
+      }
+
+
+      .calendar-popup {
+        width: min(94vw, 360px) !important;
+      }
+    }
+
+
+    @media (max-width: 430px) {
+
+      .brand h1 {
+        font-size: 17px !important;
+      }
+
+
+      .brand span {
+        font-size: 11px !important;
+      }
+
+
+      .top-actions a,
+      .top-actions button {
+        font-size: 11.5px;
+      }
     }
 
   </style>
-
 </head>
 
 
 <body>
 
-
   <!-- =====================================================
-       HEADER
-       ===================================================== -->
+       ÜST BAR
+  ===================================================== -->
 
   <header class="topbar">
 
@@ -750,8 +741,6 @@
 
     <div class="top-actions">
 
-      <!-- ANA SİSTEM -->
-
       <a
         href="index.html"
         class="sport-toto-btn"
@@ -759,8 +748,6 @@
         ⚽ Ana Sistem
       </a>
 
-
-      <!-- SONUÇTAN ANALİZ -->
 
       <a
         href="sonuc-analizi.html"
@@ -770,8 +757,6 @@
       </a>
 
 
-      <!-- KUPONLAR -->
-
       <a
         href="kupon.html"
         class="coupon-btn"
@@ -779,8 +764,6 @@
         🎟️ Kuponlar
       </a>
 
-
-      <!-- YENİLE -->
 
       <button
         id="refreshButton"
@@ -796,15 +779,13 @@
 
 
   <!-- =====================================================
-       MAIN
-       ===================================================== -->
+       ANA İÇERİK
+  ===================================================== -->
 
   <main class="container">
 
 
-    <!-- ===================================================
-         HERO
-         =================================================== -->
+    <!-- BAŞLIK -->
 
     <section class="hero">
 
@@ -814,15 +795,12 @@
           ORAN ANALİZ SİSTEMİ V2
         </div>
 
-
         <h2 id="pageTitle">
           Bugünün Maçları
         </h2>
 
-
         <p id="pageDescription">
-          Geçmiş 60 gündeki birebir aynı oranların sonuçları
-          analiz ediliyor.
+          Geçmiş 60 gündeki birebir aynı oranların sonuçları analiz ediliyor.
         </p>
 
       </div>
@@ -830,9 +808,7 @@
     </section>
 
 
-    <!-- ===================================================
-         TAKVİM
-         =================================================== -->
+    <!-- TAKVİM -->
 
     <section class="calendar-section">
 
@@ -842,9 +818,7 @@
         type="button"
       >
 
-        <span>
-          📅
-        </span>
+        <span>📅</span>
 
         <span id="selectedDateText">
           Tarih seç
@@ -891,33 +865,13 @@
 
         <div class="weekdays">
 
-          <div>
-            Pzt
-          </div>
-
-          <div>
-            Sal
-          </div>
-
-          <div>
-            Çar
-          </div>
-
-          <div>
-            Per
-          </div>
-
-          <div>
-            Cum
-          </div>
-
-          <div>
-            Cmt
-          </div>
-
-          <div>
-            Paz
-          </div>
+          <div>Pzt</div>
+          <div>Sal</div>
+          <div>Çar</div>
+          <div>Per</div>
+          <div>Cum</div>
+          <div>Cmt</div>
+          <div>Paz</div>
 
         </div>
 
@@ -932,19 +886,15 @@
     </section>
 
 
-    <!-- ===================================================
-         FİLTRELER
-         =================================================== -->
+    <!-- FİLTRELER -->
 
     <section class="filters">
-
 
       <div class="filter-box">
 
         <label for="search">
           Maç / Takım
         </label>
-
 
         <input
           id="search"
@@ -961,7 +911,6 @@
         <label for="leagueFilter">
           Lig
         </label>
-
 
         <select id="leagueFilter">
 
@@ -987,20 +936,16 @@
 
       </label>
 
-
     </section>
 
 
-    <!-- ===================================================
-         DURUM
-         =================================================== -->
+    <!-- DURUM -->
 
     <section class="status-bar">
 
       <div id="message">
         Veriler yükleniyor...
       </div>
-
 
       <div id="updatedAt">
         -
@@ -1009,50 +954,34 @@
     </section>
 
 
-    <!-- ===================================================
-         BAŞARI ORANLARI
-         =================================================== -->
+    <!-- ÖZET -->
 
     <div id="summary"></div>
 
 
-    <!-- ===================================================
-         MAÇLAR
-         =================================================== -->
+    <!-- MAÇLAR -->
 
     <section id="content"></section>
-
 
   </main>
 
 
-  <!-- =====================================================
-       FOOTER
-       ===================================================== -->
+  <!-- FOOTER -->
 
   <footer>
 
     Geçmiş analiz:
     son 60 gün
-
     ·
-
     Birebir oran eşleşmesi
-
     ·
-
     V2
 
   </footer>
 
 
-  <!-- =====================================================
-       V2 JAVASCRIPT
-       ===================================================== -->
-
+  <!-- V2 MOTORU -->
   <script src="v2.js"></script>
 
-
 </body>
-
 </html>
