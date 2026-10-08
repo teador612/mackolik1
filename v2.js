@@ -4,7 +4,7 @@
    MACKOLIK V2
    =========================================================
 
-   YENİ ANALİZ MANTIĞI
+   ANALİZ MANTIĞI
 
    1. Oran kombinasyonu YOK.
    2. Her market kendi açılış oranını analiz eder.
@@ -12,9 +12,26 @@
    4. Son 60 gün geçmiş kullanılır.
    5. Minimum örneklem: 5
    6. Minimum başarı: %70
-   7. Bir maç için yalnızca 1 ana tahmin gösterilir.
-   8. Örneklem sayısı güven skoruna dahil edilir.
+   7. Bir maç için yalnızca 1 ANA TAHMİN gösterilir.
+   8. Birden fazla uygun tahminde örneklem büyüklüğü
+      seçimde dikkate alınır.
    9. Tahmin bulunmayan maç gösterilmez.
+  10. Son 60 günlük genel başarı sadece ANA TAHMİNLER
+      üzerinden hesaplanır.
+
+   ÖNEMLİ:
+
+   Ekranda görünen başarı yüzdesi değiştirilmez.
+
+   Örnek:
+
+   %90 / 10 maç
+   %85 / 30 maç
+
+   İkinci tahmin örneklem avantajı sayesinde daha güçlü
+   kabul edilebilir.
+
+   Ancak kullanıcıya ayrıca "Güven %" gösterilmez.
 ========================================================= */
 
 
@@ -29,6 +46,26 @@ const HISTORY_DAYS = 60;
 const MIN_SAMPLE = 5;
 
 const MIN_SUCCESS = 70;
+
+
+/*
+   Örneklem ağırlığı.
+
+   Değer büyüdükçe küçük örneklemlerin yüksek başarı
+   yüzdesine verilen avantaj azalır.
+
+   20 seçildiğinde sistem yaklaşık olarak:
+
+   5/5
+   ile
+   20/22
+
+   gibi örneklerde daha dengeli davranır.
+
+   Bu değer ekranda gösterilmez.
+*/
+
+const SAMPLE_WEIGHT = 20;
 
 
 /* =========================================================
@@ -112,6 +149,7 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+
 }
 
 
@@ -550,15 +588,6 @@ function normalizeOdds(value) {
         return null;
     }
 
-    /*
-       Her oran 2 haneye sabitlenir.
-
-       Örnek:
-       1.8  -> 1.80
-       1,85 -> 1.85
-       2.00 -> 2.00
-    */
-
     return number.toFixed(2);
 
 }
@@ -630,23 +659,6 @@ function getOdds(match, names) {
 
 /* =========================================================
    MARKETLER
-
-   ÖNEMLİ:
-
-   Her market kendi oranını analiz eder.
-
-   Örnek:
-
-   İY 1.5 Üst 1.85
-
-   geçmişte:
-
-   İY 1.5 Üst 1.85
-
-   olan maçlar bulunur ve bu maçlarda
-   İY 1.5 Üst sonucunun başarısı ölçülür.
-
-   Başka marketin oranı kullanılmaz.
 ========================================================= */
 
 const MARKETS = [
@@ -873,10 +885,6 @@ function getMarketOutcome(
     marketId
 ) {
 
-    /*
-       İY 1
-    */
-
     if (marketId === "IY1") {
 
         const score =
@@ -894,10 +902,6 @@ function getMarketOutcome(
     }
 
 
-    /*
-       İY 2
-    */
-
     if (marketId === "IY2") {
 
         const score =
@@ -914,10 +918,6 @@ function getMarketOutcome(
 
     }
 
-
-    /*
-       İY 1.5 Alt / Üst
-    */
 
     if (
         marketId === "IY15A" ||
@@ -948,10 +948,6 @@ function getMarketOutcome(
     }
 
 
-    /*
-       MS 1.5 Alt / Üst
-    */
-
     if (
         marketId === "MS15A" ||
         marketId === "MS15U"
@@ -980,10 +976,6 @@ function getMarketOutcome(
 
     }
 
-
-    /*
-       KG Var / Yok
-    */
 
     if (
         marketId === "KG" ||
@@ -1014,10 +1006,6 @@ function getMarketOutcome(
     }
 
 
-    /*
-       İY KG Var / Yok
-    */
-
     if (
         marketId === "IYKG" ||
         marketId === "IYKGY"
@@ -1046,10 +1034,6 @@ function getMarketOutcome(
 
     }
 
-
-    /*
-       MS 2.5 Üst
-    */
 
     if (
         marketId === "MS25U"
@@ -1131,107 +1115,7 @@ function getHistoryMatches(
 
 
 /* =========================================================
-   GÜVEN SKORU
-
-   Wilson alt güven sınırı kullanılır.
-
-   Böylece:
-
-   %100 / 5 maç
-
-   ile
-
-   %90 / 40 maç
-
-   aynı değerlendirilmez.
-
-   Örneklem arttıkça güven yükselir.
-
-   Bu değer tahminleri sıralamak için kullanılır.
-========================================================= */
-
-function calculateConfidence(
-    success,
-    total
-) {
-
-    if (
-        total <= 0
-    ) {
-        return 0;
-    }
-
-    const z = 1.96;
-
-    const p =
-        success / total;
-
-    const denominator =
-        1 +
-        (
-            z * z
-        ) / total;
-
-    const centre =
-        p +
-        (
-            z * z
-        ) / (
-            2 * total
-        );
-
-    const spread =
-        z *
-        Math.sqrt(
-            (
-                p *
-                (
-                    1 - p
-                ) +
-                (
-                    z * z
-                ) /
-                (
-                    4 * total
-                )
-            ) /
-            total
-        );
-
-    const lower =
-        (
-            centre -
-            spread
-        ) /
-        denominator;
-
-    return Math.max(
-        0,
-        Math.min(
-            100,
-            lower * 100
-        )
-    );
-
-}
-
-
-/* =========================================================
    ANALİZ İNDEKSİ
-
-   Anahtar:
-
-   MARKET + BİREBİR ORAN
-
-   Örnek:
-
-   IY15U|1.85
-
-   Burada sadece:
-
-   İY 1.5 Üst = 1.85
-
-   olan geçmiş maçlar bulunur.
 ========================================================= */
 
 function buildAnalysisIndex(
@@ -1329,6 +1213,7 @@ function analyzeMarket(
         return null;
     }
 
+
     /*
        Birebir oran eşleşmesi.
     */
@@ -1344,6 +1229,7 @@ function analyzeMarket(
     const historicalMatches =
         index.get(key) || [];
 
+
     if (
         historicalMatches.length <
         MIN_SAMPLE
@@ -1353,9 +1239,11 @@ function analyzeMarket(
 
     }
 
+
     let total = 0;
 
     let success = 0;
+
 
     for (
         const historical
@@ -1376,6 +1264,7 @@ function analyzeMarket(
 
         total++;
 
+
         if (
             result === true
         ) {
@@ -1386,6 +1275,7 @@ function analyzeMarket(
 
     }
 
+
     if (
         total <
         MIN_SAMPLE
@@ -1395,11 +1285,13 @@ function analyzeMarket(
 
     }
 
+
     const percentage =
         (
             success /
             total
         ) * 100;
+
 
     if (
         percentage <
@@ -1410,11 +1302,6 @@ function analyzeMarket(
 
     }
 
-    const confidence =
-        calculateConfidence(
-            success,
-            total
-        );
 
     return {
 
@@ -1431,11 +1318,82 @@ function analyzeMarket(
 
         total,
 
-        percentage,
-
-        confidence
+        percentage
 
     };
+
+}
+
+
+/* =========================================================
+   ÖRNEKLEM AĞIRLIKLI SEÇİM
+========================================================= */
+
+/*
+   Burada ekranda görünen başarı yüzdesini değiştirmiyoruz.
+
+   Sadece birden fazla uygun tahmin olduğunda hangisinin
+   ANA TAHMİN olacağını belirlemek için örneklem büyüklüğünü
+   hesaba katıyoruz.
+
+   Formül:
+
+   düzeltilmiş oran =
+   (
+       başarı + (%70 × ağırlık)
+   )
+   /
+   (
+       örneklem + ağırlık
+   )
+
+   Örnek:
+
+   5/5  = %100
+   20/22 = %90.9
+
+   Küçük örneklemin %100 olması otomatik olarak kazanmaz.
+
+   Bu değer SADECE sıralama içindir.
+   Kullanıcıya gösterilen yüzde gerçek başarı yüzdesidir.
+*/
+
+function getSampleWeightedScore(
+    analysis
+) {
+
+    if (
+        !analysis ||
+        !Number.isFinite(
+            analysis.total
+        ) ||
+        analysis.total <= 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    const priorSuccess =
+        MIN_SUCCESS / 100;
+
+
+    const weightedRate =
+        (
+            analysis.success +
+            (
+                priorSuccess *
+                SAMPLE_WEIGHT
+            )
+        ) /
+        (
+            analysis.total +
+            SAMPLE_WEIGHT
+        );
+
+
+    return weightedRate;
 
 }
 
@@ -1450,6 +1408,7 @@ function getRecommendations(
 ) {
 
     const candidates = [];
+
 
     /*
        Her market tamamen bağımsız
@@ -1478,28 +1437,52 @@ function getRecommendations(
 
     }
 
-    /*
-       Önce güven skoru.
 
-       Eşitse:
-       1. Başarı yüzdesi
-       2. Örneklem sayısı
+    /*
+       ANA TAHMİN SEÇİMİ
+
+       Öncelik:
+
+       1. Örneklem ağırlıklı skor
+       2. Gerçek başarı yüzdesi
+       3. Örneklem sayısı
+
+       ÖNEMLİ:
+
+       Oranlar arasında tolerans yoktur.
+       Her market kendi birebir oranını kullanır.
     */
 
     candidates.sort(
         (a, b) => {
 
+            const scoreA =
+                getSampleWeightedScore(
+                    a
+                );
+
+            const scoreB =
+                getSampleWeightedScore(
+                    b
+                );
+
+
             if (
-                b.confidence !==
-                a.confidence
+                scoreB !== scoreA
             ) {
 
                 return (
-                    b.confidence -
-                    a.confidence
+                    scoreB -
+                    scoreA
                 );
 
             }
+
+
+            /*
+               Örneklem ağırlıklı skor eşitse
+               gerçek başarı yüzdesi.
+            */
 
             if (
                 b.percentage !==
@@ -1513,6 +1496,12 @@ function getRecommendations(
 
             }
 
+
+            /*
+               Her şey eşitse daha büyük
+               örneklem kazanır.
+            */
+
             return (
                 b.total -
                 a.total
@@ -1521,11 +1510,11 @@ function getRecommendations(
         }
     );
 
+
     /*
        SADECE 1 ANA TAHMİN.
 
-       Oran kombinasyonu yok.
-       İkinci/üçüncü tahmin yok.
+       İkinci / üçüncü tahmin gösterilmez.
     */
 
     if (
@@ -1535,6 +1524,7 @@ function getRecommendations(
         return [];
 
     }
+
 
     return [
         candidates[0]
@@ -1631,10 +1621,6 @@ function recommendationHtml(
                     ·
 
                     %${recommendation.percentage.toFixed(1)}
-
-                    ·
-
-                    Güven %${recommendation.confidence.toFixed(1)}
 
                 </div>
 
@@ -1795,6 +1781,7 @@ function getDayMatches() {
             selectedDate
         );
 
+
     let result =
         allMatches.filter(
             match => {
@@ -1829,6 +1816,7 @@ function getDayMatches() {
                     "tr-TR"
                 )
             : "";
+
 
     if (search) {
 
@@ -1868,6 +1856,7 @@ function getDayMatches() {
         leagueFilter
             ? leagueFilter.value
             : "";
+
 
     if (league) {
 
@@ -1916,6 +1905,7 @@ function calculateTodaySummary(
 
     let total = 0;
 
+
     for (
         const item
         of predictedMatches
@@ -1924,16 +1914,25 @@ function calculateTodaySummary(
         if (
             !isPlayed(item.match)
         ) {
+
             continue;
+
         }
+
+
+        /*
+           SADECE ANA TAHMİN.
+        */
 
         const recommendation =
             item.recommendations &&
             item.recommendations[0];
 
+
         if (!recommendation) {
             continue;
         }
+
 
         const result =
             getMarketOutcome(
@@ -1941,13 +1940,18 @@ function calculateTodaySummary(
                 recommendation.marketId
             );
 
+
         if (
             result === null
         ) {
+
             continue;
+
         }
 
+
         total++;
+
 
         if (
             result === true
@@ -1958,6 +1962,7 @@ function calculateTodaySummary(
         }
 
     }
+
 
     return {
 
@@ -1980,6 +1985,20 @@ function calculateTodaySummary(
 
 /* =========================================================
    SON 60 GÜN BAŞARI
+
+   ÇOK ÖNEMLİ:
+
+   Burada her geçmiş maç için o maçın kendi tarihine
+   göre tahmin yeniden oluşturulur.
+
+   getRecommendations() yalnızca 1 tahmin döndürür.
+
+   Dolayısıyla:
+
+   - Ek tahmin yok.
+   - İkinci market yok.
+   - Üçüncü market yok.
+   - Sadece ANA TAHMİN hesaba girer.
 ========================================================= */
 
 function calculate60DaySummary() {
@@ -1996,11 +2015,13 @@ function calculate60DaySummary() {
         0
     );
 
+
     const start =
         addDays(
             end,
             -HISTORY_DAYS
         );
+
 
     let success = 0;
 
@@ -2020,12 +2041,14 @@ function calculate60DaySummary() {
                     return false;
                 }
 
+
                 date.setHours(
                     0,
                     0,
                     0,
                     0
                 );
+
 
                 return (
                     date >= start &&
@@ -2047,10 +2070,19 @@ function calculate60DaySummary() {
                 getDate(match)
             );
 
+
         if (!matchDate) {
             continue;
         }
 
+
+        /*
+           Bu maç oynanmadan önceki 60 gün
+           kullanılarak ANA TAHMİN oluşturulur.
+
+           Böylece geçmişe bakıp bugünü tahmin etme
+           gibi bir veri sızıntısı oluşmaz.
+        */
 
         const recommendations =
             getRecommendations(
@@ -2058,13 +2090,20 @@ function calculate60DaySummary() {
                 matchDate
             );
 
+
         if (
             !recommendations ||
             !recommendations.length
         ) {
+
             continue;
+
         }
 
+
+        /*
+           SADECE İLK VE TEK ANA TAHMİN.
+        */
 
         const recommendation =
             recommendations[0];
@@ -2076,13 +2115,18 @@ function calculate60DaySummary() {
                 recommendation.marketId
             );
 
+
         if (
             result === null
         ) {
+
             continue;
+
         }
 
+
         total++;
+
 
         if (
             result === true
@@ -2203,6 +2247,7 @@ function fillLeagueFilter() {
         return;
     }
 
+
     const leagues =
         new Set();
 
@@ -2214,6 +2259,7 @@ function fillLeagueFilter() {
 
         const league =
             getLeague(match);
+
 
         if (league) {
 
@@ -2255,11 +2301,14 @@ function fillLeagueFilter() {
                 "option"
             );
 
+
         option.value =
             league;
 
+
         option.textContent =
             league;
+
 
         leagueFilter.appendChild(
             option
@@ -2301,7 +2350,7 @@ function render() {
 
 
         /*
-           SADECE TAHMİN BULUNAN MAÇLAR
+           SADECE TAHMİN BULUNAN MAÇLAR.
         */
 
         if (
@@ -2381,6 +2430,7 @@ function render() {
                 selectedDate,
                 -HISTORY_DAYS
             );
+
 
         const end =
             addDays(
@@ -2518,8 +2568,10 @@ function renderCalendar() {
                 "div"
             );
 
+
         empty.className =
             "calendar-day empty";
+
 
         calendarDays.appendChild(
             empty
@@ -2608,6 +2660,7 @@ function renderCalendar() {
                         date
                     );
 
+
                 calendarDate =
                     new Date(
                         date
@@ -2663,6 +2716,7 @@ function setToday() {
     const today =
         new Date();
 
+
     today.setHours(
         0,
         0,
@@ -2702,7 +2756,6 @@ function setToday() {
 ========================================================= */
 
 function setupEvents() {
-
 
     if (
         calendarToggle &&
@@ -2964,6 +3017,7 @@ async function loadData(
 
             const now =
                 new Date();
+
 
             updatedAt.textContent +=
                 ` · Güncellendi ${
