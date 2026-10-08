@@ -352,7 +352,7 @@ function isPlayed(match) {
 }
 
 /* =========================================================
-   ORANLAR (0.00 VE GEÇERSİZ ORAN FİLTRESİ EKLENDİ)
+   ORANLAR
 ========================================================= */
 
 function normalizeOdds(value) {
@@ -370,7 +370,6 @@ function normalizeOdds(value) {
             .trim()
     );
 
-    // 1.00 VE ALTINDAKİ TÜM ORANLARI (0 VE 0.00 DÂHİL) ELE
     if (!Number.isFinite(number) || number <= 1.00) {
         return null;
     }
@@ -951,6 +950,15 @@ function getRecommendations(
             const targetOdds =
                 target.odds(match);
 
+            /* -------------------------------------
+               KRİTİK FİLTRE:
+               Tahmin oranı yoksa veya 0.00 ise 
+               öneri listesine hiç ekleme!
+            ------------------------------------- */
+            if (!targetOdds || targetOdds === "0.00") {
+                continue;
+            }
+
             recommendations.push({
 
                 sourceMarket:
@@ -969,7 +977,7 @@ function getRecommendations(
                     target.title,
 
                 targetOdds:
-                    (targetOdds && targetOdds !== "0.00") ? targetOdds : "-",
+                    targetOdds,
 
                 success:
                     success,
@@ -1080,9 +1088,7 @@ function recommendationHtml(
         );
 
     const targetOdd =
-        (recommendation.targetOdds && recommendation.targetOdds !== "0.00")
-            ? recommendation.targetOdds
-            : "-";
+        recommendation.targetOdds || "-";
 
     return `
         <div class="recommendation ${status}">
@@ -1710,8 +1716,16 @@ function render() {
                 selectedDate
             );
 
+        /* --------------------------------------------------
+           SADECE TAHMİNİ (RECOMENDATIONS) BULUNAN 
+           VE ANA TAHMİNİNİN ORANI GECERLI (0 VEYA BOSH OLMAYAN)
+           MAÇLARI EKRAN LİSTESİNE AL
+        -------------------------------------------------- */
         if (
-            recommendations.length
+            recommendations.length > 0 &&
+            recommendations[0].targetOdds &&
+            recommendations[0].targetOdds !== "-" &&
+            recommendations[0].targetOdds !== "0.00"
         ) {
 
             predicted.push({
