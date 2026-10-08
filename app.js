@@ -352,7 +352,7 @@ function isPlayed(match) {
 }
 
 /* =========================================================
-   ORANLAR
+   ORANLAR (0.00 VE GEÇERSİZ ORAN FİLTRESİ EKLENDİ)
 ========================================================= */
 
 function normalizeOdds(value) {
@@ -370,7 +370,8 @@ function normalizeOdds(value) {
             .trim()
     );
 
-    if (!Number.isFinite(number)) {
+    // 1.00 VE ALTINDAKİ TÜM ORANLARI (0 VE 0.00 DÂHİL) ELE
+    if (!Number.isFinite(number) || number <= 1.00) {
         return null;
     }
 
@@ -414,11 +415,7 @@ function getOdds(match, names) {
 }
 
 /* =========================================================
-   MARKETLER
-=========================================================
-/* =========================================================
    ÖRNEKLEM MARKETLERİ
-   SADECE BUNLAR GEÇMİŞ MAÇLARI BULMAK İÇİN KULLANILIR
 ========================================================= */
 
 const SOURCE_MARKETS = [
@@ -496,7 +493,6 @@ const SOURCE_MARKETS = [
 
 /* =========================================================
    TAHMİN MARKETLERİ
-   ÖRNEKLEMLERDEN SONRA SONUÇ OLARAK BUNLAR ÜRETİLİR
 ========================================================= */
 
 const TARGET_MARKETS = [
@@ -591,10 +587,6 @@ const TARGET_MARKETS = [
 
 ];
 
-/* =========================================================
-   ESKİ KODLA UYUMLULUK
-========================================================= */
-
 const MARKETS = SOURCE_MARKETS;
 
 /* =========================================================
@@ -602,10 +594,6 @@ const MARKETS = SOURCE_MARKETS;
 ========================================================= */
 
 function getMarketOutcome(match, marketId) {
-
-    /* -----------------------------------------
-       İLK YARI SONUÇLARI
-    ----------------------------------------- */
 
     if (
         marketId === "IY1" ||
@@ -626,10 +614,6 @@ function getMarketOutcome(match, marketId) {
             return score.away > score.home;
         }
     }
-
-    /* -----------------------------------------
-       İLK YARI 1.5 ALT / ÜST
-    ----------------------------------------- */
 
     if (
         marketId === "IY15A" ||
@@ -655,10 +639,6 @@ function getMarketOutcome(match, marketId) {
         }
     }
 
-    /* -----------------------------------------
-       MAÇ 1.5 ALT / ÜST
-    ----------------------------------------- */
-
     if (
         marketId === "MS15A" ||
         marketId === "MS15U"
@@ -683,10 +663,6 @@ function getMarketOutcome(match, marketId) {
         }
     }
 
-    /* -----------------------------------------
-       KG VAR / KG YOK
-    ----------------------------------------- */
-
     if (
         marketId === "KG" ||
         marketId === "KGY"
@@ -709,10 +685,6 @@ function getMarketOutcome(match, marketId) {
         return !bothScored;
     }
 
-    /* -----------------------------------------
-       İLK YARI KG VAR / YOK
-    ----------------------------------------- */
-
     if (
         marketId === "IYKG" ||
         marketId === "IYKGY"
@@ -734,10 +706,6 @@ function getMarketOutcome(match, marketId) {
 
         return !bothScored;
     }
-
-    /* -----------------------------------------
-       2.5 ÜST
-    ----------------------------------------- */
 
     if (marketId === "MS25U") {
 
@@ -806,8 +774,6 @@ function getHistoryMatches(targetDate) {
 
 /* =========================================================
    ANALİZ İNDEKSİ
-
-   SADECE SOURCE_MARKETS KULLANILIR.
 ========================================================= */
 
 function buildAnalysisIndex(targetDate) {
@@ -844,10 +810,6 @@ function buildAnalysisIndex(targetDate) {
                     historical
                 );
 
-            /*
-              Kaynak oranı yoksa bu maç
-              örnekleme dahil edilmez.
-            */
             if (!odds) {
                 continue;
             }
@@ -884,11 +846,6 @@ function buildAnalysisIndex(targetDate) {
 
 /* =========================================================
    TAHMİNLER
-
-   ÖNEMLİ:
-   - Örneklem = SOURCE_MARKETS
-   - Tahmin = TARGET_MARKETS
-   - Tahmin oranı yoksa yine gösterilir.
 ========================================================= */
 
 function getRecommendations(
@@ -903,10 +860,6 @@ function getRecommendations(
 
     const recommendations = [];
 
-    /* -----------------------------------------
-       5 ADET ÖRNEKLEM MARKETİ
-    ----------------------------------------- */
-
     for (
         const source
         of SOURCE_MARKETS
@@ -915,10 +868,6 @@ function getRecommendations(
         const sourceOdds =
             source.odds(match);
 
-        /*
-          Güncel maçta kaynak oranı yoksa
-          o kaynak üzerinden örneklem yapılamaz.
-        */
         if (!sourceOdds) {
             continue;
         }
@@ -931,9 +880,6 @@ function getRecommendations(
                 sourceKey
             ) || [];
 
-        /*
-          Minimum 5 geçmiş maç
-        */
         if (
             historicalMatches.length <
             MIN_SAMPLE
@@ -941,19 +887,11 @@ function getRecommendations(
             continue;
         }
 
-        /* -----------------------------------------
-           7 ADET TAHMİN MARKETİ
-        ----------------------------------------- */
-
         for (
             const target
             of TARGET_MARKETS
         ) {
 
-            /*
-              Kaynak ve hedef aynı market ise
-              tahmin üretme.
-            */
             if (
                 source.id ===
                 target.id
@@ -963,10 +901,6 @@ function getRecommendations(
 
             let total = 0;
             let success = 0;
-
-            /* -------------------------------------
-               GEÇMİŞ MAÇLARI KONTROL ET
-            ------------------------------------- */
 
             for (
                 const historical
@@ -994,10 +928,6 @@ function getRecommendations(
                 }
             }
 
-            /*
-              Sonucu hesaplayabildiğimiz
-              geçmiş maç sayısı en az 5 olmalı.
-            */
             if (
                 total <
                 MIN_SAMPLE
@@ -1011,9 +941,6 @@ function getRecommendations(
                     total
                 ) * 100;
 
-            /*
-              Minimum başarı oranı %70
-            */
             if (
                 percentage <
                 MIN_SUCCESS
@@ -1021,10 +948,6 @@ function getRecommendations(
                 continue;
             }
 
-            /*
-              Hedef oranı VARSA gösterilir.
-              YOKSA DA öneri silinmez.
-            */
             const targetOdds =
                 target.odds(match);
 
@@ -1046,7 +969,7 @@ function getRecommendations(
                     target.title,
 
                 targetOdds:
-                    targetOdds || "-",
+                    (targetOdds && targetOdds !== "0.00") ? targetOdds : "-",
 
                 success:
                     success,
@@ -1060,12 +983,6 @@ function getRecommendations(
             });
         }
     }
-
-    /* =====================================================
-       SIRALAMA
-       Önce başarı yüzdesi,
-       eşitse örneklem sayısı
-    ===================================================== */
 
     recommendations.sort(
         (a, b) => {
@@ -1087,10 +1004,6 @@ function getRecommendations(
             );
         }
     );
-
-    /* =====================================================
-       AYNI TAHMİNİ TEKRARLAMA
-    ===================================================== */
 
     const unique = [];
     const seen = new Set();
@@ -1120,6 +1033,7 @@ function getRecommendations(
 
     return unique;
 }
+
 /* =========================================================
    TAHMİN DURUMU
 ========================================================= */
@@ -1166,8 +1080,9 @@ function recommendationHtml(
         );
 
     const targetOdd =
-        recommendation.targetOdds ||
-        "-";
+        (recommendation.targetOdds && recommendation.targetOdds !== "0.00")
+            ? recommendation.targetOdds
+            : "-";
 
     return `
         <div class="recommendation ${status}">
@@ -1411,10 +1326,6 @@ function getDayMatches() {
             }
         );
 
-    /* =====================================================
-       ARAMA
-    ===================================================== */
-
     const search =
         searchInput
             ? searchInput.value
@@ -1447,10 +1358,6 @@ function getDayMatches() {
             );
     }
 
-    /* =====================================================
-       LİG
-    ===================================================== */
-
     const league =
         leagueFilter
             ? leagueFilter.value
@@ -1465,10 +1372,6 @@ function getDayMatches() {
                     league
             );
     }
-
-    /* =====================================================
-       OYNANMAMIŞ
-    ===================================================== */
 
     if (
         unplayedOnly &&
@@ -1500,13 +1403,6 @@ function calculateTodaySummary(predictedMatches) {
             continue;
         }
 
-        /*
-         * SADECE ANA TAHMİN
-         * recommendations[0] = kartta ilk görünen tahmin
-         *
-         * + altında bulunan ek tahminler
-         * başarı oranına dahil edilmez.
-         */
         const mainRecommendation =
             item.recommendations &&
             item.recommendations[0];
@@ -1541,10 +1437,10 @@ function calculateTodaySummary(predictedMatches) {
                 : null
     };
 }
+
 /* =========================================================
    SON 60 GÜN BAŞARI
-   SADECE ANA TAHMİNLER HESAPLANIR
-   ========================================================= */
+========================================================= */
 
 function calculate60DaySummary() {
 
@@ -1566,10 +1462,6 @@ function calculate60DaySummary() {
     let success = 0;
     let total = 0;
 
-    /*
-       Son 60 gündeki oynanmış maçları al.
-       Bugünün kendisini dahil etme.
-    */
     const historicalDays =
         allMatches.filter(match => {
 
@@ -1596,13 +1488,6 @@ function calculate60DaySummary() {
             );
         });
 
-    /*
-       Her maç için o günün sisteminin
-       ürettiği tahminleri hesapla.
-
-       recommendations[0]
-       = SADECE ANA TAHMİN
-    */
     for (
         const match
         of historicalDays
@@ -1623,10 +1508,6 @@ function calculate60DaySummary() {
                 matchDate
             );
 
-        /*
-           Tahmin yoksa bu maç
-           başarı hesabına girmez.
-        */
         if (
             !recommendations ||
             !recommendations.length
@@ -1634,9 +1515,6 @@ function calculate60DaySummary() {
             continue;
         }
 
-        /*
-           SADECE İLK / ANA TAHMİN
-        */
         const mainRecommendation =
             recommendations[0];
 
@@ -1650,10 +1528,6 @@ function calculate60DaySummary() {
                 mainRecommendation.targetMarket
             );
 
-        /*
-           Sonuç hesaplanamıyorsa
-           hesaba katma.
-        */
         if (result === null) {
             continue;
         }
@@ -1998,8 +1872,6 @@ function renderCalendar() {
             0
         ).getDate();
 
-    /* Boş günler */
-
     for (
         let i = 0;
         i < start;
@@ -2028,8 +1900,6 @@ function renderCalendar() {
         0,
         0
     );
-
-    /* Günler */
 
     for (
         let day = 1;
@@ -2161,8 +2031,6 @@ function setToday() {
 
 function setupEvents() {
 
-    /* Takvim aç/kapat */
-
     if (
         calendarToggle &&
         calendarPopup
@@ -2181,8 +2049,6 @@ function setupEvents() {
         );
     }
 
-    /* Önceki ay */
-
     if (prevMonth) {
 
         prevMonth.addEventListener(
@@ -2200,8 +2066,6 @@ function setupEvents() {
         );
     }
 
-    /* Sonraki ay */
-
     if (nextMonth) {
 
         nextMonth.addEventListener(
@@ -2218,8 +2082,6 @@ function setupEvents() {
             }
         );
     }
-
-    /* Takvim dışına tıklama */
 
     document.addEventListener(
         "click",
@@ -2243,8 +2105,6 @@ function setupEvents() {
         }
     );
 
-    /* Arama */
-
     if (searchInput) {
 
         searchInput.addEventListener(
@@ -2252,8 +2112,6 @@ function setupEvents() {
             render
         );
     }
-
-    /* Lig */
 
     if (leagueFilter) {
 
@@ -2263,8 +2121,6 @@ function setupEvents() {
         );
     }
 
-    /* Oynanmamış */
-
     if (unplayedOnly) {
 
         unplayedOnly.addEventListener(
@@ -2272,8 +2128,6 @@ function setupEvents() {
             render
         );
     }
-
-    /* Yenile */
 
     if (refreshButton) {
 
@@ -2287,10 +2141,6 @@ function setupEvents() {
             }
         );
     }
-
-    /* =====================================================
-       + BUTONU
-    ===================================================== */
 
     document.addEventListener(
         "click",
@@ -2381,10 +2231,6 @@ async function loadData(
         const data =
             await response.json();
 
-        /* =================================================
-           JSON FORMATLARI
-        ================================================= */
-
         if (
             Array.isArray(data)
         ) {
@@ -2409,10 +2255,6 @@ async function loadData(
             );
         }
 
-        /* =================================================
-           GEÇERLİ TARİHLER
-        ================================================= */
-
         allMatches =
             allMatches.filter(
                 match =>
@@ -2433,11 +2275,6 @@ async function loadData(
         analysisCache.clear();
 
         fillLeagueFilter();
-
-        /*
-           SAYFA İLK AÇILDIĞINDA
-           BUGÜN SEÇİLİ
-        */
 
         setToday();
 
