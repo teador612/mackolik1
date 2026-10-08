@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
   <meta charset="UTF-8">
 
@@ -10,16 +11,32 @@
 
   <title>Sonuçtan Oran Analizi</title>
 
-  <meta name="theme-color" content="#0b0f14">
+  <meta
+    name="theme-color"
+    content="#07111f"
+  >
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 
   <style>
+
+    /* =====================================================
+       SAYFA
+       ===================================================== */
+
     .sa-container {
       max-width: 1100px;
       margin: 0 auto;
       padding: 18px;
     }
+
+
+    /* =====================================================
+       ÜST BUTON
+       ===================================================== */
 
     .sa-top {
       display: flex;
@@ -34,37 +51,117 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      padding: 10px 14px;
-      border-radius: 10px;
+      padding: 10px 15px;
+      border-radius: 11px;
       text-decoration: none;
-      font-weight: 700;
+      font-weight: 800;
       color: #fff;
-      background: #1d9bf0;
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #06b6d4
+        );
+      box-shadow:
+        0 7px 20px
+        rgba(37, 99, 235, .25);
+      transition:
+        transform .15s ease,
+        filter .15s ease;
     }
 
+    .sa-back:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+
+    /* =====================================================
+       HERO
+       ===================================================== */
+
     .sa-hero {
-      padding: 20px;
-      border-radius: 16px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.08);
-      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+
+      padding: 24px;
+
+      border-radius: 18px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #111827 0%,
+          #172554 48%,
+          #064e3b 100%
+        );
+
+      border:
+        1px solid
+        rgba(96, 165, 250, .28);
+
+      margin-bottom: 17px;
+
+      box-shadow:
+        0 15px 40px
+        rgba(0, 0, 0, .25);
+    }
+
+    .sa-hero::after {
+      content: "";
+
+      position: absolute;
+
+      width: 180px;
+      height: 180px;
+
+      right: -70px;
+      top: -80px;
+
+      border-radius: 50%;
+
+      background:
+        rgba(34, 197, 94, .14);
+
+      pointer-events: none;
     }
 
     .sa-hero h1 {
-      margin: 0 0 7px;
-      font-size: 24px;
+      position: relative;
+      z-index: 1;
+
+      margin: 0 0 8px;
+
+      font-size: 25px;
+      font-weight: 900;
     }
 
     .sa-hero p {
+      position: relative;
+      z-index: 1;
+
       margin: 0;
-      opacity: .72;
-      line-height: 1.5;
+
+      max-width: 850px;
+
+      opacity: .78;
+
+      line-height: 1.55;
     }
+
+
+    /* =====================================================
+       KONTROLLER
+       ===================================================== */
 
     .sa-controls {
       display: grid;
-      grid-template-columns: 1fr 1fr auto;
+
+      grid-template-columns:
+        1fr 1fr auto;
+
       gap: 10px;
+
       margin-bottom: 16px;
     }
 
@@ -75,72 +172,299 @@
     }
 
     .sa-control label {
-      font-size: 12px;
-      font-weight: 700;
-      opacity: .7;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      opacity: .72;
     }
 
     .sa-control select,
     .sa-control input {
       width: 100%;
       box-sizing: border-box;
-      padding: 11px 12px;
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
+
+      padding: 12px 13px;
+
+      border-radius: 11px;
+
+      border:
+        1px solid
+        rgba(96, 165, 250, .22);
+
+      background:
+        rgba(15, 23, 42, .78);
+
       color: inherit;
+
       font-size: 14px;
+
+      outline: none;
+
+      transition:
+        border-color .15s ease,
+        box-shadow .15s ease;
+    }
+
+    .sa-control select:focus,
+    .sa-control input:focus {
+      border-color:
+        rgba(59, 130, 246, .7);
+
+      box-shadow:
+        0 0 0 3px
+        rgba(59, 130, 246, .12);
     }
 
     .sa-control select option {
-      background: #111820;
+      background: #111827;
       color: #fff;
     }
+
+
+    /* =====================================================
+       ANALİZ BUTONU
+       ===================================================== */
 
     .sa-run {
       align-self: end;
-      padding: 11px 16px;
+
+      min-width: 130px;
+
+      padding: 12px 17px;
+
       border: 0;
-      border-radius: 10px;
-      background: #22c55e;
+      border-radius: 11px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #2563eb,
+          #16a34a
+        );
+
       color: #fff;
-      font-weight: 800;
+
+      font-weight: 900;
+
       cursor: pointer;
+
+      box-shadow:
+        0 8px 22px
+        rgba(37, 99, 235, .25);
+
+      transition:
+        transform .15s ease,
+        filter .15s ease;
     }
+
+    .sa-run:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .sa-run:active {
+      transform: translateY(0);
+    }
+
+
+    /* =====================================================
+       DURUM
+       ===================================================== */
 
     .sa-status {
       margin-bottom: 14px;
-      padding: 12px 14px;
-      border-radius: 10px;
-      background: rgba(255,255,255,.04);
+
+      padding: 13px 15px;
+
+      border-radius: 11px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(30, 64, 175, .14),
+          rgba(22, 163, 74, .10)
+        );
+
+      border:
+        1px solid
+        rgba(59, 130, 246, .20);
+
       font-size: 13px;
+
+      color: #dbeafe;
     }
+
+    .sa-status strong {
+      color: #60a5fa;
+    }
+
+
+    /* =====================================================
+       BİLGİ KARTLARI
+       ===================================================== */
+
+    .sa-info {
+      display: grid;
+
+      grid-template-columns:
+        repeat(3, 1fr);
+
+      gap: 10px;
+
+      margin-bottom: 16px;
+    }
+
+    .sa-info-box {
+      position: relative;
+      overflow: hidden;
+
+      padding: 14px;
+
+      border-radius: 13px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(30, 41, 59, .96),
+          rgba(15, 23, 42, .96)
+        );
+
+      border:
+        1px solid
+        rgba(96, 165, 250, .16);
+
+      box-shadow:
+        0 7px 20px
+        rgba(0, 0, 0, .13);
+    }
+
+    .sa-info-box:nth-child(2) {
+      border-color:
+        rgba(34, 197, 94, .18);
+    }
+
+    .sa-info-box:nth-child(3) {
+      border-color:
+        rgba(168, 85, 247, .18);
+    }
+
+    .sa-info-label {
+      display: block;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      opacity: .62;
+
+      margin-bottom: 5px;
+    }
+
+    .sa-info-value {
+      display: block;
+
+      font-size: 17px;
+      font-weight: 900;
+
+      color: #60a5fa;
+    }
+
+    .sa-info-box:nth-child(2)
+    .sa-info-value {
+      color: #4ade80;
+    }
+
+    .sa-info-box:nth-child(3)
+    .sa-info-value {
+      color: #c084fc;
+    }
+
+
+    /* =====================================================
+       MARKET
+       ===================================================== */
 
     .sa-market {
       margin: 0 0 18px;
-      border-radius: 14px;
+
+      border-radius: 15px;
+
       overflow: hidden;
-      border: 1px solid rgba(255,255,255,.08);
-      background: rgba(255,255,255,.025);
+
+      border:
+        1px solid
+        rgba(96, 165, 250, .17);
+
+      background:
+        rgba(15, 23, 42, .55);
+
+      box-shadow:
+        0 9px 25px
+        rgba(0, 0, 0, .16);
     }
 
     .sa-market-title {
-      padding: 13px 15px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 10px;
+
+      padding: 14px 15px;
+
       font-size: 15px;
-      font-weight: 800;
-      background: rgba(255,255,255,.05);
-      border-bottom: 1px solid rgba(255,255,255,.07);
+      font-weight: 900;
+
+      background:
+        linear-gradient(
+          90deg,
+          rgba(30, 64, 175, .85),
+          rgba(6, 78, 59, .85)
+        );
+
+      border-bottom:
+        1px solid
+        rgba(255,255,255,.08);
     }
+
+    .sa-market-count {
+      padding: 4px 8px;
+
+      border-radius: 999px;
+
+      font-size: 10px;
+
+      background:
+        rgba(255,255,255,.12);
+
+      opacity: .85;
+    }
+
+
+    /* =====================================================
+       SATIR
+       ===================================================== */
 
     .sa-row {
       display: grid;
-      grid-template-columns: 1.3fr .8fr .8fr .8fr .8fr;
+
+      grid-template-columns:
+        1.3fr .8fr .8fr .8fr .8fr;
+
       align-items: center;
+
       gap: 8px;
+
       padding: 13px 15px;
+
       cursor: pointer;
-      border-bottom: 1px solid rgba(255,255,255,.05);
-      transition: background .15s ease;
+
+      border-bottom:
+        1px solid
+        rgba(255,255,255,.05);
+
+      transition:
+        background .15s ease,
+        transform .15s ease;
     }
 
     .sa-row:last-child {
@@ -148,42 +472,118 @@
     }
 
     .sa-row:hover {
-      background: rgba(255,255,255,.05);
+      background:
+        rgba(59, 130, 246, .08);
+    }
+
+    .sa-row.active {
+      background:
+        linear-gradient(
+          90deg,
+          rgba(37, 99, 235, .13),
+          rgba(22, 163, 74, .08)
+        );
     }
 
     .sa-head {
       opacity: .55;
-      font-size: 11px;
-      font-weight: 700;
+
+      font-size: 10px;
+      font-weight: 800;
+
       cursor: default;
     }
 
+    .sa-head:hover {
+      background: transparent;
+    }
+
+
+    /* =====================================================
+       ORAN
+       ===================================================== */
+
     .sa-odd {
       font-size: 17px;
+
       font-weight: 900;
+
+      color: #60a5fa;
     }
+
+
+    /* =====================================================
+       DEĞERLER
+       ===================================================== */
 
     .sa-value {
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 800;
     }
 
-    .sa-rate {
-      font-size: 16px;
-      font-weight: 900;
+    .sa-sample {
+      color: #cbd5e1;
     }
+
+    .sa-success {
+      color: #4ade80;
+    }
+
+
+    /* =====================================================
+       BAŞARI
+       ===================================================== */
+
+    .sa-rate {
+      font-size: 17px;
+
+      font-weight: 950;
+
+      color: #22c55e;
+
+      text-shadow:
+        0 0 14px
+        rgba(34, 197, 94, .18);
+    }
+
+
+    /* =====================================================
+       GELECEK
+       ===================================================== */
 
     .sa-expand {
       text-align: center;
+
       font-size: 12px;
-      opacity: .7;
+
+      font-weight: 700;
+
+      color: #93c5fd;
+
+      opacity: .9;
     }
+
+
+    /* =====================================================
+       DETAY
+       ===================================================== */
 
     .sa-details {
       display: none;
-      padding: 13px 15px 15px;
-      background: rgba(0,0,0,.12);
-      border-bottom: 1px solid rgba(255,255,255,.06);
+
+      padding:
+        14px 15px 16px;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(15, 23, 42, .92),
+          rgba(6, 78, 59, .16)
+        );
+
+      border-bottom:
+        1px solid
+        rgba(96, 165, 250, .10);
     }
 
     .sa-details.open {
@@ -191,22 +591,64 @@
     }
 
     .sa-details-title {
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-
-    .sa-match {
       display: flex;
+
       align-items: center;
       justify-content: space-between;
+
       gap: 10px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      font-size: 13px;
+
+      margin-bottom: 6px;
+
+      font-weight: 900;
+
+      color: #bfdbfe;
+    }
+
+    .sa-details-title strong {
+      color: #4ade80;
+    }
+
+    .sa-details-subtitle {
+      margin-bottom: 10px;
+
+      font-size: 11px;
+
+      opacity: .62;
+    }
+
+
+    /* =====================================================
+       MAÇ
+       ===================================================== */
+
+    .sa-match {
+      display: grid;
+
+      grid-template-columns:
+        58px 1fr auto;
+
+      align-items: center;
+
+      gap: 10px;
+
+      padding: 11px 0;
+
+      border-bottom:
+        1px solid
+        rgba(255,255,255,.06);
     }
 
     .sa-match:last-child {
       border-bottom: 0;
+    }
+
+    .sa-match-time {
+      font-size: 13px;
+
+      font-weight: 900;
+
+      color: #fbbf24;
     }
 
     .sa-match-main {
@@ -214,54 +656,126 @@
     }
 
     .sa-match-teams {
-      font-weight: 700;
+      font-weight: 800;
+
       line-height: 1.4;
+    }
+
+    .sa-match-teams span {
+      margin: 0 4px;
+
+      color: #60a5fa;
+
+      font-size: 11px;
     }
 
     .sa-match-meta {
       margin-top: 3px;
+
       font-size: 11px;
-      opacity: .6;
+
+      opacity: .58;
     }
 
     .sa-match-odd {
       flex: 0 0 auto;
-      font-weight: 900;
+
+      font-size: 11px;
+
+      text-align: right;
+
+      opacity: .7;
     }
+
+    .sa-match-odd strong {
+      display: block;
+
+      margin-top: 2px;
+
+      font-size: 14px;
+
+      color: #60a5fa;
+    }
+
+
+    /* =====================================================
+       BOŞ
+       ===================================================== */
 
     .sa-empty {
-      padding: 25px;
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 7px;
+
+      padding: 35px 20px;
+
       text-align: center;
-      opacity: .65;
+
+      border-radius: 14px;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(30, 41, 59, .75),
+          rgba(15, 23, 42, .75)
+        );
+
+      border:
+        1px solid
+        rgba(96, 165, 250, .13);
     }
 
-    .sa-info {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      margin-bottom: 16px;
+    .sa-empty-icon {
+      font-size: 28px;
+
+      margin-bottom: 3px;
     }
 
-    .sa-info-box {
-      padding: 12px;
-      border-radius: 12px;
-      background: rgba(255,255,255,.04);
-      border: 1px solid rgba(255,255,255,.06);
+    .sa-empty strong {
+      font-size: 16px;
     }
 
-    .sa-info-label {
-      display: block;
-      font-size: 11px;
-      opacity: .6;
-      margin-bottom: 4px;
+    .sa-empty span {
+      max-width: 600px;
+
+      font-size: 12px;
+
+      opacity: .62;
+
+      line-height: 1.5;
     }
 
-    .sa-info-value {
-      font-size: 17px;
-      font-weight: 900;
+    .sa-empty-small {
+      padding: 20px;
+      background: transparent;
+      border: 0;
     }
+
+
+    /* =====================================================
+       MOBİL
+       ===================================================== */
 
     @media (max-width: 700px) {
+
+      .sa-container {
+        padding: 12px;
+      }
+
+      .sa-hero {
+        padding: 19px;
+      }
+
+      .sa-hero h1 {
+        font-size: 21px;
+      }
+
       .sa-controls {
         grid-template-columns: 1fr;
       }
@@ -275,7 +789,9 @@
       }
 
       .sa-row {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns:
+          1fr 1fr 1fr;
+
         gap: 6px;
       }
 
@@ -291,75 +807,180 @@
 
       .sa-expand {
         grid-column: 1 / -1;
+
         text-align: left;
+
+        padding-top: 3px;
+      }
+
+      .sa-match {
+        grid-template-columns:
+          48px 1fr;
+
+        gap: 8px;
+      }
+
+      .sa-match-odd {
+        grid-column: 2;
+
+        text-align: left;
+
+        margin-top: -3px;
+      }
+
+      .sa-details-title {
+        flex-direction: column;
+
+        align-items: flex-start;
       }
     }
+
   </style>
 </head>
+
 
 <body>
 
   <header class="topbar">
+
     <div class="brand">
-      <div class="brand-icon">📊</div>
+
+      <div class="brand-icon">
+        📊
+      </div>
 
       <div>
-        <h1>Sonuçtan Oran Analizi</h1>
-        <span>Son 60 gün birebir açılış oranı analizi</span>
+        <h1>
+          Sonuçtan Oran Analizi
+        </h1>
+
+        <span>
+          Son 30 gün · %80+ başarı · birebir açılış oranı
+        </span>
       </div>
+
     </div>
 
+
     <div class="top-actions">
-      <a href="v2.html" class="sa-back">
+
+      <a
+        href="v2.html"
+        class="sa-back"
+      >
         ⚽ V2 Ana Sistem
       </a>
+
     </div>
+
   </header>
+
 
   <main class="sa-container">
 
+
+    <!-- ===================================================
+         HERO
+         =================================================== -->
+
     <section class="sa-hero">
-      <h1>Sonuçtan Oran Analizi</h1>
+
+      <h1>
+        Sonuçtan Oran Analizi
+      </h1>
 
       <p>
-        Seçilen sonucun son 60 gündeki gerçekleşme oranını,
-        birebir aynı açılış oranlarına göre analiz eder.
+        Seçilen sonucun son 30 gündeki gerçekleşme oranı,
+        birebir aynı açılış oranlarına göre analiz edilir.
+        Sadece en az 5 örneğe sahip ve başarı oranı
+        %80 veya üzeri olan oranlar gösterilir.
         Oran kombinasyonu ve oran toleransı kullanılmaz.
       </p>
+
     </section>
+
+
+    <!-- ===================================================
+         KONTROLLER
+         =================================================== -->
 
     <section class="sa-controls">
 
       <div class="sa-control">
+
         <label for="saResult">
           ANALİZ EDİLECEK SONUÇ
         </label>
 
         <select id="saResult">
-          <option value="MS1">MS1</option>
-          <option value="MSX">MSX</option>
-          <option value="MS2" selected>MS2</option>
 
-          <option value="IY1">İY1</option>
-          <option value="IYX">İYX</option>
-          <option value="IY2">İY2</option>
+          <option value="MS1">
+            MS1
+          </option>
 
-          <option value="KG_VAR">KG Var</option>
-          <option value="KG_YOK">KG Yok</option>
+          <option value="MSX">
+            MSX
+          </option>
 
-          <option value="IY_KG_VAR">İY KG Var</option>
-          <option value="IY_KG_YOK">İY KG Yok</option>
+          <option value="MS2" selected>
+            MS2
+          </option>
 
-          <option value="IY15_ALT">İY 1.5 Alt</option>
-          <option value="IY15_UST">İY 1.5 Üst</option>
+          <option value="IY1">
+            İY1
+          </option>
 
-          <option value="15_ALT">1.5 Alt</option>
-          <option value="15_UST">1.5 Üst</option>
-          <option value="25_UST">2.5 Üst</option>
+          <option value="IYX">
+            İYX
+          </option>
+
+          <option value="IY2">
+            İY2
+          </option>
+
+          <option value="KG_VAR">
+            KG Var
+          </option>
+
+          <option value="KG_YOK">
+            KG Yok
+          </option>
+
+          <option value="IY_KG_VAR">
+            İY KG Var
+          </option>
+
+          <option value="IY_KG_YOK">
+            İY KG Yok
+          </option>
+
+          <option value="IY15_ALT">
+            İY 1.5 Alt
+          </option>
+
+          <option value="IY15_UST">
+            İY 1.5 Üst
+          </option>
+
+          <option value="15_ALT">
+            1.5 Alt
+          </option>
+
+          <option value="15_UST">
+            1.5 Üst
+          </option>
+
+          <option value="25_UST">
+            2.5 Üst
+          </option>
+
         </select>
+
       </div>
 
+
       <div class="sa-control">
+
         <label for="saDate">
           ANALİZ TARİHİ
         </label>
@@ -368,7 +989,9 @@
           id="saDate"
           type="date"
         >
+
       </div>
+
 
       <button
         id="saRun"
@@ -380,9 +1003,15 @@
 
     </section>
 
+
+    <!-- ===================================================
+         BİLGİLER
+         =================================================== -->
+
     <section class="sa-info">
 
       <div class="sa-info-box">
+
         <span class="sa-info-label">
           ANALİZ DÖNEMİ
         </span>
@@ -393,9 +1022,12 @@
         >
           -
         </span>
+
       </div>
 
+
       <div class="sa-info-box">
+
         <span class="sa-info-label">
           GEÇMİŞ MAÇ
         </span>
@@ -406,11 +1038,14 @@
         >
           -
         </span>
+
       </div>
 
+
       <div class="sa-info-box">
+
         <span class="sa-info-label">
-          BULUNAN ORAN
+          %80+ ORAN SAYISI
         </span>
 
         <span
@@ -419,9 +1054,15 @@
         >
           -
         </span>
+
       </div>
 
     </section>
+
+
+    <!-- ===================================================
+         DURUM
+         =================================================== -->
 
     <div
       id="saStatus"
@@ -430,11 +1071,21 @@
       Veriler yükleniyor...
     </div>
 
-    <section id="saContent"></section>
+
+    <!-- ===================================================
+         SONUÇ
+         =================================================== -->
+
+    <section
+      id="saContent"
+    ></section>
+
 
   </main>
+
 
   <script src="sonuc-analizi.js"></script>
 
 </body>
+
 </html>
