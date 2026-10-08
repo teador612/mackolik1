@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+  <title>Maç Oran Analizi V2</title>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta
+    name="theme-color"
+    content="#0b0f14"
+  >
+  <!-- iPhone / iOS -->
+  <meta
+    name="apple-mobile-web-app-capable"
+    content="yes"
+  >
+  <meta
+    name="apple-mobile-web-app-status-bar-style"
+    content="black-translucent"
+  >
+  <meta
+    name="apple-mobile-web-app-title"
+    content="Maç Analiz V2"
+  >
+  <link
+    rel="apple-touch-icon"
+    href="icon-180.png"
+  >
+  <!-- MEVCUT CSS -->
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+  <!-- SPOR TOTO / V2 BUTONU STİLİ -->
+  <style>
+    .sport-toto-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 14px;
+      background: #1d9bf0;
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.12);
+      transition: 0.2s ease;
+      white-space: nowrap;
+    }
+    .sport-toto-btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+    .sport-toto-btn:active {
+      transform: translateY(0);
+    }
+    @media (max-width: 600px) {
+      .top-actions {
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .sport-toto-btn,
+      .coupon-btn,
+      .refresh-btn {
+        font-size: 13px;
+        padding: 9px 11px;
+      }
+    }
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">
+      ⚽
+    </div>
+    <div>
+      <h1>
+        Maç Oran Analizi V2
+      </h1>
+      <span>
+        Son 60 gün geçmiş oran istatistikleri
+      </span>
+    </div>
+  </div>
+  <div class="top-actions">
+    <!-- V1'E DÖN -->
+    <a
+      href="index.html"
+      class="sport-toto-btn"
+    >
+      ⚽ Ana Sistem
+    </a>
+    <!-- KUPONLAR -->
+    <a
+      href="kupon.html"
+      class="coupon-btn"
+    >
+      🎟️ Kuponlar
+    </a>
+    <!-- YENİLE -->
+    <button
+      id="refreshButton"
+      class="refresh-btn"
+      type="button"
+    >
+      ↻ Yenile
+    </button>
+  </div>
+</header>
+<main class="container">
+  <!-- BAŞLIK -->
+  <section class="hero">
+    <div>
+      <div class="eyebrow">
+        ORAN ANALİZ SİSTEMİ V2
+      </div>
+      <h2 id="pageTitle">
+        Bugünün Maçları
+      </h2>
+      <p id="pageDescription">
+        Geçmiş 60 gündeki birebir aynı oranların sonuçları analiz ediliyor.
+      </p>
+    </div>
+  </section>
+  <!-- TAKVİM -->
+  <section class="calendar-section">
+    <button
+      id="calendarToggle"
+      class="calendar-button"
+      type="button"
+    >
+      <span>
+        📅
+      </span>
+      <span id="selectedDateText">
+        Tarih seç
+      </span>
+      <span class="calendar-arrow">
+        ⌄
+      </span>
+    </button>
+    <div
+      id="calendarPopup"
+      class="calendar-popup hidden"
+    >
+      <div class="calendar-header">
+        <button
+          id="prevMonth"
+          class="month-btn"
+          type="button"
+        >
+          ‹
+        </button>
+        <strong id="calendarMonth">
+          -
+        </strong>
+        <button
+          id="nextMonth"
+          class="month-btn"
+          type="button"
+        >
+          ›
+        </button>
+      </div>
+      <div class="weekdays">
+        <div>Pzt</div>
+        <div>Sal</div>
+        <div>Çar</div>
+        <div>Per</div>
+        <div>Cum</div>
+        <div>Cmt</div>
+        <div>Paz</div>
+      </div>
+      <div
+        id="calendarDays"
+        class="calendar-days"
+      ></div>
+    </div>
+  </section>
+  <!-- FİLTRELER -->
+  <section class="filters">
+    <div class="filter-box">
+      <label for="search">
+        Maç / Takım
+      </label>
+      <input
+        id="search"
+        type="text"
+        placeholder="Takım ara..."
+        autocomplete="off"
+      >
+    </div>
+    <div class="filter-box">
+      <label for="leagueFilter">
+        Lig
+      </label>
+      <select id="leagueFilter">
+        <option value="">
+          Tüm Ligler
+        </option>
+      </select>
+    </div>
+    <label class="check-box">
+      <input
+        type="checkbox"
+        id="unplayedOnly"
+      >
+      <span>
+        Sadece oynanmamış
+      </span>
+    </label>
+  </section>
+  <!-- DURUM -->
+  <section class="status-bar">
+    <div id="message">
+      Veriler yükleniyor...
+    </div>
+    <div id="updatedAt">
+      -
+    </div>
+  </section>
+  <!-- BAŞARI ORANLARI -->
+  <div id="summary"></div>
+  <!-- MAÇLAR -->
+  <section id="content"></section>
+</main>
+<footer>
+  Geçmiş analiz:
+  son 60 gün
+  ·
+  Birebir oran eşleşmesi
+  ·
+  V2
+</footer>
+<!-- V2 JAVASCRIPT -->
+<script src="v2.js"></script>
+</body>
+</html>
