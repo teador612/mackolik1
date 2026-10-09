@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#07111f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>DNA-RNA | Sonuçtan Oran Analizi & Otomatik Kupon</title>
+  <title>DNA-RNA | Sonuçtan Oran Analizi V2</title>
   <style>
     :root {
       color-scheme: dark;
@@ -21,525 +19,151 @@
       --sa-red: #fb7185;
       --sa-yellow: #fbbf24;
     }
-    * {
-      box-sizing: border-box;
-    }
-    html {
-      min-height: 100%;
-      background: var(--sa-bg);
-    }
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: var(--sa-bg); }
     body {
       min-height: 100vh;
       margin: 0;
       background: var(--sa-bg);
       color: var(--sa-text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
       font-size: 14px;
     }
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-    button,
-    select,
-    input {
-      -webkit-tap-highlight-color: transparent;
-    }
-    .sa-app {
-      width: min(1100px, 100%);
-      margin: 0 auto;
-      padding: 14px;
-    }
+    button, input, select { font: inherit; -webkit-tap-highlight-color: transparent; }
+    .sa-app { width: min(1100px, 100%); margin: 0 auto; padding: 14px; }
+    
     .sa-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 12px;
-      padding: 6px 0 17px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; padding: 6px 0 17px;
       border-bottom: 1px solid var(--sa-border);
     }
-    .sa-brand {
-      font-size: 23px;
-      font-weight: 900;
-      letter-spacing: .3px;
-    }
-    .sa-brand span {
-      color: var(--sa-blue);
-    }
-    .sa-nav {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
+    .sa-brand { font-size: 23px; font-weight: 900; letter-spacing: .3px; }
+    .sa-brand span { color: var(--sa-blue); }
+    .sa-nav { display: flex; flex-wrap: wrap; gap: 8px; }
     .sa-nav a {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 38px;
-      padding: 9px 12px;
-      color: var(--sa-text);
-      background: var(--sa-panel);
-      border: 1px solid var(--sa-border);
-      border-radius: 9px;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 38px; padding: 9px 12px; color: var(--sa-text);
+      background: var(--sa-panel); border: 1px solid var(--sa-border);
+      border-radius: 9px; text-decoration: none; font-size: 12px; font-weight: 700;
     }
-    .sa-nav a:hover {
-      border-color: var(--sa-blue);
-    }
-    .sa-page-title {
-      margin: 22px 0 7px;
-      font-size: 25px;
-      line-height: 1.3;
-      font-weight: 900;
-    }
-    .sa-page-description {
-      margin: 0 0 18px;
-      color: var(--sa-muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
+    .sa-nav a:hover { border-color: var(--sa-blue); }
+    
+    .sa-page-title { margin: 22px 0 7px; font-size: 25px; line-height: 1.3; font-weight: 900; }
+    .sa-page-description { margin: 0 0 18px; color: var(--sa-muted); font-size: 13px; line-height: 1.7; }
+    
     .sa-panel {
-      margin-bottom: 14px;
-      padding: 15px;
-      background: var(--sa-panel);
-      border: 1px solid var(--sa-border);
+      margin-bottom: 14px; padding: 15px;
+      background: var(--sa-panel); border: 1px solid var(--sa-border);
       border-radius: 13px;
     }
-    .sa-panel-title {
-      margin: 0 0 14px;
-      font-size: 16px;
-      font-weight: 800;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+    .sa-panel-title { margin: 0 0 14px; font-size: 16px; font-weight: 800; }
+    
+    .sa-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+    .sa-field { min-width: 0; }
+    .sa-field label { display: block; margin-bottom: 7px; color: var(--sa-muted); font-size: 12px; font-weight: 700; }
+    .sa-field select, .sa-field input {
+      display: block; width: 100%; min-height: 44px; padding: 10px 12px;
+      color: var(--sa-text); background: #091525; border: 1px solid var(--sa-border);
+      border-radius: 9px; outline: none;
     }
-    .sa-controls {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-    }
-    .sa-field {
-      min-width: 0;
-    }
-    .sa-field label {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--sa-muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .sa-field select,
-    .sa-field input {
-      display: block;
-      width: 100%;
-      min-height: 44px;
-      padding: 10px 12px;
-      color: var(--sa-text);
-      background: #091525;
-      border: 1px solid var(--sa-border);
-      border-radius: 9px;
-      outline: none;
-    }
-    .sa-field select:focus,
-    .sa-field input:focus {
-      border-color: var(--sa-blue);
-    }
-    .sa-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 14px;
-    }
+    .sa-field select:focus, .sa-field input:focus { border-color: var(--sa-blue); }
+    
+    .sa-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 14px; }
     .sa-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 43px;
-      padding: 10px 16px;
-      color: var(--sa-text);
-      background: var(--sa-panel2);
-      border: 1px solid var(--sa-border);
-      border-radius: 9px;
-      font-weight: 800;
-      cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center;
+      min-height: 43px; padding: 10px 16px; color: var(--sa-text);
+      background: var(--sa-panel2); border: 1px solid var(--sa-border);
+      border-radius: 9px; font-weight: 800; cursor: pointer;
     }
-    .sa-button-primary {
-      color: #07111f;
-      background: var(--sa-blue);
-      border-color: var(--sa-blue);
-    }
-    .sa-button-success {
-      color: #07111f;
-      background: var(--sa-green);
-      border-color: var(--sa-green);
-    }
-    .sa-button:active {
-      transform: scale(.98);
-    }
+    .sa-button-primary { color: #07111f; background: var(--sa-blue); border-color: var(--sa-blue); }
+    .sa-button-success { color: #07111f; background: var(--sa-green); border-color: var(--sa-green); }
+    .sa-button:active { transform: scale(.98); }
+    
     #saStatus {
-      padding: 13px;
-      margin-bottom: 14px;
-      color: var(--sa-muted);
-      background: #0b1829;
-      border: 1px solid var(--sa-border);
-      border-radius: 10px;
-      font-size: 13px;
-      line-height: 1.7;
-      overflow-wrap: anywhere;
+      padding: 13px; margin-bottom: 14px; color: var(--sa-muted);
+      background: #0b1829; border: 1px solid var(--sa-border);
+      border-radius: 10px; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere;
     }
-    #saStatus strong {
-      color: var(--sa-text);
-    }
-
-    /* KUPON ÖZEL STİLLERİ */
+    #saStatus strong { color: var(--sa-text); }
+    
+    /* KUPON TASARIMI */
     .coupon-card {
-      background: var(--sa-panel2);
-      border: 1px solid var(--sa-border);
-      border-radius: 11px;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: grid;
-      grid-template-columns: 60px 1fr auto;
-      align-items: center;
-      gap: 12px;
+      background: var(--sa-panel2); border: 1px solid var(--sa-border);
+      border-radius: 11px; padding: 12px; margin-bottom: 10px;
+      display: grid; grid-template-columns: 60px 1fr auto;
+      align-items: center; gap: 12px;
     }
-    .coupon-time {
-      color: var(--sa-yellow);
-      font-weight: 800;
-      font-size: 13px;
-    }
-    .coupon-teams {
-      font-weight: 800;
-      font-size: 13px;
-      line-height: 1.4;
-    }
-    .coupon-league {
-      color: var(--sa-muted);
-      font-size: 11px;
-    }
-    .coupon-prediction {
-      text-align: right;
-    }
+    .coupon-time { color: var(--sa-yellow); font-weight: 800; font-size: 13px; }
+    .coupon-teams { font-weight: 800; font-size: 13px; line-height: 1.4; }
+    .coupon-league { color: var(--sa-muted); font-size: 11px; }
+    .coupon-prediction { text-align: right; }
     .coupon-badge {
-      display: inline-block;
-      padding: 3px 7px;
-      background: rgba(52, 211, 153, 0.15);
-      color: var(--sa-green);
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 800;
-      margin-top: 4px;
+      display: inline-block; padding: 3px 7px;
+      background: rgba(52, 211, 153, 0.15); color: var(--sa-green);
+      border-radius: 6px; font-size: 11px; font-weight: 800; margin-top: 4px;
     }
     .coupon-summary {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      background: #091525;
-      border: 1px solid var(--sa-border);
-      border-radius: 11px;
-      margin-top: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 15px; background: #091525; border: 1px solid var(--sa-border);
+      border-radius: 11px; margin-top: 15px;
     }
-    .coupon-total-odd {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--sa-yellow);
-    }
+    .coupon-total-odd { font-size: 20px; font-weight: 900; color: var(--sa-yellow); }
 
-    .sa-summary {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .sa-summary-card {
-      min-width: 0;
-      padding: 13px;
-      background: var(--sa-panel);
-      border: 1px solid var(--sa-border);
-      border-radius: 11px;
-    }
-    .sa-summary-label {
-      margin-bottom: 7px;
-      color: var(--sa-muted);
-      font-size: 11px;
-      line-height: 1.5;
-    }
-    .sa-summary-value {
-      font-size: 21px;
-      font-weight: 900;
-      overflow-wrap: anywhere;
-    }
-    .sa-period {
-      color: var(--sa-blue);
-    }
-    .sa-results-heading {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 23px 0 12px;
-    }
-    .sa-results-heading h2 {
-      margin: 0;
-      font-size: 18px;
-    }
-    .sa-results-heading p {
-      margin: 0;
-      color: var(--sa-muted);
-      font-size: 11px;
-    }
-    #saContent {
-      display: grid;
-      gap: 13px;
-      min-width: 0;
-    }
-    .sa-market {
-      min-width: 0;
-      overflow: hidden;
-      background: var(--sa-panel);
-      border: 1px solid var(--sa-border);
-      border-radius: 12px;
-    }
-    .sa-market-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      padding: 13px;
-      background: var(--sa-panel2);
-      font-size: 14px;
-      font-weight: 900;
-    }
-    .sa-market-count {
-      flex-shrink: 0;
-      padding: 5px 8px;
-      color: #bfdbfe;
-      background: #203959;
-      border-radius: 7px;
-      font-size: 11px;
-      font-weight: 800;
-    }
-    .sa-row {
-      display: grid;
-      grid-template-columns: .8fr .8fr 1fr 1fr 1fr;
-      align-items: center;
-      gap: 5px;
-      min-height: 48px;
-      padding: 10px 12px;
-      border-top: 1px solid #1d3048;
-      cursor: pointer;
-      transition: background .15s ease;
-    }
-    .sa-row:not(.sa-head):hover,
-    .sa-row.active {
-      background: #192b42;
-    }
-    .sa-head {
-      min-height: 36px;
-      color: var(--sa-muted);
-      background: #0c192b;
-      font-size: 10px;
-      font-weight: 800;
-      cursor: default;
-    }
-    .sa-head:hover {
-      background: #0c192b;
-    }
-    .sa-row > div {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-    .sa-odd {
-      font-size: 14px;
-      font-weight: 900;
-    }
-    .sa-value {
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .sa-sample {
-      color: var(--sa-text);
-    }
-    .sa-success {
-      color: var(--sa-green);
-    }
-    .sa-rate {
-      color: var(--sa-green);
-      font-size: 13px;
-      font-weight: 900;
-    }
-    .sa-expand {
-      color: var(--sa-blue);
-      font-size: 11px;
-      font-weight: 800;
-    }
-    .sa-details {
-      display: none;
-      padding: 12px;
-      background: #091525;
-      border-top: 1px solid var(--sa-border);
-    }
-    .sa-details.open {
-      display: block;
-    }
-    .sa-details-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 6px;
-      font-size: 13px;
-      font-weight: 800;
-    }
-    .sa-details-title strong {
-      color: var(--sa-green);
-    }
-    .sa-details-subtitle {
-      margin-bottom: 12px;
-      color: var(--sa-muted);
-      font-size: 11px;
-      line-height: 1.6;
-    }
-    .sa-match {
-      display: grid;
-      grid-template-columns: 55px minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 10px;
-      padding: 11px 0;
-      border-top: 1px solid #20324a;
-    }
-    .sa-match-time {
-      color: var(--sa-yellow);
-      font-size: 12px;
-      font-weight: 900;
-    }
-    .sa-match-main {
-      min-width: 0;
-    }
-    .sa-match-teams {
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-    .sa-match-teams span {
-      padding: 0 3px;
-      color: var(--sa-muted);
-      font-size: 10px;
-    }
-    .sa-match-meta {
-      margin-top: 4px;
-      color: var(--sa-muted);
-      font-size: 10px;
-      overflow-wrap: anywhere;
-    }
-    .sa-match-odd {
-      display: grid;
-      gap: 5px;
-      justify-items: end;
-      color: var(--sa-muted);
-      font-size: 10px;
-      text-align: right;
-    }
-    .sa-match-odd strong {
-      color: var(--sa-green);
-      font-size: 14px;
-    }
-    .sa-empty {
-      display: grid;
-      justify-items: center;
-      gap: 10px;
-      padding: 30px 17px;
-      background: var(--sa-panel);
-      border: 1px dashed var(--sa-border);
-      border-radius: 12px;
-      text-align: center;
-    }
-    .sa-empty-icon {
-      font-size: 27px;
-    }
-    .sa-empty strong {
-      font-size: 15px;
-    }
-    .sa-empty span {
-      max-width: 520px;
-      color: var(--sa-muted);
-      font-size: 12px;
-      line-height: 1.8;
-    }
-    .sa-footer {
-      padding: 20px 0 12px;
-      color: var(--sa-muted);
-      text-align: center;
-      font-size: 11px;
-      line-height: 1.8;
-    }
+    .sa-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .sa-summary-card { min-width: 0; padding: 13px; background: var(--sa-panel); border: 1px solid var(--sa-border); border-radius: 11px; }
+    .sa-summary-label { margin-bottom: 7px; color: var(--sa-muted); font-size: 11px; line-height: 1.5; }
+    .sa-summary-value { font-size: 21px; font-weight: 900; overflow-wrap: anywhere; }
+    .sa-period { color: var(--sa-blue); }
+    
+    .sa-results-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin: 23px 0 12px; }
+    .sa-results-heading h2 { margin: 0; font-size: 18px; }
+    .sa-results-heading p { margin: 0; color: var(--sa-muted); font-size: 11px; }
+    
+    #saContent { display: grid; gap: 13px; min-width: 0; }
+    .sa-market { min-width: 0; overflow: hidden; background: var(--sa-panel); border: 1px solid var(--sa-border); border-radius: 12px; }
+    .sa-market-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 13px; background: var(--sa-panel2); font-size: 14px; font-weight: 900; }
+    .sa-market-count { flex-shrink: 0; padding: 5px 8px; color: #bfdbfe; background: #203959; border-radius: 7px; font-size: 11px; font-weight: 800; }
+    
+    .sa-row { display: grid; grid-template-columns: .8fr .8fr 1fr 1fr 1fr; align-items: center; gap: 5px; min-height: 48px; padding: 10px 12px; border-top: 1px solid #1d3048; cursor: pointer; transition: background .15s ease; }
+    .sa-row:not(.sa-head):hover, .sa-row.active { background: #192b42; }
+    .sa-head { min-height: 36px; color: var(--sa-muted); background: #0c192b; font-size: 10px; font-weight: 800; cursor: default; }
+    .sa-head:hover { background: #0c192b; }
+    .sa-row > div { min-width: 0; overflow-wrap: anywhere; }
+    .sa-odd { font-size: 14px; font-weight: 900; }
+    .sa-value { font-size: 13px; font-weight: 800; }
+    .sa-sample { color: var(--sa-text); }
+    .sa-success { color: var(--sa-green); }
+    .sa-rate { color: var(--sa-green); font-size: 13px; font-weight: 900; }
+    .sa-expand { color: var(--sa-blue); font-size: 11px; font-weight: 800; }
+    
+    .sa-details { display: none; padding: 12px; background: #091525; border-top: 1px solid var(--sa-border); }
+    .sa-details.open { display: block; }
+    .sa-details-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: 13px; font-weight: 800; }
+    .sa-details-title strong { color: var(--sa-green); }
+    .sa-details-subtitle { margin-bottom: 12px; color: var(--sa-muted); font-size: 11px; line-height: 1.6; }
+    
+    .sa-match { display: grid; grid-template-columns: 55px minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 11px 0; border-top: 1px solid #20324a; }
+    .sa-match-time { color: var(--sa-yellow); font-size: 12px; font-weight: 900; }
+    .sa-match-main { min-width: 0; }
+    .sa-match-teams { font-size: 13px; font-weight: 800; line-height: 1.5; overflow-wrap: anywhere; }
+    .sa-match-teams span { padding: 0 3px; color: var(--sa-muted); font-size: 10px; }
+    .sa-match-meta { margin-top: 4px; color: var(--sa-muted); font-size: 10px; overflow-wrap: anywhere; }
+    .sa-match-odd { display: grid; gap: 5px; justify-items: end; color: var(--sa-muted); font-size: 10px; text-align: right; }
+    .sa-match-odd strong { color: var(--sa-green); font-size: 14px; }
+    
+    .sa-empty { display: grid; justify-items: center; gap: 10px; padding: 30px 17px; background: var(--sa-panel); border: 1px dashed var(--sa-border); border-radius: 12px; text-align: center; }
+    .sa-empty-icon { font-size: 27px; }
+    .sa-empty strong { font-size: 15px; }
+    .sa-empty span { max-width: 520px; color: var(--sa-muted); font-size: 12px; line-height: 1.8; }
+    
+    .sa-footer { padding: 20px 0 12px; color: var(--sa-muted); text-align: center; font-size: 11px; line-height: 1.8; }
+
     @media (max-width: 600px) {
-      .sa-app {
-        padding: 11px;
-      }
-      .sa-page-title {
-        font-size: 22px;
-      }
-      .sa-controls {
-        grid-template-columns: 1fr;
-      }
-      .sa-summary {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 7px;
-      }
-      .sa-summary-card {
-        padding: 10px 8px;
-      }
-      .sa-summary-label {
-        font-size: 10px;
-      }
-      .sa-summary-value {
-        font-size: 17px;
-      }
-      .sa-row {
-        grid-template-columns: .7fr .7fr .9fr .9fr .9fr;
-        gap: 3px;
-        padding: 10px 7px;
-      }
-      .sa-head {
-        font-size: 9px;
-      }
-      .sa-odd,
-      .sa-value,
-      .sa-rate {
-        font-size: 11px;
-      }
-      .sa-expand {
-        font-size: 10px;
-      }
-      .sa-match {
-        grid-template-columns: 43px minmax(0, 1fr);
-        gap: 8px;
-      }
-      .sa-match-odd {
-        grid-column: 2;
-        display: flex;
-        align-items: center;
-        justify-items: start;
-        justify-content: flex-start;
-        gap: 8px;
-        text-align: left;
-      }
-      .coupon-card {
-        grid-template-columns: 1fr;
-        gap: 6px;
-      }
-      .coupon-prediction {
-        text-align: left;
-      }
+      .sa-app { padding: 11px; }
+      .sa-controls { grid-template-columns: 1fr; }
+      .sa-row { grid-template-columns: .7fr .7fr .9fr .9fr .9fr; gap: 3px; padding: 10px 7px; }
+      .coupon-card { grid-template-columns: 1fr; gap: 6px; }
+      .coupon-prediction { text-align: left; }
     }
   </style>
 </head>
@@ -552,11 +176,10 @@
         <a href="./v2.html">V2 Analiz</a>
       </nav>
     </header>
-    <h1 class="sa-page-title">Sonuçtan Oran Analizi</h1>
+
+    <h1 class="sa-page-title">Sonuçtan Oran Analizi V2</h1>
     <p class="sa-page-description">
-      Geçmiş maçların açılış oranlarını karşılaştır.
-      Seçilen sonucun gerçekleştiği maçlardaki oran gruplarını incele
-      ve otomatik yüksek ihtimalli kuponlar oluştur.
+      Geçmiş maçların açılış oranlarını V2 altyapısıyla karşılaştırın ve otomatik kuponlar oluşturun.
     </p>
 
     <!-- TEKİL ANALİZ PANELİ -->
@@ -655,8 +278,7 @@
   </main>
 
   <script src="./dna.js"></script>
-  
-  <!-- OTOMATİK KUPON JS MOTORU -->
+
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const couponBtn = document.getElementById("saCreateCoupon");
@@ -676,31 +298,24 @@
       const maxMatches = parseInt(document.getElementById("couponMaxMatches").value, 10) || 3;
       const minRate = parseFloat(document.getElementById("couponMinRate").value) || 80;
 
-      if (!targetDate) {
-        status.textContent = "Lütfen önce analiz tarihi seçin.";
+      if (!targetDate || !allMatches || allMatches.length === 0) {
+        status.textContent = "Lütfen önce geçerli bir tarih seçin ve verilerin yüklendiğinden emin olun.";
         return;
       }
 
-      if (!allMatches || allMatches.length === 0) {
-        status.textContent = "Maç verisi bulunamadı veya henüz yüklenmedi.";
-        return;
-      }
+      status.innerHTML = `⏳ <strong>${targetDate}</strong> tarihi için doğrudan oran-tahmin doğrulaması yapılıyor...`;
 
-      status.innerHTML = `⏳ <strong>${targetDate}</strong> tarihi için tüm bahis marketleri taranıyor...`;
-
-      // 1. Tüm sonuç türlerini (MS1, 2.5 Üst vb.) dönerek aday maçları havuzda topla
       const candidatePool = [];
-      const usedMatchKeys = new Set(); // Aynı maçı 2 defa eklememek için
+      const usedMatchKeys = new Set();
 
+      // 1. Tüm RESULTS objesi taranır
       for (const resultId in RESULTS) {
         const analysis = runAnalysis(targetDate, resultId);
 
         for (const row of analysis.rows) {
-          // Filtre: Kullanıcının belirlediği minimum başarı yüzdesinden düşükse atla
           if (row.rate < minRate) continue;
 
           for (const match of row.future) {
-            // Maç için benzersiz id/key
             const matchKey = `${getDateKey(match)}_${getTime(match)}_${getTeamName(match, "home")}_${getTeamName(match, "away")}`;
 
             candidatePool.push({
@@ -717,17 +332,16 @@
         }
       }
 
-      // 2. Havuzdaki maçları başarı oranına (% rate) ve örnek sayısına göre sırala
+      // 2. Adayları başarı oranı (% rate), örnek sayısı (sample) ve orana göre sırala
       candidatePool.sort((a, b) => b.rate - a.rate || b.sample - a.sample || b.odd - a.odd);
 
-      // 3. Kupona maçı ekle (Çakışmaları önleyerek)
+      // 3. Kuponu oluştur (Aynı maçı tekilleştirerek)
       const selectedMatches = [];
       let totalOdd = 1.0;
 
       for (const item of candidatePool) {
         if (selectedMatches.length >= maxMatches) break;
 
-        // Maç daha önce kupona eklenmediyse al
         if (!usedMatchKeys.has(item.matchKey)) {
           usedMatchKeys.add(item.matchKey);
           selectedMatches.push(item);
@@ -735,9 +349,9 @@
         }
       }
 
-      // 4. Ekrana Kupon Olarak Bas
-      resultsTitle.textContent = "Otomatik Hazırlanan Kupon";
-      resultsSub.textContent = `En yüksek başarı yüzdesine sahip ${selectedMatches.length} maç seçildi.`;
+      // 4. Arayüzü Güncelle
+      resultsTitle.textContent = "Doğrulanmış Otomatik Kupon";
+      resultsSub.textContent = `Oran ve tahmin türü doğrudan eşleşmiş en yüksek başarı yüzdeli ${selectedMatches.length} maç.`;
 
       if (selectedMatches.length === 0) {
         status.innerHTML = `⚠️ Seçilen tarihte <strong>%${minRate}</strong> başarı üzeri kriterlere uyan maç bulunamadı.`;
@@ -751,11 +365,11 @@
         return;
       }
 
-      status.innerHTML = `✅ <strong>${selectedMatches.length}</strong> maçlı otomatik kupon hazırlandı. Toplam Oran: <strong>${totalOdd.toFixed(2)}</strong>`;
+      status.innerHTML = `✅ <strong>${selectedMatches.length}</strong> maçlı kupon hazırlandı. Toplam Oran: <strong>${totalOdd.toFixed(2)}</strong>`;
 
       let couponHtml = `<div class="sa-panel" style="background: transparent; border: none; padding: 0;">`;
       
-      selectedMatches.forEach((item, index) => {
+      selectedMatches.forEach((item) => {
         couponHtml += `
           <div class="coupon-card">
             <div class="coupon-time">${escapeHtml(getTime(item.match))}</div>
