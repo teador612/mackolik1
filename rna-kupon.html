@@ -1,89 +1,660 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#07111f">
-<title>DNA-RNA | Kupon Analizi</title>
-<link rel="stylesheet" href="./style.css">
-
-<style>
-:root{color-scheme:dark;--bg:#07111f;--panel:#101d30;--panel2:#15243a;--border:#263953;--text:#edf4ff;--muted:#9aacc4;--blue:#5c9dff;--green:#28c785;--red:#ff6474;--yellow:#f6c453}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-.dk-app{width:min(1120px,100%);margin:auto;padding:18px}
-.dk-header,.dk-card-top,.dk-coupon-header,.dk-coupon-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.dk-header{margin-bottom:18px}.dk-brand{font-size:24px;font-weight:900;letter-spacing:1px}.dk-brand span{color:var(--blue)}
-.dk-header a{color:var(--blue);text-decoration:none;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px}
-.dk-heading{margin:8px 0 5px;font-size:24px}.dk-description{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.6}
-.dk-panel,.dk-stat,.dk-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;min-width:0}
-.dk-panel{padding:16px;margin-bottom:16px}.dk-panel-title{margin:0 0 14px;font-size:17px;font-weight:800}
-.dk-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.dk-field label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}
-.dk-field select,.dk-field input{width:100%;min-height:43px;padding:10px;color:var(--text);background:#091525;border:1px solid var(--border);border-radius:9px;font-size:14px}
-.dk-buttons,.dk-card-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
-.dk-btn{min-height:42px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;color:var(--text);background:var(--panel2);font-size:13px;font-weight:700;cursor:pointer}
-.dk-btn:disabled{opacity:.45;cursor:not-allowed}.dk-btn-primary{color:#07111f;background:var(--blue);border-color:var(--blue)}.dk-btn-green{color:#061a12;background:var(--green);border-color:var(--green)}
-.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.dk-stat{padding:13px}.dk-stat-label,.dk-number-label,.dk-total-label{color:var(--muted);font-size:11px;margin-bottom:7px}
-.dk-stat-value{font-size:22px;font-weight:900;overflow-wrap:anywhere}.dk-stat-note{color:var(--muted);font-size:11px;margin-top:5px}
-.dk-status{margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:10px;color:var(--muted);background:#091525;font-size:13px;line-height:1.5}
-.dk-status.dk-error{color:#ffb5bd;border-color:#743442}.dk-status.dk-ok{color:#9af0c8;border-color:#236b50}
-.dk-list{display:grid;gap:10px}.dk-card{padding:14px}.dk-match-name{font-size:15px;font-weight:800;line-height:1.45;overflow-wrap:anywhere}
-.dk-meta{display:flex;flex-wrap:wrap;gap:7px 12px;color:var(--muted);font-size:11px;margin-top:7px}
-.dk-market{display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;background:#1c3454;border:1px solid #31527b;color:#c8e0ff;border-radius:9px;font-weight:800;font-size:12px;flex-shrink:0}
-.dk-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
-.dk-number{background:#091525;border:1px solid #20324b;border-radius:9px;padding:9px;min-width:0}
-.dk-number-value{font-size:16px;font-weight:900;overflow-wrap:anywhere}.dk-rate-high{color:var(--green)}
-.dk-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;border-radius:7px;padding:6px 8px;white-space:nowrap}
-.dk-pending{color:var(--yellow);background:#3b3016}.dk-won{color:#8ef0bd;background:#123a2b}.dk-lost{color:#ff9da7;background:#481e2a}
-.dk-empty{text-align:center;padding:25px 12px;color:var(--muted);border:1px dashed var(--border);border-radius:12px;line-height:1.7;font-size:13px}
-.dk-coupon-header{margin-bottom:13px}.dk-coupon-header .dk-panel-title{margin:0}
-.dk-coupon-total{padding:13px;margin-top:12px;background:#091525;border:1px solid var(--border);border-radius:10px}
-.dk-total-value{font-size:23px;font-weight:900}.dk-total-good{color:var(--green)}.dk-total-low{color:var(--yellow)}
-.dk-rules{color:var(--muted);font-size:12px;line-height:1.8;padding-left:18px;margin:0}
-.dk-coupon-box{border:1px solid var(--border);border-radius:12px;padding:13px;background:#0b1829;margin-bottom:12px}
-.dk-coupon-box:last-child{margin-bottom:0}.dk-coupon-box h3{margin:0;font-size:16px}.dk-coupon-box .dk-coupon-total{margin-bottom:12px}
-.dk-footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px}
-@media(max-width:650px){.dk-app{padding:12px}.dk-filters{grid-template-columns:1fr}.dk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dk-heading{font-size:21px}.dk-panel,.dk-card{padding:12px}.dk-match-name{font-size:14px}.dk-numbers{gap:5px}.dk-number{padding:8px 6px}.dk-number-value{font-size:14px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>DNA-RNA | Kupon Analizi</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #101d30;
+      --panel2: #15243a;
+      --border: #263953;
+      --text: #edf4ff;
+      --muted: #9aacc4;
+      --blue: #5c9dff;
+      --green: #28c785;
+      --red: #ff6474;
+      --yellow: #f6c453;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .dk-app {
+      width: min(1100px, 100%);
+      margin: auto;
+      padding: 16px;
+    }
+    .dk-header, .dk-row, .dk-coupon-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .dk-brand {
+      font-size: 23px;
+      font-weight: 900;
+    }
+    .dk-brand span { color: var(--blue); }
+    a {
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .dk-link, .dk-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 10px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--panel2);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .dk-primary {
+      background: var(--blue);
+      color: #07111f;
+      border-color: var(--blue);
+    }
+    .dk-green {
+      background: var(--green);
+      color: #07111f;
+      border-color: var(--green);
+    }
+    .dk-title {
+      margin: 24px 0 6px;
+      font-size: 25px;
+    }
+    .dk-description {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+      margin: 0 0 18px;
+    }
+    .dk-panel, .dk-stat, .dk-card, .dk-coupon {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 13px;
+    }
+    .dk-panel {
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    .dk-panel h2 {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+    .dk-filters {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .dk-field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .dk-field input, .dk-field select {
+      width: 100%;
+      min-height: 43px;
+      padding: 10px;
+      background: #091525;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .dk-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 14px;
+    }
+    .dk-status {
+      padding: 12px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #091525;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .dk-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .dk-stat { padding: 13px; }
+    .dk-stat-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 7px;
+    }
+    .dk-stat-value {
+      font-size: 22px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .dk-list {
+      display: grid;
+      gap: 10px;
+    }
+    .dk-card { padding: 13px; }
+    .dk-match {
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .dk-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px 12px;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .dk-market {
+      display: inline-block;
+      padding: 7px 9px;
+      border: 1px solid #31527b;
+      border-radius: 8px;
+      background: #1c3454;
+      color: #c8e0ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .dk-numbers {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .dk-number {
+      padding: 9px;
+      min-width: 0;
+      background: #091525;
+      border: 1px solid #20324b;
+      border-radius: 9px;
+    }
+    .dk-number small {
+      display: block;
+      color: var(--muted);
+      font-size: 10px;
+      margin-bottom: 6px;
+    }
+    .dk-number strong {
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+    .dk-rate { color: var(--green); }
+    .dk-coupon {
+      padding: 13px;
+      margin-bottom: 12px;
+      background: #0b1829;
+    }
+    .dk-coupon h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+    .dk-coupon-total {
+      padding: 12px;
+      margin: 12px 0;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: #091525;
+    }
+    .dk-total-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    .dk-total-value {
+      font-size: 23px;
+      font-weight: 900;
+    }
+    .dk-empty {
+      padding: 24px 12px;
+      border: 1px dashed var(--border);
+      border-radius: 11px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .dk-hidden { display: none !important; }
+    .dk-footer {
+      padding: 12px 0 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    @media (max-width: 600px) {
+      .dk-app { padding: 12px; }
+      .dk-filters { grid-template-columns: 1fr; }
+      .dk-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dk-title { font-size: 22px; }
+      .dk-match { font-size: 14px; }
+      .dk-number { padding: 8px 6px; }
+      .dk-number strong { font-size: 14px; }
+    }
+  </style>
 </head>
-
 <body>
 <main class="dk-app">
-<header class="dk-header">
-  <div class="dk-brand">DNA<span>-RNA</span></div>
-  <a href="./sonuc-analizi.html">← Sonuç Analizi</a>
-</header>
-
-<h1 class="dk-heading">Kupon Analizi</h1>
-<p class="dk-description">
-Geçmiş 30 günlük açılış oranlarını analiz eder. Seçilen sonuç grubuyla eşleşen geçmiş maçlarda bütün bahis türlerinin başarı oranları ayrı hesaplanır.
-En az 8 örnek ve %80 başarı şartı aranır.
-</p>
-
-<section class="dk-panel">
-<h2 class="dk-panel-title">Analiz Ayarları</h2>
-<div class="dk-filters">
-  <div class="dk-field">
-    <label for="dkDate">Maç tarihi</label>
-    <input type="date" id="dkDate">
-  </div>
-  <div class="dk-field">
-    <label for="dkMarket">Geçmiş sonuç filtresi</label>
-    <select id="dkMarket">
-      <option value="ALL">Tüm sonuç türleri</option>
-      <option value="MS1">MS1</option><option value="MSX">MSX</option><option value="MS2">MS2</option>
-      <option value="IY1">İY1</option><option value="IYX">İYX</option><option value="IY2">İY2</option>
-      <option value="KG_VAR">KG Var</option><option value="KG_YOK">KG Yok</option>
-      <option value="IY_KG_VAR">İY KG Var</option><option value="IY_KG_YOK">İY KG Yok</option>
-      <option value="IY15_ALT">İY 1.5 Alt</option><option value="IY15_UST">İY 1.5 Üst</option>
-      <option value="15_ALT">1.5 Alt</option><option value="15_UST">1.5 Üst</option>
+  <header class="dk-header">
+    <div class="dk-brand">DNA<span>-RNA</span></div>
+    <a class="dk-link" href="./sonuc-analizi.html">← Sonuç Analizi</a>
+  </header>
+  <h1 class="dk-title">Kupon Analizi</h1>
+  <p class="dk-description">
+    Kuponlar, mevcut sonuç analizinin ürettiği uygun oran gruplarından oluşturulur.
+    Analiz hesaplaması ve başarı oranı bu sayfada yeniden yazılmaz.
+  </p>
+  <section class="dk-panel">
+    <h2>Analiz Ayarları</h2>
+    <div class="dk-filters">
+      <div class="dk-field">
+        <label for="dkDate">Maç tarihi</label>
+        <input type="date" id="dkDate">
+      </div>
+      <div class="dk-field">
+        <label for="dkMarket">Geçmiş sonuç filtresi</label>
+        <select id="dkMarket">
+          <option value="MS2">MS2</option>
+          <option value="MS1">MS1</option>
+          <option value="MSX">MSX</option>
+          <option value="IY1">İY1</option>
+          <option value="IYX">İYX</option>
+          <option value="IY2">İY2</option>
+          <option value="KG_VAR">KG Var</option>
+          <option value="KG_YOK">KG Yok</option>
+          <option value="IY_KG_VAR">İY KG Var</option>
+          <option value="IY_KG_YOK">İY KG Yok</option>
+          <option value="IY15_ALT">İY 1.5 Alt</option>
+          <option value="IY15_UST">İY 1.5 Üst</option>
+          <option value="15_ALT">1.5 Alt</option>
+          <option value="15_UST">1.5 Üst</option>
+          <option value="25_UST">2.5 Üst</option>
+        </select>
+      </div>
+    </div>
+    <div class="dk-buttons">
+      <button class="dk-btn dk-primary" id="dkAnalyze">Analizi Çalıştır</button>
+      <button class="dk-btn dk-green" id="dkAuto">Otomatik Kuponları Oluştur</button>
+    </div>
+  </section>
+  <div id="dkStatus" class="dk-status">Veriler hazırlanıyor...</div>
+  <section class="dk-stats">
+    <div class="dk-stat">
+      <div class="dk-stat-label">Geçmiş maç sayısı</div>
+      <div class="dk-stat-value" id="dkHistoryCount">-</div>
+    </div>
+    <div class="dk-stat">
+      <div class="dk-stat-label">Uygun oran grubu</div>
+      <div class="dk-stat-value" id="dkGroupCount">-</div>
+    </div>
+    <div class="dk-stat">
+      <div class="dk-stat-label">Oluşturulan kupon</div>
+      <div class="dk-stat-value" id="dkCouponCount">0</div>
+    </div>
+  </section>
+  <section class="dk-panel">
+    <h2>Analizin Uygun Bulduğu Oranlar</h2>
+    <div id="dkCandidates" class="dk-list">
+      <div class="dk-empty">Analiz bekleniyor.</div>
+    </div>
+  </section>
+  <section class="dk-panel">
+    <h2>Otomatik Kuponlar</h2>
+    <div id="dkCoupons">
+      <div class="dk-empty">
+        Kupon oluşturmak için “Otomatik Kuponları Oluştur” düğmesine bas.
+      </div>
+    </div>
+  </section>
+  <footer class="dk-footer">
+    DNA-RNA · Kuponlar analiz sonuçlarından oluşturulur.
+  </footer>
+  <!--
+    Mevcut analiz dosyasının beklediği elemanlar.
+    Gizlidir; mevcut analiz dosyasının çalışmasını sağlar.
+  -->
+  <div class="dk-hidden" aria-hidden="true">
+    <input id="saDate" type="date">
+    <select id="saResult">
+      <option value="MS1">MS1</option>
+      <option value="MSX">MSX</option>
+      <option value="MS2" selected>MS2</option>
+      <option value="IY1">İY1</option>
+      <option value="IYX">İYX</option>
+      <option value="IY2">İY2</option>
+      <option value="KG_VAR">KG Var</option>
+      <option value="KG_YOK">KG Yok</option>
+      <option value="IY_KG_VAR">İY KG Var</option>
+      <option value="IY_KG_YOK">İY KG Yok</option>
+      <option value="IY15_ALT">İY 1.5 Alt</option>
+      <option value="IY15_UST">İY 1.5 Üst</option>
+      <option value="15_ALT">1.5 Alt</option>
+      <option value="15_UST">1.5 Üst</option>
       <option value="25_UST">2.5 Üst</option>
     </select>
+    <button id="saRun" type="button">Analiz</button>
+    <div id="saStatus"></div>
+    <div id="saPeriod"></div>
+    <div id="saHistoryCount"></div>
+    <div id="saOddsCount"></div>
+    <div id="saContent"></div>
   </div>
-</div>
-
-<div class="dk-buttons">
-  <button class="dk-btn dk-btn-primary" id="dkAnalyze">Analizi Çalıştır</button>
-  <button class="dk-btn dk-btn-green" id="dkAuto">Otomatik Kuponları
+</main>
+<!-- Mevcut analiz dosyası aynen kullanılıyor. -->
+<script src="./sonuc-analizi.js"></script>
+<script>
+"use strict";
+const DK_MIN_ODDS = 2.00;
+const DK_MAX_MATCHES = 5;
+const DK_MAX_COUPONS = 3;
+let dkAnalysis = null;
+let dkCoupons = [];
+const dk = id => document.getElementById(id);
+function dkEscape(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+function dkDateToday() {
+  const d = new Date();
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, "0"),
+    String(d.getDate()).padStart(2, "0")
+  ].join("-");
+}
+function dkMatchKey(match) {
+  return [
+    getDateKey(match) || "",
+    getTime(match) || "",
+    getLeague(match) || "",
+    getTeamName(match, "home") || "",
+    getTeamName(match, "away") || ""
+  ].join("|").toLocaleLowerCase("tr");
+}
+function dkSetStatus(message, isError = false) {
+  const node = dk("dkStatus");
+  node.textContent = message;
+  node.style.color = isError ? "var(--red)" : "var(--muted)";
+  node.style.borderColor = isError ? "#743442" : "var(--border)";
+}
+function dkRenderCandidates() {
+  const rows = dkAnalysis?.rows || [];
+  dk("dkHistoryCount").textContent =
+    String(dkAnalysis?.history?.length ?? 0);
+  dk("dkGroupCount").textContent = String(rows.length);
+  if (!rows.length) {
+    dk("dkCandidates").innerHTML = `
+      <div class="dk-empty">
+        Bu tarih ve sonuç filtresi için mevcut analizde uygun oran bulunamadı.
+      </div>
+    `;
+    return;
+  }
+  dk("dkCandidates").innerHTML = rows.map(row => `
+    <article class="dk-card">
+      <div class="dk-row">
+        <strong>${dkEscape(row.marketLabel)}</strong>
+        <span class="dk-market">Oran ${dkEscape(row.odd)}</span>
+      </div>
+      <div class="dk-numbers">
+        <div class="dk-number">
+          <small>Geçmiş örnek</small>
+          <strong>${Number(row.total)}</strong>
+        </div>
+        <div class="dk-number">
+          <small>Başarı</small>
+          <strong>${Number(row.success)}</strong>
+        </div>
+        <div class="dk-number">
+          <small>Başarı oranı</small>
+          <strong class="dk-rate">${Number(row.rate).toFixed(1)}%</strong>
+        </div>
+      </div>
+      <div class="dk-meta">
+        <span>Uygun maç: ${(row.future || []).length}</span>
+        <span>Birebir açılış oranı eşleşmesi</span>
+      </div>
+    </article>
+  `).join("");
+}
+async function dkRunAnalysis() {
+  const targetDate = dk("dkDate").value;
+  const resultId = dk("dkMarket").value;
+  if (!targetDate) {
+    dkSetStatus("Lütfen maç tarihi seç.", true);
+    return;
+  }
+  dk("dkDate").value = targetDate;
+  dk("saDate").value = targetDate;
+  dk("saResult").value = resultId;
+  dkSetStatus("Mevcut sonuç analizi çalıştırılıyor...");
+  try {
+    /*
+      allMatches, MARKETS, RESULTS ve runAnalysis,
+      sonuc-analizi.js dosyasından gelir.
+      Başarı hesabı burada yeniden yapılmaz.
+    */
+    if (!Array.isArray(allMatches) || !allMatches.length) {
+      allMatches = await loadData();
+    }
+    dkAnalysis = runAnalysis(targetDate, resultId);
+    dkCoupons = [];
+    dk("dkCouponCount").textContent = "0";
+    dk("dkCoupons").innerHTML = `
+      <div class="dk-empty">
+        Analiz yenilendi. Otomatik kupon oluşturabilirsin.
+      </div>
+    `;
+    dkRenderCandidates();
+    dkSetStatus(
+      `${dkAnalysis.history.length} geçmiş maç incelendi. ` +
+      `${dkAnalysis.rows.length} uygun oran grubu mevcut analizden alındı.`
+    );
+  } catch (error) {
+    console.error(error);
+    dkSetStatus(
+      "Analiz çalıştırılamadı. sonuc-analizi.js ve data/v2-data.json dosyalarını kontrol et.",
+      true
+    );
+  }
+}
+function dkBuildCoupons() {
+  if (!dkAnalysis) {
+    dkSetStatus("Önce analizi çalıştır.", true);
+    return;
+  }
+  const rows = dkAnalysis.rows || [];
+  const usedAcrossCoupons = new Set();
+  const coupons = [];
+  /*
+    Sıralama ve uygunluk mevcut analizden gelir.
+    Kupon oluşturucu sadece bu sonuçlardaki oynanmamış maçları seçer.
+  */
+  const candidates = [];
+  for (const row of rows) {
+    for (const match of (row.future || [])) {
+      const matchKey = dkMatchKey(match);
+      const odd = Number(row.odd);
+      if (!matchKey || !Number.isFinite(odd) || odd <= 0) continue;
+      candidates.push({
+        match,
+        matchKey,
+        marketId: row.marketId,
+        marketLabel: row.marketLabel,
+        odd,
+        oddText: row.odd,
+        rate: row.rate,
+        total: row.total,
+        success: row.success
+      });
+    }
+  }
+  /*
+    Aynı maçta birden fazla uygun market çıkarsa,
+    analiz listesindeki ilk (öncelikli) öneri kullanılır.
+  */
+  const uniqueCandidates = [];
+  const seenMatchMarket = new Set();
+  for (const candidate of candidates) {
+    const key = `${candidate.matchKey}|${candidate.marketId}`;
+    if (seenMatchMarket.has(key)) continue;
+    seenMatchMarket.add(key);
+    uniqueCandidates.push(candidate);
+  }
+  for (let couponIndex = 0; couponIndex < DK_MAX_COUPONS; couponIndex++) {
+    const picks = [];
+    let totalOdds = 1;
+    const alreadyInThisCoupon = new Set();
+    for (const candidate of uniqueCandidates) {
+      if (picks.length >= DK_MAX_MATCHES) break;
+      if (usedAcrossCoupons.has(candidate.matchKey)) continue;
+      if (alreadyInThisCoupon.has(candidate.matchKey)) continue;
+      picks.push(candidate);
+      alreadyInThisCoupon.add(candidate.matchKey);
+      totalOdds *= candidate.odd;
+      if (totalOdds >= DK_MIN_ODDS) break;
+    }
+    if (!picks.length || totalOdds < DK_MIN_ODDS) {
+      break;
+    }
+    coupons.push({
+      number: couponIndex + 1,
+      picks,
+      totalOdds
+    });
+    for (const pick of picks) {
+      usedAcrossCoupons.add(pick.matchKey);
+    }
+  }
+  dkCoupons = coupons;
+  dkRenderCoupons();
+  dkSetStatus(
+    coupons.length
+      ? `${coupons.length} otomatik kupon oluşturuldu.`
+      : "Mevcut analiz sonuçlarından 2.00 toplam orana ulaşan uygun kupon oluşturulamadı."
+  );
+}
+function dkRenderCoupons() {
+  const root = dk("dkCoupons");
+  dk("dkCouponCount").textContent = String(dkCoupons.length);
+  if (!dkCoupons.length) {
+    root.innerHTML = `
+      <div class="dk-empty">
+        En fazla 5 maçla toplam oranı en az 2.00 olan kupon bulunamadı.
+        Analiz sonuçlarında yeterli uygun maç olmayabilir.
+      </div>
+    `;
+    return;
+  }
+  root.innerHTML = dkCoupons.map(coupon => `
+    <article class="dk-coupon">
+      <div class="dk-coupon-top">
+        <h3>${coupon.number}. Kupon</h3>
+        <span>${coupon.picks.length} maç</span>
+      </div>
+      ${coupon.picks.map(pick => `
+        <div class="dk-card" style="margin-top:10px">
+          <div class="dk-row">
+            <strong class="dk-match">
+              ${dkEscape(getTeamName(pick.match, "home"))}
+              – ${dkEscape(getTeamName(pick.match, "away"))}
+            </strong>
+            <span class="dk-market">${dkEscape(pick.marketLabel)}</span>
+          </div>
+          <div class="dk-meta">
+            <span>${dkEscape(getLeague(pick.match))}</span>
+            <span>${dkEscape(getDateKey(pick.match) || "")}</span>
+            <span>${dkEscape(getTime(pick.match))}</span>
+          </div>
+          <div class="dk-numbers">
+            <div class="dk-number">
+              <small>Açılış oranı</small>
+              <strong>${dkEscape(pick.oddText)}</strong>
+            </div>
+            <div class="dk-number">
+              <small>Analiz başarısı</small>
+              <strong class="dk-rate">${Number(pick.rate).toFixed(1)}%</strong>
+            </div>
+            <div class="dk-number">
+              <small>Geçmiş örnek</small>
+              <strong>${Number(pick.total)}</strong>
+            </div>
+          </div>
+        </div>
+      `).join("")}
+      <div class="dk-coupon-total">
+        <div class="dk-total-label">TOPLAM KUPON ORANI</div>
+        <div class="dk-total-value" style="color:var(--green)">
+          ${coupon.totalOdds.toFixed(2)}
+        </div>
+      </div>
+      <button class="dk-btn" type="button"
+        data-copy-coupon="${coupon.number}">
+        Kuponu Kopyala
+      </button>
+    </article>
+  `).join("");
+  root.querySelectorAll("[data-copy-coupon]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const number = Number(button.dataset.copyCoupon);
+      const coupon = dkCoupons.find(item => item.number === number);
+      if (!coupon) return;
+      const lines = [
+        `${coupon.number}. Kupon`,
+        ...coupon.picks.map(pick =>
+          `${getTeamName(pick.match, "home")} - ` +
+          `${getTeamName(pick.match, "away")} | ` +
+          `${pick.marketLabel} | ${pick.oddText}`
+        ),
+        `Toplam oran: ${coupon.totalOdds.toFixed(2)}`
+      ];
+      try {
+        await navigator.clipboard.writeText(lines.join("\n"));
+        dkSetStatus(`${number}. kupon kopyalandı.`);
+      } catch (error) {
+        console.error(error);
+        dkSetStatus("Kopyalama başarısız oldu. Tarayıcı izinlerini kontrol et.", true);
+      }
+    });
+  });
+}
+dk("dkDate").value = dkDateToday();
+dk("saDate").value = dkDateToday();
+dk("dkMarket").value = "MS2";
+dk("saResult").value = "MS2";
+dk("dkAnalyze").addEventListener("click", dkRunAnalysis);
+dk("dkAuto").addEventListener("click", dkBuildCoupons);
+/*
+  sonuc-analizi.js de yüklenmesini başlatır.
+  Burada aynı analiz fonksiyonları çağrılır; mevcut hesaplama değiştirilmez.
+*/
+dkRunAnalysis();
+</script>
+</body>
+</html>
