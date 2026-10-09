@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#07111f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>DNA-RNA | Sonuçtan Oran Analizi</title>
+  <title>DNA-RNA | Sonuçtan Oran Analizi & Otomatik Kupon</title>
   <style>
     :root {
       color-scheme: dark;
@@ -114,10 +114,13 @@
       margin: 0 0 14px;
       font-size: 16px;
       font-weight: 800;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
     .sa-controls {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 12px;
     }
     .sa-field {
@@ -170,6 +173,11 @@
       background: var(--sa-blue);
       border-color: var(--sa-blue);
     }
+    .sa-button-success {
+      color: #07111f;
+      background: var(--sa-green);
+      border-color: var(--sa-green);
+    }
     .sa-button:active {
       transform: scale(.98);
     }
@@ -187,6 +195,62 @@
     #saStatus strong {
       color: var(--sa-text);
     }
+
+    /* KUPON ÖZEL STİLLERİ */
+    .coupon-card {
+      background: var(--sa-panel2);
+      border: 1px solid var(--sa-border);
+      border-radius: 11px;
+      padding: 12px;
+      margin-bottom: 10px;
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      gap: 12px;
+    }
+    .coupon-time {
+      color: var(--sa-yellow);
+      font-weight: 800;
+      font-size: 13px;
+    }
+    .coupon-teams {
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    .coupon-league {
+      color: var(--sa-muted);
+      font-size: 11px;
+    }
+    .coupon-prediction {
+      text-align: right;
+    }
+    .coupon-badge {
+      display: inline-block;
+      padding: 3px 7px;
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--sa-green);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+    .coupon-summary {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #091525;
+      border: 1px solid var(--sa-border);
+      border-radius: 11px;
+      margin-top: 15px;
+    }
+    .coupon-total-odd {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--sa-yellow);
+    }
+
     .sa-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -469,6 +533,13 @@
         gap: 8px;
         text-align: left;
       }
+      .coupon-card {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .coupon-prediction {
+        text-align: left;
+      }
     }
   </style>
 </head>
@@ -485,10 +556,12 @@
     <p class="sa-page-description">
       Geçmiş maçların açılış oranlarını karşılaştır.
       Seçilen sonucun gerçekleştiği maçlardaki oran gruplarını incele
-      ve seçilen tarihte aynı açılış oranına sahip oynanmamış maçları görüntüle.
+      ve otomatik yüksek ihtimalli kuponlar oluştur.
     </p>
+
+    <!-- TEKİL ANALİZ PANELİ -->
     <section class="sa-panel">
-      <h2 class="sa-panel-title">Analiz Ayarları</h2>
+      <h2 class="sa-panel-title">Tekil Sonuç Analizi</h2>
       <div class="sa-controls">
         <div class="sa-field">
           <label for="saDate">Analiz tarihi</label>
@@ -521,9 +594,31 @@
         </button>
       </div>
     </section>
+
+    <!-- OTOMATİK KUPON PANELİ -->
+    <section class="sa-panel">
+      <h2 class="sa-panel-title">🎯 Otomatik Kupon Oluşturucu</h2>
+      <div class="sa-controls">
+        <div class="sa-field">
+          <label for="couponMaxMatches">Maksimum Maç Sayısı</label>
+          <input type="number" id="couponMaxMatches" value="3" min="1" max="10">
+        </div>
+        <div class="sa-field">
+          <label for="couponMinRate">Minimum Başarı Yüzdesi (%)</label>
+          <input type="number" id="couponMinRate" value="80" min="50" max="100">
+        </div>
+      </div>
+      <div class="sa-actions">
+        <button class="sa-button sa-button-success" id="saCreateCoupon" type="button">
+          Otomatik Kupon Yap
+        </button>
+      </div>
+    </section>
+
     <div id="saStatus" role="status" aria-live="polite">
       Veriler yükleniyor...
     </div>
+
     <section class="sa-summary">
       <div class="sa-summary-card">
         <div class="sa-summary-label">Analiz dönemi</div>
@@ -538,10 +633,12 @@
         <div class="sa-summary-value" id="saOddsCount">-</div>
       </div>
     </section>
+
     <div class="sa-results-heading">
-      <h2>Analiz Sonuçları</h2>
-      <p>Bir oran satırına dokunarak maçları aç.</p>
+      <h2 id="saResultsTitle">Analiz Sonuçları</h2>
+      <p id="saResultsSub">Bir oran satırına dokunarak maçları aç.</p>
     </div>
+
     <div id="saContent">
       <div class="sa-empty">
         <div class="sa-empty-icon">⌬</div>
@@ -549,12 +646,148 @@
         <span>Maç verileri yüklendiğinde sonuçlar burada gösterilecek.</span>
       </div>
     </div>
+
     <footer class="sa-footer">
       DNA-RNA · Son 30 günlük geçmiş · Minimum 8 örnek · Minimum %80 başarı
       <br>
       Açılış oranlarında birebir eşleşme kullanılır; oran toleransı ve kombinasyon yoktur.
     </footer>
   </main>
+
   <script src="./dna.js"></script>
+  
+  <!-- OTOMATİK KUPON JS MOTORU -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const couponBtn = document.getElementById("saCreateCoupon");
+      if (couponBtn) {
+        couponBtn.addEventListener("click", generateAutoCoupon);
+      }
+    });
+
+    function generateAutoCoupon() {
+      const dateInput = document.getElementById("saDate");
+      const status = document.getElementById("saStatus");
+      const content = document.getElementById("saContent");
+      const resultsTitle = document.getElementById("saResultsTitle");
+      const resultsSub = document.getElementById("saResultsSub");
+      
+      const targetDate = dateInput.value;
+      const maxMatches = parseInt(document.getElementById("couponMaxMatches").value, 10) || 3;
+      const minRate = parseFloat(document.getElementById("couponMinRate").value) || 80;
+
+      if (!targetDate) {
+        status.textContent = "Lütfen önce analiz tarihi seçin.";
+        return;
+      }
+
+      if (!allMatches || allMatches.length === 0) {
+        status.textContent = "Maç verisi bulunamadı veya henüz yüklenmedi.";
+        return;
+      }
+
+      status.innerHTML = `⏳ <strong>${targetDate}</strong> tarihi için tüm bahis marketleri taranıyor...`;
+
+      // 1. Tüm sonuç türlerini (MS1, 2.5 Üst vb.) dönerek aday maçları havuzda topla
+      const candidatePool = [];
+      const usedMatchKeys = new Set(); // Aynı maçı 2 defa eklememek için
+
+      for (const resultId in RESULTS) {
+        const analysis = runAnalysis(targetDate, resultId);
+
+        for (const row of analysis.rows) {
+          // Filtre: Kullanıcının belirlediği minimum başarı yüzdesinden düşükse atla
+          if (row.rate < minRate) continue;
+
+          for (const match of row.future) {
+            // Maç için benzersiz id/key
+            const matchKey = `${getDateKey(match)}_${getTime(match)}_${getTeamName(match, "home")}_${getTeamName(match, "away")}`;
+
+            candidatePool.push({
+              matchKey,
+              match,
+              marketLabel: row.marketLabel,
+              prediction: RESULTS[resultId].label,
+              odd: parseFloat(row.odd),
+              rate: row.rate,
+              sample: row.total,
+              success: row.success
+            });
+          }
+        }
+      }
+
+      // 2. Havuzdaki maçları başarı oranına (% rate) ve örnek sayısına göre sırala
+      candidatePool.sort((a, b) => b.rate - a.rate || b.sample - a.sample || b.odd - a.odd);
+
+      // 3. Kupona maçı ekle (Çakışmaları önleyerek)
+      const selectedMatches = [];
+      let totalOdd = 1.0;
+
+      for (const item of candidatePool) {
+        if (selectedMatches.length >= maxMatches) break;
+
+        // Maç daha önce kupona eklenmediyse al
+        if (!usedMatchKeys.has(item.matchKey)) {
+          usedMatchKeys.add(item.matchKey);
+          selectedMatches.push(item);
+          totalOdd *= item.odd;
+        }
+      }
+
+      // 4. Ekrana Kupon Olarak Bas
+      resultsTitle.textContent = "Otomatik Hazırlanan Kupon";
+      resultsSub.textContent = `En yüksek başarı yüzdesine sahip ${selectedMatches.length} maç seçildi.`;
+
+      if (selectedMatches.length === 0) {
+        status.innerHTML = `⚠️ Seçilen tarihte <strong>%${minRate}</strong> başarı üzeri kriterlere uyan maç bulunamadı.`;
+        content.innerHTML = `
+          <div class="sa-empty">
+            <div class="sa-empty-icon">🔎</div>
+            <strong>Uygun maç bulunamadı</strong>
+            <span>Kupon oluşturmak için minimum başarı yüzdesini düşürebilir veya başka bir tarih seçebilirsiniz.</span>
+          </div>
+        `;
+        return;
+      }
+
+      status.innerHTML = `✅ <strong>${selectedMatches.length}</strong> maçlı otomatik kupon hazırlandı. Toplam Oran: <strong>${totalOdd.toFixed(2)}</strong>`;
+
+      let couponHtml = `<div class="sa-panel" style="background: transparent; border: none; padding: 0;">`;
+      
+      selectedMatches.forEach((item, index) => {
+        couponHtml += `
+          <div class="coupon-card">
+            <div class="coupon-time">${escapeHtml(getTime(item.match))}</div>
+            <div>
+              <div class="coupon-teams">
+                ${escapeHtml(getTeamName(item.match, "home"))} vs ${escapeHtml(getTeamName(item.match, "away"))}
+              </div>
+              <div class="coupon-league">${escapeHtml(getLeague(item.match))}</div>
+            </div>
+            <div class="coupon-prediction">
+              <div><strong>${escapeHtml(item.prediction)}</strong> <span style="color:var(--sa-green); font-weight:800;">@${item.odd.toFixed(2)}</span></div>
+              <div class="coupon-badge">%${item.rate.toFixed(1)} Başarı (${item.sample} Maçta ${item.success})</div>
+            </div>
+          </div>
+        `;
+      });
+
+      couponHtml += `
+        <div class="coupon-summary">
+          <div>
+            <div style="color:var(--sa-muted); font-size:12px;">Seçilen Maç Sayısı</div>
+            <div style="font-size:16px; font-weight:800;">${selectedMatches.length} Maç</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="color:var(--sa-muted); font-size:12px;">Toplam Kupon Oranı</div>
+            <div class="coupon-total-odd">${totalOdd.toFixed(2)}</div>
+          </div>
+        </div>
+      </div>`;
+
+      content.innerHTML = couponHtml;
+    }
+  </script>
 </body>
 </html>
