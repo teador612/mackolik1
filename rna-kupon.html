@@ -2,911 +2,770 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#08111f">
-  <title>RNA | Otomatik Kupon</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#08111f">
+<title>RNA | Otomatik Kupon</title>
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #08111f;
-      --panel: #101c2e;
-      --panel2: #14243a;
-      --border: #263750;
-      --text: #e9f0fb;
-      --muted: #91a4bf;
-      --green: #6ee7b7;
-      --blue: #60a5fa;
-      --red: #fb7185;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--text);
-      background:
-        radial-gradient(ellipse at 50% -10%, #193455 0%, transparent 55%),
-        var(--bg);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Arial, sans-serif;
-    }
-
-    button, input { font: inherit; }
-
-    button { cursor: pointer; }
-
-    .rna-page {
-      width: min(1050px, 100%);
-      margin: 0 auto;
-      padding: 22px 15px 40px;
-    }
-
-    .rna-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: 22px;
-    }
-
-    .rna-brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
-    }
-
-    .rna-logo {
-      display: grid;
-      place-items: center;
-      flex: 0 0 48px;
-      height: 48px;
-      border-radius: 15px;
-      color: #052016;
-      background: linear-gradient(135deg, #6ee7b7, #34d399);
-      font-size: 21px;
-      font-weight: 900;
-    }
-
-    .rna-title {
-      margin: 0;
-      font-size: clamp(21px, 4vw, 29px);
-      letter-spacing: -.6px;
-    }
-
-    .rna-subtitle {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .rna-back {
-      flex-shrink: 0;
-      padding: 10px 13px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      color: var(--text);
-      background: var(--panel);
-      text-decoration: none;
-      font-size: 12px;
-    }
-
-    .rna-panel {
-      margin-bottom: 17px;
-      padding: 18px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(16, 28, 46, .95);
-    }
-
-    .rna-panel h2 {
-      margin: 0 0 8px;
-      font-size: 17px;
-    }
-
-    .rna-description {
-      margin: 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .rna-controls {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: end;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .rna-field {
-      flex: 1 1 190px;
-    }
-
-    .rna-field label {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .rna-field input {
-      width: 100%;
-      min-height: 45px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: 11px;
-      color: var(--text);
-      background: #0a1627;
-    }
-
-    .rna-generate {
-      min-height: 45px;
-      padding: 0 20px;
-      border: 0;
-      border-radius: 11px;
-      color: #052016;
-      background: var(--green);
-      font-weight: 850;
-    }
-
-    .rna-generate:disabled {
-      opacity: .55;
-      cursor: wait;
-    }
-
-    .rna-rules {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-top: 17px;
-    }
-
-    .rna-rule {
-      padding: 13px 8px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #0b1728;
-      text-align: center;
-    }
-
-    .rna-rule strong {
-      display: block;
-      margin-bottom: 5px;
-      color: var(--green);
-      font-size: 21px;
-    }
-
-    .rna-rule span {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    #rnaStatus {
-      margin-bottom: 15px;
-      padding: 13px 15px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      color: var(--muted);
-      background: var(--panel);
-      font-size: 13px;
-      line-height: 1.6;
-      overflow-wrap: anywhere;
-    }
-
-    #rnaStatus.success { color: var(--green); }
-    #rnaStatus.error { color: var(--red); }
-
-    .rna-coupons {
-      display: grid;
-      gap: 16px;
-    }
-
-    .rna-coupon {
-      overflow: hidden;
-      border: 1px solid var(--border);
-      border-radius: 17px;
-      background: var(--panel);
-    }
-
-    .rna-coupon-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 16px;
-      border-bottom: 1px solid var(--border);
-      background: linear-gradient(110deg, #172943, #101c2e);
-    }
-
-    .rna-coupon-title {
-      margin: 0;
-      font-size: 16px;
-    }
-
-    .rna-coupon-subtitle {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .rna-count {
-      flex-shrink: 0;
-      padding: 7px 10px;
-      border-radius: 9px;
-      color: var(--green);
-      background: rgba(110, 231, 183, .09);
-      font-size: 11px;
-    }
-
-    .rna-match {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      padding: 15px 16px;
-      border-bottom: 1px solid rgba(38, 55, 80, .75);
-    }
-
-    .rna-match:last-child { border-bottom: 0; }
-
-    .rna-match-info {
-      min-width: 0;
-    }
-
-    .rna-teams {
-      overflow-wrap: anywhere;
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.6;
-    }
-
-    .rna-match-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 7px 12px;
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .rna-market {
-      margin-top: 7px;
-      color: var(--blue);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .rna-odd {
-      flex-shrink: 0;
-      min-width: 76px;
-      padding: 9px;
-      border: 1px solid rgba(110, 231, 183, .24);
-      border-radius: 10px;
-      color: var(--green);
-      background: rgba(110, 231, 183, .06);
-      text-align: center;
-      font-size: 16px;
-      font-weight: 900;
-    }
-
-    .rna-odd small {
-      display: block;
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 9px;
-      font-weight: 500;
-    }
-
-    .rna-coupon-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      padding: 15px 16px;
-      background: #0b1728;
-    }
-
-    .rna-total-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .rna-total {
-      margin-top: 4px;
-      color: var(--green);
-      font-size: 24px;
-      font-weight: 900;
-    }
-
-    .rna-foot-note {
-      color: var(--muted);
-      font-size: 11px;
-      text-align: right;
-      line-height: 1.6;
-    }
-
-    .rna-empty {
-      padding: 28px 16px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      color: var(--muted);
-      background: var(--panel);
-      text-align: center;
-      font-size: 13px;
-      line-height: 1.7;
-    }
-
-    .rna-empty strong {
-      display: block;
-      margin-bottom: 7px;
-      color: var(--text);
-      font-size: 15px;
-    }
-
-    .rna-footer {
-      margin-top: 19px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.7;
-      text-align: center;
-    }
-
-    /* Sonuc-analizi.js dosyasının ihtiyaç duyduğu elemanlar. */
-    .rna-engine-hidden {
-      display: none !important;
-    }
-
-    @media (max-width: 600px) {
-      .rna-page { padding: 15px 10px 30px; }
-      .rna-panel { padding: 14px; }
-      .rna-header { align-items: flex-start; }
-      .rna-back { padding: 9px 10px; }
-      .rna-rules { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .rna-generate { width: 100%; }
-      .rna-match { padding: 13px 11px; }
-      .rna-coupon-header { padding: 14px; }
-    }
-  </style>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #08111f;
+  --panel: #101c2e;
+  --panel2: #0b1728;
+  --border: #293b55;
+  --text: #edf3ff;
+  --muted: #91a4bf;
+  --green: #6ee7b7;
+  --blue: #60a5fa;
+  --red: #fb7185;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+button, input, select { font: inherit; }
+.page { width: min(1050px, 100%); margin: auto; padding: 18px 12px 35px; }
+header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:20px; }
+.brand { display:flex; align-items:center; gap:12px; }
+.logo { display:grid; place-items:center; width:48px; height:48px; border-radius:14px; background:var(--green); color:#052016; font-weight:900; font-size:20px; }
+h1 { margin:0; font-size:clamp(21px,4vw,28px); }
+.subtitle { margin-top:5px; color:var(--muted); font-size:12px; }
+.back { padding:10px 12px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--panel); text-decoration:none; font-size:12px; }
+.panel { margin-bottom:15px; padding:16px; border:1px solid var(--border); border-radius:15px; background:var(--panel); }
+h2 { margin:0 0 8px; font-size:17px; }
+.desc { margin:0; color:var(--muted); font-size:13px; line-height:1.7; }
+.controls { display:grid; grid-template-columns:1fr 1fr auto; align-items:end; gap:12px; margin-top:17px; }
+.field label { display:block; margin-bottom:7px; color:var(--muted); font-size:12px; }
+.field input,.field select { width:100%; min-height:44px; padding:10px; border:1px solid var(--border); border-radius:10px; color:var(--text); background:var(--panel2); }
+button { min-height:44px; padding:0 17px; border:0; border-radius:10px; color:#052016; background:var(--green); font-weight:800; cursor:pointer; }
+button:disabled { opacity:.55; cursor:wait; }
+.rules { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-top:16px; }
+.rule { padding:12px 5px; border:1px solid var(--border); border-radius:10px; background:var(--panel2); text-align:center; }
+.rule b { display:block; color:var(--green); font-size:20px; }
+.rule span { display:block; margin-top:4px; color:var(--muted); font-size:10px; }
+#status { margin-bottom:15px; padding:12px 14px; border:1px solid var(--border); border-radius:10px; color:var(--muted); background:var(--panel); font-size:13px; line-height:1.6; overflow-wrap:anywhere; }
+#status.success { color:var(--green); }
+#status.error { color:var(--red); }
+.section-title { margin:22px 0 12px; font-size:18px; }
+.coupon { margin-bottom:15px; overflow:hidden; border:1px solid var(--border); border-radius:14px; background:var(--panel); }
+.coupon-head { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px; border-bottom:1px solid var(--border); background:#14243a; }
+.coupon-head h3 { margin:0; font-size:15px; }
+.small { margin-top:5px; color:var(--muted); font-size:11px; }
+.tag { flex-shrink:0; padding:7px 9px; border-radius:8px; color:var(--green); background:#10352e; font-size:11px; }
+.match { padding:14px; border-bottom:1px solid var(--border); }
+.match:last-child { border-bottom:0; }
+.match-top { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+.teams { font-size:13px; font-weight:800; line-height:1.6; overflow-wrap:anywhere; }
+.meta { margin-top:5px; color:var(--muted); font-size:11px; }
+.pick { flex-shrink:0; padding:8px 10px; border:1px solid #285846; border-radius:9px; color:var(--green); background:#0c2925; text-align:center; font-size:12px; font-weight:850; }
+.pick small { display:block; margin-top:4px; color:var(--muted); font-size:10px; font-weight:500; }
+.stats { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.stat { padding:6px 8px; border:1px solid var(--border); border-radius:7px; color:var(--muted); background:var(--panel2); font-size:10px; }
+.stat b { color:var(--green); }
+.details { margin-top:10px; }
+details summary { cursor:pointer; color:var(--blue); font-size:12px; }
+.history { margin-top:9px; padding:10px; border:1px dashed #36506f; border-radius:9px; background:var(--panel2); }
+.history-row { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid #203149; font-size:11px; }
+.history-row:last-child { border-bottom:0; }
+.history-row b { color:var(--green); flex-shrink:0; }
+.empty { padding:24px 14px; border:1px solid var(--border); border-radius:12px; color:var(--muted); background:var(--panel); text-align:center; font-size:13px; line-height:1.7; }
+.empty strong { display:block; margin-bottom:6px; color:var(--text); }
+.note { margin-top:20px; color:var(--muted); font-size:11px; line-height:1.7; text-align:center; }
+.hidden { display:none !important; }
+@media(max-width:650px) {
+  .page { padding:14px 9px 30px; }
+  .controls { grid-template-columns:1fr; }
+  button { width:100%; }
+  .rules { grid-template-columns:repeat(2,1fr); }
+}
+</style>
 </head>
 
 <body>
-  <main class="rna-page">
-    <header class="rna-header">
-      <div class="rna-brand">
-        <div class="rna-logo">RNA</div>
-        <div>
-          <h1 class="rna-title">Otomatik Kupon</h1>
-          <div class="rna-subtitle">Sonuçtan oran analizi motoru</div>
-        </div>
+<main class="page">
+  <header>
+    <div class="brand">
+      <div class="logo">RNA</div>
+      <div>
+        <h1>Otomatik Kupon</h1>
+        <div class="subtitle">Tüm marketler · Açılış oranı analizi</div>
       </div>
+    </div>
+    <a class="back" href="./index.html">← Ana sayfa</a>
+  </header>
 
-      <a class="rna-back" href="./index.html">← Ana sayfa</a>
-    </header>
+  <section class="panel">
+    <h2>Analiz ayarları</h2>
+    <p class="desc">
+      Önce başarı hesabında kullanılacak sonucu seç. Ardından seçilen tarihteki
+      maçların tüm market açılış oranları, önceki 30 gün içindeki aynı market
+      ve aynı oranla eşleştirilir. Her eşleşmede seçtiğin sonucun geçmiş başarısı
+      ayrı hesaplanır.
+    </p>
 
-    <section class="rna-panel">
-      <h2>Kupon oluştur</h2>
-      <p class="rna-description">
-        Seçilen tarihteki oynanmamış maçları analiz et. Mevcut
-        Sonuc-analizi.js motorunun başarı ve örnek kriterlerini
-        karşılayan tahminlerden otomatik kuponlar hazırla.
-      </p>
-
-      <div class="rna-controls">
-        <div class="rna-field">
-          <label for="rnaDate">Maç tarihi</label>
-          <input type="date" id="rnaDate">
-        </div>
-
-        <button type="button" class="rna-generate" id="rnaGenerate">
-          Kuponları oluştur
-        </button>
+    <div class="controls">
+      <div class="field">
+        <label for="targetDate">Maç tarihi</label>
+        <input type="date" id="targetDate">
       </div>
-
-      <div class="rna-rules">
-        <div class="rna-rule">
-          <strong>3</strong>
-          <span>En fazla kupon</span>
-        </div>
-        <div class="rna-rule">
-          <strong>5</strong>
-          <span>Kupon başına maç</span>
-        </div>
-        <div class="rna-rule">
-          <strong>%80</strong>
-          <span>Minimum başarı</span>
-        </div>
-        <div class="rna-rule">
-          <strong>8</strong>
-          <span>Minimum örnek</span>
-        </div>
+      <div class="field">
+        <label for="targetResult">Başarısı hesaplanacak sonuç</label>
+        <select id="targetResult">
+          <option value="MS1">MS1</option>
+          <option value="MSX">MSX</option>
+          <option value="MS2">MS2</option>
+          <option value="IY1">İY1</option>
+          <option value="IYX">İYX</option>
+          <option value="IY2">İY2</option>
+          <option value="KG_VAR">KG Var</option>
+          <option value="KG_YOK">KG Yok</option>
+          <option value="IY_KG_VAR">İY KG Var</option>
+          <option value="IY_KG_YOK">İY KG Yok</option>
+          <option value="IY15_ALT">İY 1.5 Alt</option>
+          <option value="IY15_UST">İY 1.5 Üst</option>
+          <option value="15_ALT">1.5 Alt</option>
+          <option value="15_UST">1.5 Üst</option>
+          <option value="25_UST" selected>2.5 Üst</option>
+        </select>
       </div>
-    </section>
-
-    <div id="rnaStatus" role="status" aria-live="polite">
-      Analiz motoru yükleniyor...
+      <button id="generate">Kuponları oluştur</button>
     </div>
 
-    <section id="rnaCoupons" class="rna-coupons">
-      <div class="rna-empty">
-        <strong>Henüz kupon oluşturulmadı</strong>
-        Bir tarih seçip “Kuponları oluştur” düğmesine bas.
-      </div>
-    </section>
+    <div class="rules">
+      <div class="rule"><b>3</b><span>En fazla kupon</span></div>
+      <div class="rule"><b>5</b><span>Kupon başına maç</span></div>
+      <div class="rule"><b>%70</b><span>Minimum başarı</span></div>
+      <div class="rule"><b>5</b><span>Minimum örnek</span></div>
+    </div>
+  </section>
 
-    <footer class="rna-footer">
-      Son 30 günlük geçmiş · Birebir açılış oranı · En az 8 örnek · En az %80 başarı
-      <br>
-      Geçmiş performans gelecekteki sonuçları garanti etmez.
-    </footer>
-  </main>
-
-  <!-- Mevcut Sonuc-analizi.js motorunun beklediği elemanlar -->
-  <div class="rna-engine-hidden" aria-hidden="true">
-    <select id="saResult">
-      <option value="MS1">MS1</option>
-      <option value="MSX">MSX</option>
-      <option value="MS2">MS2</option>
-      <option value="IY1">İY1</option>
-      <option value="IYX">İYX</option>
-      <option value="IY2">İY2</option>
-      <option value="KG_VAR">KG Var</option>
-      <option value="KG_YOK">KG Yok</option>
-      <option value="IY_KG_VAR">İY KG Var</option>
-      <option value="IY_KG_YOK">İY KG Yok</option>
-      <option value="IY15_ALT">İY 1.5 Alt</option>
-      <option value="IY15_UST">İY 1.5 Üst</option>
-      <option value="15_ALT">1.5 Alt</option>
-      <option value="15_UST">1.5 Üst</option>
-      <option value="25_UST">2.5 Üst</option>
-    </select>
-
-    <input type="date" id="saDate">
-    <button type="button" id="saRun">Analiz</button>
-    <div id="saStatus"></div>
-    <div id="saContent"></div>
-    <div id="saPeriod"></div>
-    <div id="saHistoryCount"></div>
-    <div id="saOddsCount"></div>
+  <div id="status" role="status" aria-live="polite">Veriler yükleniyor…</div>
+  <h2 class="section-title">Oluşturulan kuponlar</h2>
+  <div id="coupons">
+    <div class="empty">Tarih ve sonuç seçip kuponları oluştur.</div>
   </div>
 
-  <script src="./Sonuc-analizi.js"></script>
+  <div class="note">
+    Aynı maç birden fazla kuponda kullanılmaz. Oran kombinasyonu yapılmaz.
+    Her oran-market eşleşmesi bağımsız değerlendirilir.
+    Geçmiş başarı gelecekteki sonuçları garanti etmez.
+  </div>
+</main>
 
-  <script>
-    "use strict";
+<!-- Mevcut Sonuc-analizi.js dosyasının beklediği DOM elemanları -->
+<div class="hidden" aria-hidden="true">
+  <select id="saResult">
+    <option value="MS1">MS1</option>
+  </select>
+  <input type="date" id="saDate">
+  <button id="saRun" type="button">Analiz</button>
+  <div id="saStatus"></div>
+  <div id="saContent"></div>
+  <div id="saPeriod"></div>
+  <div id="saHistoryCount"></div>
+  <div id="saOddsCount"></div>
+</div>
 
-    const RNA_MAX_COUPONS = 3;
-    const RNA_MAX_MATCHES = 5;
-    const RNA_MIN_TOTAL_ODDS = 2.00;
+<script src="./Sonuc-analizi.js"></script>
 
-    const RNA_RESULT_IDS = [
-      "MS1", "MSX", "MS2",
-      "IY1", "IYX", "IY2",
-      "KG_VAR", "KG_YOK",
-      "IY_KG_VAR", "IY_KG_YOK",
-      "IY15_ALT", "IY15_UST",
-      "15_ALT", "15_UST", "25_UST"
-    ];
+<script>
+"use strict";
 
-    const rnaDate = document.getElementById("rnaDate");
-    const rnaGenerate = document.getElementById("rnaGenerate");
-    const rnaStatus = document.getElementById("rnaStatus");
-    const rnaCoupons = document.getElementById("rnaCoupons");
+/*
+ * Entegrasyon katmanı:
+ * - Sonuc-analizi.js dosyasını değiştirmez.
+ * - Motorun mevcut getOdds(), getTargetResult(), getDateKey()
+ *   gibi yardımcı fonksiyonlarını kullanır.
+ * - Geçmiş oran eşleşmesini market + aynı açılış oranı üzerinden yapar.
+ */
 
-    let rnaBusy = false;
+const RNA = {
+  HISTORY_DAYS: 30,
+  MIN_SAMPLE: 5,
+  MIN_SUCCESS: 70,
+  MAX_COUPONS: 3,
+  MAX_MATCHES: 5,
+  MIN_COUPON_ODDS: 2,
+  markets: [
+    { id:"ms1", label:"MS1", fields:["ms1","MS1"] },
+    { id:"msX", label:"MSX", fields:["msX","msx","MSX"] },
+    { id:"ms2", label:"MS2", fields:["ms2","MS2"] },
+    { id:"iy1", label:"İY1", fields:["iy1","IY1"] },
+    { id:"iyX", label:"İYX", fields:["iyX","iyx","IYX"] },
+    { id:"iy2", label:"İY2", fields:["iy2","IY2"] },
+    { id:"kgVar", label:"KG Var", fields:["kgVar","kgvar","KG_VAR"] },
+    { id:"kgYok", label:"KG Yok", fields:["kgYok","kgyok","KG_YOK"] },
+    { id:"iyKgVar", label:"İY KG Var", fields:["iyKgVar","iykgVar","IY_KG_VAR"] },
+    { id:"iyKgYok", label:"İY KG Yok", fields:["iyKgYok","iykgYok","IY_KG_YOK"] },
+    { id:"iy15Alt", label:"İY 1.5 Alt", fields:["iy15Alt","iy15A","iy_15_alt","IY15Alt"] },
+    { id:"iy15Ust", label:"İY 1.5 Üst", fields:["iy15Ust","iy15U","iy_15_ust","IY15Ust"] },
+    { id:"ms15Alt", label:"1.5 Alt", fields:["au15Alt","ms15Alt","1.5Alt"] },
+    { id:"ms15Ust", label:"1.5 Üst", fields:["au15Ust","ms15Ust","1.5Ust"] },
+    { id:"ms25Ust", label:"2.5 Üst", fields:["au25Ust","ms25Ust","2.5Ust"] }
+  ],
+  results: [
+    {id:"MS1",label:"MS1"},
+    {id:"MSX",label:"MSX"},
+    {id:"MS2",label:"MS2"},
+    {id:"IY1",label:"İY1"},
+    {id:"IYX",label:"İYX"},
+    {id:"IY2",label:"İY2"},
+    {id:"KG_VAR",label:"KG Var"},
+    {id:"KG_YOK",label:"KG Yok"},
+    {id:"IY_KG_VAR",label:"İY KG Var"},
+    {id:"IY_KG_YOK",label:"İY KG Yok"},
+    {id:"IY15_ALT",label:"İY 1.5 Alt"},
+    {id:"IY15_UST",label:"İY 1.5 Üst"},
+    {id:"15_ALT",label:"1.5 Alt"},
+    {id:"15_UST",label:"1.5 Üst"},
+    {id:"25_UST",label:"2.5 Üst"}
+  ]
+};
 
-    function rnaTodayKey() {
-      const now = new Date();
-      return [
-        now.getFullYear(),
-        String(now.getMonth() + 1).padStart(2, "0"),
-        String(now.getDate()).padStart(2, "0")
-      ].join("-");
-    }
+const $ = id => document.getElementById(id);
+let rnaMatches = [];
+let rnaLoaded = false;
+let rnaWorking = false;
 
-    function rnaEscape(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[char]);
-    }
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[c]);
+}
 
-    function rnaSetStatus(message, type = "") {
-      rnaStatus.textContent = message;
-      rnaStatus.className = type;
-    }
+function status(message, type="") {
+  $("status").textContent = message;
+  $("status").className = type;
+}
 
-    function rnaOdd(value) {
-      const number = Number(String(value ?? "").replace(",", "."));
-      return Number.isFinite(number) && number > 0 ? number : 0;
-    }
+function localDateKey(date) {
+  return [
+    date.getFullYear(),
+    String(date.getMonth()+1).padStart(2,"0"),
+    String(date.getDate()).padStart(2,"0")
+  ].join("-");
+}
 
-    function rnaTeam(match, side) {
-      const keys = side === "home"
-        ? ["homeTeam", "home", "homeName", "ev", "evSahibi"]
-        : ["awayTeam", "away", "awayName", "dep", "deplasman"];
+function dateKey(match) {
+  if (typeof getDateKey === "function") {
+    try {
+      const key = getDateKey(match);
+      if (key) return String(key).slice(0,10);
+    } catch (_) {}
+  }
 
-      for (const key of keys) {
-        const value = match?.[key];
+  const values = [
+    match?.date, match?.matchDate, match?.gameDate,
+    match?.tarih, match?.datetime, match?.dateTime
+  ];
 
-        if (typeof value === "string" && value.trim()) return value;
+  for (const value of values) {
+    if (!value) continue;
+    const text = String(value).trim();
+    let m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
 
-        if (value && typeof value === "object") {
-          const name = value.name ?? value.title ?? value.teamName;
-          if (name) return name;
-        }
+    m = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+    if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+  }
+  return "";
+}
+
+function oddValue(value) {
+  if (value && typeof value === "object") {
+    value = value.odd ?? value.odds ?? value.value ?? value.opening;
+  }
+  const n = Number(String(value ?? "").replace(",", "."));
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+
+function readMarketOdd(match, market) {
+  if (typeof getOdds === "function") {
+    try {
+      const value = getOdds(match, market);
+      const n = oddValue(value);
+      if (n > 0) return n;
+    } catch (_) {}
+  }
+
+  const containers = [
+    match?.openingOdds,
+    match?.openOdds,
+    match?.odds,
+    match?.opening,
+    match?.oranlar,
+    match?.opening_prices,
+    match
+  ];
+
+  for (const container of containers) {
+    if (!container || typeof container !== "object") continue;
+
+    for (const key of market.fields) {
+      if (container[key] !== undefined) {
+        const n = oddValue(container[key]);
+        if (n > 0) return n;
       }
-
-      return "";
     }
+  }
 
-    function rnaTime(match) {
-      const values = [
-        match?.time,
-        match?.matchTime,
-        match?.startTime,
-        match?.hour,
-        match?.saat
-      ];
+  return 0;
+}
 
-      for (const value of values) {
-        if (!value) continue;
-        const found = String(value).match(/(\d{1,2}):(\d{2})/);
-        if (found) {
-          return `${found[1].padStart(2, "0")}:${found[2]}`;
-        }
+function teamName(match, side) {
+  if (typeof getTeamName === "function") {
+    try {
+      const value = getTeamName(match, side);
+      if (value) return String(value);
+    } catch (_) {}
+  }
+
+  const keys = side === "home"
+    ? ["homeTeam","home","homeName","home_team","ev","evSahibi"]
+    : ["awayTeam","away","awayName","away_team","dep","deplasman"];
+
+  for (const key of keys) {
+    const value = match?.[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (value && typeof value === "object") {
+      const name = value.name ?? value.title ?? value.teamName;
+      if (name) return String(name);
+    }
+  }
+  return "";
+}
+
+function matchTime(match) {
+  if (typeof getTime === "function") {
+    try {
+      const value = getTime(match);
+      if (value) return String(value);
+    } catch (_) {}
+  }
+
+  for (const value of [
+    match?.time,match?.matchTime,match?.startTime,
+    match?.hour,match?.saat,match?.datetime
+  ]) {
+    if (!value) continue;
+    const m = String(value).match(/(\d{1,2}):(\d{2})/);
+    if (m) return `${m[1].padStart(2,"0")}:${m[2]}`;
+  }
+  return "--:--";
+}
+
+function leagueName(match) {
+  if (typeof getLeague === "function") {
+    try {
+      const value = getLeague(match);
+      if (value) return String(value);
+    } catch (_) {}
+  }
+  return String(match?.league ?? match?.leagueName ?? match?.lig ?? match?.competition ?? "");
+}
+
+function isFinished(match) {
+  if (typeof isPlayed === "function") {
+    try { return Boolean(isPlayed(match)); } catch (_) {}
+  }
+  const score = match?.ft ?? match?.fullTime ?? match?.score ?? match?.result;
+  if (Array.isArray(score)) return score.length >= 2;
+  if (typeof score === "string") return /^\s*\d+\s*[-:]\s*\d+/.test(score);
+  if (score && typeof score === "object") {
+    return score.home !== undefined && score.away !== undefined;
+  }
+  return match?.status === "FT" || match?.status === "finished";
+}
+
+function targetResultWon(match, resultId) {
+  if (typeof getTargetResult === "function") {
+    try {
+      const value = getTargetResult(match, resultId);
+      if (typeof value === "boolean") return value;
+      if (value === 1 || value === 0) return Boolean(value);
+      if (typeof value === "string") {
+        const s = value.toLowerCase();
+        if (["win","won","success","correct","true","1"].includes(s)) return true;
+        if (["lose","lost","failure","false","0"].includes(s)) return false;
       }
+    } catch (_) {}
+  }
 
-      return "--:--";
+  const score = readScores(match);
+  if (!score) return null;
+
+  const {h,a,ih,ia} = score;
+  switch (resultId) {
+    case "MS1": return h > a;
+    case "MSX": return h === a;
+    case "MS2": return h < a;
+    case "IY1": return ih > ia;
+    case "IYX": return ih === ia;
+    case "IY2": return ih < ia;
+    case "KG_VAR": return h > 0 && a > 0;
+    case "KG_YOK": return h === 0 || a === 0;
+    case "IY_KG_VAR": return ih > 0 && ia > 0;
+    case "IY_KG_YOK": return ih === 0 || ia === 0;
+    case "IY15_ALT": return ih + ia < 2;
+    case "IY15_UST": return ih + ia >= 2;
+    case "15_ALT": return h + a < 2;
+    case "15_UST": return h + a >= 2;
+    case "25_UST": return h + a >= 3;
+    default: return null;
+  }
+}
+
+function readScores(match) {
+  if (typeof getScore === "function") {
+    try {
+      const ft = getScore(match, "ft");
+      const ht = getScore(match, "ht");
+      const full = parseScorePair(ft);
+      const half = parseScorePair(ht);
+      if (full && half) return {h:full[0],a:full[1],ih:half[0],ia:half[1]};
+    } catch (_) {}
+  }
+
+  const fullRaw = match?.ft ?? match?.fullTime ?? match?.score ?? match?.result ??
+    match?.full_time ?? match?.scoreFT;
+  const halfRaw = match?.ht ?? match?.halfTime ?? match?.half_time ??
+    match?.scoreHT ?? match?.halftimeScore;
+
+  const full = parseScorePair(fullRaw);
+  const half = parseScorePair(halfRaw);
+  if (!full || !half) return null;
+  return {h:full[0],a:full[1],ih:half[0],ia:half[1]};
+}
+
+function parseScorePair(value) {
+  if (Array.isArray(value) && value.length >= 2) {
+    const h = Number(value[0]), a = Number(value[1]);
+    return Number.isFinite(h) && Number.isFinite(a) ? [h,a] : null;
+  }
+
+  if (value && typeof value === "object") {
+    const h = Number(value.home ?? value.h ?? value.homeScore);
+    const a = Number(value.away ?? value.a ?? value.awayScore);
+    return Number.isFinite(h) && Number.isFinite(a) ? [h,a] : null;
+  }
+
+  if (typeof value === "string") {
+    const m = value.match(/(\d+)\s*[-:]\s*(\d+)/);
+    if (m) return [Number(m[1]),Number(m[2])];
+  }
+  return null;
+}
+
+function matchIdentity(match) {
+  const id = match?.id ?? match?.matchId ?? match?.fixtureId;
+  if (id !== undefined && id !== null && String(id).trim()) return "id:" + id;
+  return [
+    dateKey(match),matchTime(match),
+    teamName(match,"home").toLocaleLowerCase("tr-TR"),
+    teamName(match,"away").toLocaleLowerCase("tr-TR")
+  ].join("|");
+}
+
+function dateDaysBefore(dateString, days) {
+  const date = new Date(dateString + "T12:00:00");
+  date.setDate(date.getDate() - days);
+  return localDateKey(date);
+}
+
+/*
+ * Her market ve her açılış oranı ayrı gruptur.
+ * Başarı, kullanıcının seçtiği resultId sonucuna göre hesaplanır.
+ */
+function analyzeMarketOdds(targetDate, resultId) {
+  const startDate = dateDaysBefore(targetDate, RNA.HISTORY_DAYS);
+
+  const history = rnaMatches.filter(match => {
+    const date = dateKey(match);
+    return date && date >= startDate && date < targetDate && isFinished(match);
+  });
+
+  const future = rnaMatches.filter(match =>
+    dateKey(match) === targetDate && !isFinished(match)
+  );
+
+  const rows = [];
+  const resultLabel = RNA.results.find(r => r.id === resultId)?.label || resultId;
+
+  for (const market of RNA.markets) {
+    const groups = new Map();
+
+    for (const oldMatch of history) {
+      const odd = readMarketOdd(oldMatch, market);
+      if (!odd) continue;
+
+      const won = targetResultWon(oldMatch, resultId);
+      if (won === null) continue;
+
+      const key = odd.toFixed(2);
+      if (!groups.has(key)) groups.set(key, {total:0,success:0});
+      const group = groups.get(key);
+      group.total++;
+      if (won) group.success++;
     }
 
-    function rnaLeague(match) {
-      return match?.league ?? match?.leagueName ??
-        match?.lig ?? match?.competition ?? "";
+    for (const currentMatch of future) {
+      const odd = readMarketOdd(currentMatch, market);
+      if (!odd) continue;
+
+      const group = groups.get(odd.toFixed(2));
+      if (!group || group.total < RNA.MIN_SAMPLE) continue;
+
+      const rate = group.success / group.total * 100;
+      if (rate < RNA.MIN_SUCCESS || group.success === 0) continue;
+
+      rows.push({
+        match: currentMatch,
+        identity: matchIdentity(currentMatch),
+        home: teamName(currentMatch,"home"),
+        away: teamName(currentMatch,"away"),
+        time: matchTime(currentMatch),
+        league: leagueName(currentMatch),
+        market: market.label,
+        odd,
+        total: group.total,
+        success: group.success,
+        rate,
+        resultId,
+        resultLabel
+      });
+    }
+  }
+
+  return rows;
+}
+
+/*
+ * Aynı maç birden fazla markette eşleşebilir.
+ * Kuponlarda o maç yalnızca bir defa kullanılacak.
+ */
+function selectUniqueCandidates(rows) {
+  const bestByMatch = new Map();
+
+  rows.sort((a,b) =>
+    b.rate - a.rate ||
+    b.total - a.total ||
+    a.market.localeCompare(b.market,"tr")
+  );
+
+  for (const row of rows) {
+    const old = bestByMatch.get(row.identity);
+    if (!old) {
+      bestByMatch.set(row.identity,row);
+      continue;
     }
 
-    function rnaDateOf(match) {
-      const values = [
-        match?.date, match?.matchDate, match?.gameDate,
-        match?.tarih, match?.datetime, match?.dateTime
-      ];
+    if (row.rate > old.rate ||
+      (row.rate === old.rate && row.total > old.total)) {
+      bestByMatch.set(row.identity,row);
+    }
+  }
 
-      for (const value of values) {
-        if (!value) continue;
+  return [...bestByMatch.values()].sort((a,b) =>
+    b.rate-a.rate || b.total-a.total
+  );
+}
 
-        const text = String(value).trim();
-        let found = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+function buildCoupons(candidates) {
+  const coupons = [];
+  const used = new Set();
 
-        if (found) {
-          return `${found[3]}-${found[2].padStart(2, "0")}-${found[1].padStart(2, "0")}`;
-        }
+  for (let i=0; i<RNA.MAX_COUPONS; i++) {
+    const remaining = candidates.filter(item => !used.has(item.identity));
+    if (!remaining.length) break;
 
-        found = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+    let selected = [];
+    let totalOdds = 1;
 
-        if (found) {
-          return `${found[1]}-${found[2].padStart(2, "0")}-${found[3].padStart(2, "0")}`;
-        }
-      }
-
-      return "";
+    for (const item of remaining) {
+      if (selected.length >= RNA.MAX_MATCHES) break;
+      selected.push(item);
+      totalOdds *= item.odd;
     }
 
-    function rnaIdentity(match) {
-      const id = match?.id ?? match?.matchId ?? match?.fixtureId;
-
-      if (id !== undefined && id !== null && String(id).trim()) {
-        return "id:" + String(id);
-      }
-
-      return [
-        rnaDateOf(match),
-        rnaTime(match),
-        rnaTeam(match, "home").trim().toLocaleLowerCase("tr-TR"),
-        rnaTeam(match, "away").trim().toLocaleLowerCase("tr-TR")
-      ].join("|");
-    }
+    if (!selected.length) break;
 
     /*
-      Sonuc-analizi.js içindeki runAnalysis() çağrılır.
-      Geçmiş hesabı ve oran eşleştirmesi yeniden uygulanmaz.
-    */
-    function rnaCollectCandidates(targetDate) {
-      if (typeof runAnalysis !== "function") {
-        throw new Error(
-          "Sonuc-analizi.js yüklenemedi. Dosya adını ve yolunu kontrol et."
-        );
-      }
+     * Minimum toplam oran 2.00.
+     * Seçimler tek tek açılış oranlarıdır; oran kombinasyonu analizi yoktur.
+     */
+    if (totalOdds < RNA.MIN_COUPON_ODDS) break;
 
-      const unique = new Map();
+    selected.forEach(item => used.add(item.identity));
+    coupons.push({number:i+1,matches:selected,totalOdds});
+  }
 
-      for (const resultId of RNA_RESULT_IDS) {
-        const analysis = runAnalysis(targetDate, resultId);
+  return coupons;
+}
 
-        if (!analysis || !Array.isArray(analysis.rows)) continue;
+function renderCoupon(coupon) {
+  const matchHtml = coupon.matches.map(item => `
+    <article class="match">
+      <div class="match-top">
+        <div>
+          <div class="teams">${escapeHtml(item.home)} – ${escapeHtml(item.away)}</div>
+          <div class="meta">${escapeHtml(item.time)}${item.league ? " · "+escapeHtml(item.league) : ""}</div>
+        </div>
+        <div class="pick">
+          ${escapeHtml(item.resultLabel)}
+          <small>Seçilen sonuç</small>
+        </div>
+      </div>
 
-        for (const row of analysis.rows) {
-          const rate = Number(row.rate);
-          const sample = Number(row.total);
-          const odd = rnaOdd(row.odd);
+      <div class="stats">
+        <span class="stat">Oran marketi: <b>${escapeHtml(item.market)}</b></span>
+        <span class="stat">Açılış oranı: <b>${item.odd.toFixed(2)}</b></span>
+        <span class="stat">Başarı: <b>%${item.rate.toFixed(1)}</b></span>
+        <span class="stat">Doğru: <b>${item.success}/${item.total}</b></span>
+      </div>
 
-          if (
-            !Number.isFinite(rate) ||
-            rate < 80 ||
-            !Number.isFinite(sample) ||
-            sample < 8 ||
-            odd <= 0
-          ) {
-            continue;
-          }
-
-          if (!Array.isArray(row.future)) continue;
-
-          for (const match of row.future) {
-            const home = rnaTeam(match, "home");
-            const away = rnaTeam(match, "away");
-
-            if (!home || !away) continue;
-
-            const candidate = {
-              match,
-              identity: rnaIdentity(match),
-              home,
-              away,
-              time: rnaTime(match),
-              league: rnaLeague(match),
-              market: row.marketLabel || row.marketId || "Tahmin",
-              odd,
-              rate,
-              sample,
-              resultId
-            };
-
-            const current = unique.get(candidate.identity);
-
-            /*
-              Aynı maç için birden fazla uygun kayıt varsa tek kayıt tutulur.
-              Öncelik: başarı yüzdesi, ardından örnek sayısı.
-            */
-            if (
-              !current ||
-              candidate.rate > current.rate ||
-              (candidate.rate === current.rate &&
-                candidate.sample > current.sample)
-            ) {
-              unique.set(candidate.identity, candidate);
-            }
-          }
-        }
-      }
-
-      return [...unique.values()].sort((a, b) =>
-        b.rate - a.rate ||
-        b.sample - a.sample ||
-        b.odd - a.odd
-      );
-    }
-
-    /*
-      Her maç en fazla bir kuponda kullanılabilir.
-      Kupon toplam oranı 2.00 altındaysa o kupon yayımlanmaz.
-    */
-    function rnaBuildCoupons(candidates) {
-      const coupons = [];
-      const used = new Set();
-
-      for (let i = 0; i < RNA_MAX_COUPONS; i++) {
-        const available = candidates.filter(item => !used.has(item.identity));
-        const selected = available.slice(0, RNA_MAX_MATCHES);
-
-        if (!selected.length) break;
-
-        const totalOdds = selected.reduce(
-          (total, item) => total * item.odd,
-          1
-        );
-
-        if (totalOdds < RNA_MIN_TOTAL_ODDS) {
-          /*
-            Daha sonraki kuponlar için uygun adayları tüketmeden dur.
-            Eşiği tutturmayan maçları zorla kupona ekleme.
-          */
-          break;
-        }
-
-        for (const item of selected) {
-          used.add(item.identity);
-        }
-
-        coupons.push({
-          number: i + 1,
-          matches: selected,
-          totalOdds
-        });
-      }
-
-      return coupons;
-    }
-
-    function rnaRenderCoupon(coupon) {
-      const matchesHtml = coupon.matches.map(item => `
-        <article class="rna-match">
-          <div class="rna-match-info">
-            <div class="rna-teams">
-              ${rnaEscape(item.home)} – ${rnaEscape(item.away)}
-            </div>
-
-            <div class="rna-match-meta">
-              <span>◷ ${rnaEscape(item.time)}</span>
-              ${item.league
-                ? `<span>${rnaEscape(item.league)}</span>`
-                : ""}
-            </div>
-
-            <div class="rna-market">
-              ${rnaEscape(item.market)}
-            </div>
-
-            <div class="rna-match-meta">
-              Başarı: %${item.rate.toFixed(1)}
-              <span>Örnek: ${item.sample}</span>
-            </div>
+      <div class="details">
+        <details>
+          <summary>Başarı hesabının detayları</summary>
+          <div class="history">
+            <div class="history-row"><span>Geçmiş gün aralığı</span><b>Son 30 gün</b></div>
+            <div class="history-row"><span>Eşleştirilen market</span><b>${escapeHtml(item.market)}</b></div>
+            <div class="history-row"><span>Eşleştirilen açılış oranı</span><b>${item.odd.toFixed(2)}</b></div>
+            <div class="history-row"><span>Seçilen sonuç</span><b>${escapeHtml(item.resultLabel)}</b></div>
+            <div class="history-row"><span>Seçilen sonuç doğru</span><b>${item.success} maç</b></div>
+            <div class="history-row"><span>Değerlendirilen geçmiş maç</span><b>${item.total} maç</b></div>
+            <div class="history-row"><span>Başarı yüzdesi</span><b>%${item.rate.toFixed(1)}</b></div>
           </div>
+        </details>
+      </div>
+    </article>
+  `).join("");
 
-          <div class="rna-odd">
-            ${item.odd.toFixed(2)}
-            <small>Açılış oranı</small>
-          </div>
-        </article>
-      `).join("");
+  return `
+    <article class="coupon">
+      <header class="coupon-head">
+        <div>
+          <h3>Kupon ${coupon.number}</h3>
+          <div class="small">${coupon.matches.length} maç · Tekrarsız</div>
+        </div>
+        <span class="tag">Toplam ${coupon.totalOdds.toFixed(2)}</span>
+      </header>
+      ${matchHtml}
+    </article>
+  `;
+}
 
-      return `
-        <article class="rna-coupon">
-          <header class="rna-coupon-header">
-            <div>
-              <h3 class="rna-coupon-title">Kupon ${coupon.number}</h3>
-              <div class="rna-coupon-subtitle">
-                ${coupon.matches.length} maç · Tekrarsız seçim
-              </div>
-            </div>
+function render(coupons, candidateCount, resultLabel) {
+  if (!coupons.length) {
+    $("coupons").innerHTML = `
+      <div class="empty">
+        <strong>Uygun kupon bulunamadı</strong>
+        ${candidateCount
+          ? "Uygun analizler bulundu ancak kupon şartlarını sağlayan seçim çıkmadı."
+          : "Bu tarihte seçilen sonuç için eşik değerlerini karşılayan eşleşme bulunamadı."}
+        <br>Örnek ve başarı kriterleri düşürülmedi.
+      </div>
+    `;
+    status("Kupon oluşturulamadı. Tarih, veri ve eşleşen oranları kontrol et.","error");
+    return;
+  }
 
-            <span class="rna-count">
-              ${coupon.matches.length}/${RNA_MAX_MATCHES} maç
-            </span>
-          </header>
+  $("coupons").innerHTML = coupons.map(renderCoupon).join("");
+  const usedMatches = coupons.reduce((sum,c) => sum+c.matches.length,0);
+  status(
+    `${coupons.length} kupon hazırlandı. Sonuç: ${resultLabel}. `+
+    `${usedMatches} farklı maç kullanıldı; hiçbir maç tekrar edilmedi.`,
+    "success"
+  );
+}
 
-          ${matchesHtml}
+function createCoupons() {
+  if (rnaWorking) return;
 
-          <footer class="rna-coupon-footer">
-            <div>
-              <div class="rna-total-label">Toplam oran</div>
-              <div class="rna-total">${coupon.totalOdds.toFixed(2)}</div>
-            </div>
+  const targetDate = $("targetDate").value;
+  const resultId = $("targetResult").value;
 
-            <div class="rna-foot-note">
-              Minimum toplam oran<br>
-              <strong>2.00</strong>
-            </div>
-          </footer>
-        </article>
-      `;
+  if (!targetDate) {
+    status("Önce maç tarihi seç.","error");
+    return;
+  }
+
+  if (!rnaLoaded || !Array.isArray(rnaMatches) || !rnaMatches.length) {
+    status("Maç verileri henüz yüklenmedi veya veri dosyası boş. Biraz sonra tekrar dene.","error");
+    return;
+  }
+
+  rnaWorking = true;
+  $("generate").disabled = true;
+  $("generate").textContent = "Taranıyor…";
+  $("coupons").innerHTML = `<div class="empty">Tüm marketler ve oranlar taranıyor…</div>`;
+  status("Geçmiş 30 gün taranıyor. Her marketin aynı açılış oranı ayrı eşleştiriliyor.");
+
+  try {
+    const rows = analyzeMarketOdds(targetDate,resultId);
+    const candidates = selectUniqueCandidates(rows);
+    const coupons = buildCoupons(candidates);
+    const label = RNA.results.find(r => r.id === resultId)?.label || resultId;
+    render(coupons,candidates.length,label);
+  } catch (error) {
+    console.error(error);
+    status("Analiz hatası: " + (error?.message || "Bilinmeyen hata"),"error");
+    $("coupons").innerHTML = `<div class="empty"><strong>Analiz tamamlanamadı</strong>Konsoldaki hata ve veri alanları kontrol edilmeli.</div>`;
+  } finally {
+    rnaWorking = false;
+    $("generate").disabled = false;
+    $("generate").textContent = "Kuponları oluştur";
+  }
+}
+
+async function loadRnaData() {
+  /*
+   * Öncelik: mevcut analiz motorunun yüklediği allMatches.
+   * Bu değişken global lexical kapsamda olduğu için typeof ile kontrol edilir.
+   */
+  try {
+    if (typeof allMatches !== "undefined" && Array.isArray(allMatches) && allMatches.length) {
+      rnaMatches = allMatches;
+      rnaLoaded = true;
+      status(`${rnaMatches.length} maç verisi hazır. Tarih ve sonuç seçebilirsin.`,"success");
+      return;
     }
+  } catch (_) {}
 
-    function rnaRenderCoupons(coupons, candidateCount) {
-      if (!coupons.length) {
-        rnaCoupons.innerHTML = `
-          <div class="rna-empty">
-            <strong>Uygun kupon oluşturulamadı</strong>
-            ${candidateCount
-              ? "Uygun tahminler bulundu ancak seçilen maçlarla toplam oran 2.00 şartını karşılayan kupon oluşmadı."
-              : "Seçilen tarihte mevcut analiz kriterlerini karşılayan uygun maç bulunamadı."}
-            <br>
-            Başarı ve örnek kriterleri düşürülmedi.
-          </div>
-        `;
+  /*
+   * Motorun kendi fetch işlemi bitmemişse aynı JSON dosyasını beklemeden yükle.
+   * Bu işlem hesaplama formülünü değiştirmez.
+   */
+  const urls = ["./data/v2-data.json"];
 
-        rnaSetStatus(
-          "Bu tarih için kupon şartlarını karşılayan seçim bulunamadı.",
-          "error"
-        );
+  for (const url of urls) {
+    try {
+      const response = await fetch(url + "?t=" + Date.now(), {cache:"no-store"});
+      if (!response.ok) continue;
+
+      const json = await response.json();
+      const matches = Array.isArray(json) ? json : json.matches;
+
+      if (Array.isArray(matches) && matches.length) {
+        rnaMatches = matches;
+        rnaLoaded = true;
+        status(`${rnaMatches.length} maç verisi yüklendi. Analiz için hazır.`,"success");
         return;
       }
-
-      rnaCoupons.innerHTML = coupons.map(rnaRenderCoupon).join("");
-
-      const matchCount = coupons.reduce(
-        (total, coupon) => total + coupon.matches.length,
-        0
-      );
-
-      rnaSetStatus(
-        `${coupons.length} kupon oluşturuldu · ${matchCount} farklı maç kullanıldı · Hiçbir maç tekrarlanmadı.`,
-        "success"
-      );
+    } catch (error) {
+      console.warn("Veri yükleme denemesi başarısız:",url,error);
     }
+  }
 
-    function rnaCreateCoupons() {
-      if (rnaBusy) return;
+  status("data/v2-data.json yüklenemedi. Dosyanın konumunu ve GitHub Pages yayınını kontrol et.","error");
+}
 
-      if (typeof runAnalysis !== "function") {
-        rnaSetStatus(
-          "Analiz motoru bulunamadı. Sonuc-analizi.js dosyasını kontrol et.",
-          "error"
-        );
-        return;
-      }
-
-      const targetDate = rnaDate.value;
-
-      if (!targetDate) {
-        rnaSetStatus("Lütfen bir maç tarihi seç.", "error");
-        return;
-      }
-
-      rnaBusy = true;
-      rnaGenerate.disabled = true;
-      rnaGenerate.textContent = "Oluşturuluyor…";
-      rnaSetStatus("Analiz sonuçları değerlendiriliyor…");
-
-      rnaCoupons.innerHTML = `
-        <div class="rna-empty">Kuponlar hazırlanıyor…</div>
-      `;
-
-      try {
-        const candidates = rnaCollectCandidates(targetDate);
-        const coupons = rnaBuildCoupons(candidates);
-
-        rnaRenderCoupons(coupons, candidates.length);
-      } catch (error) {
-        console.error(error);
-
-        rnaCoupons.innerHTML = `
-          <div class="rna-empty">
-            <strong>Kupon oluşturulamadı</strong>
-            ${rnaEscape(error.message || "Beklenmeyen bir hata oluştu.")}
-          </div>
-        `;
-
-        rnaSetStatus(
-          "Motorun veri yükleme durumu veya analiz çıktısı kontrol edilmeli.",
-          "error"
-        );
-      } finally {
-        rnaBusy = false;
-        rnaGenerate.disabled = false;
-        rnaGenerate.textContent = "Kuponları oluştur";
-      }
-    }
-
-    function rnaInitialize() {
-      rnaDate.value = rnaTodayKey();
-      document.getElementById("saDate").value = rnaDate.value;
-
-      rnaGenerate.addEventListener("click", rnaCreateCoupons);
-
-      /*
-        Motor kendi init() fonksiyonuyla verileri asenkron yükler.
-        Kullanıcı butona bastığında veri yüklemesi tamamlanmamışsa
-        açık bir hata gösterilir; analiz formülleri değiştirilmez.
-      */
-      if (typeof runAnalysis === "function") {
-        rnaSetStatus(
-          "Analiz motoru yüklendi. Tarih seçip kupon oluşturabilirsin."
-        );
-      } else {
-        rnaSetStatus(
-          "Sonuc-analizi.js henüz bulunamadı. Dosya yolunu kontrol et.",
-          "error"
-        );
-      }
-    }
-
-    rnaInitialize();
-  </script>
+$("targetDate").value = localDateKey(new Date());
+$("generate").addEventListener("click",createCoupons);
+loadRnaData();
+</script>
 </body>
 </html>
