@@ -1,21 +1,16 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>⌬ NEXUS</title>
-
   <meta name="theme-color" content="#07111f">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="NEXUS">
-
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="stylesheet" href="style.css">
-
   <style>
     :root {
       --nx-bg: #07111f;
@@ -29,11 +24,9 @@
       --nx-purple: #c084fc;
       --nx-orange: #fb923c;
     }
-
     * {
       box-sizing: border-box;
     }
-
     body {
       min-height: 100vh;
       margin: 0;
@@ -43,7 +36,6 @@
         radial-gradient(circle at 100% 0%, rgba(45, 212, 191, .08), transparent 28%),
         linear-gradient(180deg, #07111f 0%, #0b1424 55%, #0f172a 100%) !important;
     }
-
     /* ÜST BAR */
     .topbar {
       position: relative;
@@ -56,7 +48,6 @@
       border-bottom: 1px solid var(--nx-border) !important;
       box-shadow: 0 10px 35px rgba(0, 0, 0, .24);
     }
-
     /* LOGO */
     .brand {
       display: flex;
@@ -64,7 +55,6 @@
       gap: 12px;
       min-width: 0;
     }
-
     .brand-icon {
       display: flex;
       align-items: center;
@@ -78,7 +68,6 @@
       box-shadow: 0 7px 22px rgba(37, 99, 235, .25);
       font-size: 23px;
     }
-
     .brand h1 {
       margin: 0;
       color: #fff !important;
@@ -86,7 +75,6 @@
       font-weight: 900;
       letter-spacing: 1.5px;
     }
-
     .brand span {
       display: block;
       margin-top: 3px;
@@ -95,7 +83,6 @@
       font-weight: 700;
       letter-spacing: 2px;
     }
-
     /* SPOR SEÇİMİ */
     .sport-switcher {
       display: grid;
@@ -103,7 +90,6 @@
       gap: 10px;
       width: 100%;
     }
-
     .sport-switch {
       display: flex;
       align-items: center;
@@ -118,60 +104,49 @@
       text-decoration: none;
       transition: border-color .2s, background .2s, transform .2s;
     }
-
     .sport-switch:hover {
       transform: translateY(-1px);
       border-color: rgba(148, 163, 184, .35);
     }
-
     .sport-switch .sport-icon {
       font-size: 25px;
       line-height: 1;
     }
-
     .sport-switch .sport-copy {
       display: flex;
       flex-direction: column;
       gap: 4px;
       text-align: left;
     }
-
     .sport-switch strong {
       font-size: 14px;
       font-weight: 800;
     }
-
     .sport-switch small {
       color: var(--nx-muted);
       font-size: 10px;
     }
-
     .sport-switch.football {
       border-color: rgba(45, 212, 191, .45);
       background: linear-gradient(135deg, rgba(13, 148, 136, .20), rgba(15, 23, 42, .8));
       box-shadow: inset 0 0 0 1px rgba(45, 212, 191, .04);
     }
-
     .sport-switch.football strong {
       color: #5eead4;
     }
-
     .sport-switch.basketball {
       border-color: rgba(251, 146, 60, .20);
     }
-
     .sport-switch.basketball strong {
       color: #fdba74;
     }
-
-    /* FUTBOL ALT MENÜSÜ */
+    /* ANA MENÜ */
     .top-actions {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 9px;
       width: 100%;
     }
-
     .top-actions a,
     .top-actions button {
       display: flex;
@@ -190,50 +165,57 @@
       line-height: 1.25;
       text-align: center;
       text-decoration: none;
-      white-space: nowrap;
+      white-space: normal;
       cursor: pointer;
       transition: transform .18s ease, filter .18s ease, border-color .18s ease;
     }
-
     .top-actions a:hover,
     .top-actions button:hover {
       transform: translateY(-2px);
       filter: brightness(1.12);
     }
-
     .top-actions a:active,
     .top-actions button:active {
       transform: translateY(0);
     }
-
     .top-actions .sport-toto-btn {
       background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
       box-shadow: 0 5px 16px rgba(37, 99, 235, .17);
     }
-
     .top-actions .coupon-btn {
       background: linear-gradient(135deg, #6d28d9, #9333ea) !important;
       box-shadow: 0 5px 16px rgba(147, 51, 234, .15);
     }
-
     .top-actions .dna-rna-btn {
       background: linear-gradient(135deg, #0f766e, #0d9488) !important;
       border-color: rgba(45, 212, 191, .22);
       box-shadow: 0 5px 16px rgba(20, 184, 166, .15);
     }
-
+    .top-actions .dna-btn {
+      background: linear-gradient(135deg, #4338ca, #6366f1) !important;
+      border-color: rgba(165, 180, 252, .25);
+      box-shadow: 0 5px 16px rgba(99, 102, 241, .16);
+    }
+    .top-actions .rna-lab-btn {
+      background: linear-gradient(135deg, #9a3412, #ea580c) !important;
+      border-color: rgba(251, 146, 60, .25);
+      box-shadow: 0 5px 16px rgba(234, 88, 12, .15);
+    }
+    .top-actions .dna-lab-btn {
+      background: linear-gradient(135deg, #9f1239, #e11d48) !important;
+      border-color: rgba(251, 113, 133, .30);
+      box-shadow: 0 5px 16px rgba(225, 29, 72, .17);
+    }
     .top-actions .refresh-btn {
       background: linear-gradient(135deg, #155e75, #0891b2) !important;
       box-shadow: 0 5px 16px rgba(6, 182, 212, .15);
     }
-
     /* ANA İÇERİK */
     .container {
       width: min(1180px, 100%);
       margin: 0 auto;
       padding: 22px clamp(12px, 2.5vw, 25px);
     }
-
     /* HERO */
     .hero {
       position: relative;
@@ -246,7 +228,6 @@
         linear-gradient(120deg, rgba(37, 99, 235, .17), rgba(6, 182, 212, .07), rgba(168, 85, 247, .08)) !important;
       box-shadow: 0 14px 40px rgba(0, 0, 0, .18);
     }
-
     .hero::after {
       position: absolute;
       top: -100px;
@@ -258,7 +239,6 @@
       content: "";
       pointer-events: none;
     }
-
     .eyebrow {
       margin-bottom: 9px;
       color: var(--nx-blue) !important;
@@ -266,28 +246,24 @@
       font-weight: 900;
       letter-spacing: 2px;
     }
-
     .hero h2 {
       margin: 0;
       color: #fff !important;
       font-size: clamp(21px, 3vw, 28px);
       font-weight: 850;
     }
-
     .hero p {
       margin: 9px 0 0;
       color: #cbd5e1 !important;
       font-size: 13px;
       line-height: 1.6;
     }
-
     /* TAKVİM */
     .calendar-section {
       position: relative;
       z-index: 10;
       margin-bottom: 16px;
     }
-
     .calendar-button {
       display: inline-flex;
       align-items: center;
@@ -305,11 +281,9 @@
       cursor: pointer;
       box-shadow: 0 7px 22px rgba(37, 99, 235, .17);
     }
-
     .calendar-arrow {
       margin-left: 5px;
     }
-
     .calendar-popup {
       position: absolute;
       top: calc(100% + 8px);
@@ -322,11 +296,9 @@
       background: #0e1b2d !important;
       box-shadow: 0 20px 50px rgba(0, 0, 0, .42) !important;
     }
-
     .calendar-popup.hidden {
       display: none !important;
     }
-
     .calendar-header {
       display: flex;
       align-items: center;
@@ -336,12 +308,10 @@
       background: linear-gradient(135deg, #172554, #1e3a8a) !important;
       border-bottom: 1px solid var(--nx-border) !important;
     }
-
     .calendar-header strong {
       color: #fff !important;
       font-size: 14px;
     }
-
     .month-btn {
       width: 34px;
       height: 34px;
@@ -352,7 +322,6 @@
       font-size: 22px;
       cursor: pointer;
     }
-
     .weekdays,
     .calendar-days {
       display: grid;
@@ -360,14 +329,12 @@
       gap: 4px;
       padding: 9px;
     }
-
     .weekdays {
       color: #93c5fd !important;
       font-size: 11px;
       font-weight: 800;
       text-align: center;
     }
-
     .calendar-days button {
       min-width: 0;
       min-height: 34px;
@@ -379,11 +346,9 @@
       font-size: 12px;
       cursor: pointer;
     }
-
     .calendar-days button:hover {
       background: rgba(37, 99, 235, .22) !important;
     }
-
     /* FİLTRELER */
     .filters {
       display: grid;
@@ -397,21 +362,18 @@
       background: linear-gradient(135deg, rgba(15, 23, 42, .96), rgba(17, 24, 39, .92)) !important;
       box-shadow: 0 10px 30px rgba(0, 0, 0, .14);
     }
-
     .filter-box {
       display: flex;
       flex-direction: column;
       gap: 8px;
       min-width: 0;
     }
-
     .filter-box label,
     .check-box {
       color: #cbd5e1 !important;
       font-size: 12px;
       font-weight: 700;
     }
-
     .filter-box input,
     .filter-box select {
       width: 100%;
@@ -425,23 +387,19 @@
       font-family: inherit;
       font-size: 13px;
     }
-
     .filter-box input::placeholder {
       color: #64748b !important;
     }
-
     .filter-box input:focus,
     .filter-box select:focus {
       border-color: rgba(96, 165, 250, .65) !important;
       outline: none;
       box-shadow: 0 0 0 3px rgba(37, 99, 235, .13);
     }
-
     .filter-box select option {
       background: #0f172a;
       color: #fff;
     }
-
     .check-box {
       display: flex;
       align-items: center;
@@ -451,13 +409,11 @@
       cursor: pointer;
       white-space: nowrap;
     }
-
     .check-box input {
       width: 16px;
       height: 16px;
       accent-color: #2dd4bf;
     }
-
     /* DURUM */
     .status-bar {
       display: flex;
@@ -473,16 +429,13 @@
       color: #cbd5e1 !important;
       font-size: 12px;
     }
-
     #message {
       color: #bfdbfe !important;
     }
-
     #updatedAt {
       color: var(--nx-muted) !important;
       font-size: 11px;
     }
-
     /* ÖZET */
     #summary {
       display: grid;
@@ -490,20 +443,17 @@
       gap: 12px;
       margin-bottom: 16px;
     }
-
     #summary > * {
       border-color: rgba(96, 165, 250, .16) !important;
       border-radius: 14px;
       background: linear-gradient(135deg, rgba(15, 23, 42, .94), rgba(30, 41, 59, .90)) !important;
       box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
     }
-
     /* MAÇLAR */
     #content {
       display: grid;
       gap: 13px;
     }
-
     #content > * {
       border-color: rgba(96, 165, 250, .14) !important;
       border-radius: 15px;
@@ -511,37 +461,31 @@
       box-shadow: 0 10px 30px rgba(0, 0, 0, .16);
       transition: border-color .18s ease, box-shadow .18s ease;
     }
-
     #content > *:hover {
       border-color: rgba(96, 165, 250, .30) !important;
       box-shadow: 0 15px 35px rgba(0, 0, 0, .24);
     }
-
     #content [class*="success"],
     #content [class*="rate"],
     #content [class*="percent"] {
       color: #4ade80 !important;
       font-weight: 800;
     }
-
     #content [class*="odd"],
     #content [class*="odds"] {
       color: #60a5fa !important;
       font-weight: 800;
     }
-
     #content [class*="prediction"],
     #content [class*="predict"],
     #content [class*="pick"] {
       color: #4ade80 !important;
       font-weight: 800;
     }
-
     #content [class*="score"] {
       color: #fff !important;
       font-weight: 900;
     }
-
     /* FOOTER */
     footer {
       margin-top: 25px;
@@ -551,30 +495,25 @@
       font-size: 12px;
       text-align: center;
     }
-
-    /* TABLET */
+    /* TABLET VE MASAÜSTÜ */
     @media (min-width: 900px) {
       .topbar {
         padding-right: max(24px, calc((100vw - 1180px) / 2));
         padding-left: max(24px, calc((100vw - 1180px) / 2));
       }
-
       .brand {
         align-self: flex-start;
       }
-
       .sport-switcher {
         max-width: 520px;
       }
     }
-
     /* MOBİL */
     @media (max-width: 700px) {
       .topbar {
         gap: 14px;
         padding: 14px 12px;
       }
-
       .brand-icon {
         flex-basis: 41px;
         width: 41px;
@@ -582,89 +521,71 @@
         border-radius: 13px;
         font-size: 21px;
       }
-
       .brand h1 {
         font-size: 19px;
       }
-
       .brand span {
         font-size: 9px;
       }
-
       .sport-switcher {
         gap: 8px;
       }
-
       .sport-switch {
         min-height: 58px;
         gap: 8px;
         padding: 9px 6px;
         border-radius: 12px;
       }
-
       .sport-switch .sport-icon {
         font-size: 22px;
       }
-
       .sport-switch strong {
         font-size: 12px;
       }
-
       .sport-switch small {
         font-size: 9px;
       }
-
       .top-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
       }
-
       .top-actions a,
       .top-actions button {
-        min-height: 42px;
-        padding: 9px 5px;
+        min-height: 44px;
+        padding: 9px 6px;
         font-size: 12px;
       }
-
       .container {
         padding: 16px 12px;
       }
-
       .hero {
         margin-bottom: 16px;
         border-radius: 16px;
       }
-
       .filters {
         grid-template-columns: minmax(0, 1fr);
         gap: 13px;
         padding: 14px;
       }
-
       .check-box {
         min-height: 32px;
       }
-
       .status-bar {
         align-items: flex-start;
         flex-direction: column;
       }
-
       #summary {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 9px;
       }
     }
-
     @media (max-width: 360px) {
       .sport-switch .sport-icon {
         font-size: 19px;
       }
-
       .sport-switch strong {
         font-size: 11px;
       }
-
       .top-actions a,
       .top-actions button {
         font-size: 11px;
@@ -672,88 +593,68 @@
     }
   </style>
 </head>
-
 <body>
-
-  <!-- NEXUS ÜST MENÜ -->
   <header class="topbar">
-
+    <!-- NEXUS LOGO -->
     <div class="brand">
-      <div class="brand-icon">⌬</div>
+      <div class="brand-icon" aria-hidden="true">⌬</div>
       <div>
         <h1>NEXUS</h1>
         <span>SPORTS ANALYTICS</span>
       </div>
     </div>
-
     <!-- SPOR GEÇİŞLERİ -->
     <nav class="sport-switcher" aria-label="Spor seçimi">
-
-      <a
-        href="index.html"
-        class="sport-switch football"
-        aria-current="page"
-      >
+      <a href="index.html" class="sport-switch football" aria-current="page">
         <span class="sport-icon" aria-hidden="true">⚽</span>
         <span class="sport-copy">
           <strong>Futbol</strong>
           <small>Maç ve oran analizi</small>
         </span>
       </a>
-
-      <a
-        href="https://teador612.github.io/mackolik1/basketbol/"
-        class="sport-switch basketball"
-      >
+      <a href="https://teador612.github.io/mackolik1/basketbol/" class="sport-switch basketball">
         <span class="sport-icon" aria-hidden="true">🏀</span>
         <span class="sport-copy">
           <strong>Basketbol</strong>
           <small>Tahmin ve istatistik</small>
         </span>
       </a>
-
     </nav>
-
     <!-- FUTBOL MENÜSÜ -->
     <nav class="top-actions" aria-label="Futbol menüsü">
-
       <a href="v2.html" class="sport-toto-btn">
         <span aria-hidden="true">⚛️</span>
         <span>Proton</span>
       </a>
-
       <a href="kupon.html" class="coupon-btn">
         <span aria-hidden="true">🎟️</span>
         <span>Laboratuvar</span>
       </a>
-
       <a href="sonuc-analizi.html" class="dna-rna-btn">
-        <span aria-hidden="true">🧬</span>
+        <span aria-hidden="true">📊</span>
         <span>RNA</span>
       </a>
-  <a href="dna.html" class="dna-rna-btn">
-    <span aria-hidden="true">🧬</span>
-    <span>DNA</span>
-  </a>
-  <a href="dna-kupon.html" class="coupon-btn">
-    <span aria-hidden="true">🧪</span>
-    <span>RNA Laboratuvar</span>
-  </a>
-      <button
-        id="refreshButton"
-        class="refresh-btn"
-        type="button"
-      >
-        <span aria-hidden="true">↻</span>
+      <a href="dna.html" class="dna-btn">
+        <span aria-hidden="true">🧬</span>
+        <span>DNA</span>
+      </a>
+      <a href="rna-kupon.html" class="rna-lab-btn">
+        <span aria-hidden="true">🧪</span>
+        <span>RNA Laboratuvar</span>
+      </a>
+      <!-- YENİ DNA LABORATUVAR -->
+      <a href="https://teador612.github.io/mackolik1/dna-kupon.html" class="dna-lab-btn">
+        <span aria-hidden="true">🧫</span>
+        <span>DNA Laboratuvar</span>
+      </a>
+      <button id="refreshButton" class="refresh-btn" type="button">
+        <span aria-hidden="true">🔄</span>
         <span>Yenile</span>
       </button>
-
     </nav>
   </header>
-
   <!-- ANA İÇERİK -->
   <main class="container">
-
     <section class="hero">
       <div>
         <div class="eyebrow">NEXUS VERİ MERKEZİ</div>
@@ -761,10 +662,8 @@
         <p id="pageDescription"></p>
       </div>
     </section>
-
     <!-- TAKVİM -->
     <section class="calendar-section">
-
       <button
         id="calendarToggle"
         class="calendar-button"
@@ -776,15 +675,12 @@
         <span id="selectedDateText">Tarih seç</span>
         <span class="calendar-arrow" aria-hidden="true">⌄</span>
       </button>
-
       <div id="calendarPopup" class="calendar-popup hidden">
-
         <div class="calendar-header">
           <button id="prevMonth" class="month-btn" type="button" aria-label="Önceki ay">‹</button>
           <strong id="calendarMonth">-</strong>
           <button id="nextMonth" class="month-btn" type="button" aria-label="Sonraki ay">›</button>
         </div>
-
         <div class="weekdays">
           <div>Pzt</div>
           <div>Sal</div>
@@ -794,15 +690,11 @@
           <div>Cmt</div>
           <div>Paz</div>
         </div>
-
         <div id="calendarDays" class="calendar-days"></div>
-
       </div>
     </section>
-
     <!-- FİLTRELER -->
     <section class="filters">
-
       <div class="filter-box">
         <label for="search">Maç / Takım</label>
         <input
@@ -812,64 +704,49 @@
           autocomplete="off"
         >
       </div>
-
       <div class="filter-box">
         <label for="leagueFilter">Lig</label>
         <select id="leagueFilter">
           <option value="">Tüm Ligler</option>
         </select>
       </div>
-
       <label class="check-box" for="unplayedOnly">
         <input type="checkbox" id="unplayedOnly">
         <span>Sadece oynanmamış</span>
       </label>
-
     </section>
-
     <!-- DURUM -->
     <section class="status-bar">
       <div id="message">Veriler yükleniyor...</div>
       <div id="updatedAt">-</div>
     </section>
-
     <!-- ÖZET -->
     <div id="summary"></div>
-
     <!-- MAÇ LİSTESİ -->
     <section id="content"></section>
-
   </main>
-
   <footer>
     Ne kadar emek verdiğini sadece sen bilirsin..
   </footer>
-
   <!-- MEVCUT ANA SİSTEM -->
   <script src="app.js"></script>
-
+  <!-- TAKVİM ERİŞİLEBİLİRLİĞİ -->
   <script>
-    // Takvim düğmesinin erişilebilirlik durumunu güncelle.
-    // Takvimin açılıp kapanma işlemini mevcut app.js yönetir.
     (function () {
       const toggle = document.getElementById("calendarToggle");
       const popup = document.getElementById("calendarPopup");
-
       if (!toggle || !popup) return;
-
       const observer = new MutationObserver(function () {
         toggle.setAttribute(
           "aria-expanded",
           String(!popup.classList.contains("hidden"))
         );
       });
-
       observer.observe(popup, {
         attributes: true,
         attributeFilter: ["class"]
       });
     })();
   </script>
-
 </body>
 </html>
