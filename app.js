@@ -5,7 +5,7 @@
 ========================================================= */
 
 const DATA_URL = "./data/matches.json";
-const HISTORY_DAYS = 60;
+const HISTORY_DAYS = 30;
 const MIN_SAMPLE = 5;
 const MIN_SUCCESS = 70;
 
