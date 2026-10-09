@@ -1,89 +1,560 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#07111f">
-<title>DNA-RNA | Kupon Analizi</title>
-<link rel="stylesheet" href="./style.css">
-
-<style>
-:root{color-scheme:dark;--bg:#07111f;--panel:#101d30;--panel2:#15243a;--border:#263953;--text:#edf4ff;--muted:#9aacc4;--blue:#5c9dff;--green:#28c785;--red:#ff6474;--yellow:#f6c453}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-.dk-app{width:min(1120px,100%);margin:auto;padding:18px}
-.dk-header,.dk-card-top,.dk-coupon-header,.dk-coupon-total{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-.dk-header{margin-bottom:18px}.dk-brand{font-size:24px;font-weight:900;letter-spacing:1px}.dk-brand span{color:var(--blue)}
-.dk-header a{color:var(--blue);text-decoration:none;border:1px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px}
-.dk-heading{margin:8px 0 5px;font-size:24px}.dk-description{margin:0 0 18px;color:var(--muted);font-size:13px;line-height:1.6}
-.dk-panel,.dk-stat,.dk-card{background:var(--panel);border:1px solid var(--border);border-radius:13px;min-width:0}
-.dk-panel{padding:16px;margin-bottom:16px}.dk-panel-title{margin:0 0 14px;font-size:17px;font-weight:800}
-.dk-filters{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.dk-field label{display:block;color:var(--muted);font-size:12px;margin-bottom:7px}
-.dk-field select,.dk-field input{width:100%;min-height:43px;padding:10px;color:var(--text);background:#091525;border:1px solid var(--border);border-radius:9px;font-size:14px}
-.dk-buttons,.dk-card-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
-.dk-btn{min-height:42px;padding:10px 14px;border:1px solid var(--border);border-radius:10px;color:var(--text);background:var(--panel2);font-size:13px;font-weight:700;cursor:pointer}
-.dk-btn:disabled{opacity:.45;cursor:not-allowed}.dk-btn-primary{color:#07111f;background:var(--blue);border-color:var(--blue)}.dk-btn-green{color:#061a12;background:var(--green);border-color:var(--green)}
-.dk-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
-.dk-stat{padding:13px}.dk-stat-label,.dk-number-label,.dk-total-label{color:var(--muted);font-size:11px;margin-bottom:7px}
-.dk-stat-value{font-size:22px;font-weight:900;overflow-wrap:anywhere}.dk-stat-note{color:var(--muted);font-size:11px;margin-top:5px}
-.dk-status{margin-bottom:14px;padding:12px;border:1px solid var(--border);border-radius:10px;color:var(--muted);background:#091525;font-size:13px;line-height:1.5}
-.dk-status.dk-error{color:#ffb5bd;border-color:#743442}.dk-status.dk-ok{color:#9af0c8;border-color:#236b50}
-.dk-list{display:grid;gap:10px}.dk-card{padding:14px}.dk-match-name{font-size:15px;font-weight:800;line-height:1.45;overflow-wrap:anywhere}
-.dk-meta{display:flex;flex-wrap:wrap;gap:7px 12px;color:var(--muted);font-size:11px;margin-top:7px}
-.dk-market{display:inline-flex;align-items:center;justify-content:center;padding:7px 10px;background:#1c3454;border:1px solid #31527b;color:#c8e0ff;border-radius:9px;font-weight:800;font-size:12px;flex-shrink:0}
-.dk-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:13px}
-.dk-number{background:#091525;border:1px solid #20324b;border-radius:9px;padding:9px;min-width:0}
-.dk-number-value{font-size:16px;font-weight:900;overflow-wrap:anywhere}.dk-rate-high{color:var(--green)}
-.dk-status-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;border-radius:7px;padding:6px 8px;white-space:nowrap}
-.dk-pending{color:var(--yellow);background:#3b3016}.dk-won{color:#8ef0bd;background:#123a2b}.dk-lost{color:#ff9da7;background:#481e2a}
-.dk-empty{text-align:center;padding:25px 12px;color:var(--muted);border:1px dashed var(--border);border-radius:12px;line-height:1.7;font-size:13px}
-.dk-coupon-header{margin-bottom:13px}.dk-coupon-header .dk-panel-title{margin:0}
-.dk-coupon-total{padding:13px;margin-top:12px;background:#091525;border:1px solid var(--border);border-radius:10px}
-.dk-total-value{font-size:23px;font-weight:900}.dk-total-good{color:var(--green)}.dk-total-low{color:var(--yellow)}
-.dk-rules{color:var(--muted);font-size:12px;line-height:1.8;padding-left:18px;margin:0}
-.dk-coupon-box{border:1px solid var(--border);border-radius:12px;padding:13px;background:#0b1829;margin-bottom:12px}
-.dk-coupon-box:last-child{margin-bottom:0}.dk-coupon-box h3{margin:0;font-size:16px}.dk-coupon-box .dk-coupon-total{margin-bottom:12px}
-.dk-footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 0 20px}
-@media(max-width:650px){.dk-app{padding:12px}.dk-filters{grid-template-columns:1fr}.dk-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.dk-heading{font-size:21px}.dk-panel,.dk-card{padding:12px}.dk-match-name{font-size:14px}.dk-numbers{gap:5px}.dk-number{padding:8px 6px}.dk-number-value{font-size:14px}}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>DNA-RNA | Sonuçtan Oran Analizi</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --sa-bg: #07111f;
+      --sa-panel: #101d30;
+      --sa-panel2: #14243a;
+      --sa-border: #273a54;
+      --sa-text: #edf4ff;
+      --sa-muted: #9aacc4;
+      --sa-blue: #60a5fa;
+      --sa-green: #34d399;
+      --sa-red: #fb7185;
+      --sa-yellow: #fbbf24;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      min-height: 100%;
+      background: var(--sa-bg);
+    }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background: var(--sa-bg);
+      color: var(--sa-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Arial, sans-serif;
+      font-size: 14px;
+    }
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+    button,
+    select,
+    input {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .sa-app {
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      padding: 14px;
+    }
+    .sa-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 6px 0 17px;
+      border-bottom: 1px solid var(--sa-border);
+    }
+    .sa-brand {
+      font-size: 23px;
+      font-weight: 900;
+      letter-spacing: .3px;
+    }
+    .sa-brand span {
+      color: var(--sa-blue);
+    }
+    .sa-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .sa-nav a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 9px 12px;
+      color: var(--sa-text);
+      background: var(--sa-panel);
+      border: 1px solid var(--sa-border);
+      border-radius: 9px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .sa-nav a:hover {
+      border-color: var(--sa-blue);
+    }
+    .sa-page-title {
+      margin: 22px 0 7px;
+      font-size: 25px;
+      line-height: 1.3;
+      font-weight: 900;
+    }
+    .sa-page-description {
+      margin: 0 0 18px;
+      color: var(--sa-muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+    .sa-panel {
+      margin-bottom: 14px;
+      padding: 15px;
+      background: var(--sa-panel);
+      border: 1px solid var(--sa-border);
+      border-radius: 13px;
+    }
+    .sa-panel-title {
+      margin: 0 0 14px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .sa-controls {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+    .sa-field {
+      min-width: 0;
+    }
+    .sa-field label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--sa-muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .sa-field select,
+    .sa-field input {
+      display: block;
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 12px;
+      color: var(--sa-text);
+      background: #091525;
+      border: 1px solid var(--sa-border);
+      border-radius: 9px;
+      outline: none;
+    }
+    .sa-field select:focus,
+    .sa-field input:focus {
+      border-color: var(--sa-blue);
+    }
+    .sa-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 14px;
+    }
+    .sa-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 43px;
+      padding: 10px 16px;
+      color: var(--sa-text);
+      background: var(--sa-panel2);
+      border: 1px solid var(--sa-border);
+      border-radius: 9px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .sa-button-primary {
+      color: #07111f;
+      background: var(--sa-blue);
+      border-color: var(--sa-blue);
+    }
+    .sa-button:active {
+      transform: scale(.98);
+    }
+    #saStatus {
+      padding: 13px;
+      margin-bottom: 14px;
+      color: var(--sa-muted);
+      background: #0b1829;
+      border: 1px solid var(--sa-border);
+      border-radius: 10px;
+      font-size: 13px;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+    #saStatus strong {
+      color: var(--sa-text);
+    }
+    .sa-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .sa-summary-card {
+      min-width: 0;
+      padding: 13px;
+      background: var(--sa-panel);
+      border: 1px solid var(--sa-border);
+      border-radius: 11px;
+    }
+    .sa-summary-label {
+      margin-bottom: 7px;
+      color: var(--sa-muted);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+    .sa-summary-value {
+      font-size: 21px;
+      font-weight: 900;
+      overflow-wrap: anywhere;
+    }
+    .sa-period {
+      color: var(--sa-blue);
+    }
+    .sa-results-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 23px 0 12px;
+    }
+    .sa-results-heading h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+    .sa-results-heading p {
+      margin: 0;
+      color: var(--sa-muted);
+      font-size: 11px;
+    }
+    #saContent {
+      display: grid;
+      gap: 13px;
+      min-width: 0;
+    }
+    .sa-market {
+      min-width: 0;
+      overflow: hidden;
+      background: var(--sa-panel);
+      border: 1px solid var(--sa-border);
+      border-radius: 12px;
+    }
+    .sa-market-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 13px;
+      background: var(--sa-panel2);
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .sa-market-count {
+      flex-shrink: 0;
+      padding: 5px 8px;
+      color: #bfdbfe;
+      background: #203959;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .sa-row {
+      display: grid;
+      grid-template-columns: .8fr .8fr 1fr 1fr 1fr;
+      align-items: center;
+      gap: 5px;
+      min-height: 48px;
+      padding: 10px 12px;
+      border-top: 1px solid #1d3048;
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+    .sa-row:not(.sa-head):hover,
+    .sa-row.active {
+      background: #192b42;
+    }
+    .sa-head {
+      min-height: 36px;
+      color: var(--sa-muted);
+      background: #0c192b;
+      font-size: 10px;
+      font-weight: 800;
+      cursor: default;
+    }
+    .sa-head:hover {
+      background: #0c192b;
+    }
+    .sa-row > div {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .sa-odd {
+      font-size: 14px;
+      font-weight: 900;
+    }
+    .sa-value {
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .sa-sample {
+      color: var(--sa-text);
+    }
+    .sa-success {
+      color: var(--sa-green);
+    }
+    .sa-rate {
+      color: var(--sa-green);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .sa-expand {
+      color: var(--sa-blue);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .sa-details {
+      display: none;
+      padding: 12px;
+      background: #091525;
+      border-top: 1px solid var(--sa-border);
+    }
+    .sa-details.open {
+      display: block;
+    }
+    .sa-details-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+    .sa-details-title strong {
+      color: var(--sa-green);
+    }
+    .sa-details-subtitle {
+      margin-bottom: 12px;
+      color: var(--sa-muted);
+      font-size: 11px;
+      line-height: 1.6;
+    }
+    .sa-match {
+      display: grid;
+      grid-template-columns: 55px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 0;
+      border-top: 1px solid #20324a;
+    }
+    .sa-match-time {
+      color: var(--sa-yellow);
+      font-size: 12px;
+      font-weight: 900;
+    }
+    .sa-match-main {
+      min-width: 0;
+    }
+    .sa-match-teams {
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+    .sa-match-teams span {
+      padding: 0 3px;
+      color: var(--sa-muted);
+      font-size: 10px;
+    }
+    .sa-match-meta {
+      margin-top: 4px;
+      color: var(--sa-muted);
+      font-size: 10px;
+      overflow-wrap: anywhere;
+    }
+    .sa-match-odd {
+      display: grid;
+      gap: 5px;
+      justify-items: end;
+      color: var(--sa-muted);
+      font-size: 10px;
+      text-align: right;
+    }
+    .sa-match-odd strong {
+      color: var(--sa-green);
+      font-size: 14px;
+    }
+    .sa-empty {
+      display: grid;
+      justify-items: center;
+      gap: 10px;
+      padding: 30px 17px;
+      background: var(--sa-panel);
+      border: 1px dashed var(--sa-border);
+      border-radius: 12px;
+      text-align: center;
+    }
+    .sa-empty-icon {
+      font-size: 27px;
+    }
+    .sa-empty strong {
+      font-size: 15px;
+    }
+    .sa-empty span {
+      max-width: 520px;
+      color: var(--sa-muted);
+      font-size: 12px;
+      line-height: 1.8;
+    }
+    .sa-footer {
+      padding: 20px 0 12px;
+      color: var(--sa-muted);
+      text-align: center;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+    @media (max-width: 600px) {
+      .sa-app {
+        padding: 11px;
+      }
+      .sa-page-title {
+        font-size: 22px;
+      }
+      .sa-controls {
+        grid-template-columns: 1fr;
+      }
+      .sa-summary {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+      }
+      .sa-summary-card {
+        padding: 10px 8px;
+      }
+      .sa-summary-label {
+        font-size: 10px;
+      }
+      .sa-summary-value {
+        font-size: 17px;
+      }
+      .sa-row {
+        grid-template-columns: .7fr .7fr .9fr .9fr .9fr;
+        gap: 3px;
+        padding: 10px 7px;
+      }
+      .sa-head {
+        font-size: 9px;
+      }
+      .sa-odd,
+      .sa-value,
+      .sa-rate {
+        font-size: 11px;
+      }
+      .sa-expand {
+        font-size: 10px;
+      }
+      .sa-match {
+        grid-template-columns: 43px minmax(0, 1fr);
+        gap: 8px;
+      }
+      .sa-match-odd {
+        grid-column: 2;
+        display: flex;
+        align-items: center;
+        justify-items: start;
+        justify-content: flex-start;
+        gap: 8px;
+        text-align: left;
+      }
+    }
+  </style>
 </head>
-
 <body>
-<main class="dk-app">
-<header class="dk-header">
-  <div class="dk-brand">DNA<span>-RNA</span></div>
-  <a href="./sonuc-analizi.html">← Sonuç Analizi</a>
-</header>
-
-<h1 class="dk-heading">Kupon Analizi</h1>
-<p class="dk-description">
-Geçmiş 30 günlük açılış oranlarını analiz eder. Seçilen sonuç grubuyla eşleşen geçmiş maçlarda bütün bahis türlerinin başarı oranları ayrı hesaplanır.
-En az 8 örnek ve %80 başarı şartı aranır.
-</p>
-
-<section class="dk-panel">
-<h2 class="dk-panel-title">Analiz Ayarları</h2>
-<div class="dk-filters">
-  <div class="dk-field">
-    <label for="dkDate">Maç tarihi</label>
-    <input type="date" id="dkDate">
-  </div>
-  <div class="dk-field">
-    <label for="dkMarket">Geçmiş sonuç filtresi</label>
-    <select id="dkMarket">
-      <option value="ALL">Tüm sonuç türleri</option>
-      <option value="MS1">MS1</option><option value="MSX">MSX</option><option value="MS2">MS2</option>
-      <option value="IY1">İY1</option><option value="IYX">İYX</option><option value="IY2">İY2</option>
-      <option value="KG_VAR">KG Var</option><option value="KG_YOK">KG Yok</option>
-      <option value="IY_KG_VAR">İY KG Var</option><option value="IY_KG_YOK">İY KG Yok</option>
-      <option value="IY15_ALT">İY 1.5 Alt</option><option value="IY15_UST">İY 1.5 Üst</option>
-      <option value="15_ALT">1.5 Alt</option><option value="15_UST">1.5 Üst</option>
-      <option value="25_UST">2.5 Üst</option>
-    </select>
-  </div>
-</div>
-
-<div class="dk-buttons">
-  <button class="dk-btn dk-btn-primary" id="dkAnalyze">Analizi Çalıştır</button>
-  <button class="dk-btn dk-btn-green" id="dkAuto">Otomatik Kuponları
+  <main class="sa-app">
+    <header class="sa-header">
+      <div class="sa-brand">DNA<span>-RNA</span></div>
+      <nav class="sa-nav">
+        <a href="./index.html">Ana Sayfa</a>
+        <a href="./v2.html">V2 Analiz</a>
+      </nav>
+    </header>
+    <h1 class="sa-page-title">Sonuçtan Oran Analizi</h1>
+    <p class="sa-page-description">
+      Geçmiş maçların açılış oranlarını karşılaştır.
+      Seçilen sonucun gerçekleştiği maçlardaki oran gruplarını incele
+      ve seçilen tarihte aynı açılış oranına sahip oynanmamış maçları görüntüle.
+    </p>
+    <section class="sa-panel">
+      <h2 class="sa-panel-title">Analiz Ayarları</h2>
+      <div class="sa-controls">
+        <div class="sa-field">
+          <label for="saDate">Analiz tarihi</label>
+          <input type="date" id="saDate">
+        </div>
+        <div class="sa-field">
+          <label for="saResult">Geçmiş maç sonucu</label>
+          <select id="saResult">
+            <option value="MS1">MS1 — Ev sahibi kazanır</option>
+            <option value="MSX">MSX — Beraberlik</option>
+            <option value="MS2" selected>MS2 — Deplasman kazanır</option>
+            <option value="IY1">İY1 — Ev sahibi önde</option>
+            <option value="IYX">İYX — İlk yarı beraberlik</option>
+            <option value="IY2">İY2 — Deplasman önde</option>
+            <option value="KG_VAR">KG Var</option>
+            <option value="KG_YOK">KG Yok</option>
+            <option value="IY_KG_VAR">İY KG Var</option>
+            <option value="IY_KG_YOK">İY KG Yok</option>
+            <option value="IY15_ALT">İY 1.5 Alt</option>
+            <option value="IY15_UST">İY 1.5 Üst</option>
+            <option value="15_ALT">1.5 Alt</option>
+            <option value="15_UST">1.5 Üst</option>
+            <option value="25_UST">2.5 Üst</option>
+          </select>
+        </div>
+      </div>
+      <div class="sa-actions">
+        <button class="sa-button sa-button-primary" id="saRun" type="button">
+          Analizi Çalıştır
+        </button>
+      </div>
+    </section>
+    <div id="saStatus" role="status" aria-live="polite">
+      Veriler yükleniyor...
+    </div>
+    <section class="sa-summary">
+      <div class="sa-summary-card">
+        <div class="sa-summary-label">Analiz dönemi</div>
+        <div class="sa-summary-value sa-period" id="saPeriod">-</div>
+      </div>
+      <div class="sa-summary-card">
+        <div class="sa-summary-label">Geçmiş maç</div>
+        <div class="sa-summary-value" id="saHistoryCount">-</div>
+      </div>
+      <div class="sa-summary-card">
+        <div class="sa-summary-label">Uygun oran</div>
+        <div class="sa-summary-value" id="saOddsCount">-</div>
+      </div>
+    </section>
+    <div class="sa-results-heading">
+      <h2>Analiz Sonuçları</h2>
+      <p>Bir oran satırına dokunarak maçları aç.</p>
+    </div>
+    <div id="saContent">
+      <div class="sa-empty">
+        <div class="sa-empty-icon">⌬</div>
+        <strong>Analiz hazırlanıyor</strong>
+        <span>Maç verileri yüklendiğinde sonuçlar burada gösterilecek.</span>
+      </div>
+    </div>
+    <footer class="sa-footer">
+      DNA-RNA · Son 30 günlük geçmiş · Minimum 8 örnek · Minimum %80 başarı
+      <br>
+      Açılış oranlarında birebir eşleşme kullanılır; oran toleransı ve kombinasyon yoktur.
+    </footer>
+  </main>
+  <script src="./dna.js"></script>
+</body>
+</html>
