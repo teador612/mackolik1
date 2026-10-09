@@ -1,0 +1,163 @@
+name: Basketbol Veri ve Tahmin Güncelleme
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+permissions:
+  contents: write
+concurrency:
+  group: mackolik-basketbol-veri-guncelleme
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: basketbol
+    steps:
+      - name: Repo indir
+        uses: actions/checkout@v4
+      - name: Python kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Paketleri kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+      - name: Basketbol verilerini güncelle
+        run: python update_basketball_data.py
+      - name: Tahminleri oluştur
+        run: python predictions.py
+      - name: Sonuçları hesapla
+        run: python results.py
+      - name: Tahmin performansını analiz et
+        run: python analysis.py
+      - name: Dosyaları ve JSON verilerini kontrol et
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          print("=" * 60)
+          print("BASKETBOL SISTEM KONTROLU")
+          print("=" * 60)
+          basketball_file = None
+          for candidate in (
+              Path("basketball.json"),
+              Path("data/basketball.json"),
+          ):
+              if candidate.exists():
+                  basketball_file = candidate
+                  break
+          if basketball_file is None:
+              raise SystemExit("basketball.json bulunamadi")
+          required_files = [
+              basketball_file,
+              Path("predictions.json"),
+              Path("results.json"),
+              Path("analysis.json"),
+          ]
+          loaded = {}
+          for file in required_files:
+              if not file.is_file():
+                  raise SystemExit(f"Eksik dosya: {file}")
+              with file.open(encoding="utf-8") as f:
+                  loaded[file.name] = json.load(f)
+              print(f"OK: {file}")
+          basketball = loaded[basketball_file.name]
+          predictions = loaded["predictions.json"]
+          results = loaded["results.json"]
+          analysis = loaded["analysis.json"]
+          matches = basketball.get("matches", [])
+          prediction_list = predictions.get("predictions", [])
+          overall = (
+              results.get("statistics", {}).get("overall", {})
+          )
+          analysis_overall = analysis.get("overall", {})
+          print()
+          print("Toplam mac:", len(matches))
+          print("Toplam tahmin:", len(prediction_list))
+          print("NBA:", basketball.get("nba"))
+          print("NBA tamamlanan:", basketball.get("nbaFinished"))
+          print("EuroLeague:", basketball.get("euroleague"))
+          print("EuroLeague tamamlanan:", basketball.get("euroleagueFinished"))
+          print()
+          print("ANA BASARI")
+          print("Tamamlanan:", overall.get("completed", 0))
+          print("Basarili:", overall.get("successful", 0))
+          print("Basarisiz:", overall.get("failed", 0))
+          print("Push:", overall.get("push", 0))
+          print("Oynanmamis:", overall.get("notPlayed", 0))
+          print("Basari orani:", overall.get("successRate"))
+          print()
+          print("PERFORMANS ANALIZI")
+          print("Tamamlanan:", analysis_overall.get("completed", 0))
+          print("Basarili:", analysis_overall.get("successful", 0))
+          print("Basarisiz:", analysis_overall.get("failed", 0))
+          print("Push:", analysis_overall.get("push", 0))
+          print("Basari orani:", analysis_overall.get("successRate"))
+          print("Ortalama hata:", analysis_overall.get("averageError"))
+          print()
+          print("LIG BASARILARI")
+          leagues = results.get("statistics", {}).get("leagues", {})
+          for league, stats in leagues.items():
+              print(
+                  f"{league}: "
+                  f"{stats.get('successful', 0)}/"
+                  f"{stats.get('completed', 0)} "
+                  f"-> %{stats.get('successRate')}"
+              )
+          print()
+          print("ALT / UST DAGILIMI")
+          distribution = results.get(
+              "statistics", {}
+          ).get("predictionDistribution", {})
+          for market, stats in distribution.items():
+              print(
+                  f"{market}: "
+                  f"{stats.get('successful', 0)}/"
+                  f"{stats.get('total', 0)} "
+                  f"-> %{stats.get('successRate')}"
+              )
+          print()
+          print("BAREM ANALIZI")
+          line_ranges = analysis.get("lineRanges", {})
+          for range_name in ("<140", "140-159", "160-179", "180-199", "200+"):
+              stats = line_ranges.get(range_name)
+              if not stats:
+                  continue
+              completed = (
+                  stats.get("successful", 0)
+                  + stats.get("failed", 0)
+              )
+              print(
+                  f"{range_name}: "
+                  f"{stats.get('successful', 0)}/{completed} "
+                  f"-> %{stats.get('successRate')} "
+                  f"| Hata: {stats.get('averageError')}"
+              )
+          print()
+          print("EN BUYUK HATALAR")
+          for row in analysis.get("biggestErrors", [])[:10]:
+              print(
+                  f"{row.get('home')} - {row.get('away')} | "
+                  f"Barem: {row.get('line')} | "
+                  f"Tahmin: {row.get('prediction')} | "
+                  f"Gercek: {row.get('actualTotal')} | "
+                  f"Fark: {row.get('difference')}"
+              )
+          print()
+          print("BUTUN KONTROLLER TAMAMLANDI")
+          PY
+      - name: Degisiklikleri kaydet
+        working-directory: .
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A basketbol/
+          if git diff --cached --quiet; then
+            echo "Yeni degisiklik yok."
+          else
+            git commit -m "Basketbol verileri ve tahmin analizleri guncellendi"
+            git push
+          fi
