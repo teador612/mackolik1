@@ -1,354 +1,752 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>⌬ NEXUS</title>
+
   <meta name="theme-color" content="#07111f">
-  <link rel="manifest" href="manifest.json">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Maç Analiz">
+  <meta name="apple-mobile-web-app-title" content="NEXUS">
+
+  <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="stylesheet" href="style.css">
+
   <style>
     :root {
-      --blue: #2563eb;
-      --blue-light: #60a5fa;
-      --cyan: #06b6d4;
-      --green: #16a34a;
-      --green-light: #4ade80;
-      --purple: #a855f7;
-      --yellow: #fbbf24;
-      --dark: #07111f;
-      --dark-2: #0f172a;
-      --dark-3: #111c2e;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --border: rgba(96,165,250,.18);
+      --nx-bg: #07111f;
+      --nx-panel: #0d1a2b;
+      --nx-panel-2: #13243a;
+      --nx-border: rgba(148, 163, 184, .16);
+      --nx-text: #f1f5f9;
+      --nx-muted: #94a3b8;
+      --nx-cyan: #2dd4bf;
+      --nx-blue: #60a5fa;
+      --nx-purple: #c084fc;
+      --nx-orange: #fb923c;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       min-height: 100vh;
+      margin: 0;
+      color: var(--nx-text);
       background:
-        radial-gradient(circle at top left, rgba(37,99,235,.18), transparent 32%),
-        radial-gradient(circle at top right, rgba(168,85,247,.12), transparent 28%),
-        linear-gradient(180deg, #07111f 0%, #0b1424 50%, #0f172a 100%) !important;
-      color: var(--text);
+        radial-gradient(circle at 0% 0%, rgba(37, 99, 235, .16), transparent 32%),
+        radial-gradient(circle at 100% 0%, rgba(45, 212, 191, .08), transparent 28%),
+        linear-gradient(180deg, #07111f 0%, #0b1424 55%, #0f172a 100%) !important;
     }
+
+    /* ÜST BAR */
     .topbar {
-      background: linear-gradient(135deg, #0b1f3a, #102d52, #172554) !important;
-      border-bottom: 1px solid var(--border) !important;
-      box-shadow: 0 8px 30px rgba(0,0,0,.28);
+      position: relative;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      padding: 17px clamp(14px, 3vw, 32px);
+      background: rgba(7, 17, 31, .97) !important;
+      border-bottom: 1px solid var(--nx-border) !important;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, .24);
     }
-    .brand-icon {
-      background: linear-gradient(135deg, var(--blue), var(--cyan)) !important;
-      border: 1px solid rgba(255,255,255,.15);
-      box-shadow: 0 8px 22px rgba(37,99,235,.30);
-    }
-    .brand h1 {
-      color: #fff !important;
-    }
-    .brand span {
-      color: #bfdbfe !important;
-    }
-    /* ÜST MENÜ */
-    .top-actions {
+
+    /* LOGO */
+    .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap: 12px;
+      min-width: 0;
     }
-    .top-actions a,
-    .top-actions button {
-      box-sizing: border-box;
-      display: inline-flex;
+
+    .brand-icon {
+      display: flex;
       align-items: center;
       justify-content: center;
-      min-height: 40px;
-      padding: 9px 14px;
-      border-radius: 10px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.2;
-      letter-spacing: 0;
-      white-space: nowrap;
-      text-decoration: none;
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      border-radius: 15px;
+      background: linear-gradient(135deg, #2563eb, #0891b2) !important;
+      border: 1px solid rgba(255, 255, 255, .15);
+      box-shadow: 0 7px 22px rgba(37, 99, 235, .25);
+      font-size: 23px;
+    }
+
+    .brand h1 {
+      margin: 0;
       color: #fff !important;
-      border: 1px solid rgba(255,255,255,.14);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
+
+    .brand span {
+      display: block;
+      margin-top: 3px;
+      color: #8ba8c8 !important;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+
+    /* SPOR SEÇİMİ */
+    .sport-switcher {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      width: 100%;
+    }
+
+    .sport-switch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 62px;
+      padding: 10px 14px;
+      border: 1px solid var(--nx-border);
+      border-radius: 15px;
+      background: #0c192a;
+      color: #cbd5e1;
+      text-decoration: none;
+      transition: border-color .2s, background .2s, transform .2s;
+    }
+
+    .sport-switch:hover {
+      transform: translateY(-1px);
+      border-color: rgba(148, 163, 184, .35);
+    }
+
+    .sport-switch .sport-icon {
+      font-size: 25px;
+      line-height: 1;
+    }
+
+    .sport-switch .sport-copy {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+
+    .sport-switch strong {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .sport-switch small {
+      color: var(--nx-muted);
+      font-size: 10px;
+    }
+
+    .sport-switch.football {
+      border-color: rgba(45, 212, 191, .45);
+      background: linear-gradient(135deg, rgba(13, 148, 136, .20), rgba(15, 23, 42, .8));
+      box-shadow: inset 0 0 0 1px rgba(45, 212, 191, .04);
+    }
+
+    .sport-switch.football strong {
+      color: #5eead4;
+    }
+
+    .sport-switch.basketball {
+      border-color: rgba(251, 146, 60, .20);
+    }
+
+    .sport-switch.basketball strong {
+      color: #fdba74;
+    }
+
+    /* FUTBOL ALT MENÜSÜ */
+    .top-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+      width: 100%;
+    }
+
+    .top-actions a,
+    .top-actions button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-width: 0;
+      min-height: 44px;
+      padding: 10px 12px;
+      border: 1px solid rgba(255, 255, 255, .10);
+      border-radius: 12px;
+      color: #f8fafc !important;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+      text-decoration: none;
+      white-space: nowrap;
       cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      transition: transform .18s ease, filter .18s ease, border-color .18s ease;
     }
-    /* PROTON */
-    .top-actions .sport-toto-btn {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
-      box-shadow: 0 5px 16px rgba(37,99,235,.20);
-    }
-    /* LABORATUVAR */
-    .top-actions .coupon-btn {
-      background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
-      box-shadow: 0 5px 16px rgba(168,85,247,.20);
-    }
-    /* BASKETBOL */
-    .top-actions .basketball-btn {
-      background: linear-gradient(135deg, #15803d, #16a34a) !important;
-      box-shadow: 0 5px 16px rgba(22,163,74,.22);
-    }
-    /* YENİLE */
-    .top-actions .refresh-btn {
-      background: linear-gradient(135deg, #0891b2, #06b6d4) !important;
-      box-shadow: 0 5px 16px rgba(6,182,212,.18);
-    }
+
     .top-actions a:hover,
     .top-actions button:hover {
-      transform: translateY(-1px);
-      opacity: .95;
+      transform: translateY(-2px);
+      filter: brightness(1.12);
     }
+
     .top-actions a:active,
     .top-actions button:active {
       transform: translateY(0);
     }
+
+    .top-actions .sport-toto-btn {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
+      box-shadow: 0 5px 16px rgba(37, 99, 235, .17);
+    }
+
+    .top-actions .coupon-btn {
+      background: linear-gradient(135deg, #6d28d9, #9333ea) !important;
+      box-shadow: 0 5px 16px rgba(147, 51, 234, .15);
+    }
+
+    .top-actions .dna-rna-btn {
+      background: linear-gradient(135deg, #0f766e, #0d9488) !important;
+      border-color: rgba(45, 212, 191, .22);
+      box-shadow: 0 5px 16px rgba(20, 184, 166, .15);
+    }
+
+    .top-actions .refresh-btn {
+      background: linear-gradient(135deg, #155e75, #0891b2) !important;
+      box-shadow: 0 5px 16px rgba(6, 182, 212, .15);
+    }
+
+    /* ANA İÇERİK */
+    .container {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 22px clamp(12px, 2.5vw, 25px);
+    }
+
     /* HERO */
     .hero {
       position: relative;
       overflow: hidden;
-      background: linear-gradient(135deg, rgba(37,99,235,.18), rgba(6,182,212,.10), rgba(168,85,247,.10)) !important;
-      border: 1px solid var(--border) !important;
-      box-shadow: 0 14px 40px rgba(0,0,0,.20);
+      margin-bottom: 20px;
+      padding: clamp(20px, 4vw, 30px);
+      border: 1px solid var(--nx-border) !important;
+      border-radius: 20px;
+      background:
+        linear-gradient(120deg, rgba(37, 99, 235, .17), rgba(6, 182, 212, .07), rgba(168, 85, 247, .08)) !important;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, .18);
     }
+
     .hero::after {
-      content: "";
       position: absolute;
+      top: -100px;
+      right: -80px;
       width: 220px;
       height: 220px;
-      right: -100px;
-      top: -100px;
-      background: radial-gradient(circle, rgba(96,165,250,.18), transparent 70%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(96, 165, 250, .15), transparent 70%);
+      content: "";
       pointer-events: none;
     }
+
     .eyebrow {
-      color: var(--blue-light) !important;
-      font-weight: 800;
-      letter-spacing: .08em;
+      margin-bottom: 9px;
+      color: var(--nx-blue) !important;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
     }
+
     .hero h2 {
+      margin: 0;
       color: #fff !important;
+      font-size: clamp(21px, 3vw, 28px);
+      font-weight: 850;
     }
+
     .hero p {
+      margin: 9px 0 0;
       color: #cbd5e1 !important;
+      font-size: 13px;
+      line-height: 1.6;
     }
+
     /* TAKVİM */
+    .calendar-section {
+      position: relative;
+      z-index: 10;
+      margin-bottom: 16px;
+    }
+
     .calendar-button {
-      background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 11px 16px;
+      border: 1px solid rgba(96, 165, 250, .28) !important;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb) !important;
       color: #fff !important;
-      border: 1px solid rgba(147,197,253,.30) !important;
-      box-shadow: 0 7px 22px rgba(37,99,235,.20);
-      transition: transform .18s ease, box-shadow .18s ease;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 7px 22px rgba(37, 99, 235, .17);
     }
-    .calendar-button:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 28px rgba(37,99,235,.30);
+
+    .calendar-arrow {
+      margin-left: 5px;
     }
+
     .calendar-popup {
-      background: linear-gradient(180deg, #101d31, #0f172a) !important;
-      border: 1px solid var(--border) !important;
-      box-shadow: 0 20px 50px rgba(0,0,0,.42) !important;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      z-index: 30;
+      width: min(350px, 94vw);
+      overflow: hidden;
+      border: 1px solid var(--nx-border) !important;
+      border-radius: 16px;
+      background: #0e1b2d !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, .42) !important;
     }
+
+    .calendar-popup.hidden {
+      display: none !important;
+    }
+
     .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 13px;
       background: linear-gradient(135deg, #172554, #1e3a8a) !important;
-      border-bottom: 1px solid var(--border) !important;
+      border-bottom: 1px solid var(--nx-border) !important;
     }
+
     .calendar-header strong {
       color: #fff !important;
+      font-size: 14px;
     }
+
     .month-btn {
-      background: rgba(255,255,255,.08) !important;
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, .12) !important;
+      border-radius: 9px;
+      background: rgba(255, 255, 255, .08) !important;
       color: #fff !important;
-      border: 1px solid rgba(255,255,255,.12) !important;
+      font-size: 22px;
+      cursor: pointer;
     }
-    .month-btn:hover {
-      background: rgba(96,165,250,.22) !important;
+
+    .weekdays,
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+      padding: 9px;
     }
+
     .weekdays {
       color: #93c5fd !important;
+      font-size: 11px;
+      font-weight: 800;
+      text-align: center;
     }
+
     .calendar-days button {
+      min-width: 0;
+      min-height: 34px;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
       color: #e2e8f0 !important;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
     }
+
     .calendar-days button:hover {
-      background: rgba(37,99,235,.22) !important;
+      background: rgba(37, 99, 235, .22) !important;
     }
+
     /* FİLTRELER */
     .filters {
-      background: linear-gradient(135deg, rgba(15,23,42,.96), rgba(17,24,39,.92)) !important;
-      border: 1px solid rgba(255,255,255,.08) !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+      display: grid;
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 15px;
+      padding: 18px;
+      border: 1px solid var(--nx-border) !important;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, .96), rgba(17, 24, 39, .92)) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .14);
     }
+
+    .filter-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+    }
+
     .filter-box label,
     .check-box {
       color: #cbd5e1 !important;
+      font-size: 12px;
+      font-weight: 700;
     }
+
     .filter-box input,
     .filter-box select {
-      background: rgba(255,255,255,.055) !important;
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid rgba(96, 165, 250, .18) !important;
+      border-radius: 10px;
+      background: #101d30 !important;
       color: #fff !important;
-      border: 1px solid rgba(96,165,250,.18) !important;
+      font-family: inherit;
+      font-size: 13px;
     }
+
     .filter-box input::placeholder {
       color: #64748b !important;
     }
+
     .filter-box input:focus,
     .filter-box select:focus {
-      border-color: rgba(96,165,250,.65) !important;
-      box-shadow: 0 0 0 3px rgba(37,99,235,.13);
+      border-color: rgba(96, 165, 250, .65) !important;
       outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, .13);
     }
+
     .filter-box select option {
       background: #0f172a;
       color: #fff;
     }
-    .check-box input {
-      accent-color: var(--green);
+
+    .check-box {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+      min-height: 42px;
+      cursor: pointer;
+      white-space: nowrap;
     }
+
+    .check-box input {
+      width: 16px;
+      height: 16px;
+      accent-color: #2dd4bf;
+    }
+
     /* DURUM */
     .status-bar {
-      background: linear-gradient(135deg, rgba(6,182,212,.08), rgba(37,99,235,.07)) !important;
-      border: 1px solid rgba(96,165,250,.13) !important;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 14px;
+      margin-bottom: 15px;
+      padding: 13px 15px;
+      border: 1px solid rgba(96, 165, 250, .13) !important;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, .08), rgba(37, 99, 235, .07)) !important;
       color: #cbd5e1 !important;
+      font-size: 12px;
     }
+
     #message {
       color: #bfdbfe !important;
     }
+
     #updatedAt {
-      color: var(--muted) !important;
+      color: var(--nx-muted) !important;
+      font-size: 11px;
     }
+
     /* ÖZET */
+    #summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
     #summary > * {
-      background: linear-gradient(135deg, rgba(15,23,42,.94), rgba(30,41,59,.90)) !important;
-      border-color: rgba(96,165,250,.16) !important;
-      box-shadow: 0 8px 24px rgba(0,0,0,.16);
+      border-color: rgba(96, 165, 250, .16) !important;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, .94), rgba(30, 41, 59, .90)) !important;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .14);
     }
-    /* MAÇ KARTLARI */
+
+    /* MAÇLAR */
+    #content {
+      display: grid;
+      gap: 13px;
+    }
+
     #content > * {
-      background: linear-gradient(145deg, rgba(15,23,42,.97), rgba(17,24,39,.94)) !important;
-      border-color: rgba(96,165,250,.14) !important;
-      box-shadow: 0 10px 30px rgba(0,0,0,.18);
-      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      border-color: rgba(96, 165, 250, .14) !important;
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgba(15, 23, 42, .97), rgba(17, 24, 39, .94)) !important;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .16);
+      transition: border-color .18s ease, box-shadow .18s ease;
     }
+
     #content > *:hover {
-      transform: translateY(-2px);
-      border-color: rgba(96,165,250,.30) !important;
-      box-shadow: 0 15px 35px rgba(0,0,0,.27);
+      border-color: rgba(96, 165, 250, .30) !important;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, .24);
     }
-    /* BAŞARI ORANI */
+
     #content [class*="success"],
     #content [class*="rate"],
     #content [class*="percent"] {
-      color: var(--green-light) !important;
+      color: #4ade80 !important;
       font-weight: 800;
     }
-    /* ORAN */
+
     #content [class*="odd"],
     #content [class*="odds"] {
-      color: var(--blue-light) !important;
+      color: #60a5fa !important;
       font-weight: 800;
     }
-    /* TAHMİN */
+
     #content [class*="prediction"],
     #content [class*="predict"],
     #content [class*="pick"] {
-      color: var(--green-light) !important;
+      color: #4ade80 !important;
       font-weight: 800;
     }
-    /* SKOR */
+
     #content [class*="score"] {
       color: #fff !important;
       font-weight: 900;
     }
+
     /* FOOTER */
     footer {
+      margin-top: 25px;
+      padding: 20px 14px;
+      border-top: 1px solid rgba(96, 165, 250, .10);
       color: #64748b !important;
-      border-top: 1px solid rgba(96,165,250,.10);
+      font-size: 12px;
+      text-align: center;
     }
+
+    /* TABLET */
+    @media (min-width: 900px) {
+      .topbar {
+        padding-right: max(24px, calc((100vw - 1180px) / 2));
+        padding-left: max(24px, calc((100vw - 1180px) / 2));
+      }
+
+      .brand {
+        align-self: flex-start;
+      }
+
+      .sport-switcher {
+        max-width: 520px;
+      }
+    }
+
     /* MOBİL */
     @media (max-width: 700px) {
-      .top-actions {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 7px;
+      .topbar {
+        gap: 14px;
+        padding: 14px 12px;
       }
-      .top-actions a,
-      .top-actions button {
-        width: 100%;
-        min-width: 0;
-        min-height: 38px;
-        padding: 8px 6px;
+
+      .brand-icon {
+        flex-basis: 41px;
+        width: 41px;
+        height: 41px;
+        border-radius: 13px;
+        font-size: 21px;
+      }
+
+      .brand h1 {
+        font-size: 19px;
+      }
+
+      .brand span {
+        font-size: 9px;
+      }
+
+      .sport-switcher {
+        gap: 8px;
+      }
+
+      .sport-switch {
+        min-height: 58px;
+        gap: 8px;
+        padding: 9px 6px;
+        border-radius: 12px;
+      }
+
+      .sport-switch .sport-icon {
+        font-size: 22px;
+      }
+
+      .sport-switch strong {
         font-size: 12px;
       }
-      .top-actions .refresh-btn {
-        grid-column: 1 / -1;
+
+      .sport-switch small {
+        font-size: 9px;
       }
-      .hero h2 {
-        font-size: 21px !important;
+
+      .top-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
       }
-      .hero p {
-        font-size: 13px !important;
-      }
-      .calendar-popup {
-        width: min(94vw, 360px) !important;
-      }
-    }
-    @media (max-width: 430px) {
-      .brand h1 {
-        font-size: 17px !important;
-      }
-      .brand span {
-        font-size: 11px !important;
-      }
+
       .top-actions a,
       .top-actions button {
-        font-size: 11.5px;
+        min-height: 42px;
+        padding: 9px 5px;
+        font-size: 12px;
+      }
+
+      .container {
+        padding: 16px 12px;
+      }
+
+      .hero {
+        margin-bottom: 16px;
+        border-radius: 16px;
+      }
+
+      .filters {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 13px;
+        padding: 14px;
+      }
+
+      .check-box {
+        min-height: 32px;
+      }
+
+      .status-bar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      #summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .sport-switch .sport-icon {
+        font-size: 19px;
+      }
+
+      .sport-switch strong {
+        font-size: 11px;
+      }
+
+      .top-actions a,
+      .top-actions button {
+        font-size: 11px;
       }
     }
   </style>
 </head>
+
 <body>
-  <!-- ÜST BAR -->
+
+  <!-- NEXUS ÜST MENÜ -->
   <header class="topbar">
+
     <div class="brand">
-      <div class="brand-icon">⚽</div>
+      <div class="brand-icon">⌬</div>
       <div>
-        <h1>⌬ NEXUS</h1>
-        <span></span>
+        <h1>NEXUS</h1>
+        <span>SPORTS ANALYTICS</span>
       </div>
     </div>
-    <div class="top-actions">
-      <a href="v2.html" class="sport-toto-btn">
-        ⚽ Proton
+
+    <!-- SPOR GEÇİŞLERİ -->
+    <nav class="sport-switcher" aria-label="Spor seçimi">
+
+      <a
+        href="index.html"
+        class="sport-switch football"
+        aria-current="page"
+      >
+        <span class="sport-icon" aria-hidden="true">⚽</span>
+        <span class="sport-copy">
+          <strong>Futbol</strong>
+          <small>Maç ve oran analizi</small>
+        </span>
       </a>
-      <a href="kupon.html" class="coupon-btn">
-        🎟️ Laboratuvar
-      </a>
+
       <a
         href="https://teador612.github.io/Basketbol/"
-        class="basketball-btn"
-        target="_blank"
-        rel="noopener noreferrer"
+        class="sport-switch basketball"
       >
-        🏀 Basketbol
+        <span class="sport-icon" aria-hidden="true">🏀</span>
+        <span class="sport-copy">
+          <strong>Basketbol</strong>
+          <small>Tahmin ve istatistik</small>
+        </span>
       </a>
+
+    </nav>
+
+    <!-- FUTBOL MENÜSÜ -->
+    <nav class="top-actions" aria-label="Futbol menüsü">
+
+      <a href="v2.html" class="sport-toto-btn">
+        <span aria-hidden="true">⚛️</span>
+        <span>Proton</span>
+      </a>
+
+      <a href="kupon.html" class="coupon-btn">
+        <span aria-hidden="true">🎟️</span>
+        <span>Laboratuvar</span>
+      </a>
+
+      <a href="sonuc-analizi.html" class="dna-rna-btn">
+        <span aria-hidden="true">🧬</span>
+        <span>DNA-RNA</span>
+      </a>
+
       <button
         id="refreshButton"
         class="refresh-btn"
         type="button"
       >
-        ↻ Yenile
+        <span aria-hidden="true">↻</span>
+        <span>Yenile</span>
       </button>
-    </div>
+
+    </nav>
   </header>
+
   <!-- ANA İÇERİK -->
   <main class="container">
+
     <section class="hero">
       <div>
         <div class="eyebrow">NEXUS VERİ MERKEZİ</div>
@@ -356,23 +754,30 @@
         <p id="pageDescription"></p>
       </div>
     </section>
+
     <!-- TAKVİM -->
     <section class="calendar-section">
+
       <button
         id="calendarToggle"
         class="calendar-button"
         type="button"
+        aria-expanded="false"
+        aria-controls="calendarPopup"
       >
-        <span>📅</span>
+        <span aria-hidden="true">📅</span>
         <span id="selectedDateText">Tarih seç</span>
-        <span class="calendar-arrow">⌄</span>
+        <span class="calendar-arrow" aria-hidden="true">⌄</span>
       </button>
+
       <div id="calendarPopup" class="calendar-popup hidden">
+
         <div class="calendar-header">
-          <button id="prevMonth" class="month-btn" type="button">‹</button>
+          <button id="prevMonth" class="month-btn" type="button" aria-label="Önceki ay">‹</button>
           <strong id="calendarMonth">-</strong>
-          <button id="nextMonth" class="month-btn" type="button">›</button>
+          <button id="nextMonth" class="month-btn" type="button" aria-label="Sonraki ay">›</button>
         </div>
+
         <div class="weekdays">
           <div>Pzt</div>
           <div>Sal</div>
@@ -382,11 +787,15 @@
           <div>Cmt</div>
           <div>Paz</div>
         </div>
+
         <div id="calendarDays" class="calendar-days"></div>
+
       </div>
     </section>
+
     <!-- FİLTRELER -->
     <section class="filters">
+
       <div class="filter-box">
         <label for="search">Maç / Takım</label>
         <input
@@ -396,32 +805,64 @@
           autocomplete="off"
         >
       </div>
+
       <div class="filter-box">
         <label for="leagueFilter">Lig</label>
         <select id="leagueFilter">
           <option value="">Tüm Ligler</option>
         </select>
       </div>
-      <label class="check-box">
+
+      <label class="check-box" for="unplayedOnly">
         <input type="checkbox" id="unplayedOnly">
         <span>Sadece oynanmamış</span>
       </label>
+
     </section>
+
     <!-- DURUM -->
     <section class="status-bar">
       <div id="message">Veriler yükleniyor...</div>
       <div id="updatedAt">-</div>
     </section>
+
     <!-- ÖZET -->
     <div id="summary"></div>
-    <!-- MAÇLAR -->
+
+    <!-- MAÇ LİSTESİ -->
     <section id="content"></section>
+
   </main>
-  <!-- FOOTER -->
+
   <footer>
     Ne kadar emek verdiğini sadece sen bilirsin..
   </footer>
+
   <!-- MEVCUT ANA SİSTEM -->
   <script src="app.js"></script>
+
+  <script>
+    // Takvim düğmesinin erişilebilirlik durumunu güncelle.
+    // Takvimin açılıp kapanma işlemini mevcut app.js yönetir.
+    (function () {
+      const toggle = document.getElementById("calendarToggle");
+      const popup = document.getElementById("calendarPopup");
+
+      if (!toggle || !popup) return;
+
+      const observer = new MutationObserver(function () {
+        toggle.setAttribute(
+          "aria-expanded",
+          String(!popup.classList.contains("hidden"))
+        );
+      });
+
+      observer.observe(popup, {
+        attributes: true,
+        attributeFilter: ["class"]
+      });
+    })();
+  </script>
+
 </body>
 </html>
