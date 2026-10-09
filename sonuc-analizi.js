@@ -19,7 +19,7 @@ const DATA_URL = "./data/v2-data.json";
 
 const HISTORY_DAYS = 30;
 const MIN_SAMPLE = 8;
-const MIN_SUCCESS = 90;
+const MIN_SUCCESS = 80;
 
 
 /* =========================================================
