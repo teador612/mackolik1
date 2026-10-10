@@ -6,145 +6,517 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#07111f">
 <title>DNA | Otomatik Kupon</title>
+
 <style>
-:root{color-scheme:dark;--bg:#07111f;--border:#263a54;--text:#e8f0fc;--muted:#91a4bd;--blue:#4b91ff;--green:#28c76f;--red:#ff5263;--yellow:#f5c451}
-*{box-sizing:border-box}
-body{margin:0;background:radial-gradient(circle at top,#102847 0,var(--bg) 45%);color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:14px}
-button,input,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
-.page{width:min(100%,1050px);margin:0 auto;padding:18px 13px 40px}
-.header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
-.brand{display:flex;align-items:center;gap:11px}
-.brand-logo{display:grid;place-items:center;width:44px;height:44px;border:1px solid #355c8a;border-radius:14px;background:linear-gradient(135deg,#1a477a,#10243c);color:#8fc1ff;font-size:20px;font-weight:900}
-h1{margin:0;font-size:21px;letter-spacing:.3px}
-.subtitle{margin-top:4px;color:var(--muted);font-size:12px}
-.tag{padding:7px 10px;border:1px solid var(--border);border-radius:20px;background:#0d1b2c;color:#b9d6ff;font-size:11px;font-weight:800}
-.panel{margin-bottom:15px;padding:15px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(145deg,#102038,#0b1727);box-shadow:0 10px 28px #00000018}
-.panel-title{margin:0 0 13px;font-size:15px;font-weight:800}
-.controls{display:grid;grid-template-columns:1fr 1.5fr auto;gap:10px;align-items:end}
-.field label{display:block;margin-bottom:6px;color:var(--muted);font-size:12px;font-weight:700}
-.field select,.field input{width:100%;min-height:42px;padding:9px 10px;border:1px solid #344b68;border-radius:10px;outline:none;background:#091525;color:var(--text)}
-.field select:focus,.field input:focus{border-color:var(--blue)}
-.btn{display:inline-flex;justify-content:center;align-items:center;gap:7px;min-height:41px;padding:9px 13px;border:1px solid transparent;border-radius:10px;font-weight:800}
-.btn-primary{background:linear-gradient(135deg,#438dff,#2764cb);color:white}
-.btn-secondary{border-color:#344b68;background:#172a42;color:#e0ebfa}
-.btn-danger{border-color:#79333e;background:#351b28;color:#ffb4bd}
-.btn-small{min-height:31px;padding:6px 9px;font-size:11px}
-.rules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:13px}
-.rule{padding:11px;border:1px solid #263d58;border-radius:11px;background:#0a1727}
-.rule-label{color:var(--muted);font-size:11px}.rule-value{margin-top:4px;font-size:17px;font-weight:900}
-.notice{display:none;margin-top:12px;padding:11px 12px;border:1px solid #344b68;border-radius:10px;background:#0a1727;color:#c6d9f1;line-height:1.5;overflow-wrap:anywhere}
-.notice.show{display:block}.notice.error{border-color:#783642;color:#ffb7bf}.notice.success{border-color:#276b4a;color:#a4f2c5}
-.legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;color:var(--muted);font-size:11px}
-.legend span{display:inline-flex;align-items:center;gap:5px}
-.green-text{color:var(--green)}.red-text{color:var(--red)}.yellow-text{color:var(--yellow)}
-.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-bottom:15px}
-.stat{padding:12px;border:1px solid var(--border);border-radius:12px;background:#0c192a}
-.stat-label{color:var(--muted);font-size:11px}.stat-value{margin-top:5px;font-size:20px;font-weight:900}
-.coupon{overflow:hidden;margin-bottom:15px;border:1px solid #2d4665;border-radius:15px;background:linear-gradient(150deg,#102139,#0a1727)}
-.coupon-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:13px;border-bottom:1px solid #263c57;background:#12243b}
-.coupon-title{margin:0;font-size:15px;font-weight:900}.coupon-date{margin-top:4px;color:var(--muted);font-size:11px}
-.coupon-total{text-align:right}.coupon-total strong{display:block;color:#9bc5ff;font-size:21px}.coupon-total span{color:var(--muted);font-size:10px}
-.coupon-body{padding:10px}
-.pick{display:grid;grid-template-columns:35px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 4px;border-bottom:1px solid #20344d}
-.pick:last-child{border-bottom:0}
-.pick-status{display:grid;place-items:center;width:29px;height:29px;border:1px solid #344b68;border-radius:50%;background:#102239;font-size:16px;font-weight:900}
-.pick-status.won{border-color:#236b49;background:#103b2b;color:var(--green)}
-.pick-status.lost{border-color:#7c303d;background:#401c28;color:var(--red)}
-.pick-status.pending{border-color:#80672d;background:#3d3217;color:var(--yellow)}
-.pick-teams{overflow-wrap:anywhere;font-size:13px;font-weight:850;line-height:1.45}
-.versus{padding:0 4px;color:#6e89a8;font-size:10px;font-weight:600}
-.pick-meta{margin-top:5px;color:var(--muted);font-size:11px;line-height:1.55}
-.pick-source{margin-top:7px;padding:8px 9px;border-left:2px solid #4c91ff;border-radius:0 7px 7px 0;background:#0b192a;color:#c2d6f1;font-size:11px;line-height:1.65;overflow-wrap:anywhere}
-.pick-source b{color:#8fc1ff}
-.pick-odd{min-width:54px;padding:7px 8px;border:1px solid #31527a;border-radius:9px;background:#102946;color:#b9d7ff;text-align:center;font-size:14px;font-weight:900}
-.coupon-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:9px;padding:12px;border-top:1px solid #263c57;background:#0b1929}
-.coupon-status{display:inline-flex;align-items:center;gap:7px;color:var(--yellow);font-size:12px;font-weight:900}
-.coupon-status.won{color:var(--green)}.coupon-status.lost{color:var(--red)}
-.coupon-actions{display:flex;gap:7px;flex-wrap:wrap}
-.empty{padding:28px 15px;border:1px dashed #304762;border-radius:13px;color:var(--muted);text-align:center;line-height:1.7}
-.empty-icon{margin-bottom:8px;font-size:27px}
-.history-controls{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:end;margin-bottom:13px}
-.history-group-title{margin:18px 0 10px;color:#a9c9f4;font-size:12px;font-weight:900}
-#dnaEngineBridge{display:none!important}
-@media(max-width:650px){
-.page{padding:12px 9px 30px}h1{font-size:18px}.controls{grid-template-columns:1fr}.controls .btn{width:100%}
-.rules{grid-template-columns:repeat(2,minmax(0,1fr))}.stat{padding:9px 7px}.stat-value{font-size:17px}
-.pick{grid-template-columns:30px minmax(0,1fr) auto;gap:7px}.pick-status{width:27px;height:27px}
-.pick-teams{font-size:12px}.pick-source{font-size:10px}.coupon-total strong{font-size:18px}
-.history-controls{grid-template-columns:1fr}
+:root {
+  color-scheme: dark;
+  --bg: #07111f;
+  --border: #263a54;
+  --text: #e8f0fc;
+  --muted: #91a4bd;
+  --blue: #4b91ff;
+  --green: #00ff91;
+  --red: #ff304f;
+  --yellow: #ffc857;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at top,#102847 0,var(--bg) 45%);
+  color: var(--text);
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size: 14px;
+}
+
+button,input,select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+.page { width: min(100%,1050px); margin: 0 auto; padding: 18px 13px 40px; }
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+.brand { display: flex; align-items: center; gap: 11px; }
+
+.brand-logo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #355c8a;
+  border-radius: 14px;
+  background: linear-gradient(135deg,#1a477a,#10243c);
+  color: #8fc1ff;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+h1 { margin: 0; font-size: 21px; letter-spacing: .3px; }
+.subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
+
+.tag {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: #0d1b2c;
+  color: #b9d6ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.panel {
+  margin-bottom: 15px;
+  padding: 15px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: linear-gradient(145deg,#102038,#0b1727);
+  box-shadow: 0 10px 28px #00000018;
+}
+
+.panel-title { margin: 0 0 13px; font-size: 15px; font-weight: 800; }
+
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.field label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.field select,.field input {
+  width: 100%;
+  min-height: 42px;
+  padding: 9px 10px;
+  border: 1px solid #344b68;
+  border-radius: 10px;
+  outline: none;
+  background: #091525;
+  color: var(--text);
+}
+
+.field select:focus,.field input:focus { border-color: var(--blue); }
+
+.btn {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  min-height: 41px;
+  padding: 9px 13px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  font-weight: 800;
+}
+
+.btn-primary { background: linear-gradient(135deg,#438dff,#2764cb); color: white; }
+.btn-secondary { border-color: #344b68; background: #172a42; color: #e0ebfa; }
+.btn-danger { border-color: #79333e; background: #351b28; color: #ffb4bd; }
+.btn-small { min-height: 31px; padding: 6px 9px; font-size: 11px; }
+
+.rules {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.rule { padding: 11px; border: 1px solid #263d58; border-radius: 11px; background: #0a1727; }
+.rule-label { color: var(--muted); font-size: 11px; }
+.rule-value { margin-top: 4px; font-size: 17px; font-weight: 900; }
+
+.notice {
+  display: none;
+  margin-top: 12px;
+  padding: 11px 12px;
+  border: 1px solid #344b68;
+  border-radius: 10px;
+  background: #0a1727;
+  color: #c6d9f1;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.notice.show { display: block; }
+.notice.error { border-color: #783642; color: #ffb7bf; }
+.notice.success { border-color: #276b4a; color: #a4f2c5; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.green-text { color: var(--green); }
+.red-text { color: #ff5263; }
+.yellow-text { color: var(--yellow); }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: 9px;
+  margin-bottom: 15px;
+}
+
+.stat { padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: #0c192a; }
+.stat-label { color: var(--muted); font-size: 11px; }
+.stat-value { margin-top: 5px; font-size: 20px; font-weight: 900; }
+
+.coupon {
+  overflow: hidden;
+  margin-bottom: 17px;
+  border: 2px solid #80672d;
+  border-radius: 15px;
+  background: linear-gradient(150deg,#302711,#1c180d);
+  box-shadow: 0 0 8px #ffc85733, 0 0 18px #ffc85722;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.coupon-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 13px;
+  border-bottom: 1px solid #80672d;
+  background: #302710;
+}
+
+.coupon-title { margin: 0; font-size: 15px; font-weight: 900; }
+.coupon-date { margin-top: 4px; color: var(--muted); font-size: 11px; }
+.coupon-total { text-align: right; }
+.coupon-total strong { display: block; color: #ffd66b; font-size: 21px; }
+.coupon-total span { color: var(--muted); font-size: 10px; }
+.coupon-body { padding: 10px; }
+
+.pick {
+  display: grid;
+  grid-template-columns: 35px minmax(0,1fr) auto;
+  gap: 10px;
+  align-items: start;
+  padding: 12px 4px;
+  border-bottom: 1px solid #584720;
+}
+
+.pick:last-child { border-bottom: 0; }
+
+.pick-status {
+  display: grid;
+  place-items: center;
+  width: 29px;
+  height: 29px;
+  border: 1px solid #80672d;
+  border-radius: 50%;
+  background: #443613;
+  color: var(--yellow);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.pick-status.won {
+  border-color: var(--green);
+  background: #073c27;
+  color: var(--green);
+  box-shadow: 0 0 10px #00ff9144;
+}
+
+.pick-status.lost {
+  border-color: var(--red);
+  background: #48121e;
+  color: #ff5269;
+  box-shadow: 0 0 10px #ff304f44;
+}
+
+.pick-status.pending {
+  border-color: var(--yellow);
+  background: #443613;
+  color: #ffd66b;
+  box-shadow: 0 0 8px #ffc85733;
+}
+
+.pick-teams { overflow-wrap: anywhere; font-size: 13px; font-weight: 850; line-height: 1.45; }
+.versus { padding: 0 4px; color: #6e89a8; font-size: 10px; font-weight: 600; }
+.pick-meta { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+
+.pick-source {
+  margin-top: 7px;
+  padding: 8px 9px;
+  border-left: 2px solid #4c91ff;
+  border-radius: 0 7px 7px 0;
+  background: #0b192a;
+  color: #c2d6f1;
+  font-size: 11px;
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+}
+
+.pick-source b { color: #8fc1ff; }
+
+.pick-odd {
+  min-width: 54px;
+  padding: 7px 8px;
+  border: 1px solid #80672d;
+  border-radius: 9px;
+  background: #302710;
+  color: #ffd66b;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.coupon-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 12px;
+  border-top: 1px solid #80672d;
+  background: #241e0e;
+}
+
+.coupon-status { display: inline-flex; align-items: center; gap: 7px; color: var(--yellow); font-size: 12px; font-weight: 900; }
+.coupon-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.coupon:has(.coupon-status.won) {
+  border-color: var(--green);
+  background: linear-gradient(145deg,#09291d,#071a14);
+  box-shadow: 0 0 6px #00ff9177, 0 0 18px #00ff9144, inset 0 0 20px #00ff910d;
+}
+
+.coupon:has(.coupon-status.won) .coupon-head,
+.coupon:has(.coupon-status.won) .coupon-foot {
+  background: linear-gradient(100deg,#0c3827,#09271c);
+  border-color: #087c51;
+}
+
+.coupon:has(.coupon-status.won) .coupon-title,
+.coupon:has(.coupon-status.won) .coupon-total strong,
+.coupon:has(.coupon-status.won) .coupon-status {
+  color: var(--green);
+  text-shadow: 0 0 9px #00ff9155;
+}
+
+.coupon:has(.coupon-status.won) .pick { border-color: #15563b; }
+
+.coupon:has(.coupon-status.won) .pick-odd {
+  border-color: #00b96b;
+  background: #0b3525;
+  color: #7dffc0;
+}
+
+.coupon:has(.coupon-status.lost) {
+  border-color: var(--red);
+  background: linear-gradient(145deg,#301017,#1b0b11);
+  box-shadow: 0 0 6px #ff304f77, 0 0 18px #ff304f44, inset 0 0 20px #ff304f0d;
+}
+
+.coupon:has(.coupon-status.lost) .coupon-head,
+.coupon:has(.coupon-status.lost) .coupon-foot {
+  background: linear-gradient(100deg,#45131e,#2b0e16);
+  border-color: #852333;
+}
+
+.coupon:has(.coupon-status.lost) .coupon-title,
+.coupon:has(.coupon-status.lost) .coupon-total strong,
+.coupon:has(.coupon-status.lost) .coupon-status {
+  color: #ff5269;
+  text-shadow: 0 0 9px #ff304f55;
+}
+
+.coupon:has(.coupon-status.lost) .pick { border-color: #57202b; }
+
+.coupon:has(.coupon-status.lost) .pick-odd {
+  border-color: #a82c42;
+  background: #3b1420;
+  color: #ff9baa;
+}
+
+.coupon:has(.coupon-status.pending) {
+  border-color: var(--yellow);
+  background: linear-gradient(145deg,#302711,#1c180d);
+  box-shadow: 0 0 6px #ffc85766, 0 0 18px #ffc85733, inset 0 0 20px #ffc8570a;
+}
+
+.coupon:has(.coupon-status.pending) .coupon-head,
+.coupon:has(.coupon-status.pending) .coupon-foot {
+  background: linear-gradient(100deg,#413516,#2c240f);
+  border-color: #80672d;
+}
+
+.coupon:has(.coupon-status.pending) .coupon-title,
+.coupon:has(.coupon-status.pending) .coupon-total strong,
+.coupon:has(.coupon-status.pending) .coupon-status {
+  color: #ffd66b;
+}
+
+.empty {
+  padding: 28px 15px;
+  border: 1px dashed #304762;
+  border-radius: 13px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.7;
+}
+
+.empty-icon { margin-bottom: 8px; font-size: 27px; }
+#dnaEngineBridge { display: none !important; }
+
+@media(max-width:650px) {
+  .page { padding: 12px 9px 30px; }
+  h1 { font-size: 18px; }
+  .controls { grid-template-columns: 1fr; }
+  .controls .btn { width: 100%; }
+  .rules { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .stat { padding: 9px 7px; }
+  .stat-value { font-size: 17px; }
+  .pick { grid-template-columns: 30px minmax(0,1fr) auto; gap: 7px; }
+  .pick-status { width: 27px; height: 27px; }
+  .pick-teams { font-size: 12px; }
+  .pick-source { font-size: 10px; }
+  .coupon-total strong { font-size: 18px; }
+  .coupon:has(.coupon-status.won),
+  .coupon:has(.coupon-status.lost),
+  .coupon:has(.coupon-status.pending) { border-width: 2px; }
 }
 </style>
 </head>
+
 <body>
 <main class="page">
+
 <header class="header">
-  <div class="brand"><div class="brand-logo">DNA</div><div><h1>Otomatik Kupon</h1><div class="subtitle">Geçmiş oran örneklemlerinden kupon oluşturma</div></div></div>
+  <div class="brand">
+    <div class="brand-logo">DNA</div>
+    <div>
+      <h1>Otomatik Kupon</h1>
+      <div class="subtitle">Geçmiş oran örneklemlerinden kupon oluşturma</div>
+    </div>
+  </div>
   <div class="tag">OTOMATİK SİSTEM</div>
 </header>
 
 <section class="panel">
   <h2 class="panel-title">Kupon ayarları</h2>
+
   <div class="controls">
-    <div class="field"><label for="autoDate">Maç tarihi</label><input type="date" id="autoDate"></div>
+    <div class="field">
+      <label for="autoDate">Maç tarihi</label>
+      <input type="date" id="autoDate">
+    </div>
+
     <div class="field">
       <label for="autoResult">Tahmin edilecek market</label>
       <select id="autoResult">
-        <option value="MS1">MS1</option><option value="MSX">MSX</option><option value="MS2" selected>MS2</option>
-        <option value="IY1">İY1</option><option value="IYX">İYX</option><option value="IY2">İY2</option>
-        <option value="KG_VAR">KG Var</option><option value="KG_YOK">KG Yok</option>
-        <option value="IY15_ALT">İY 1.5 Alt</option><option value="IY15_UST">İY 1.5 Üst</option>
-        <option value="15_ALT">1.5 Alt</option><option value="15_UST">1.5 Üst</option>
-        <option value="25_ALT">2.5 Alt</option><option value="25_UST">2.5 Üst</option>
-        <option value="35_ALT">3.5 Alt</option><option value="35_UST">3.5 Üst</option>
-        <option value="GOL01">0-1 Gol</option><option value="GOL23">2-3 Gol</option>
-        <option value="GOL46">4-6 Gol</option><option value="GOL7">7+ Gol</option>
+        <option value="MS1">MS1</option>
+        <option value="MSX">MSX</option>
+        <option value="MS2" selected>MS2</option>
+        <option value="IY1">İY1</option>
+        <option value="IYX">İYX</option>
+        <option value="IY2">İY2</option>
+        <option value="KG_VAR">KG Var</option>
+        <option value="KG_YOK">KG Yok</option>
+        <option value="IY15_ALT">İY 1.5 Alt</option>
+        <option value="IY15_UST">İY 1.5 Üst</option>
+        <option value="15_ALT">1.5 Alt</option>
+        <option value="15_UST">1.5 Üst</option>
+        <option value="25_ALT">2.5 Alt</option>
+        <option value="25_UST">2.5 Üst</option>
+        <option value="35_ALT">3.5 Alt</option>
+        <option value="35_UST">3.5 Üst</option>
+        <option value="GOL01">0-1 Gol</option>
+        <option value="GOL23">2-3 Gol</option>
+        <option value="GOL46">4-6 Gol</option>
+        <option value="GOL7">7+ Gol</option>
       </select>
     </div>
+
     <button class="btn btn-primary" id="generateCoupons">✦ Kuponları oluştur</button>
   </div>
+
   <div class="rules">
     <div class="rule"><div class="rule-label">En düşük tahmin oranı</div><div class="rule-value">1.35</div></div>
     <div class="rule"><div class="rule-label">En düşük kupon oranı</div><div class="rule-value">2.00</div></div>
     <div class="rule"><div class="rule-label">Kupon başına maç</div><div class="rule-value">En fazla 5</div></div>
     <div class="rule"><div class="rule-label">Bir üretimde kupon</div><div class="rule-value">En fazla 3</div></div>
   </div>
-  <div class="legend"><span><b class="green-text">✓</b> Kazandı</span><span><b class="red-text">✕</b> Kaybetti</span><span><b class="yellow-text">●</b> Bekliyor</span></div>
+
+  <div class="legend">
+    <span><b class="green-text">✓</b> Kazandı</span>
+    <span><b class="red-text">✕</b> Kaybetti</span>
+    <span><b class="yellow-text">●</b> Bekliyor</span>
+  </div>
+
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
 </section>
 
 <section class="stats">
-  <div class="stat"><div class="stat-label">Oluşturulan kupon</div><div class="stat-value" id="statCoupons">0</div></div>
-  <div class="stat"><div class="stat-label">Kuponlara eklenen maç</div><div class="stat-value" id="statPicks">0</div></div>
-  <div class="stat"><div class="stat-label">Geçmiş kupon</div><div class="stat-value" id="statHistory">0</div></div>
+  <div class="stat">
+    <div class="stat-label">Oluşturulan kupon</div>
+    <div class="stat-value" id="statCoupons">0</div>
+  </div>
+  <div class="stat">
+    <div class="stat-label">Kuponlara eklenen maç</div>
+    <div class="stat-value" id="statPicks">0</div>
+  </div>
 </section>
 
-<section><h2 class="panel-title">Oluşturulan kuponlar</h2><div id="couponList"><div class="empty"><div class="empty-icon">🎟️</div>Tarihi ve marketi seç, ardından <b>Kuponları oluştur</b> düğmesine bas.</div></div></section>
-
-<section class="panel" style="margin-top:20px">
-  <h2 class="panel-title">Geçmiş kuponlar</h2>
-  <div class="history-controls">
-    <div class="field"><label for="historyDate">Geçmiş kupon tarihi</label><input type="date" id="historyDate"></div>
-    <button class="btn btn-secondary" id="showAllHistory">Tümünü göster</button>
+<section>
+  <h2 class="panel-title">Oluşturulan kuponlar</h2>
+  <div id="couponList">
+    <div class="empty">
+      <div class="empty-icon">🎟️</div>
+      Tarihi ve marketi seç, ardından <b>Kuponları oluştur</b> düğmesine bas.
+    </div>
   </div>
-  <div id="historyList"><div class="empty">Henüz kaydedilmiş kupon bulunmuyor.</div></div>
 </section>
 
 <div id="dnaEngineBridge" aria-hidden="true">
   <input type="date" id="saDate">
+
   <select id="saResult">
-    <option value="MS1">MS1</option><option value="MSX">MSX</option><option value="MS2">MS2</option>
-    <option value="IY1">İY1</option><option value="IYX">İYX</option><option value="IY2">İY2</option>
-    <option value="KG_VAR">KG Var</option><option value="KG_YOK">KG Yok</option>
-    <option value="IY15_ALT">İY 1.5 Alt</option><option value="IY15_UST">İY 1.5 Üst</option>
-    <option value="15_ALT">1.5 Alt</option><option value="15_UST">1.5 Üst</option>
-    <option value="25_ALT">2.5 Alt</option><option value="25_UST">2.5 Üst</option>
-    <option value="35_ALT">3.5 Alt</option><option value="35_UST">3.5 Üst</option>
-    <option value="GOL01">0-1 Gol</option><option value="GOL23">2-3 Gol</option>
-    <option value="GOL46">4-6 Gol</option><option value="GOL7">7+ Gol</option>
+    <option value="MS1">MS1</option>
+    <option value="MSX">MSX</option>
+    <option value="MS2">MS2</option>
+    <option value="IY1">İY1</option>
+    <option value="IYX">İYX</option>
+    <option value="IY2">İY2</option>
+    <option value="KG_VAR">KG Var</option>
+    <option value="KG_YOK">KG Yok</option>
+    <option value="IY15_ALT">İY 1.5 Alt</option>
+    <option value="IY15_UST">İY 1.5 Üst</option>
+    <option value="15_ALT">1.5 Alt</option>
+    <option value="15_UST">1.5 Üst</option>
+    <option value="25_ALT">2.5 Alt</option>
+    <option value="25_UST">2.5 Üst</option>
+    <option value="35_ALT">3.5 Alt</option>
+    <option value="35_UST">3.5 Üst</option>
+    <option value="GOL01">0-1 Gol</option>
+    <option value="GOL23">2-3 Gol</option>
+    <option value="GOL46">4-6 Gol</option>
+    <option value="GOL7">7+ Gol</option>
   </select>
+
   <button id="saRun" type="button">Analizi çalıştır</button>
-  <div id="saPeriod"></div><div id="saHistoryCount"></div><div id="saOddsCount"></div><div id="saStatus"></div><div id="saContent"></div>
+  <div id="saPeriod"></div>
+  <div id="saHistoryCount"></div>
+  <div id="saOddsCount"></div>
+  <div id="saStatus"></div>
+  <div id="saContent"></div>
 </div>
+
 </main>
 
 <script src="dna.js"></script>
@@ -156,7 +528,6 @@ const AUTO_CONFIG = {
   MIN_TOTAL_ODD: 2,
   MAX_PICKS: 5,
   MAX_COUPONS_PER_RUN: 3,
-  MAX_HISTORY: 200,
   STORAGE_KEY: "dna_auto_coupon_history_v1"
 };
 
@@ -185,7 +556,8 @@ const AUTO_MARKET_LABELS = {
 };
 
 const AUTO_RESULT_LABELS = {
-  MS1:"MS1", MSX:"MSX", MS2:"MS2", IY1:"İY 1", IYX:"İY X", IY2:"İY 2",
+  MS1:"MS1", MSX:"MSX", MS2:"MS2",
+  IY1:"İY 1", IYX:"İY X", IY2:"İY 2",
   KG_VAR:"KG Var", KG_YOK:"KG Yok",
   IY15_ALT:"İY 1.5 Alt", IY15_UST:"İY 1.5 Üst",
   "15_ALT":"1.5 Alt", "15_UST":"1.5 Üst",
@@ -195,7 +567,6 @@ const AUTO_RESULT_LABELS = {
 };
 
 let autoCurrentCoupons = [];
-let autoShowAllHistory = false;
 const auto$ = id => document.getElementById(id);
 
 function autoToday() {
@@ -223,71 +594,54 @@ function autoNumber(value) {
 function autoDate(match) {
   return typeof dnaDateKey === "function" ? dnaDateKey(match) : "";
 }
+
 function autoTeam(match, side) {
   if (typeof dnaTeam === "function") return dnaTeam(match,side);
   return side === "home"
     ? (match?.home || match?.homeTeam || "-")
     : (match?.away || match?.awayTeam || "-");
 }
+
 function autoTime(match) {
   return typeof dnaTime === "function" ? dnaTime(match) : (match?.time || "--:--");
 }
+
 function autoLeague(match) {
   return typeof dnaLeague === "function" ? dnaLeague(match) : (match?.league || "-");
 }
+
 function autoIdentity(match) {
   const code = match?.code ?? match?.id ?? match?.matchId;
   if (code !== undefined && code !== null && String(code).trim()) return "id:" + String(code).trim();
   return [autoDate(match),autoTime(match),autoTeam(match,"home"),autoTeam(match,"away")]
     .join("|").toLocaleLowerCase("tr-TR");
 }
-function autoReadHistory() {
-  try {
-    const value = JSON.parse(localStorage.getItem(AUTO_CONFIG.STORAGE_KEY) || "[]");
-    return Array.isArray(value) ? value : [];
-  } catch (e) {
-    console.error("Kupon geçmişi okunamadı:",e);
-    return [];
-  }
-}
-function autoWriteHistory(history) {
-  try {
-    localStorage.setItem(
-      AUTO_CONFIG.STORAGE_KEY,
-      JSON.stringify(history.slice(0,AUTO_CONFIG.MAX_HISTORY))
-    );
-    return true;
-  } catch (e) {
-    console.error(e);
-    autoNotice("Kupon geçmişi kaydedilemedi. Tarayıcı depolamasını kontrol et.","error");
-    return false;
-  }
-}
+
 function autoNotice(message,type="") {
   const el=auto$("notice");
   el.textContent=message;
   el.className="notice show"+(type?" "+type:"");
 }
+
 function autoCreateId() {
   return "auto-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,9);
 }
+
 function autoGetScore(match,type) {
   return typeof dnaScore === "function" ? dnaScore(match,type) : null;
 }
+
 function autoValidScore(score) {
   if (!score || score.home === undefined || score.home === null ||
       score.away === undefined || score.away === null) return null;
   const home=Number(score.home),away=Number(score.away);
   return Number.isFinite(home)&&Number.isFinite(away)?{home,away}:null;
 }
+
 function autoOutcomeStatus(condition) {
   return condition ? "won" : "lost";
 }
 
-/*
- * Market tanımlarını bulur. dnaOdds fonksiyonuna ID metni değil,
- * dna.js tarafından tanımlanan market nesnesi gönderilmelidir.
- */
 function autoNormalizeKey(value) {
   return String(value ?? "").trim().toLocaleLowerCase("tr-TR")
     .replace(/[\s_.-]+/g,"");
@@ -300,7 +654,6 @@ function autoMarketRoots() {
         !roots.includes(value)) roots.push(value);
   };
 
-  // Farklı sürümlerde kullanılabilecek tanım adları.
   try { if (typeof DNA_MARKETS !== "undefined") add(DNA_MARKETS); } catch (_) {}
   try { if (typeof dnaMarkets !== "undefined") add(dnaMarkets); } catch (_) {}
   try { if (typeof MARKETS !== "undefined") add(MARKETS); } catch (_) {}
@@ -315,6 +668,7 @@ function autoMarketRoots() {
   ]) {
     try { add(window[key]); } catch (_) {}
   }
+
   return roots;
 }
 
@@ -325,44 +679,54 @@ function autoMarketIdOf(market) {
 }
 
 function autoFindMarket(marketId) {
-  const wanted = autoNormalizeKey(marketId);
-  const aliases = new Set([wanted]);
-
-  // Market isimlerinin büyük/küçük harf ve ayraç farklılıklarını karşılar.
+  const aliases = new Set([autoNormalizeKey(marketId)]);
   const label = AUTO_MARKET_LABELS[marketId];
   if (label) aliases.add(autoNormalizeKey(label));
 
-  const roots = autoMarketRoots();
   const visited = new Set();
-  const queue = roots.map(root => ({value:root,key:"",depth:0}));
+  const queue = autoMarketRoots().map(value => ({value,key:"",depth:0}));
 
   while (queue.length) {
     const item = queue.shift();
     const value = item.value;
-    if (!value || typeof value !== "object" || visited.has(value) || item.depth > 5) continue;
+
+    if (!value || typeof value !== "object" ||
+        visited.has(value) || item.depth > 5) continue;
+
     visited.add(value);
 
     if (Array.isArray(value)) {
       for (const child of value) {
         if (!child || typeof child !== "object") continue;
+
         const ids = [
-          autoMarketIdOf(child), child.name, child.label, child.title
+          autoMarketIdOf(child),child.name,child.label,child.title
         ].map(autoNormalizeKey);
-        if (ids.some(id => aliases.has(id)) && child.fields !== undefined) return child;
+
+        if (ids.some(id => aliases.has(id)) && child.fields !== undefined) {
+          return child;
+        }
+
         queue.push({value:child,key:"",depth:item.depth+1});
       }
     } else {
-      if (item.key && aliases.has(autoNormalizeKey(item.key)) && value.fields !== undefined) {
+      if (item.key && aliases.has(autoNormalizeKey(item.key)) &&
+          value.fields !== undefined) return value;
+
+      const id=autoNormalizeKey(autoMarketIdOf(value));
+      const name=autoNormalizeKey(value.name ?? value.label ?? value.title);
+
+      if ((aliases.has(id)||aliases.has(name)) && value.fields !== undefined) {
         return value;
       }
 
-      const id = autoNormalizeKey(autoMarketIdOf(value));
-      const name = autoNormalizeKey(value.name ?? value.label ?? value.title);
-      if ((aliases.has(id) || aliases.has(name)) && value.fields !== undefined) return value;
-
       for (const [key,child] of Object.entries(value)) {
         if (!child || typeof child !== "object") continue;
-        if (aliases.has(autoNormalizeKey(key)) && child.fields !== undefined) return child;
+
+        if (aliases.has(autoNormalizeKey(key)) && child.fields !== undefined) {
+          return child;
+        }
+
         queue.push({value:child,key,depth:item.depth+1});
       }
     }
@@ -371,24 +735,22 @@ function autoFindMarket(marketId) {
   return null;
 }
 
-function autoGetMarketOdd(match, marketId) {
+function autoGetMarketOdd(match,marketId) {
   if (typeof dnaOdds !== "function") {
     throw new Error("dna.js içinde dnaOdds fonksiyonu bulunamadı.");
   }
 
-  const market = autoFindMarket(marketId);
+  const market=autoFindMarket(marketId);
+
   if (!market) {
     throw new Error(
       `Tahmin marketi bulunamadı: ${marketId}. dna.js içindeki market tanımında fields alanı kontrol edilmeli.`
     );
   }
 
-  // Koruma: dnaOdds'a market ID'si değil, market nesnesi gönderilir.
-  const value = dnaOdds(match,market);
-  return autoNumber(value);
+  return autoNumber(dnaOdds(match,market));
 }
 
-/* Durum, örneklem marketine değil gerçek tahmin marketine göre hesaplanır. */
 function autoPickStatus(pick) {
   if (!pick?.match) return "pending";
 
@@ -420,6 +782,7 @@ function autoPickStatus(pick) {
   if(["iy1","iyX","iy2","iy15Alt","iy15Ust"].includes(id)) {
     const ht=autoValidScore(autoGetScore(pick.match,"ht"));
     if (!ht) return "pending";
+
     const ih=ht.home,ia=ht.away,it=ih+ia;
     if(id==="iy1") return autoOutcomeStatus(ih>ia);
     if(id==="iyX") return autoOutcomeStatus(ih===ia);
@@ -430,39 +793,42 @@ function autoPickStatus(pick) {
 
   return "pending";
 }
+
 function autoStatusLabel(status) {
   return status==="won"?"✓ Kazandı":status==="lost"?"✕ Kaybetti":"● Bekliyor";
 }
+
 function autoStatusSymbol(status) {
   return status==="won"?"✓":status==="lost"?"✕":"●";
 }
+
 function autoCouponStatus(coupon) {
-  if(coupon.manualStatus==="won"||coupon.manualStatus==="lost") return coupon.manualStatus;
+  if(coupon.manualStatus==="won"||coupon.manualStatus==="lost") {
+    return coupon.manualStatus;
+  }
+
   const states=(coupon.picks||[]).map(autoPickStatus);
   if(!states.length) return "pending";
   if(states.includes("lost")) return "lost";
   if(states.every(s=>s==="won")) return "won";
   return "pending";
 }
+
 function autoTotal(picks) {
   return (picks||[]).reduce((n,p)=>n*Number(p.odd||1),1);
 }
 
-/*
- * row.marketId / row.odd = geçmiş örneklem marketi ve örneklem oranı.
- * resultId = kuponda tahmin edilmesi istenen gerçek market.
- */
 function autoMakeCandidate(row,match,resultId) {
   const sampleOdd=autoNumber(row.odd);
   const predictionMarketId=AUTO_RESULT_MARKETS[resultId];
 
-  if(!predictionMarketId || sampleOdd===null) return null;
+  if(!predictionMarketId||sampleOdd===null) return null;
 
   const date=autoDate(match);
-  if(!date || date!==auto$("autoDate").value) return null;
+  if(!date||date!==auto$("autoDate").value) return null;
 
   const predictionOdd=autoGetMarketOdd(match,predictionMarketId);
-  if(predictionOdd===null || predictionOdd<AUTO_CONFIG.MIN_ODD) return null;
+  if(predictionOdd===null||predictionOdd<AUTO_CONFIG.MIN_ODD) return null;
 
   return {
     id:autoIdentity(match),
@@ -470,18 +836,13 @@ function autoMakeCandidate(row,match,resultId) {
     home:autoTeam(match,"home"),
     away:autoTeam(match,"away"),
     league:autoLeague(match),
-
-    // Gerçek tahmin marketi ve onun oranı.
     marketId:predictionMarketId,
     marketLabel:AUTO_MARKET_LABELS[predictionMarketId]||predictionMarketId,
     odd:Number(predictionOdd.toFixed(2)),
-
-    // Örneklem marketi ve geçmiş eşleşen oranı.
     sampleMarketId:row.marketId,
     sampleMarketLabel:row.marketLabel||
       AUTO_MARKET_LABELS[row.marketId]||row.marketId||"Bilinmeyen market",
     sampleOdd:Number(sampleOdd.toFixed(2)),
-
     resultId,
     resultLabel:AUTO_RESULT_LABELS[resultId]||resultId,
     sample:Number(row.total||0),
@@ -515,9 +876,9 @@ function autoCollectCandidates(rows,resultId) {
   );
 }
 
-function autoUsedIds(history) {
+function autoUsedIds(coupons) {
   const used=new Set();
-  for(const coupon of history) {
+  for(const coupon of coupons) {
     for(const pick of coupon.picks||[]) {
       const id=pick.id||(pick.match?autoIdentity(pick.match):"");
       if(id) used.add(id);
@@ -526,9 +887,9 @@ function autoUsedIds(history) {
   return used;
 }
 
-function autoBuildCoupons(candidates,date,resultId,history) {
-  const used=autoUsedIds(history);
-  const remaining=candidates.filter(c=>!used.has(c.id));
+function autoBuildCoupons(candidates,date,resultId) {
+  const remaining=[...candidates];
+  const used=new Set();
   const coupons=[];
 
   while(coupons.length<AUTO_CONFIG.MAX_COUPONS_PER_RUN&&remaining.length) {
@@ -538,6 +899,7 @@ function autoBuildCoupons(candidates,date,resultId,history) {
     while(remaining.length&&picks.length<AUTO_CONFIG.MAX_PICKS&&total<AUTO_CONFIG.MIN_TOTAL_ODD) {
       const c=remaining.shift();
       if(used.has(c.id)||reserved.has(c.id)) continue;
+
       picks.push(c);
       reserved.add(c.id);
       total*=c.odd;
@@ -545,10 +907,16 @@ function autoBuildCoupons(candidates,date,resultId,history) {
 
     if(picks.length&&total>=AUTO_CONFIG.MIN_TOTAL_ODD) {
       coupons.push({
-        id:autoCreateId(),date,createdAt:new Date().toISOString(),
-        resultId,resultLabel:AUTO_RESULT_LABELS[resultId]||resultId,
-        picks,totalOdd:Number(total.toFixed(2)),manualStatus:null
+        id:autoCreateId(),
+        date,
+        createdAt:new Date().toISOString(),
+        resultId,
+        resultLabel:AUTO_RESULT_LABELS[resultId]||resultId,
+        picks,
+        totalOdd:Number(total.toFixed(2)),
+        manualStatus:null
       });
+
       for(const id of reserved) used.add(id);
     } else {
       break;
@@ -594,7 +962,7 @@ function autoRenderPick(pick) {
   </div>`;
 }
 
-function autoRenderCoupon(coupon,historyMode=false,number=1) {
+function autoRenderCoupon(coupon,number=1) {
   const status=autoCouponStatus(coupon);
   const picks=coupon.picks||[];
   const total=Number(coupon.totalOdd||autoTotal(picks));
@@ -616,7 +984,6 @@ function autoRenderCoupon(coupon,historyMode=false,number=1) {
         <button class="btn btn-secondary btn-small" data-auto-action="won" data-id="${autoEscape(coupon.id)}">✓ Kazandı</button>
         <button class="btn btn-danger btn-small" data-auto-action="lost" data-id="${autoEscape(coupon.id)}">✕ Kaybetti</button>
         <button class="btn btn-secondary btn-small" data-auto-action="reset" data-id="${autoEscape(coupon.id)}">Otomatik durum</button>
-        ${historyMode?`<button class="btn btn-danger btn-small" data-auto-action="delete" data-id="${autoEscape(coupon.id)}">Sil</button>`:""}
       </div>
     </div>
   </article>`;
@@ -624,62 +991,20 @@ function autoRenderCoupon(coupon,historyMode=false,number=1) {
 
 function autoRenderCurrent() {
   const container=auto$("couponList");
+
   container.innerHTML=autoCurrentCoupons.length
-    ?autoCurrentCoupons.map((c,i)=>autoRenderCoupon(c,false,i+1)).join("")
+    ?autoCurrentCoupons.map((c,i)=>autoRenderCoupon(c,i+1)).join("")
     :`<div class="empty"><div class="empty-icon">🔎</div>Bu tarih için kurallara uyan yeni kupon oluşturulamadı.</div>`;
 
   auto$("statCoupons").textContent=String(autoCurrentCoupons.length);
   auto$("statPicks").textContent=String(
     autoCurrentCoupons.reduce((n,c)=>n+(c.picks||[]).length,0)
   );
-  autoRenderHistory();
-}
-
-function autoRenderHistory() {
-  const history=autoReadHistory();
-  auto$("statHistory").textContent=String(history.length);
-
-  let items=history;
-  if(!autoShowAllHistory&&auto$("historyDate").value) {
-    items=items.filter(c=>c.date===auto$("historyDate").value);
-  }
-
-  items=[...items].sort(
-    (a,b)=>String(b.date||"").localeCompare(String(a.date||""))||
-      String(b.createdAt||"").localeCompare(String(a.createdAt||""))
-  );
-
-  const container=auto$("historyList");
-  if(!items.length) {
-    container.innerHTML='<div class="empty"><div class="empty-icon">🗂️</div>Seçilen tarihte kayıtlı kupon bulunmuyor.</div>';
-    return;
-  }
-
-  const grouped=new Map();
-  for(const c of items) {
-    const d=c.date||"Tarih yok";
-    if(!grouped.has(d)) grouped.set(d,[]);
-    grouped.get(d).push(c);
-  }
-
-  let html="";
-  for(const [date,coupons] of grouped) {
-    html+=`<div class="history-group-title">${autoEscape(date)}</div>`;
-    html+=coupons.map((c,i)=>autoRenderCoupon(c,true,i+1)).join("");
-  }
-  container.innerHTML=html;
-}
-
-function autoSaveNewCoupons(coupons,date,resultId) {
-  if(!coupons.length) return true;
-  let history=autoReadHistory();
-  history=history.filter(c=>!(c.date===date&&c.resultId===resultId));
-  const ids=new Set(history.map(c=>c.id));
-  return autoWriteHistory([...coupons.filter(c=>!ids.has(c.id)),...history]);
 }
 
 async function autoWaitForEngine() {
   const start=Date.now();
+
   while(Date.now()-start<20000) {
     if(
       typeof dnaRunAnalysis==="function"&&
@@ -690,6 +1015,7 @@ async function autoWaitForEngine() {
 
     await new Promise(resolve=>setTimeout(resolve,200));
   }
+
   return false;
 }
 
@@ -702,6 +1028,7 @@ async function autoGenerate() {
     autoNotice("Önce maç tarihini seç.","error");
     return;
   }
+
   if(!AUTO_RESULT_MARKETS[resultId]) {
     autoNotice("Seçilen tahmin marketi tanımlı değil.","error");
     return;
@@ -738,18 +1065,14 @@ async function autoGenerate() {
     }
 
     const candidates=autoCollectCandidates(rows,resultId);
-    const historyForExclusion=autoReadHistory().filter(
-      c=>!(c.date===date&&c.resultId===resultId)
-    );
-    const coupons=autoBuildCoupons(candidates,date,resultId,historyForExclusion);
+    const coupons=autoBuildCoupons(candidates,date,resultId);
 
     autoCurrentCoupons=coupons;
-    autoSaveNewCoupons(coupons,date,resultId);
     autoRenderCurrent();
 
     if(!coupons.length) {
       autoNotice(
-        "Yeni kupon oluşturulamadı. Tahmin marketinde geçerli oranı olan yeterli maç bulunamadı veya maçlar daha önce kullanıldı.",
+        "Yeni kupon oluşturulamadı. Tahmin marketinde geçerli oranı olan yeterli maç bulunamadı.",
         "error"
       );
       return;
@@ -770,31 +1093,16 @@ async function autoGenerate() {
 }
 
 function autoUpdateStatus(id,status) {
-  const history=autoReadHistory();
-  const item=history.find(c=>c.id===id);
-
-  if(item) {
-    item.manualStatus=status==="won"||status==="lost"?status:null;
-    autoWriteHistory(history);
-  }
-
   const current=autoCurrentCoupons.find(c=>c.id===id);
-  if(current) current.manualStatus=status==="won"||status==="lost"?status:null;
+  if(!current) return;
 
+  current.manualStatus=status==="won"||status==="lost"?status:null;
   autoRenderCurrent();
   autoNotice("Kupon durumu güncellendi.","success");
 }
 
-function autoDeleteCoupon(id) {
-  autoWriteHistory(autoReadHistory().filter(c=>c.id!==id));
-  autoCurrentCoupons=autoCurrentCoupons.filter(c=>c.id!==id);
-  autoRenderCurrent();
-  autoNotice("Kupon geçmişten silindi.","success");
-}
-
 async function autoCopyCoupon(id) {
-  const coupon=autoReadHistory().find(c=>c.id===id)||
-    autoCurrentCoupons.find(c=>c.id===id);
+  const coupon=autoCurrentCoupons.find(c=>c.id===id);
   if(!coupon) return;
 
   const lines=[
@@ -833,6 +1141,7 @@ async function autoCopyCoupon(id) {
       area.select();
       const copied=document.execCommand("copy");
       area.remove();
+
       if(!copied) throw new Error("Kopyalama başarısız.");
     }
 
@@ -853,22 +1162,11 @@ document.addEventListener("click",event=>{
   else if(action==="won") autoUpdateStatus(id,"won");
   else if(action==="lost") autoUpdateStatus(id,"lost");
   else if(action==="reset") autoUpdateStatus(id,null);
-  else if(action==="delete") autoDeleteCoupon(id);
 });
 
 auto$("generateCoupons").addEventListener("click",autoGenerate);
-auto$("historyDate").addEventListener("change",()=>{
-  autoShowAllHistory=false;
-  autoRenderHistory();
-});
-auto$("showAllHistory").addEventListener("click",()=>{
-  autoShowAllHistory=true;
-  auto$("historyDate").value="";
-  autoRenderHistory();
-});
 
 auto$("autoDate").value=autoToday();
-auto$("historyDate").value=autoToday();
 autoRenderCurrent();
 </script>
 </body>
