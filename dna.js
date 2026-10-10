@@ -4,18 +4,20 @@
 /* =========================================================
    DNA — SONUÇTAN ORAN ANALİZİ + KUPON YÖNETİMİ
 
-   Geçmiş: 30 gün
+   Veri: ./data/matches.json
+   Geçmiş: Seçilen tarihten önceki 30 gün
    Minimum örnek: 8
    Minimum başarı: %80
-   Oran eşleşmesi: Aynı market + birebir aynı oran
-   Minimum tekli kupon oranı: 1.35
-   Minimum toplam kupon oranı: 2.00
-   Kupon başına maksimum maç: 5
+   Eşleşme: Aynı market + birebir aynı açılış oranı
+
+   Kupon:
+   Minimum tekli oran: 1.35
+   Minimum toplam oran: 2.00
+   Maksimum maç: 5
    Maksimum kayıtlı kupon: 3
 
-   ÖNEMLİ:
-   Oran hangi marketten gelirse gelsin, geçmiş maçın
-   başarısı seçilen sonuç grubuna göre hesaplanır.
+   Başarı, oran marketine göre değil, seçilen sonuç
+   grubuna göre hesaplanır.
    ========================================================= */
 
 const DNA_CONFIG = {
@@ -30,45 +32,153 @@ const DNA_CONFIG = {
   STORAGE_KEY: "dna_mixed_coupon_history_v2"
 };
 
+/* JSON'daki açılış oranlarıyla eşleştirilmiş marketler. */
 const DNA_MARKETS = [
-  { id: "iy15Alt", label: "İY 1.5 Alt", fields: ["iy15Alt", "iy15A", "iy_15_alt", "IY15Alt"] },
-  { id: "iy15Ust", label: "İY 1.5 Üst", fields: ["iy15Ust", "iy15U", "iy_15_ust", "IY15Ust"] },
+  { id: "ms1", label: "MS1", fields: ["ms1", "MS1"] },
+  { id: "msX", label: "MSX", fields: ["msX", "msx", "MSX"] },
+  { id: "ms2", label: "MS2", fields: ["ms2", "MS2"] },
+
   { id: "iy1", label: "İY1", fields: ["iy1", "IY1"] },
   { id: "iyX", label: "İYX", fields: ["iyX", "iyx", "IYX"] },
   { id: "iy2", label: "İY2", fields: ["iy2", "IY2"] },
-  { id: "kgVar", label: "KG Var", fields: ["kgVar", "kgvar", "KGVar"] },
-  { id: "kgYok", label: "KG Yok", fields: ["kgYok", "kgyok", "KGYok"] },
-  { id: "iyKgVar", label: "İY KG Var", fields: ["iyKgVar", "iyKGVar", "iykgVar", "IYKGVar"] },
-  { id: "iyKgYok", label: "İY KG Yok", fields: ["iyKgYok", "iyKGYok", "iykgYok", "IYKGYok"] },
-  { id: "ms15Alt", label: "1.5 Alt", fields: ["au15Alt", "ms15Alt", "1.5Alt"] },
-  { id: "ms15Ust", label: "1.5 Üst", fields: ["au15Ust", "ms15Ust", "1.5Ust"] },
-  { id: "ms25Ust", label: "2.5 Üst", fields: ["au25Ust", "ms25Ust", "2.5Ust"] },
-  { id: "ms1", label: "MS1", fields: ["ms1", "MS1"] },
-  { id: "msX", label: "MSX", fields: ["msX", "msx", "MSX"] },
-  { id: "ms2", label: "MS2", fields: ["ms2", "MS2"] }
+
+  { id: "cs1X", label: "ÇŞ 1X", fields: ["cs1X", "CS1X"] },
+  { id: "cs12", label: "ÇŞ 12", fields: ["cs12", "CS12"] },
+  { id: "csX2", label: "ÇŞ X2", fields: ["csX2", "CSX2"] },
+
+  { id: "au15Alt", label: "1.5 Alt", fields: ["au15Alt", "ms15Alt"] },
+  { id: "au15Ust", label: "1.5 Üst", fields: ["au15Ust", "ms15Ust"] },
+  { id: "au25Alt", label: "2.5 Alt", fields: ["au25Alt"] },
+  { id: "au25Ust", label: "2.5 Üst", fields: ["au25Ust"] },
+  { id: "au35Alt", label: "3.5 Alt", fields: ["au35Alt"] },
+  { id: "au35Ust", label: "3.5 Üst", fields: ["au35Ust"] },
+
+  { id: "kgVar", label: "KG Var", fields: ["kgVar"] },
+  { id: "kgYok", label: "KG Yok", fields: ["kgYok"] },
+
+  { id: "iy15Alt", label: "İY 1.5 Alt", fields: ["iy15Alt"] },
+  { id: "iy15Ust", label: "İY 1.5 Üst", fields: ["iy15Ust"] },
+
+  { id: "gol01", label: "0-1 Gol", fields: ["gol01"] },
+  { id: "gol23", label: "2-3 Gol", fields: ["gol23"] },
+  { id: "gol46", label: "4-6 Gol", fields: ["gol46"] },
+  { id: "gol7", label: "7+ Gol", fields: ["gol7"] },
+
+  { id: "handicap1", label: "Handikap 1", fields: ["handicap1"] },
+  { id: "handicapX", label: "Handikap X", fields: ["handicapX"] },
+  { id: "handicap2", label: "Handikap 2", fields: ["handicap2"] }
 ];
 
+/*
+ * Select kutusundaki value değerleri bunlarla aynı olmalı.
+ * DNA_RESULTS içine mevcut HTML'inde kullanılan diğer
+ * sonuç gruplarını da ekleyebilirsin.
+ */
 const DNA_RESULTS = {
-  MS1: { label: "MS1", type: "ft", test: s => s.home > s.away },
-  MSX: { label: "MSX", type: "ft", test: s => s.home === s.away },
-  MS2: { label: "MS2", type: "ft", test: s => s.away > s.home },
+  MS1: {
+    label: "MS1",
+    type: "ft",
+    test: s => s.home > s.away
+  },
+  MSX: {
+    label: "MSX",
+    type: "ft",
+    test: s => s.home === s.away
+  },
+  MS2: {
+    label: "MS2",
+    type: "ft",
+    test: s => s.away > s.home
+  },
 
-  IY1: { label: "İY1", type: "ht", test: s => s.home > s.away },
-  IYX: { label: "İYX", type: "ht", test: s => s.home === s.away },
-  IY2: { label: "İY2", type: "ht", test: s => s.away > s.home },
+  IY1: {
+    label: "İY1",
+    type: "ht",
+    test: s => s.home > s.away
+  },
+  IYX: {
+    label: "İYX",
+    type: "ht",
+    test: s => s.home === s.away
+  },
+  IY2: {
+    label: "İY2",
+    type: "ht",
+    test: s => s.away > s.home
+  },
 
-  KG_VAR: { label: "KG Var", type: "ft", test: s => s.home > 0 && s.away > 0 },
-  KG_YOK: { label: "KG Yok", type: "ft", test: s => s.home === 0 || s.away === 0 },
+  KG_VAR: {
+    label: "KG Var",
+    type: "ft",
+    test: s => s.home > 0 && s.away > 0
+  },
+  KG_YOK: {
+    label: "KG Yok",
+    type: "ft",
+    test: s => s.home === 0 || s.away === 0
+  },
 
-  IY_KG_VAR: { label: "İY KG Var", type: "ht", test: s => s.home > 0 && s.away > 0 },
-  IY_KG_YOK: { label: "İY KG Yok", type: "ht", test: s => s.home === 0 || s.away === 0 },
+  IY15_ALT: {
+    label: "İY 1.5 Alt",
+    type: "ht",
+    test: s => s.home + s.away <= 1
+  },
+  IY15_UST: {
+    label: "İY 1.5 Üst",
+    type: "ht",
+    test: s => s.home + s.away >= 2
+  },
 
-  IY15_ALT: { label: "İY 1.5 Alt", type: "ht", test: s => s.home + s.away <= 1 },
-  IY15_UST: { label: "İY 1.5 Üst", type: "ht", test: s => s.home + s.away >= 2 },
-
-  "15_ALT": { label: "1.5 Alt", type: "ft", test: s => s.home + s.away <= 1 },
-  "15_UST": { label: "1.5 Üst", type: "ft", test: s => s.home + s.away >= 2 },
-  "25_UST": { label: "2.5 Üst", type: "ft", test: s => s.home + s.away >= 3 }
+  "15_ALT": {
+    label: "1.5 Alt",
+    type: "ft",
+    test: s => s.home + s.away <= 1
+  },
+  "15_UST": {
+    label: "1.5 Üst",
+    type: "ft",
+    test: s => s.home + s.away >= 2
+  },
+  "25_ALT": {
+    label: "2.5 Alt",
+    type: "ft",
+    test: s => s.home + s.away <= 2
+  },
+  "25_UST": {
+    label: "2.5 Üst",
+    type: "ft",
+    test: s => s.home + s.away >= 3
+  },
+  "35_ALT": {
+    label: "3.5 Alt",
+    type: "ft",
+    test: s => s.home + s.away <= 3
+  },
+  "35_UST": {
+    label: "3.5 Üst",
+    type: "ft",
+    test: s => s.home + s.away >= 4
+  },
+  GOL01: {
+    label: "0-1 Gol",
+    type: "ft",
+    test: s => s.home + s.away <= 1
+  },
+  GOL23: {
+    label: "2-3 Gol",
+    type: "ft",
+    test: s => s.home + s.away >= 2 && s.home + s.away <= 3
+  },
+  GOL46: {
+    label: "4-6 Gol",
+    type: "ft",
+    test: s => s.home + s.away >= 4 && s.home + s.away <= 6
+  },
+  GOL7: {
+    label: "7+ Gol",
+    type: "ft",
+    test: s => s.home + s.away >= 7
+  }
 };
 
 let dnaMatches = [];
@@ -79,7 +189,7 @@ let dnaSavedCoupons = [];
 const $ = id => document.getElementById(id);
 
 /* =========================================================
-   YARDIMCI FONKSİYONLAR
+   GENEL YARDIMCILAR
    ========================================================= */
 
 function dnaEscape(value) {
@@ -92,7 +202,9 @@ function dnaEscape(value) {
 }
 
 function dnaNormalizeOdd(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
 
   const number = Number(String(value).trim().replace(",", "."));
 
@@ -102,19 +214,7 @@ function dnaNormalizeOdd(value) {
 }
 
 function dnaParseDate(value) {
-  if (value === null || value === undefined || value === "") return null;
-
-  if (typeof value === "number" && Number.isFinite(value)) {
-    const timestamp = new Date(value < 1e12 ? value * 1000 : value);
-
-    if (!Number.isNaN(timestamp.getTime())) {
-      return [
-        timestamp.getFullYear(),
-        String(timestamp.getMonth() + 1).padStart(2, "0"),
-        String(timestamp.getDate()).padStart(2, "0")
-      ].join("-");
-    }
-  }
+  if (!value) return null;
 
   const text = String(value).trim();
 
@@ -134,23 +234,14 @@ function dnaParseDate(value) {
 }
 
 function dnaDateKey(match) {
-  for (const value of [
-    match?.date,
-    match?.matchDate,
-    match?.gameDate,
-    match?.tarih,
-    match?.datetime,
-    match?.dateTime,
-    match?.kickoff,
-    match?.startDate,
-    match?.fixtureDate,
-    match?.timestamp
-  ]) {
-    const parsed = dnaParseDate(value);
-    if (parsed) return parsed;
-  }
-
-  return null;
+  return dnaParseDate(
+    match?.date ??
+    match?.matchDate ??
+    match?.gameDate ??
+    match?.tarih ??
+    match?.datetime ??
+    match?.dateTime
+  );
 }
 
 function dnaTodayKey() {
@@ -187,171 +278,62 @@ function dnaFormatDate(dateKey) {
 }
 
 function dnaTeam(match, side) {
-  if (side === "home") {
-    return match?.homeTeam ?? match?.home ?? match?.homeName ??
-      match?.ev ?? match?.evSahibi ?? "-";
-  }
-
-  return match?.awayTeam ?? match?.away ?? match?.awayName ??
-    match?.dep ?? match?.deplasman ?? "-";
+  return side === "home"
+    ? match?.home ?? match?.homeTeam ?? match?.homeName ?? "-"
+    : match?.away ?? match?.awayTeam ?? match?.awayName ?? "-";
 }
 
 function dnaLeague(match) {
-  return match?.league ?? match?.leagueName ??
-    match?.lig ?? match?.competition ?? "-";
+  return match?.league ?? match?.leagueName ?? match?.competition ?? "-";
 }
 
 function dnaTime(match) {
-  for (const value of [
-    match?.time,
-    match?.matchTime,
-    match?.startTime,
-    match?.hour,
-    match?.saat,
-    match?.kickoff
-  ]) {
-    if (!value) continue;
+  const value = match?.time ?? match?.matchTime ?? match?.startTime ?? "";
 
-    const found = String(value).match(/(\d{1,2}):(\d{2})/);
+  const found = String(value).match(/(\d{1,2}):(\d{2})/);
 
-    if (found) {
-      return `${found[1].padStart(2, "0")}:${found[2]}`;
-    }
-  }
-
-  return "--:--";
+  return found
+    ? `${found[1].padStart(2, "0")}:${found[2]}`
+    : "--:--";
 }
 
 /* =========================================================
-   SKOR OKUMA
+   SKORLAR — matches.json YAPISINA GÖRE
    ========================================================= */
 
 function dnaParseScore(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (!value || typeof value !== "object") return null;
 
-  if (typeof value === "object") {
-    const home = value.home ?? value.homeScore ?? value.homeGoals ??
-      value.homeTeamScore ?? value.ev;
+  const home = value.home;
+  const away = value.away;
 
-    const away = value.away ?? value.awayScore ?? value.awayGoals ??
-      value.awayTeamScore ?? value.dep;
-
-    if (
-      home !== undefined &&
-      away !== undefined &&
-      home !== null &&
-      away !== null &&
-      home !== "" &&
-      away !== "" &&
-      Number.isFinite(Number(home)) &&
-      Number.isFinite(Number(away))
-    ) {
-      return { home: Number(home), away: Number(away) };
-    }
-
+  if (
+    home === null ||
+    home === undefined ||
+    away === null ||
+    away === undefined ||
+    home === "" ||
+    away === "" ||
+    !Number.isFinite(Number(home)) ||
+    !Number.isFinite(Number(away))
+  ) {
     return null;
   }
 
-  const match = String(value).trim().match(/(?:^|\D)(\d+)\s*[-:]\s*(\d+)(?:\D|$)/);
-
-  if (!match) return null;
-
   return {
-    home: Number(match[1]),
-    away: Number(match[2])
+    home: Number(home),
+    away: Number(away)
   };
 }
 
 function dnaScore(match, type) {
-  const candidates = type === "ht"
-    ? [
-        match?.halfTimeScore,
-        match?.halftimeScore,
-        match?.htScore,
-        match?.iyScore,
-        match?.firstHalfScore,
-        match?.ilkYari,
-        match?.ilkYariSkor,
-        match?.devre,
-        match?.half_time_score,
-        match?.scores?.halftime,
-        match?.scores?.ht
-      ]
-    : [
-        match?.score,
-        match?.ftScore,
-        match?.fullTimeScore,
-        match?.result,
-        match?.macSonucu,
-        match?.finalScore,
-        match?.full_time_score,
-        match?.scores?.fulltime,
-        match?.scores?.ft
-      ];
-
-  for (const value of candidates) {
-    const score = dnaParseScore(value);
-
-    if (score) return score;
-  }
-
-  // Bazı veri kaynakları ev/deplasman skorunu ayrı alanlarda tutabilir.
-  const home = type === "ht"
-    ? match?.htHome ?? match?.halfTimeHome ?? match?.iyEv
-    : match?.homeScore ?? match?.homeGoals ?? match?.evSkor;
-
-  const away = type === "ht"
-    ? match?.htAway ?? match?.halfTimeAway ?? match?.iyDep
-    : match?.awayScore ?? match?.awayGoals ?? match?.depSkor;
-
-  if (
-    home !== undefined &&
-    away !== undefined &&
-    home !== null &&
-    away !== null &&
-    Number.isFinite(Number(home)) &&
-    Number.isFinite(Number(away))
-  ) {
-    return { home: Number(home), away: Number(away) };
-  }
-
-  return null;
+  return type === "ht"
+    ? dnaParseScore(match?.halfTimeScore)
+    : dnaParseScore(match?.score);
 }
 
 function dnaPlayed(match) {
   return dnaScore(match, "ft") !== null;
-}
-
-/* =========================================================
-   ORAN OKUMA
-   ========================================================= */
-
-function dnaOdds(match, market) {
-  const containers = [
-    match,
-    match?.openingOdds,
-    match?.openOdds,
-    match?.odds,
-    match?.opening,
-    match?.oranlar,
-    match?.opening_prices,
-    match?.openingOdds?.markets,
-    match?.odds?.opening
-  ];
-
-  for (const container of containers) {
-    if (!container || typeof container !== "object") continue;
-
-    for (const field of market.fields) {
-      if (!Object.prototype.hasOwnProperty.call(container, field)) continue;
-
-      const odd = dnaNormalizeOdd(container[field]);
-
-      if (odd !== null) return odd;
-    }
-  }
-
-  return null;
 }
 
 function dnaResult(match, resultId) {
@@ -368,15 +350,14 @@ function dnaResult(match, resultId) {
 
 function dnaStatus(match, resultId) {
   const definition = DNA_RESULTS[resultId];
+  const score = definition ? dnaScore(match, definition.type) : null;
 
-  if (!definition) {
-    return { text: "Bekliyor", className: "sa-status-pending", score: "-" };
-  }
-
-  const score = dnaScore(match, definition.type);
-
-  if (!score) {
-    return { text: "Bekliyor", className: "sa-status-pending", score: "-" };
+  if (!definition || !score) {
+    return {
+      text: "Bekliyor",
+      className: "sa-status-pending",
+      score: "-"
+    };
   }
 
   const success = definition.test(score);
@@ -386,6 +367,37 @@ function dnaStatus(match, resultId) {
     className: success ? "sa-status-success" : "sa-status-failed",
     score: `${score.home}-${score.away}`
   };
+}
+
+/* =========================================================
+   ORANLAR — ÖNCELİK openingOdds
+   ========================================================= */
+
+function dnaOdds(match, market) {
+  const containers = [
+    match?.openingOdds,
+    match?.openOdds,
+    match?.odds,
+    match?.opening,
+    match?.oranlar,
+    match
+  ];
+
+  for (const container of containers) {
+    if (!container || typeof container !== "object") continue;
+
+    for (const field of market.fields) {
+      if (!Object.prototype.hasOwnProperty.call(container, field)) {
+        continue;
+      }
+
+      const odd = dnaNormalizeOdd(container[field]);
+
+      if (odd !== null) return odd;
+    }
+  }
+
+  return null;
 }
 
 /* =========================================================
@@ -406,27 +418,25 @@ async function dnaLoadData() {
   if (Array.isArray(json)) return json;
   if (Array.isArray(json?.matches)) return json.matches;
 
-  throw new Error("JSON içinde maç listesi bulunamadı.");
+  throw new Error("JSON içinde matches dizisi bulunamadı.");
 }
 
 /* =========================================================
-   SONUÇTAN ORAN ANALİZİ
+   ANALİZ MOTORU
 
-   1. Seçilen tarihten önceki 30 günün oynanmış maçlarını al.
-   2. Her geçmiş maçın seçilen sonuç grubunu değerlendir.
-   3. O maçın bütün market oranlarını ayrı ayrı incele.
-   4. Aynı markette aynı oranı taşıyan geçmiş maçları grupla.
-   5. En az 8 örnek ve %80 başarı şartını uygula.
-   6. Aynı market + aynı oran eşleşmesini seçilen tarihte ara.
+   Her geçmiş maç için seçilen sonuç bir kez değerlendirilir.
+   Ardından tüm marketlerdeki açılış oranları ayrı ayrı gruplanır.
 
-   Oran marketi ile başarı sonucu birbirinden bağımsızdır.
+   Örnek:
+   Sonuç grubu = 2.5 Üst
+   Geçmiş maçın MS1 oranı 1.51 ise MS1/1.51 grubuna girer.
+   Aynı maçın KG Var oranı 1.95 ise KG Var/1.95 grubuna da girer.
+   İki grup da 2.5 Üst sonucuna göre başarılı/başarısız sayılır.
    ========================================================= */
 
 function dnaRunAnalysis(targetDate, resultId) {
-  const definition = DNA_RESULTS[resultId];
-
-  if (!definition) {
-    throw new Error("Geçersiz sonuç grubu: " + resultId);
+  if (!DNA_RESULTS[resultId]) {
+    throw new Error(`Sonuç grubu tanımlı değil: ${resultId}`);
   }
 
   const startDate = dnaAddDays(targetDate, -DNA_CONFIG.HISTORY_DAYS);
@@ -442,7 +452,7 @@ function dnaRunAnalysis(targetDate, resultId) {
 
   const targetIndex = new Map();
 
-  // Seçilen tarihteki maçların tüm market oranlarını indeksle.
+  // Seçilen gündeki maçlar: market + oran anahtarı.
   for (const match of dnaMatches) {
     if (dnaDateKey(match) !== targetDate) continue;
 
@@ -464,13 +474,11 @@ function dnaRunAnalysis(targetDate, resultId) {
   const groups = new Map();
 
   for (const match of history) {
-    // Başarı, hangi marketin oranına bakıldığına göre değil,
-    // kullanıcının seçtiği sonuç grubuna göre hesaplanır.
-    const result = dnaResult(match, resultId);
+    const success = dnaResult(match, resultId);
 
-    if (result === null) continue;
+    // Seçilen sonuç için gereken skor yoksa değerlendirme yapma.
+    if (success === null) continue;
 
-    // Her geçmiş maçın bütün marketleri ayrı ayrı değerlendirilir.
     for (const market of DNA_MARKETS) {
       const odd = dnaOdds(match, market);
 
@@ -492,7 +500,7 @@ function dnaRunAnalysis(targetDate, resultId) {
 
       group.total++;
 
-      if (result === true) {
+      if (success) {
         group.success++;
       }
     }
@@ -500,19 +508,19 @@ function dnaRunAnalysis(targetDate, resultId) {
 
   const rows = [];
 
-  for (const item of groups.values()) {
-    if (item.total < DNA_CONFIG.MIN_SAMPLE) continue;
+  for (const group of groups.values()) {
+    if (group.total < DNA_CONFIG.MIN_SAMPLE) continue;
 
-    item.rate = item.success / item.total * 100;
+    group.rate = group.success / group.total * 100;
 
-    if (item.rate < DNA_CONFIG.MIN_SUCCESS) continue;
+    if (group.rate < DNA_CONFIG.MIN_SUCCESS) continue;
 
-    const future = targetIndex.get(`${item.marketId}|${item.odd}`) || [];
+    const future = targetIndex.get(`${group.marketId}|${group.odd}`) || [];
 
     if (!future.length) continue;
 
-    item.future = future;
-    rows.push(item);
+    group.future = future;
+    rows.push(group);
   }
 
   rows.sort((a, b) =>
@@ -525,8 +533,81 @@ function dnaRunAnalysis(targetDate, resultId) {
 }
 
 /* =========================================================
-   ANALİZ GÖRÜNÜMÜ
+   ANALİZ SONUÇLARI
    ========================================================= */
+
+function dnaRenderMatches(row) {
+  let html = `
+    <div class="sa-details-title">
+      <span>${dnaEscape(row.marketLabel)} · ${dnaEscape(row.odd)}</span>
+      <strong>${row.rate.toFixed(1).replace(".0", "")}%</strong>
+    </div>
+  `;
+
+  row.future.forEach(match => {
+    const pickId = [
+      row.marketId,
+      dnaDateKey(match),
+      dnaTeam(match, "home"),
+      dnaTeam(match, "away"),
+      row.odd
+    ].join("_").replace(/[^a-zA-Z0-9_-]/g, "_");
+
+    const exists = dnaSelectedPicks.some(pick => pick.id === pickId);
+
+    const pick = {
+      id: pickId,
+      date: dnaDateKey(match),
+      time: dnaTime(match),
+      home: dnaTeam(match, "home"),
+      away: dnaTeam(match, "away"),
+      league: dnaLeague(match),
+      marketId: row.marketId,
+      market: row.marketLabel,
+      odd: Number(row.odd),
+      rate: row.rate,
+      sample: row.total
+    };
+
+    window.dnaPickRegistry = window.dnaPickRegistry || {};
+    window.dnaPickRegistry[pickId] = pick;
+
+    html += `
+      <div class="sa-match">
+        <div class="sa-match-time">${dnaEscape(dnaTime(match))}</div>
+
+        <div class="sa-match-info">
+          <div class="sa-match-teams">
+            ${dnaEscape(dnaTeam(match, "home"))}
+            <span>vs</span>
+            ${dnaEscape(dnaTeam(match, "away"))}
+          </div>
+
+          <div class="sa-match-meta">
+            ${dnaEscape(dnaLeague(match))} ·
+            ${dnaEscape(dnaFormatDate(dnaDateKey(match)))}
+          </div>
+        </div>
+
+        <div class="sa-match-actions">
+          <div class="sa-match-odd">
+            ${dnaEscape(row.marketLabel)}
+            <strong>${dnaEscape(row.odd)}</strong>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-dna-add="${dnaEscape(pickId)}"
+            ${Number(row.odd) < DNA_CONFIG.MIN_ODD || exists ? "disabled" : ""}
+          >${exists ? "Eklendi" : "Kupona ekle"}</button>
+        </div>
+      </div>
+    `;
+  });
+
+  return html;
+}
 
 function dnaRenderAnalysis(resultId, targetDate, analysis) {
   const content = $("saContent");
@@ -551,11 +632,9 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
 
   status.innerHTML =
     `<strong>${dnaEscape(dnaFormatDate(targetDate))}</strong> · ` +
-    `<strong>${dnaEscape(definition.label)}</strong> için ` +
-    `<strong>${analysis.rows.length}</strong> uygun oran bulundu. ` +
-    `Geçmiş maç: <strong>${analysis.history.length}</strong> · ` +
-    `Minimum örnek: <strong>${DNA_CONFIG.MIN_SAMPLE}</strong> · ` +
-    `Minimum başarı: <strong>%${DNA_CONFIG.MIN_SUCCESS}</strong>`;
+    `<strong>${dnaEscape(definition.label)}</strong> · ` +
+    `${analysis.history.length} geçmiş maç · ` +
+    `${analysis.rows.length} uygun oran`;
 
   if (!analysis.rows.length) {
     content.innerHTML = `
@@ -564,8 +643,8 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
         <strong>Uygun oran bulunamadı</strong>
         <span>
           Önceki ${DNA_CONFIG.HISTORY_DAYS} günde en az
-          ${DNA_CONFIG.MIN_SAMPLE} örneği ve %${DNA_CONFIG.MIN_SUCCESS}
-          başarısı olan birebir oran eşleşmesi bulunamadı.
+          ${DNA_CONFIG.MIN_SAMPLE} örnek ve %${DNA_CONFIG.MIN_SUCCESS}
+          başarı koşulunu sağlayan birebir oran eşleşmesi bulunamadı.
         </span>
       </div>
     `;
@@ -650,90 +729,8 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
   });
 }
 
-function dnaRenderMatches(row) {
-  let html = `
-    <div class="sa-details-title">
-      <span>${dnaEscape(row.marketLabel)} · ${dnaEscape(row.odd)}</span>
-      <strong>${row.rate.toFixed(1).replace(".0", "")}%</strong>
-    </div>
-  `;
-
-  row.future.forEach(match => {
-    const id =
-      `${row.marketId}-${dnaDateKey(match)}-${dnaTeam(match, "home")}-${dnaTeam(match, "away")}`;
-
-    const pickId = `${id}-${row.odd}`.replace(/[^a-zA-Z0-9_-]/g, "_");
-
-    const alreadyAdded = dnaSelectedPicks.some(pick => pick.id === pickId);
-
-    html += `
-      <div class="sa-match">
-        <div class="sa-match-time">${dnaEscape(dnaTime(match))}</div>
-
-        <div class="sa-match-info">
-          <div class="sa-match-teams">
-            ${dnaEscape(dnaTeam(match, "home"))}
-            <span>vs</span>
-            ${dnaEscape(dnaTeam(match, "away"))}
-          </div>
-
-          <div class="sa-match-meta">
-            ${dnaEscape(dnaLeague(match))} ·
-            ${dnaEscape(dnaFormatDate(dnaDateKey(match)))}
-          </div>
-        </div>
-
-        <div class="sa-match-actions">
-          <div class="sa-match-odd">
-            ${dnaEscape(row.marketLabel)}
-            <strong>${dnaEscape(row.odd)}</strong>
-          </div>
-
-          <button
-            type="button"
-            class="btn btn-secondary"
-            data-dna-add="${dnaEscape(pickId)}"
-            ${Number(row.odd) < DNA_CONFIG.MIN_ODD || alreadyAdded ? "disabled" : ""}
-          >
-            ${alreadyAdded ? "Eklendi" : "Kupona ekle"}
-          </button>
-        </div>
-      </div>
-    `;
-
-    const pick = {
-      id: pickId,
-      date: dnaDateKey(match),
-      time: dnaTime(match),
-      home: dnaTeam(match, "home"),
-      away: dnaTeam(match, "away"),
-      league: dnaLeague(match),
-      marketId: row.marketId,
-      market: row.marketLabel,
-      odd: Number(row.odd),
-      rate: row.rate,
-      sample: row.total,
-      match
-    };
-
-    if (!window.dnaPickRegistry) {
-      window.dnaPickRegistry = {};
-    }
-
-    window.dnaPickRegistry[pickId] = pick;
-  });
-
-  html += `
-    <div class="sa-details-subtitle">
-      Kupona eklemek için oran en az ${DNA_CONFIG.MIN_ODD.toFixed(2)} olmalıdır.
-    </div>
-  `;
-
-  return html;
-}
-
 /* =========================================================
-   KUPON
+   KUPON YÖNETİMİ
    ========================================================= */
 
 function dnaTotalOdds(picks = dnaSelectedPicks) {
@@ -788,7 +785,6 @@ function dnaRenderCoupon() {
         <div class="sa-match-teams">
           ${dnaEscape(pick.home)} <span>vs</span> ${dnaEscape(pick.away)}
         </div>
-
         <div class="sa-match-meta">
           ${dnaEscape(pick.market)} · Başarı ${pick.rate.toFixed(1)}%
         </div>
@@ -817,18 +813,18 @@ function dnaRenderCoupon() {
 
 function dnaRefreshAddButtons() {
   document.querySelectorAll("[data-dna-add]").forEach(button => {
-    const id = button.dataset.dnaAdd;
-    const exists = dnaSelectedPicks.some(pick => pick.id === id);
+    const exists = dnaSelectedPicks.some(pick => pick.id === button.dataset.dnaAdd);
+    const full = dnaSelectedPicks.length >= DNA_CONFIG.MAX_PICKS;
 
-    button.disabled = exists ||
-      dnaSelectedPicks.length >= DNA_CONFIG.MAX_PICKS;
+    button.disabled = exists || full ||
+      Number(window.dnaPickRegistry?.[button.dataset.dnaAdd]?.odd) < DNA_CONFIG.MIN_ODD;
 
     button.textContent = exists ? "Eklendi" : "Kupona ekle";
   });
 }
 
 function dnaAddPick(pickId) {
-  const pick = (window.dnaPickRegistry || {})[pickId];
+  const pick = window.dnaPickRegistry?.[pickId];
 
   if (!pick) return;
 
@@ -847,13 +843,11 @@ function dnaAddPick(pickId) {
     return;
   }
 
-  const sameMatch = dnaSelectedPicks.some(item =>
+  if (dnaSelectedPicks.some(item =>
     item.date === pick.date &&
     item.home === pick.home &&
     item.away === pick.away
-  );
-
-  if (sameMatch) {
+  )) {
     alert("Aynı maçtan birden fazla tahmin aynı kupona eklenemez.");
     return;
   }
@@ -865,7 +859,7 @@ function dnaAddPick(pickId) {
 }
 
 /* =========================================================
-   KUPON GEÇMİŞİ
+   KAYITLI KUPONLAR
    ========================================================= */
 
 function dnaReadHistory() {
@@ -898,11 +892,6 @@ function dnaSaveCoupon() {
     return;
   }
 
-  if (dnaSelectedPicks.length > DNA_CONFIG.MAX_PICKS) {
-    alert(`Kupon başına en fazla ${DNA_CONFIG.MAX_PICKS} maç eklenebilir.`);
-    return;
-  }
-
   const total = dnaTotalOdds();
 
   if (total < DNA_CONFIG.MIN_TOTAL_ODD) {
@@ -912,7 +901,7 @@ function dnaSaveCoupon() {
 
   if (dnaSavedCoupons.length >= DNA_CONFIG.MAX_SAVED_COUPONS) {
     alert(
-      `En fazla ${DNA_CONFIG.MAX_SAVED_COUPONS} kupon kaydedilebilir. Yeni kupon için geçmişten birini silin.`
+      `En fazla ${DNA_CONFIG.MAX_SAVED_COUPONS} kupon kaydedilebilir. Önce kayıtlı kuponlardan birini silin.`
     );
     return;
   }
@@ -966,7 +955,6 @@ function dnaRenderHistory() {
         <div class="sa-match-teams">
           ${coupon.picks.length} maç · Toplam oran ${Number(coupon.totalOdds).toFixed(2)}
         </div>
-
         <div class="sa-match-meta">
           ${dnaEscape(new Date(coupon.createdAt).toLocaleString("tr-TR"))}
           · Misli: ${Number(coupon.stake).toLocaleString("tr-TR")}
@@ -1056,7 +1044,8 @@ async function dnaExecuteAnalysis() {
   }
 
   if (!DNA_RESULTS[resultId]) {
-    status.textContent = "Sonuç seçimi bulunamadı veya geçersiz.";
+    status.textContent =
+      `Sonuç seçeneği tanımlı değil: ${resultId}. DNA_RESULTS anahtarlarını kontrol edin.`;
     return;
   }
 
@@ -1075,18 +1064,7 @@ async function dnaExecuteAnalysis() {
     dnaRenderAnalysis(resultId, targetDate, analysis);
   } catch (error) {
     console.error("DNA analiz hatası:", error);
-
-    status.textContent = "Analiz sırasında hata oluştu.";
-
-    if ($("saContent")) {
-      $("saContent").innerHTML = `
-        <div class="sa-empty">
-          <div class="sa-empty-icon">⚠️</div>
-          <strong>Analiz yapılamadı</strong>
-          <span>Veri yapısını ve tarayıcı konsolunu kontrol edin.</span>
-        </div>
-      `;
-    }
+    status.textContent = `Analiz hatası: ${error.message}`;
   }
 }
 
@@ -1123,7 +1101,6 @@ async function dnaInit() {
   if ($("btnClearCoupon")) {
     $("btnClearCoupon").addEventListener("click", () => {
       dnaSelectedPicks = [];
-
       dnaRenderCoupon();
       dnaRefreshAddButtons();
     });
@@ -1132,11 +1109,9 @@ async function dnaInit() {
   if ($("btnClearHistory")) {
     $("btnClearHistory").addEventListener("click", () => {
       if (!dnaSavedCoupons.length) return;
-
       if (!confirm("Kayıtlı kupon geçmişi silinsin mi?")) return;
 
       dnaSavedCoupons = [];
-
       dnaWriteHistory();
       dnaRenderHistory();
     });
@@ -1164,7 +1139,7 @@ async function dnaInit() {
     dnaMatches = await dnaLoadData();
 
     if (!dnaMatches.length) {
-      status.textContent = "Veri dosyasında maç bulunamadı.";
+      status.textContent = "matches.json içinde maç bulunamadı.";
       return;
     }
 
@@ -1175,20 +1150,7 @@ async function dnaInit() {
     console.error("DNA veri yükleme hatası:", error);
 
     status.textContent =
-      "Veriler yüklenemedi. data/matches.json yolunu kontrol edin.";
-
-    if ($("saContent")) {
-      $("saContent").innerHTML = `
-        <div class="sa-empty">
-          <div class="sa-empty-icon">⚠️</div>
-          <strong>Veriler yüklenemedi</strong>
-          <span>
-            data/matches.json dosyasının erişilebilir olduğunu ve JSON
-            biçimini kontrol edin.
-          </span>
-        </div>
-      `;
-    }
+      `Veriler yüklenemedi: ${error.message}. data/matches.json yolunu kontrol edin.`;
   }
 }
 
