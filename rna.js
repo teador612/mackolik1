@@ -2,22 +2,23 @@
 "use strict";
 
 /* =========================================================
-   MACKOLIK KUPON MOTORU — OPTİMİZE SÜRÜM
+   RNA — DNA HESAPLAMA YÖNTEMİYLE KUPON MOTORU
 
    Veri: ./data/v2-data.json
-   Geçmiş: 60 gün
+   Geçmiş: 30 gün
    Minimum örnek: 8
    Minimum başarı: %80
    Minimum tekli oran: 1.35
    Minimum kupon oranı: 2.00
    Maksimum maç: 5
 
-   Hesaplama mantığı:
-   - Aynı market
-   - Birebir aynı açılış oranı
+   Hesaplama:
+   - Aynı market ve aynı açılış oranı
+   - Oranlar iki ondalık basamağa normalize edilir
    - Yalnızca sonuçlanmış geçmiş maçlar
-   - Seçilen tarihten önceki 60 gün
-========================================================= */
+   - Seçilen tarihten önceki 30 günlük geçmiş
+   - Her market kendi gerçek maç sonucuyla değerlendirilir
+   ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
 
@@ -37,21 +38,18 @@ const MARKETS = [
   { key: "iyX", label: "İY X", half: true, test: (h, a) => h === a },
   { key: "iy2", label: "İY 2", half: true, test: (h, a) => h < a },
 
-  { key: "iy15Ust", label: "İY 1,5 Üst", half: true, test: (h, a) => h + a > 1.5 },
-  { key: "iy15Alt", label: "İY 1,5 Alt", half: true, test: (h, a) => h + a < 1.5 },
+  { key: "iy15Ust", label: "İY 1,5 Üst", half: true, test: (h, a) => h + a >= 2 },
+  { key: "iy15Alt", label: "İY 1,5 Alt", half: true, test: (h, a) => h + a <= 1 },
 
-  { key: "au15Ust", label: "MS 1,5 Üst", half: false, test: (h, a) => h + a > 1.5 },
-  { key: "au15Alt", label: "MS 1,5 Alt", half: false, test: (h, a) => h + a < 1.5 },
-
-  { key: "au25Ust", label: "MS 2,5 Üst", half: false, test: (h, a) => h + a > 2.5 },
-  { key: "au25Alt", label: "MS 2,5 Alt", half: false, test: (h, a) => h + a < 2.5 },
-
-  { key: "au35Ust", label: "MS 3,5 Üst", half: false, test: (h, a) => h + a > 3.5 },
-  { key: "au35Alt", label: "MS 3,5 Alt", half: false, test: (h, a) => h + a < 3.5 },
+  { key: "au15Ust", label: "MS 1,5 Üst", half: false, test: (h, a) => h + a >= 2 },
+  { key: "au15Alt", label: "MS 1,5 Alt", half: false, test: (h, a) => h + a <= 1 },
+  { key: "au25Ust", label: "MS 2,5 Üst", half: false, test: (h, a) => h + a >= 3 },
+  { key: "au25Alt", label: "MS 2,5 Alt", half: false, test: (h, a) => h + a <= 2 },
+  { key: "au35Ust", label: "MS 3,5 Üst", half: false, test: (h, a) => h + a >= 4 },
+  { key: "au35Alt", label: "MS 3,5 Alt", half: false, test: (h, a) => h + a <= 3 },
 
   { key: "kgVar", label: "KG Var", half: false, test: (h, a) => h > 0 && a > 0 },
   { key: "kgYok", label: "KG Yok", half: false, test: (h, a) => h === 0 || a === 0 },
-
   { key: "iyKgVar", label: "İY KG Var", half: true, test: (h, a) => h > 0 && a > 0 },
   { key: "iyKgYok", label: "İY KG Yok", half: true, test: (h, a) => h === 0 || a === 0 },
 
@@ -66,8 +64,8 @@ const MARKETS = [
 ];
 
 /* =========================================================
-   GLOBAL
-========================================================= */
+   GLOBAL DURUM
+   ========================================================= */
 
 let allMatches = [];
 let matchesByDate = new Map();
@@ -76,10 +74,6 @@ let selectedDate = localDateValue(new Date());
 let isLoading = false;
 let loadError = "";
 
-/*
-  Aynı gün yeniden seçilirse geçmiş analizi tekrar hesaplanmaz.
-  Çok fazla tarih seçilirse eski önbellekler silinir.
-*/
 const historyCache = new Map();
 const MAX_HISTORY_CACHE = 8;
 
@@ -89,62 +83,48 @@ const formatter = new Intl.NumberFormat("tr-TR", {
 });
 
 /* =========================================================
-   GENEL YARDIMCILAR
-========================================================= */
+   TARİH YARDIMCILARI
+   ========================================================= */
 
 function localDateValue(date) {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
-  ].join("-");
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function parseDate(value) {
   if (!value) return null;
 
-  if (value instanceof Date && !Number.isNaN(value.getTime())) {
-    return new Date(
-      value.getFullYear(),
-      value.getMonth(),
-      value.getDate()
-    );
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime())
+      ? null
+      : new Date(value.getFullYear(), value.getMonth(), value.getDate());
   }
 
   const text = String(value).trim();
   let match;
 
-  // YYYY-MM-DD
-  match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
-
-  if (match) {
-    return makeValidDate(
-      Number(match[1]),
-      Number(match[2]),
-      Number(match[3])
-    );
+  if ((match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) {
+    const date = new Date(+match[1], +match[2] - 1, +match[3]);
+    return validDateParts(date, +match[1], +match[2] - 1, +match[3]);
   }
 
-  // DD.MM.YYYY, DD/MM/YYYY, DD-MM-YYYY
-  match = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
-
-  if (match) {
-    return makeValidDate(
-      Number(match[3]),
-      Number(match[2]),
-      Number(match[1])
-    );
+  if ((match = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/))) {
+    const date = new Date(+match[3], +match[2] - 1, +match[1]);
+    return validDateParts(date, +match[3], +match[2] - 1, +match[1]);
   }
 
-  return null;
+  const date = new Date(text);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function makeValidDate(year, month, day) {
-  const date = new Date(year, month - 1, day);
-
+function validDateParts(date, year, month, day) {
   if (
     date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
+    date.getMonth() !== month ||
     date.getDate() !== day
   ) {
     return null;
@@ -159,84 +139,13 @@ function dateKey(value) {
 }
 
 function daysBetween(later, earlier) {
-  const a = Date.UTC(
-    later.getFullYear(),
-    later.getMonth(),
-    later.getDate()
-  );
-
-  const b = Date.UTC(
-    earlier.getFullYear(),
-    earlier.getMonth(),
-    earlier.getDate()
-  );
-
+  const a = Date.UTC(later.getFullYear(), later.getMonth(), later.getDate());
+  const b = Date.UTC(earlier.getFullYear(), earlier.getMonth(), earlier.getDate());
   return Math.round((a - b) / 86400000);
-}
-
-function parseScore(value) {
-  if (value === null || value === undefined) return null;
-
-  const match = String(value)
-    .trim()
-    .match(/^(\d+)\s*[-:]\s*(\d+)$/);
-
-  if (!match) return null;
-
-  return {
-    home: Number(match[1]),
-    away: Number(match[2])
-  };
-}
-
-function fullScore(match) {
-  return parseScore(
-    match.score ??
-    match.fullTimeScore ??
-    match.full_time_score ??
-    match.ftScore ??
-    match.ms
-  );
-}
-
-function halfScore(match) {
-  return parseScore(
-    match.halfTimeScore ??
-    match.half_time_score ??
-    match.htScore ??
-    match.ht ??
-    match.iy
-  );
-}
-
-function isPlayed(match) {
-  return fullScore(match) !== null;
-}
-
-function getOdd(match, key) {
-  const value = match?.[key];
-
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-
-  const odd = Number(value);
-
-  return Number.isFinite(odd) && odd > 1 ? odd : null;
-}
-
-function oddKey(odd) {
-  // JSON'daki 1.8 ile 1.80 aynı sayısal oran kabul edilir.
-  return Number(odd).toFixed(6);
-}
-
-function formatOdd(value) {
-  return formatter.format(value);
 }
 
 function formatDate(value) {
   const date = parseDate(value);
-
   if (!date) return String(value || "-");
 
   return date.toLocaleDateString("tr-TR", {
@@ -246,157 +155,337 @@ function formatDate(value) {
   });
 }
 
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[char]);
+/* =========================================================
+   SKOR YARDIMCILARI
+   ========================================================= */
+
+function parseScore(value) {
+  if (value == null || value === "") return null;
+
+  if (typeof value === "object") {
+    const home = Number(
+      value.home ?? value.homeScore ?? value.homeGoals ??
+      value.h ?? value.ev ?? value.evSahibi
+    );
+
+    const away = Number(
+      value.away ?? value.awayScore ?? value.awayGoals ??
+      value.a ?? value.dep ?? value.deplasman
+    );
+
+    if (
+      Number.isFinite(home) &&
+      Number.isFinite(away) &&
+      home >= 0 &&
+      away >= 0
+    ) {
+      return { home, away };
+    }
+
+    return null;
+  }
+
+  const match = String(value).match(/(\d+)\s*[-:]\s*(\d+)/);
+  if (!match) return null;
+
+  return {
+    home: Number(match[1]),
+    away: Number(match[2])
+  };
 }
 
+function firstScore(match, fields) {
+  for (const field of fields) {
+    const score = parseScore(match?.[field]);
+    if (score) return score;
+  }
+
+  return null;
+}
+
+function fullScore(match) {
+  const direct = firstScore(match, [
+    "score",
+    "fullTimeScore",
+    "full_time_score",
+    "ftScore",
+    "ms",
+    "result"
+  ]);
+
+  if (direct) return direct;
+
+  const nested = [
+    match?.scores?.fullTime,
+    match?.scores?.full_time,
+    match?.scores?.ft,
+    match?.result?.fullTime,
+    match?.result?.ft
+  ];
+
+  for (const value of nested) {
+    const score = parseScore(value);
+    if (score) return score;
+  }
+
+  return null;
+}
+
+function halfScore(match) {
+  const direct = firstScore(match, [
+    "halfTimeScore",
+    "half_time_score",
+    "htScore",
+    "ht",
+    "iy",
+    "firstHalfScore",
+    "first_half_score"
+  ]);
+
+  if (direct) return direct;
+
+  const nested = [
+    match?.scores?.halfTime,
+    match?.scores?.half_time,
+    match?.scores?.ht,
+    match?.result?.halfTime,
+    match?.result?.ht
+  ];
+
+  for (const value of nested) {
+    const score = parseScore(value);
+    if (score) return score;
+  }
+
+  return null;
+}
+
+function isPlayed(match) {
+  return fullScore(match) !== null;
+}
+
+/* =========================================================
+   TAKIM, SAAT VE LİG
+   ========================================================= */
+
 function matchName(match) {
-  const home = match.home ?? match.homeTeam ?? "Ev sahibi";
-  const away = match.away ?? match.awayTeam ?? "Deplasman";
+  const home =
+    match?.home ??
+    match?.homeTeam ??
+    match?.homeName ??
+    match?.team1 ??
+    match?.evSahibi ??
+    "Ev sahibi";
+
+  const away =
+    match?.away ??
+    match?.awayTeam ??
+    match?.awayName ??
+    match?.team2 ??
+    match?.deplasman ??
+    "Deplasman";
 
   return `${home} - ${away}`;
 }
 
 function matchTime(match) {
-  return match.time ?? match.hour ?? match.saat ?? "";
+  const value =
+    match?.time ??
+    match?.matchTime ??
+    match?.hour ??
+    match?.saat ??
+    match?.datetime ??
+    match?.dateTime ??
+    "";
+
+  const text = String(value);
+
+  const timeMatch = text.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
+  return timeMatch ? timeMatch[0] : (text.length <= 8 ? text : "");
 }
 
 function matchLeague(match) {
-  return match.league ?? match.lig ?? "";
+  return String(
+    match?.league ??
+    match?.leagueName ??
+    match?.competition ??
+    match?.tournament ??
+    match?.lig ??
+    ""
+  );
+}
+
+/* =========================================================
+   ORAN OKUMA
+
+   DNA yöntemindeki gibi oran iki ondalık basamağa
+   normalize edilir. İç içe oran nesneleri de desteklenir.
+   ========================================================= */
+
+function normalizeOdd(value) {
+  if (value == null || value === "") return null;
+
+  const parsed = Number(String(value).trim().replace(",", "."));
+  if (!Number.isFinite(parsed) || parsed <= 1) return null;
+
+  return Number(parsed.toFixed(2));
+}
+
+function oddKey(value) {
+  const odd = normalizeOdd(value);
+  return odd == null ? "" : odd.toFixed(2);
+}
+
+function getOdd(match, key) {
+  const containers = [
+    match,
+    match?.openingOdds,
+    match?.openOdds,
+    match?.odds,
+    match?.opening,
+    match?.oranlar,
+    match?.markets
+  ];
+
+  const aliases = {
+    msX: ["msX", "msx", "MSX", "MS0", "ms0"],
+    iyX: ["iyX", "iyx", "IYX", "İYX", "iy0"],
+    au15Alt: ["au15Alt", "ms15Alt", "15_ALT", "ms15alt"],
+    au15Ust: ["au15Ust", "ms15Ust", "15_UST", "ms15ust"],
+    au25Alt: ["au25Alt", "25_ALT"],
+    au25Ust: ["au25Ust", "25_UST"],
+    au35Alt: ["au35Alt", "35_ALT"],
+    au35Ust: ["au35Ust", "35_UST"],
+    iy15Alt: ["iy15Alt", "IY15_ALT"],
+    iy15Ust: ["iy15Ust", "IY15_UST"],
+    iyKgVar: ["iyKgVar", "iyKGVar", "IYKG_VAR"],
+    iyKgYok: ["iyKgYok", "iyKGYok", "IYKG_YOK"]
+  };
+
+  const fields = [...new Set([key, ...(aliases[key] || [])])];
+
+  for (const container of containers) {
+    if (!container || typeof container !== "object") continue;
+
+    for (const field of fields) {
+      const odd = normalizeOdd(container[field]);
+      if (odd != null) return odd;
+    }
+  }
+
+  return null;
 }
 
 /* =========================================================
    MARKET SONUCU
 
-   Tarihsel sonuç sadece maç skoru mevcutsa hesaplanır.
-========================================================= */
+   Her market, yalnızca kendi gerçek sonucuyla karşılaştırılır.
+   ========================================================= */
 
 function marketOutcome(match, market) {
-  const score = fullScore(match);
-
+  const score = market.half ? halfScore(match) : fullScore(match);
   if (!score) return null;
 
-  if (market.half) {
-    const half = halfScore(match);
-
-    if (!half) return null;
-
-    return market.test(half.home, half.away);
-  }
-
-  return market.test(score.home, score.away);
+  return Boolean(market.test(score.home, score.away));
 }
 
 /* =========================================================
-   VERİYİ TARİH BAZINDA İNDEKSLE
-========================================================= */
+   TARİH İNDEKSİ
+   ========================================================= */
 
 function buildDateIndex() {
   matchesByDate = new Map();
+  historyCache.clear();
 
   for (const match of allMatches) {
-    const key = dateKey(match.date);
+    const key = dateKey(
+      match?.date ??
+      match?.matchDate ??
+      match?.gameDate ??
+      match?.tarih ??
+      match?.datetime ??
+      match?.dateTime
+    );
 
     if (!key) continue;
 
-    if (!matchesByDate.has(key)) {
-      matchesByDate.set(key, []);
-    }
-
+    if (!matchesByDate.has(key)) matchesByDate.set(key, []);
     matchesByDate.get(key).push(match);
   }
-
-  // Tarih değişince geçmiş veriyi tekrar baştan okumayalım.
-  historyCache.clear();
 }
 
 /* =========================================================
-   HIZLI GEÇMİŞ ANALİZİ
+   GEÇMİŞ ANALİZİ
 
-   Önceki yöntem:
-   Her hedef maç için tüm maç listesini tarıyordu.
-
-   Bu yöntem:
-   Seçilen tarihten önceki 60 günlük maçları bir kez tarar.
-   Sonuçları market + aynı oran anahtarında toplar.
-========================================================= */
+   Anahtar: market + iki ondalıklı açılış oranı.
+   Geçmiş maçlar yalnızca seçilen tarihten önceki
+   30 günlük aralıktan alınır.
+   ========================================================= */
 
 function buildHistoryIndex(targetDate) {
-  const targetKey = localDateValue(targetDate);
-
-  if (historyCache.has(targetKey)) {
-    return historyCache.get(targetKey);
+  if (historyCache.has(targetDate)) {
+    return historyCache.get(targetDate);
   }
 
-  const historyIndex = new Map();
+  const target = parseDate(targetDate);
+  if (!target) return new Map();
+
+  const index = new Map();
 
   for (let offset = 1; offset <= HISTORY_DAYS; offset++) {
-    const day = new Date(
-      targetDate.getFullYear(),
-      targetDate.getMonth(),
-      targetDate.getDate() - offset
-    );
+    const date = new Date(target);
+    date.setDate(date.getDate() - offset);
 
-    const dayKey = localDateValue(day);
-    const historicalMatches = matchesByDate.get(dayKey);
+    const key = localDateValue(date);
+    const matches = matchesByDate.get(key) || [];
 
-    if (!historicalMatches) continue;
-
-    for (const match of historicalMatches) {
+    for (const match of matches) {
       if (!isPlayed(match)) continue;
 
       for (const market of MARKETS) {
         const odd = getOdd(match, market.key);
-
-        if (odd === null || odd < MIN_ODD) continue;
+        if (odd == null || odd < MIN_ODD) continue;
 
         const outcome = marketOutcome(match, market);
+        if (outcome == null) continue;
 
-        if (outcome === null) continue;
+        const groupKey = `${market.key}|${oddKey(odd)}`;
 
-        const key = `${market.key}|${oddKey(odd)}`;
-
-        let stats = historyIndex.get(key);
-
-        if (!stats) {
-          stats = { sample: 0, wins: 0 };
-          historyIndex.set(key, stats);
+        if (!index.has(groupKey)) {
+          index.set(groupKey, {
+            marketKey: market.key,
+            odd: Number(oddKey(odd)),
+            sample: 0,
+            wins: 0,
+            losses: 0
+          });
         }
 
-        stats.sample++;
+        const group = index.get(groupKey);
+        group.sample++;
 
-        if (outcome) {
-          stats.wins++;
-        }
+        if (outcome) group.wins++;
+        else group.losses++;
       }
     }
   }
 
-  historyCache.set(targetKey, historyIndex);
-
-  // Önbelleğin sınırsız büyümesini engelle.
-  while (historyCache.size > MAX_HISTORY_CACHE) {
+  if (historyCache.size >= MAX_HISTORY_CACHE) {
     const oldestKey = historyCache.keys().next().value;
     historyCache.delete(oldestKey);
   }
 
-  return historyIndex;
+  historyCache.set(targetDate, index);
+  return index;
 }
 
 /* =========================================================
-   MAÇ ADAYLARI
-========================================================= */
+   TEK MAÇ ANALİZİ
+   ========================================================= */
 
 function analyzeMarket(match, market, historyIndex) {
   const odd = getOdd(match, market.key);
-
-  if (odd === null || odd < MIN_ODD) return null;
+  if (odd == null || odd < MIN_ODD) return null;
 
   const key = `${market.key}|${oddKey(odd)}`;
   const stats = historyIndex.get(key);
@@ -404,7 +493,6 @@ function analyzeMarket(match, market, historyIndex) {
   if (!stats || stats.sample < MIN_SAMPLE) return null;
 
   const success = (stats.wins / stats.sample) * 100;
-
   if (success < MIN_SUCCESS) return null;
 
   return {
@@ -412,46 +500,50 @@ function analyzeMarket(match, market, historyIndex) {
     market,
     marketKey: market.key,
     marketLabel: market.label,
-    odd,
+    odd: Number(oddKey(odd)),
     sample: stats.sample,
     wins: stats.wins,
-    losses: stats.sample - stats.wins,
+    losses: stats.losses,
     success,
-    date: match.date,
+    date: dateKey(
+      match?.date ??
+      match?.matchDate ??
+      match?.gameDate ??
+      match?.tarih ??
+      match?.datetime ??
+      match?.dateTime
+    ),
     time: matchTime(match),
     league: matchLeague(match),
     matchName: matchName(match)
   };
 }
 
-function getCandidatesForDate(dateValue) {
-  const targetDate = parseDate(dateValue);
+/* =========================================================
+   SEÇİLEN TARİHİN ADAYLARI
+   ========================================================= */
 
+function getCandidatesForDate(dateValue) {
+  const targetDate = dateKey(dateValue);
   if (!targetDate) return [];
 
-  const targetKey = localDateValue(targetDate);
-  const dailyMatches = matchesByDate.get(targetKey) || [];
+  const dayMatches = matchesByDate.get(targetDate) || [];
+  if (!dayMatches.length) return [];
 
-  if (!dailyMatches.length) return [];
-
-  // Geçmiş indeksi yalnızca bir kez oluşturulur.
   const historyIndex = buildHistoryIndex(targetDate);
   const candidates = [];
 
-  for (const match of dailyMatches) {
+  for (const match of dayMatches) {
     for (const market of MARKETS) {
       const candidate = analyzeMarket(match, market, historyIndex);
-
-      if (candidate) {
-        candidates.push(candidate);
-      }
+      if (candidate) candidates.push(candidate);
     }
   }
 
   candidates.sort((a, b) =>
     b.success - a.success ||
     b.sample - a.sample ||
-    a.odd - b.odd
+    b.odd - a.odd
   );
 
   return candidates;
@@ -459,7 +551,7 @@ function getCandidatesForDate(dateValue) {
 
 /* =========================================================
    KUPON OLUŞTURMA
-========================================================= */
+   ========================================================= */
 
 function buildCoupon(candidates, type) {
   const thresholds = {
@@ -468,48 +560,34 @@ function buildCoupon(candidates, type) {
     risk: MIN_SUCCESS
   };
 
-  const threshold = thresholds[type];
+  const threshold = thresholds[type] ?? MIN_SUCCESS;
 
-  const eligible = candidates
-    .filter(item => item.success >= threshold)
+  const ordered = candidates
+    .filter(item => item.success >= threshold && item.odd >= MIN_ODD)
     .slice()
-    .sort((a, b) => {
-      if (type === "safe") {
-        return b.success - a.success ||
-          b.sample - a.sample ||
-          a.odd - b.odd;
-      }
-
-      if (type === "medium") {
-        return b.success - a.success ||
-          b.odd - a.odd ||
-          b.sample - a.sample;
-      }
-
-      return b.odd - a.odd ||
-        b.success - a.success ||
-        b.sample - a.sample;
-    });
+    .sort((a, b) =>
+      b.success - a.success ||
+      b.sample - a.sample ||
+      b.odd - a.odd
+    );
 
   const selected = [];
   const usedMatches = new Set();
   let totalOdd = 1;
 
-  for (const candidate of eligible) {
-    const matchId = [
-      dateKey(candidate.match.date),
-      candidate.match.time ?? "",
-      candidate.match.home ?? "",
-      candidate.match.away ?? ""
-    ].join("|");
-
-    // Aynı maçtan bir kupona birden fazla seçim eklenmez.
-    if (usedMatches.has(matchId)) continue;
-
+  for (const candidate of ordered) {
     if (selected.length >= MAX_MATCHES) break;
 
+    const identity = [
+      candidate.date,
+      candidate.time,
+      candidate.matchName
+    ].join("|").toLocaleLowerCase("tr-TR");
+
+    if (usedMatches.has(identity)) continue;
+
+    usedMatches.add(identity);
     selected.push(candidate);
-    usedMatches.add(matchId);
     totalOdd *= candidate.odd;
 
     if (totalOdd >= MIN_TOTAL_ODDS) break;
@@ -520,7 +598,7 @@ function buildCoupon(candidates, type) {
       type,
       items: [],
       totalOdd: 0,
-      message: `Toplam oran ${formatOdd(MIN_TOTAL_ODDS)} seviyesine ulaşan uygun seçim bulunamadı.`
+      message: `Toplam oranı ${formatter.format(MIN_TOTAL_ODDS)} yapacak yeterli uygun maç bulunamadı.`
     };
   }
 
@@ -532,40 +610,57 @@ function buildCoupon(candidates, type) {
   };
 }
 
-function couponStatus(coupon) {
-  if (!coupon.items.length) return "empty";
+/* =========================================================
+   KUPON SONUCU
+   ========================================================= */
 
-  let pending = false;
+function couponStatus(coupon) {
+  if (!coupon?.items?.length) return "empty";
+
+  let hasPending = false;
 
   for (const item of coupon.items) {
-    const score = fullScore(item.match);
+    const outcome = marketOutcome(item.match, item.market);
 
-    if (!score) {
-      pending = true;
-      continue;
-    }
-
-    const result = marketOutcome(item.match, item.market);
-
-    if (result === false) return "lost";
-    if (result === null) pending = true;
+    if (outcome === false) return "lost";
+    if (outcome == null) hasPending = true;
   }
 
-  return pending ? "pending" : "won";
+  return hasPending ? "pending" : "won";
 }
 
 function couponStatusLabel(status) {
-  return {
+  const labels = {
     won: "Kazandı",
     lost: "Kaybetti",
     pending: "Bekliyor",
-    empty: "Uygun kupon yok"
-  }[status] || "Bekliyor";
+    empty: "Kupon oluşturulamadı"
+  };
+
+  return labels[status] || "Bekliyor";
 }
 
 /* =========================================================
-   CSS
-========================================================= */
+   GÜVENLİ HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+function formatOdd(value) {
+  return formatter.format(Number(value) || 0);
+}
+
+/* =========================================================
+   STİLLER
+   ========================================================= */
 
 function installStyles() {
   if (document.getElementById("mk-coupon-styles")) return;
@@ -575,218 +670,234 @@ function installStyles() {
 
   style.textContent = `
     #mk-coupon-root {
+      box-sizing: border-box;
       width: 100%;
-      color: #e7eef8;
-      font-family: inherit;
+      color: #e8eef8;
+      background: #07111f;
+      padding: 16px;
+      border-radius: 16px;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
-    #mk-coupon-root * {
+    #mk-coupon-root *,
+    #mk-coupon-root *::before,
+    #mk-coupon-root *::after {
       box-sizing: border-box;
     }
 
-    #mk-coupon-root .mk-panel {
-      margin: 12px 0;
-      padding: 14px;
-      border: 1px solid #20344d;
-      border-radius: 14px;
-      background: #0e1b2b;
-    }
-
-    #mk-coupon-root .mk-header {
+    #mk-coupon-root .mk-head {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 10px;
+      gap: 12px;
+      margin-bottom: 16px;
     }
 
     #mk-coupon-root .mk-title {
       margin: 0;
-      font-size: 18px;
-      font-weight: 900;
+      font-size: 21px;
+      font-weight: 800;
+      color: #f3f7ff;
     }
 
-    #mk-coupon-root .mk-muted {
-      color: #9eb0c8;
-      font-size: 11px;
-      line-height: 1.5;
+    #mk-coupon-root .mk-subtitle {
+      color: #9caec7;
+      font-size: 12px;
+      margin-top: 6px;
     }
 
     #mk-coupon-root .mk-controls {
       display: flex;
-      align-items: center;
       flex-wrap: wrap;
-      gap: 9px;
-      margin-top: 14px;
+      gap: 8px;
+      align-items: center;
     }
 
     #mk-coupon-root input[type="date"] {
-      min-height: 42px;
-      max-width: 100%;
-      padding: 9px 10px;
-      border: 1px solid #304760;
+      min-height: 40px;
+      padding: 8px 10px;
+      border: 1px solid #2b3b52;
       border-radius: 9px;
-      background: #091321;
-      color: #e7eef8;
+      background: #101d2e;
+      color: #f3f7ff;
+      color-scheme: dark;
+      font: inherit;
     }
 
     #mk-coupon-root button {
       min-height: 40px;
       padding: 9px 13px;
-      border: 1px solid #36516e;
+      border: 1px solid #2c7ce5;
       border-radius: 9px;
-      background: #18304b;
-      color: #e7eef8;
-      font-weight: 800;
+      background: #1768c4;
+      color: #fff;
+      font-weight: 700;
       cursor: pointer;
     }
 
     #mk-coupon-root button:disabled {
-      opacity: .6;
+      opacity: .55;
       cursor: wait;
+    }
+
+    #mk-coupon-root .mk-message {
+      padding: 11px 13px;
+      margin: 10px 0 14px;
+      border: 1px solid #263950;
+      border-radius: 10px;
+      background: #0d1a2b;
+      color: #b8c7dc;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
     }
 
     #mk-coupon-root .mk-summary {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
-      margin-top: 12px;
+      margin: 14px 0;
     }
 
     #mk-coupon-root .mk-stat {
       min-width: 0;
       padding: 12px;
-      border: 1px solid #20344d;
+      border: 1px solid #23364e;
       border-radius: 11px;
-      background: #091624;
-    }
-
-    #mk-coupon-root .mk-stat-value {
-      font-size: 22px;
-      font-weight: 900;
+      background: #0d1a2b;
     }
 
     #mk-coupon-root .mk-stat-label {
-      margin-top: 4px;
-      color: #9eb0c8;
-      font-size: 10px;
-      line-height: 1.4;
+      color: #98aac3;
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+
+    #mk-coupon-root .mk-stat-value {
+      font-size: 19px;
+      font-weight: 800;
+      color: #f5f8ff;
+      overflow-wrap: anywhere;
+    }
+
+    #mk-coupon-root .mk-coupon-card {
+      border: 1px solid #2a3c54;
+      border-radius: 13px;
+      background: #0b1727;
+      margin: 12px 0;
+      overflow: hidden;
+    }
+
+    #mk-coupon-root .mk-coupon-head {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border-bottom: 1px solid #25364c;
+      background: #101e31;
     }
 
     #mk-coupon-root .mk-coupon-title {
+      color: #f2f6ff;
       font-size: 16px;
-      font-weight: 900;
+      font-weight: 800;
     }
 
-    #mk-coupon-root .mk-row {
-      margin-top: 9px;
-      padding: 12px;
-      border: 1px solid #20344d;
-      border-radius: 11px;
-      background: #091624;
-    }
-
-    #mk-coupon-root .mk-match {
-      font-size: 13px;
-      font-weight: 850;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
-    }
-
-    #mk-coupon-root .mk-market {
+    #mk-coupon-root .mk-coupon-description {
+      color: #9caec7;
+      font-size: 12px;
       margin-top: 4px;
-      color: #9eb0c8;
-      font-size: 11px;
-    }
-
-    #mk-coupon-root .mk-row-bottom {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      font-size: 12px;
-    }
-
-    #mk-coupon-root .mk-odd {
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    #mk-coupon-root .mk-status {
-      display: inline-block;
-      padding: 5px 8px;
-      border-radius: 7px;
-      font-size: 10px;
-      font-weight: 900;
-    }
-
-    #mk-coupon-root .mk-won {
-      background: #123b2b;
-      color: #67e5a5;
-    }
-
-    #mk-coupon-root .mk-lost {
-      background: #451f2a;
-      color: #ff8795;
-    }
-
-    #mk-coupon-root .mk-pending {
-      background: #473719;
-      color: #ffd16a;
-    }
-
-    #mk-coupon-root .mk-empty {
-      padding: 12px 0;
-      color: #9eb0c8;
-      font-size: 12px;
-      line-height: 1.6;
     }
 
     #mk-coupon-root .mk-total {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      margin-top: 13px;
-      padding-top: 13px;
-      border-top: 1px solid #20344d;
-      font-size: 14px;
+      color: #6ee7a0;
+      font-size: 22px;
       font-weight: 900;
+      white-space: nowrap;
     }
 
-    #mk-coupon-root .mk-error {
-      padding: 12px;
-      border: 1px solid #713b48;
-      border-radius: 10px;
-      background: #2b1520;
-      color: #ffabb6;
-      font-size: 12px;
-      line-height: 1.6;
+    #mk-coupon-root .mk-leg {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid #1b2b3e;
+    }
+
+    #mk-coupon-root .mk-leg:last-child {
+      border-bottom: 0;
+    }
+
+    #mk-coupon-root .mk-match-name {
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 700;
+      color: #edf3ff;
       overflow-wrap: anywhere;
-      white-space: pre-wrap;
     }
 
-    @media (max-width: 440px) {
-      #mk-coupon-root .mk-summary {
-        gap: 6px;
-      }
+    #mk-coupon-root .mk-match-meta {
+      margin-top: 4px;
+      color: #91a5bf;
+      font-size: 11px;
+      line-height: 1.5;
+    }
 
-      #mk-coupon-root .mk-stat {
-        padding: 9px 7px;
-      }
+    #mk-coupon-root .mk-market {
+      display: inline-block;
+      margin-top: 7px;
+      padding: 5px 8px;
+      border: 1px solid #31547b;
+      border-radius: 7px;
+      background: #122b46;
+      color: #c4e1ff;
+      font-size: 12px;
+      font-weight: 800;
+    }
 
-      #mk-coupon-root .mk-stat-value {
-        font-size: 19px;
-      }
+    #mk-coupon-root .mk-odd {
+      align-self: center;
+      font-size: 17px;
+      font-weight: 900;
+      color: #f4f7ff;
+      white-space: nowrap;
+    }
 
-      #mk-coupon-root .mk-stat-label {
-        font-size: 9px;
-      }
+    #mk-coupon-root .mk-result {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 11px;
+      font-weight: 800;
+    }
 
-      #mk-coupon-root .mk-panel {
-        padding: 11px;
-      }
+    #mk-coupon-root .mk-won { color: #54e08a; }
+    #mk-coupon-root .mk-lost { color: #ff7373; }
+    #mk-coupon-root .mk-pending { color: #f6ca61; }
+
+    #mk-coupon-root .mk-empty {
+      padding: 18px 14px;
+      color: #b3c1d5;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    #mk-coupon-root .mk-footnote {
+      margin-top: 15px;
+      color: #8ea2bd;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 480px) {
+      #mk-coupon-root { padding: 11px; }
+      #mk-coupon-root .mk-title { font-size: 18px; }
+      #mk-coupon-root .mk-summary { grid-template-columns: 1fr; }
+      #mk-coupon-root .mk-stat { padding: 10px; }
+      #mk-coupon-root .mk-stat-value { font-size: 17px; }
+      #mk-coupon-root .mk-leg { padding: 11px; }
     }
   `;
 
@@ -794,18 +905,24 @@ function installStyles() {
 }
 
 /* =========================================================
-   ARAYÜZ
-========================================================= */
+   ANA ARAYÜZ
+   ========================================================= */
 
 function ensureRoot() {
   let root = document.getElementById("mk-coupon-root");
-
   if (root) return root;
 
   root = document.createElement("section");
   root.id = "mk-coupon-root";
-  document.body.appendChild(root);
 
+  const host =
+    document.querySelector("#coupon-root") ||
+    document.querySelector("#kupon-root") ||
+    document.querySelector("[data-coupon-root]") ||
+    document.querySelector("main") ||
+    document.body;
+
+  host.appendChild(root);
   return root;
 }
 
@@ -813,210 +930,235 @@ function renderShell() {
   const root = ensureRoot();
 
   root.innerHTML = `
-    <div class="mk-panel">
-      <div class="mk-header">
-        <h2 class="mk-title">Mackolik Otomatik Kupon</h2>
-        <span class="mk-muted">V2 veri kaynağı</span>
+    <div class="mk-head">
+      <div>
+        <h2 class="mk-title">Otomatik Kupon</h2>
+        <div class="mk-subtitle">
+          DNA hesaplama yöntemi · ${HISTORY_DAYS} günlük geçmiş
+        </div>
       </div>
 
       <div class="mk-controls">
-        <label for="mk-coupon-date" class="mk-muted">Maç tarihi</label>
-        <input id="mk-coupon-date" type="date" value="${escapeHtml(selectedDate)}">
-        <button type="button" id="mk-coupon-refresh">Yenile</button>
+        <input
+          id="mk-coupon-date"
+          type="date"
+          value="${escapeHtml(selectedDate)}"
+          aria-label="Maç tarihi"
+        >
+        <button id="mk-coupon-refresh" type="button">
+          Yenile
+        </button>
       </div>
-
-      <div id="mk-coupon-message" class="mk-muted" style="margin-top:10px">
-        ${isLoading ? "Veriler yükleniyor..." : ""}
-      </div>
-
-      <div id="mk-coupon-content"></div>
     </div>
+
+    <div id="mk-coupon-message" class="mk-message">
+      Veriler hazırlanıyor...
+    </div>
+
+    <div id="mk-coupon-content"></div>
   `;
 
-  root.querySelector("#mk-coupon-date").addEventListener("change", event => {
-    selectedDate = event.target.value || localDateValue(new Date());
+  const dateInput = root.querySelector("#mk-coupon-date");
+  const refreshButton = root.querySelector("#mk-coupon-refresh");
+
+  dateInput.addEventListener("change", () => {
+    if (!dateInput.value) return;
+
+    selectedDate = dateInput.value;
     renderCouponsForDate(selectedDate);
   });
 
-  root.querySelector("#mk-coupon-refresh").addEventListener("click", () => {
+  refreshButton.addEventListener("click", () => {
     loadCouponData(true);
   });
+
+  return root;
 }
+
+function setMessage(message) {
+  const element = document.getElementById("mk-coupon-message");
+  if (element) element.textContent = message;
+}
+
+/* =========================================================
+   KUPON KARTI
+   ========================================================= */
 
 function renderCouponCard(coupon, title, description) {
-  const status = couponStatus(coupon);
-
-  let html = `
-    <div class="mk-panel">
-      <div class="mk-header">
-        <div>
-          <div class="mk-coupon-title">${escapeHtml(title)}</div>
-          <div class="mk-muted">${escapeHtml(description)}</div>
-        </div>
-
-        <span class="mk-status mk-${status}">
-          ${escapeHtml(couponStatusLabel(status))}
-        </span>
-      </div>
-  `;
-
   if (!coupon.items.length) {
-    html += `
-      <div class="mk-empty">
-        ${escapeHtml(coupon.message || "Bu kategori için uygun seçim bulunamadı.")}
-      </div>
+    return `
+      <article class="mk-coupon-card">
+        <div class="mk-coupon-head">
+          <div>
+            <div class="mk-coupon-title">${escapeHtml(title)}</div>
+            <div class="mk-coupon-description">${escapeHtml(description)}</div>
+          </div>
+        </div>
+        <div class="mk-empty">${escapeHtml(coupon.message)}</div>
+      </article>
     `;
-
-    return html + "</div>";
   }
 
-  for (const item of coupon.items) {
-    const score = fullScore(item.match);
+  const status = couponStatus(coupon);
+  const statusClass = {
+    won: "mk-won",
+    lost: "mk-lost",
+    pending: "mk-pending"
+  }[status] || "mk-pending";
+
+  const legs = coupon.items.map(item => {
+    const score = item.market.half
+      ? halfScore(item.match)
+      : fullScore(item.match);
+
+    const result = marketOutcome(item.match, item.market);
+
+    let resultText = "Bekliyor";
+    let resultClass = "mk-pending";
+
+    if (result === true) {
+      resultText = "Kazandı";
+      resultClass = "mk-won";
+    } else if (result === false) {
+      resultText = "Kaybetti";
+      resultClass = "mk-lost";
+    }
+
     const scoreText = score
-      ? `${score.home}-${score.away}`
+      ? `${score.home} - ${score.away}`
       : "Skor bekleniyor";
 
-    html += `
-      <div class="mk-row">
-        <div class="mk-match">${escapeHtml(item.matchName)}</div>
+    return `
+      <div class="mk-leg">
+        <div>
+          <div class="mk-match-name">${escapeHtml(item.matchName)}</div>
 
-        <div class="mk-market">
-          ${escapeHtml(item.league)}
-          ${item.time ? " · " + escapeHtml(item.time) : ""}
+          <div class="mk-match-meta">
+            ${escapeHtml(item.time || "Saat belirtilmemiş")}
+            ${item.league ? ` · ${escapeHtml(item.league)}` : ""}
+            · Skor: ${escapeHtml(scoreText)}
+          </div>
+
+          <div class="mk-market">${escapeHtml(item.marketLabel)}</div>
+
+          <div class="mk-match-meta">
+            Başarı: ${Math.round(item.success)}%
+            · Geçmiş: ${item.wins}/${item.sample}
+          </div>
+
+          <div class="mk-result ${resultClass}">
+            ${resultText}
+          </div>
         </div>
 
-        <div class="mk-row-bottom">
-          <span>${escapeHtml(item.marketLabel)}</span>
-          <span class="mk-odd">${formatOdd(item.odd)}</span>
-        </div>
-
-        <div class="mk-row-bottom">
-          <span class="mk-muted">
-            Geçmiş ${item.sample} maç · Başarı %${item.success.toFixed(1)}
-          </span>
-          <span class="mk-muted">${escapeHtml(scoreText)}</span>
-        </div>
+        <div class="mk-odd">${formatOdd(item.odd)}</div>
       </div>
     `;
-  }
+  }).join("");
 
-  html += `
-      <div class="mk-total">
-        <span>Toplam oran</span>
-        <span>${formatOdd(coupon.totalOdd)}</span>
+  return `
+    <article class="mk-coupon-card">
+      <div class="mk-coupon-head">
+        <div>
+          <div class="mk-coupon-title">${escapeHtml(title)}</div>
+          <div class="mk-coupon-description">
+            ${escapeHtml(description)}
+            · ${coupon.items.length} maç
+            · <span class="${statusClass}">${couponStatusLabel(status)}</span>
+          </div>
+        </div>
+
+        <div class="mk-total">${formatOdd(coupon.totalOdd)}</div>
       </div>
-    </div>
-  `;
 
-  return html;
+      ${legs}
+    </article>
+  `;
 }
 
+/* =========================================================
+   SEÇİLEN TARİHİ GÖSTER
+   ========================================================= */
+
 function renderCouponsForDate(dateValue = selectedDate) {
-  selectedDate = dateValue || localDateValue(new Date());
+  selectedDate = dateKey(dateValue) || localDateValue(new Date());
 
-  const root = ensureRoot();
-  const content = root.querySelector("#mk-coupon-content");
-  const message = root.querySelector("#mk-coupon-message");
-  const dateInput = root.querySelector("#mk-coupon-date");
+  const dateInput = document.getElementById("mk-coupon-date");
+  if (dateInput) dateInput.value = selectedDate;
 
-  if (dateInput && dateInput.value !== selectedDate) {
-    dateInput.value = selectedDate;
-  }
-
+  const content = document.getElementById("mk-coupon-content");
   if (!content) return [];
 
   if (loadError) {
-    content.innerHTML = `
-      <div class="mk-error">
-        ${escapeHtml(loadError)}
-      </div>
-    `;
-
-    if (message) message.textContent = "Veri yükleme hatası.";
-
+    setMessage(loadError);
+    content.innerHTML = "";
     return [];
   }
 
   if (!allMatches.length) {
-    content.innerHTML = `
-      <div class="mk-empty">
-        JSON dosyasında maç bulunamadı.
-      </div>
-    `;
-
-    if (message) message.textContent = "Veri bulunamadı.";
-
+    setMessage("Veri bulunamadı. Veri dosyasını kontrol et.");
+    content.innerHTML = "";
     return [];
   }
 
-  const targetDate = parseDate(selectedDate);
-
-  if (!targetDate) {
-    content.innerHTML = `
-      <div class="mk-error">Lütfen geçerli bir tarih seç.</div>
-    `;
-
-    return [];
-  }
-
-  const targetKey = localDateValue(targetDate);
-  const dailyMatches = matchesByDate.get(targetKey) || [];
+  const dayMatches = matchesByDate.get(selectedDate) || [];
   const candidates = getCandidatesForDate(selectedDate);
 
   const safe = buildCoupon(candidates, "safe");
   const medium = buildCoupon(candidates, "medium");
   const risk = buildCoupon(candidates, "risk");
 
-  const playedCount = dailyMatches.filter(isPlayed).length;
-  const pendingCount = dailyMatches.length - playedCount;
+  const playedCount = dayMatches.filter(isPlayed).length;
+  const pendingCount = dayMatches.length - playedCount;
 
-  if (message) {
-    message.textContent =
-      `${formatDate(selectedDate)} · ${dailyMatches.length} maç · ` +
-      `${candidates.length} uygun seçim · ${allMatches.length} toplam kayıt`;
-  }
+  setMessage(
+    `${formatDate(selectedDate)} · ${dayMatches.length} maç · ` +
+    `${playedCount} sonuçlanmış · ${pendingCount} bekleyen · ` +
+    `${candidates.length} uygun tahmin`
+  );
 
   content.innerHTML = `
     <div class="mk-summary">
       <div class="mk-stat">
-        <div class="mk-stat-value">${dailyMatches.length}</div>
-        <div class="mk-stat-label">Seçilen gündeki maç</div>
+        <div class="mk-stat-label">Günün maçları</div>
+        <div class="mk-stat-value">${dayMatches.length}</div>
       </div>
 
       <div class="mk-stat">
+        <div class="mk-stat-label">Uygun tahmin</div>
         <div class="mk-stat-value">${candidates.length}</div>
-        <div class="mk-stat-label">Uygun oran seçimi</div>
       </div>
 
       <div class="mk-stat">
-        <div class="mk-stat-value">${pendingCount}</div>
-        <div class="mk-stat-label">Skoru olmayan maç</div>
+        <div class="mk-stat-label">Geçmiş şartı</div>
+        <div class="mk-stat-value">%${MIN_SUCCESS}</div>
       </div>
     </div>
 
     ${renderCouponCard(
       safe,
       "Güvenli Kupon",
-      "En az %90 geçmiş başarı oranı"
+      "%90 ve üzeri geçmiş başarı"
     )}
 
     ${renderCouponCard(
       medium,
-      "Orta Riskli Kupon",
-      "En az %85 geçmiş başarı oranı"
+      "Orta Risk Kupon",
+      "%85 ve üzeri geçmiş başarı"
     )}
 
     ${renderCouponCard(
       risk,
-      "Riskli Kupon",
-      "En az %80 geçmiş başarı oranı"
+      "Alternatif Kupon",
+      `%${MIN_SUCCESS} ve üzeri geçmiş başarı`
     )}
 
-    <div class="mk-muted" style="padding:4px 2px">
-      Son ${HISTORY_DAYS} gün · En az ${MIN_SAMPLE} örnek ·
-      Minimum tekli oran ${formatOdd(MIN_ODD)} ·
-      Minimum kupon oranı ${formatOdd(MIN_TOTAL_ODDS)} ·
-      Maksimum ${MAX_MATCHES} maç
+    <div class="mk-footnote">
+      Hesaplama: Son ${HISTORY_DAYS} gün · En az ${MIN_SAMPLE} geçmiş maç
+      · Aynı market ve aynı iki ondalıklı oran.
+      Minimum tekli oran ${formatOdd(MIN_ODD)}.
+      Minimum kupon oranı ${formatOdd(MIN_TOTAL_ODDS)}.
+      En fazla ${MAX_MATCHES} maç.
     </div>
   `;
 
@@ -1024,8 +1166,8 @@ function renderCouponsForDate(dateValue = selectedDate) {
 }
 
 /* =========================================================
-   VERİ YÜKLEME
-========================================================= */
+   VERİYİ YÜKLE
+   ========================================================= */
 
 async function loadCouponData(force = false) {
   if (isLoading) return;
@@ -1033,105 +1175,77 @@ async function loadCouponData(force = false) {
   isLoading = true;
   loadError = "";
 
-  renderShell();
+  const root = renderShell();
+  const refreshButton = root.querySelector("#mk-coupon-refresh");
 
-  const root = ensureRoot();
-  const message = root.querySelector("#mk-coupon-message");
-
-  if (message) {
-    message.textContent = "Veriler yükleniyor...";
-  }
-
-  /*
-    Tarayıcının yükleniyor yazısını çizmesine fırsat ver.
-    Ardından JSON'u ve analiz indekslerini hazırla.
-  */
-  await new Promise(resolve => {
-    requestAnimationFrame(() => resolve());
-  });
+  if (refreshButton) refreshButton.disabled = true;
+  setMessage("Veriler yükleniyor...");
 
   try {
-    const dataUrl = new URL(DATA_URL, document.baseURI);
+    const url = force
+      ? `${DATA_URL}${DATA_URL.includes("?") ? "&" : "?"}_=${Date.now()}`
+      : DATA_URL;
 
-    if (force) {
-      dataUrl.searchParams.set("_", String(Date.now()));
-    }
-
-    const response = await fetch(dataUrl.href, {
+    const response = await fetch(url, {
       cache: force ? "no-store" : "default"
     });
 
     if (!response.ok) {
-      throw new Error(
-        `HTTP ${response.status}\n` +
-        `İstenen dosya: ${dataUrl.href}`
-      );
+      throw new Error(`Veri dosyası yüklenemedi (HTTP ${response.status}).`);
     }
 
-    const contentType = response.headers.get("content-type") || "";
+    const data = await response.json();
 
-    let json;
+    const records = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.matches)
+        ? data.matches
+        : Array.isArray(data?.data)
+          ? data.data
+          : [];
 
-    try {
-      json = await response.json();
-    } catch {
-      throw new Error(
-        "Yanıt geçerli JSON değil. Dosya yolu yanlış olabilir veya sunucu HTML hata sayfası döndürmüş olabilir.\n" +
-        `İstenen dosya: ${dataUrl.href}\n` +
-        `Content-Type: ${contentType || "belirtilmemiş"}`
-      );
-    }
+    allMatches = records.filter(match => {
+      if (!match || typeof match !== "object") return false;
 
-    let matches;
-
-    if (Array.isArray(json)) {
-      matches = json;
-    } else if (Array.isArray(json.matches)) {
-      matches = json.matches;
-    } else {
-      throw new Error(
-        'JSON içinde "matches" dizisi bulunamadı. Beklenen yapı: { "matches": [...] }'
-      );
-    }
-
-    allMatches = matches.filter(match => {
-      return match &&
-        typeof match === "object" &&
-        dateKey(match.date);
+      return Boolean(dateKey(
+        match.date ??
+        match.matchDate ??
+        match.gameDate ??
+        match.tarih ??
+        match.datetime ??
+        match.dateTime
+      ));
     });
-
-    if (!allMatches.length) {
-      throw new Error(
-        "JSON yüklendi ama geçerli tarih içeren maç kaydı bulunamadı."
-      );
-    }
 
     buildDateIndex();
 
-    // Veri yüklendiğinde analizi ayrı bir çizim turunda çalıştır.
-    await new Promise(resolve => {
-      requestAnimationFrame(() => resolve());
-    });
+    if (!allMatches.length) {
+      setMessage("Veri dosyası açıldı ancak geçerli tarihli maç bulunamadı.");
+      const content = document.getElementById("mk-coupon-content");
+      if (content) content.innerHTML = "";
+      return;
+    }
 
-    isLoading = false;
     renderCouponsForDate(selectedDate);
-
   } catch (error) {
-    loadError =
-      "Veriler yüklenemedi.\n\n" +
-      (error?.message || String(error)) +
-      "\n\nKontrol et: kupon.html ve data/v2-data.json doğru konumda mı?";
+    loadError = error?.message || "Veriler yüklenirken hata oluştu.";
+    setMessage(loadError);
 
+    const content = document.getElementById("mk-coupon-content");
+    if (content) content.innerHTML = "";
+  } finally {
     isLoading = false;
-    renderCouponsForDate(selectedDate);
+
+    const button = document.getElementById("mk-coupon-refresh");
+    if (button) button.disabled = false;
   }
 }
 
 /* =========================================================
-   DIŞARIDAN KULLANIM
-========================================================= */
+   DIŞARIDAN ERİŞİM
+   ========================================================= */
 
-window.getCouponsForDate = function (date) {
+window.getCouponsForDate = function(date) {
   const candidates = getCandidatesForDate(date);
 
   return {
@@ -1144,24 +1258,24 @@ window.getCouponsForDate = function (date) {
 
 window.renderCouponsForDate = renderCouponsForDate;
 
-window.reloadCouponData = function () {
+window.reloadCouponData = function() {
   return loadCouponData(true);
 };
 
 /* =========================================================
    BAŞLAT
-========================================================= */
+   ========================================================= */
 
-function initCouponEngine() {
+function initializeCouponEngine() {
   installStyles();
   renderShell();
   loadCouponData();
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initCouponEngine, {
+  document.addEventListener("DOMContentLoaded", initializeCouponEngine, {
     once: true
   });
 } else {
-  initCouponEngine();
+  initializeCouponEngine();
 }
