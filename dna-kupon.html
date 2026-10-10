@@ -269,7 +269,6 @@ const AUTO_MARKET_RESULTS = {
 
 let autoCurrentCoupons = [];
 let autoShowAllHistory = false;
-let autoEngineReady = false;
 
 const auto$ = id => document.getElementById(id);
 
@@ -364,59 +363,96 @@ function autoGetScore(match, type) {
   return typeof dnaScore === "function" ? dnaScore(match, type) : null;
 }
 
+function autoValidScore(score) {
+  if (!score || score.home === undefined || score.home === null ||
+      score.away === undefined || score.away === null) return null;
+
+  const home = Number(score.home);
+  const away = Number(score.away);
+
+  if (!Number.isFinite(home) || !Number.isFinite(away)) return null;
+  return { home, away };
+}
+
+function autoOutcomeStatus(condition) {
+  return condition ? "won" : "lost";
+}
+
 /*
- * Düzeltilen bölüm:
- * KG Var/KG Yok, dnaResult() fonksiyonuna bırakılmadan
- * doğrudan maçın gerçek ikinci yarı/tam maç skoruyla kontrol edilir.
+ * ÖNEMLİ:
+ * pick.resultId / pick.resultLabel yalnızca geçmiş örneklemini belirtir.
+ * Maçın tik/çarpısı, yalnızca pick.marketId (gerçek kupon tahmini)
+ * ve o marketin gerektirdiği gerçek skor üzerinden belirlenir.
  */
 function autoPickStatus(pick) {
-  const match = pick.match;
+  const match = pick?.match;
   if (!match) return "pending";
 
   const marketId = pick.marketId;
-  const ft = autoGetScore(match, "ft");
+  const ft = autoValidScore(autoGetScore(match, "ft"));
 
-  if (!ft || ft.home === undefined || ft.home === null ||
-      ft.away === undefined || ft.away === null) {
+  // Tam maç skoru yoksa maçın sonucunu değerlendiremeyiz.
+  if (!ft) return "pending";
+
+  const h = ft.home;
+  const a = ft.away;
+  const totalGoals = h + a;
+
+  // KG marketleri doğrudan tam maç skorundan hesaplanır.
+  if (marketId === "kgVar") return autoOutcomeStatus(h > 0 && a > 0);
+  if (marketId === "kgYok") return autoOutcomeStatus(h === 0 || a === 0);
+
+  // Maç sonucu marketleri.
+  if (marketId === "ms1") return autoOutcomeStatus(h > a);
+  if (marketId === "msX") return autoOutcomeStatus(h === a);
+  if (marketId === "ms2") return autoOutcomeStatus(a > h);
+
+  // Çifte şans marketleri.
+  if (marketId === "cs1X") return autoOutcomeStatus(h >= a);
+  if (marketId === "cs12") return autoOutcomeStatus(h !== a);
+  if (marketId === "csX2") return autoOutcomeStatus(a >= h);
+
+  // Tam maç gol alt/üst marketleri.
+  if (marketId === "au15Alt") return autoOutcomeStatus(totalGoals <= 1);
+  if (marketId === "au15Ust") return autoOutcomeStatus(totalGoals >= 2);
+  if (marketId === "au25Alt") return autoOutcomeStatus(totalGoals <= 2);
+  if (marketId === "au25Ust") return autoOutcomeStatus(totalGoals >= 3);
+  if (marketId === "au35Alt") return autoOutcomeStatus(totalGoals <= 3);
+  if (marketId === "au35Ust") return autoOutcomeStatus(totalGoals >= 4);
+
+  // Gol aralığı marketleri.
+  if (marketId === "gol01") return autoOutcomeStatus(totalGoals >= 0 && totalGoals <= 1);
+  if (marketId === "gol23") return autoOutcomeStatus(totalGoals >= 2 && totalGoals <= 3);
+  if (marketId === "gol46") return autoOutcomeStatus(totalGoals >= 4 && totalGoals <= 6);
+  if (marketId === "gol7") return autoOutcomeStatus(totalGoals >= 7);
+
+  // İlk yarı marketleri tam maç skorundan hesaplanamaz.
+  // İlk yarı skoru yoksa beklemede bırakılır.
+  if (["iy1", "iyX", "iy2", "iy15Alt", "iy15Ust"].includes(marketId)) {
+    const ht = autoValidScore(autoGetScore(match, "ht"));
+    if (!ht) return "pending";
+
+    const htTotal = ht.home + ht.away;
+
+    if (marketId === "iy1") return autoOutcomeStatus(ht.home > ht.away);
+    if (marketId === "iyX") return autoOutcomeStatus(ht.home === ht.away);
+    if (marketId === "iy2") return autoOutcomeStatus(ht.away > ht.home);
+    if (marketId === "iy15Alt") return autoOutcomeStatus(htTotal <= 1);
+    if (marketId === "iy15Ust") return autoOutcomeStatus(htTotal >= 2);
+  }
+
+  // Handikap çizgisi bu pick içinde saklanmadığından kesin hesap yapılamaz.
+  if (["handicap1", "handicapX", "handicap2"].includes(marketId)) {
     return "pending";
   }
 
-  const homeGoals = Number(ft.home);
-  const awayGoals = Number(ft.away);
-
-  if (!Number.isFinite(homeGoals) || !Number.isFinite(awayGoals)) {
-    return "pending";
-  }
-
-  // KG Var: iki takım da en az bir gol atmış olmalı.
-  if (marketId === "kgVar") {
-    return homeGoals > 0 && awayGoals > 0 ? "won" : "lost";
-  }
-
-  // KG Yok: takımlardan en az biri gol atamamış olmalı.
-  if (marketId === "kgYok") {
-    return homeGoals === 0 || awayGoals === 0 ? "won" : "lost";
-  }
-
+  // Bilinmeyen marketler yanlışlıkla kazanmış/kaybetmiş sayılmaz.
+  // Eski DNA sonuç fonksiyonuna ancak market eşlemesi varsa başvurulur.
   const resultId = AUTO_MARKET_RESULTS[marketId];
-
   if (resultId && typeof dnaResult === "function") {
     const result = dnaResult(match, resultId);
     if (result === true) return "won";
     if (result === false) return "lost";
-    return "pending";
-  }
-
-  const ht = autoGetScore(match, "ht");
-
-  if (marketId === "cs1X") return homeGoals >= awayGoals ? "won" : "lost";
-  if (marketId === "cs12") return homeGoals !== awayGoals ? "won" : "lost";
-  if (marketId === "csX2") return awayGoals >= homeGoals ? "won" : "lost";
-
-  if (["handicap1", "handicapX", "handicap2"].includes(marketId)) return "pending";
-
-  if (["iy1", "iyX", "iy2", "iy15Alt", "iy15Ust"].includes(marketId) && !ht) {
-    return "pending";
   }
 
   return "pending";
@@ -558,13 +594,13 @@ function autoRenderPick(pick) {
   const match = pick.match || {};
   const home = pick.home || autoTeam(match, "home");
   const away = pick.away || autoTeam(match, "away");
-  const score = autoGetScore(match, "ft");
+  const score = autoValidScore(autoGetScore(match, "ft"));
   const scoreText = score ? `${score.home} - ${score.away}` : "";
   const league = pick.league || autoLeague(match);
 
   const sampleText =
     `Sonuç örneklemi: ${pick.resultLabel || pick.resultId}` +
-    ` · Eşleşen market: ${pick.marketLabel || pick.market || "Oran"}` +
+    ` · Gerçek tahmin: ${pick.marketLabel || pick.marketId || "Oran"}` +
     ` · Oran ${Number(pick.odd).toFixed(2)}` +
     ` · ${Number(pick.sample || 0)} maç` +
     ` · %${Number(pick.successRate ?? pick.rate ?? 0).toFixed(1)} başarı`;
@@ -712,7 +748,6 @@ async function autoWaitForEngine() {
         typeof dnaLoadData === "function" &&
         Array.isArray(dnaMatches) &&
         dnaMatches.length > 0) {
-      autoEngineReady = true;
       return true;
     }
     await new Promise(resolve => setTimeout(resolve, 200));
@@ -848,7 +883,6 @@ async function autoCopyCoupon(id) {
 
   try {
     const text = lines.join("\n");
-
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
     } else {
