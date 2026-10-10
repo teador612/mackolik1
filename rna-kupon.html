@@ -24,6 +24,7 @@ h1{font-size:20px}
 .control{width:100%;min-height:42px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px}
 .btn{border:0;border-radius:8px;background:var(--green);color:white;padding:10px 15px;font-weight:700;cursor:pointer}
 .btn:hover{background:var(--green2)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
 .btn-gold{background:var(--gold);color:#171717}
 .btn-gold:hover{background:#d97706}
 .btn-small{padding:7px 10px;font-size:12px;white-space:nowrap}
@@ -146,7 +147,8 @@ h1{font-size:20px}
     <div class="help">
       Analiz, seçilen hedef sonucun geçmişte gerçekleşip gerçekleşmediğini ölçer.
       Geçmişte aynı markette aynı açılış oranına sahip maçlar eşleştirilir.
-      Kupona eklenen oran ise gelecek maçın hedef tahmin oranıdır.
+      Kupona eklenen oran, gelecek maçın hedef tahmin oranıdır.
+      Her maçın hedef oranı en az 1.35 olmalıdır.
     </div>
   </main>
 
@@ -189,6 +191,7 @@ const CONFIG = {
   HISTORY_DAYS: 30,
   MIN_SAMPLE: 8,
   MIN_SUCCESS: 80,
+  MIN_PREDICTION_ODD: 1.35,
   TARGET_MIN_ODDS: 3,
   TARGET_MAX_ODDS: 5
 };
@@ -431,7 +434,7 @@ function renderAnalysis(date,resultId,data) {
   $("status").innerHTML=
     `<strong>${esc(RESULTS[resultId].label)}</strong> · `+
     `${data.history.length} geçmiş maç · ${data.rows.length} uygun oran · `+
-    `Son ${CONFIG.HISTORY_DAYS} gün · Min. ${CONFIG.MIN_SAMPLE} örnek · Min. %${CONFIG.MIN_SUCCESS}`;
+    `Son ${CONFIG.HISTORY_DAYS} gün · Min. ${CONFIG.MIN_SAMPLE} örnek · Min. %${CONFIG.MIN_SUCCESS} · Maç oranı min. ${CONFIG.MIN_PREDICTION_ODDS}`;
 
   if (!data.rows.length) {
     $("analysisContent").innerHTML=`<div class="empty">🔎<br>Bu tarih için şartlara uyan oran bulunamadı.</div>`;
@@ -498,8 +501,14 @@ function renderFutureMatch(match,row,resultId,date,index) {
   const title=`${team(match,"home")} - ${team(match,"away")}`;
   const targetOdd=targetOddForMatch(match,resultId);
   const matchKey=uniqueMatchKey(match,date);
-  const disabled=!targetOdd;
-  const oddText=targetOdd || "Hedef oran yok";
+  const belowMinimum=targetOdd!==null && Number(targetOdd)<CONFIG.MIN_PREDICTION_ODDS;
+  const disabled=!targetOdd||belowMinimum;
+  const oddText=!targetOdd
+    ? "Hedef oran yok"
+    : belowMinimum
+      ? `${targetOdd} · Min. ${CONFIG.MIN_PREDICTION_ODDS}`
+      : targetOdd;
+
   return `<div class="match">
     <div class="match-time">${esc(timeOf(match))}</div>
     <div>
@@ -509,7 +518,7 @@ function renderFutureMatch(match,row,resultId,date,index) {
     </div>
     <div class="match-odd">
       <strong>${esc(oddText)}</strong>
-      <button class="btn btn-small add-match" data-match-key="${esc(matchKey)}" data-result="${esc(resultId)}" data-target-odd="${esc(targetOdd||"")}" data-title="${esc(title)}" data-rate="${row.rate}" data-support-market="${esc(row.label)}" data-support-odd="${esc(row.odd)}" ${disabled?"disabled":""}>+ Ekle</button>
+      <button class="btn btn-small add-match" data-match-key="${esc(matchKey)}" data-result="${esc(resultId)}" data-target-odd="${esc(targetOdd||"")}" data-title="${esc(title)}" data-rate="${row.rate}" data-sample="${row.total}" data-support-market="${esc(row.label)}" data-support-odd="${esc(row.odd)}" ${disabled?"disabled":""}>+ Ekle</button>
     </div>
   </div>`;
 }
@@ -521,6 +530,11 @@ function uniqueMatchKey(match,date) {
 }
 
 function addCouponItem(item) {
+  if (!Number.isFinite(Number(item.odd)) || Number(item.odd)<CONFIG.MIN_PREDICTION_ODDS) {
+    alert(`Kupona eklemek için maç oranı en az ${CONFIG.MIN_PREDICTION_ODDS.toFixed(2)} olmalıdır.`);
+    return;
+  }
+
   if (coupon.some(c=>c.matchKey===item.matchKey)) {
     alert("Bu maç kuponda zaten var.");
     return;
@@ -532,7 +546,7 @@ function addCouponItem(item) {
     return;
   }
 
-  coupon.push({...item,id:nextCouponId++});
+  coupon.push({...item,odd:Number(item.odd),id:nextCouponId++});
   updateCoupon();
 }
 
@@ -586,11 +600,14 @@ function getCandidates() {
       const targetOdd=targetOddForMatch(match,resultId);
       if (!targetOdd) continue;
 
+      const numericOdd=Number(targetOdd);
+      if (!Number.isFinite(numericOdd)||numericOdd<CONFIG.MIN_PREDICTION_ODDS) continue;
+
       candidates.push({
         matchKey,
         title:`${team(match,"home")} - ${team(match,"away")}`,
         prediction:RESULTS[resultId].label,
-        odd:Number(targetOdd),
+        odd:numericOdd,
         rate:row.rate,
         sample:row.total,
         supportMarket:row.label,
@@ -605,7 +622,7 @@ function getCandidates() {
 function generateCoupon() {
   const candidates=getCandidates();
   if (!candidates.length) {
-    alert("Kupona uygun maç yok. Hedef sonucun açılış oranı veri içinde bulunmayabilir.");
+    alert(`Kupona uygun maç yok. Hedef sonucun açılış oranı en az ${CONFIG.MIN_PREDICTION_ODDS.toFixed(2)} olmalı ve analiz şartlarını karşılamalı.`);
     return;
   }
 
@@ -617,7 +634,7 @@ function generateCoupon() {
     sorted.sort((a,b)=>b.rate-a.rate||b.sample-a.sample||a.odd-b.odd);
   } else if (strategy==="BALANCED") {
     sorted.sort((a,b)=>
-      ((b.rate*0.65+Math.min(b.sample,30)*0.8)- (a.rate*0.65+Math.min(a.sample,30)*0.8)) ||
+      ((b.rate*0.65+Math.min(b.sample,30)*0.8)-(a.rate*0.65+Math.min(a.sample,30)*0.8)) ||
       a.odd-b.odd
     );
   } else {
@@ -628,26 +645,31 @@ function generateCoupon() {
   const matchKeys=new Set();
 
   if (strategy==="TARGET_ODDS") {
-    // En yüksek oranları ekleyerek 3–5 aralığına ulaşmayı dener.
     for (const candidate of sorted) {
       if (selected.length>=max) break;
       if (matchKeys.has(candidate.matchKey)) continue;
+      if (candidate.odd<CONFIG.MIN_PREDICTION_ODDS) continue;
+
       const nextTotal=selected.reduce((p,c)=>p*c.odd,1)*candidate.odd;
       if (nextTotal>CONFIG.TARGET_MAX_ODDS) continue;
+
       selected.push(candidate);
       matchKeys.add(candidate.matchKey);
+
       const total=selected.reduce((p,c)=>p*c.odd,1);
       if (total>=CONFIG.TARGET_MIN_ODDS) break;
     }
+
     const total=selected.reduce((p,c)=>p*c.odd,1);
     if (total<CONFIG.TARGET_MIN_ODDS || total>CONFIG.TARGET_MAX_ODDS) {
-      alert("3.00–5.00 toplam oran aralığına uygun bir kupon oluşturulamadı. Maç sayısını artırmayı veya başka stratejiyi deneyin.");
+      alert(`Her maçta minimum ${CONFIG.MIN_PREDICTION_ODDS.toFixed(2)} oran şartıyla 3.00–5.00 toplam oran aralığına uygun kupon oluşturulamadı. Başka strateji veya daha fazla maç deneyin.`);
       return;
     }
   } else {
     for (const candidate of sorted) {
       if (selected.length>=max) break;
       if (matchKeys.has(candidate.matchKey)) continue;
+      if (candidate.odd<CONFIG.MIN_PREDICTION_ODDS) continue;
       selected.push(candidate);
       matchKeys.add(candidate.matchKey);
     }
@@ -706,12 +728,24 @@ $("analysisContent").addEventListener("click",event=>{
     return;
   }
 
+  if (odd<CONFIG.MIN_PREDICTION_ODDS) {
+    alert(`Maç oranı en az ${CONFIG.MIN_PREDICTION_ODDS.toFixed(2)} olmalıdır.`);
+    return;
+  }
+
+  const result=RESULTS[button.dataset.result];
+  if (!result) {
+    alert("Tahmin sonucu bulunamadı.");
+    return;
+  }
+
   addCouponItem({
     matchKey:button.dataset.matchKey,
     title:button.dataset.title,
-    prediction:RESULTS[button.dataset.result].label,
+    prediction:result.label,
     odd,
     rate:Number(button.dataset.rate),
+    sample:Number(button.dataset.sample)||0,
     supportMarket:button.dataset.supportMarket,
     supportOdd:button.dataset.supportOdd
   });
