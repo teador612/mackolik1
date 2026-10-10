@@ -1,14 +1,15 @@
-
 "use strict";
 
 /* =========================================================
    SONUÇTAN ORAN ANALİZİ
-   - Son 30 günlük geçmiş
+
+   - Seçilen tarihten önceki 30 günlük geçmiş
    - Birebir açılış oranı eşleştirmesi
    - Oran toleransı ve kombinasyonu yok
    - Minimum örnek: 8
    - Minimum başarı: %80
-   - Oynanmamış maçı olmayan oran grupları gösterilmez
+   - Seçilen tarihteki maçlar oynanmış olsa da gösterilir
+   - Oynanmış maçlar sonuç durumuyla gösterilir
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -29,8 +30,8 @@ const MARKETS = [
   { id: "iy2", label: "İY2", fields: ["iy2", "IY2"] },
   { id: "kgVar", label: "KG Var", fields: ["kgVar", "kgvar", "KGVar"] },
   { id: "kgYok", label: "KG Yok", fields: ["kgYok", "kgyok", "KGYok"] },
-  { id: "iyKgVar", label: "İY KG Var", fields: ["iyKGVar", "iyKgVar", "iykgVar", "IYKGVar"] },
-  { id: "iyKgYok", label: "İY KG Yok", fields: ["iyKGYok", "iyKgYok", "iykgYok", "IYKGYok"] },
+  { id: "iyKgVar", label: "İY KG Var", fields: ["iyKgVar", "iyKGVar", "iykgVar", "IYKGVar"] },
+  { id: "iyKgYok", label: "İY KG Yok", fields: ["iyKgYok", "iyKGYok", "iykgYok", "IYKGYok"] },
   { id: "ms15Alt", label: "1.5 Alt", fields: ["au15Alt", "ms15Alt", "1.5Alt"] },
   { id: "ms15Ust", label: "1.5 Üst", fields: ["au15Ust", "ms15Ust", "1.5Ust"] },
   { id: "ms25Ust", label: "2.5 Üst", fields: ["au25Ust", "ms25Ust", "2.5Ust"] },
@@ -195,6 +196,7 @@ function formatDate(dateKey) {
   if (!dateKey) return "-";
 
   const parts = dateKey.split("-");
+
   return parts.length === 3
     ? `${parts[2]}.${parts[1]}.${parts[0]}`
     : dateKey;
@@ -286,7 +288,7 @@ function getScore(match, type) {
 }
 
 function isPlayed(match) {
-  return Boolean(getScore(match, "ft"));
+  return getScore(match, "ft") !== null;
 }
 
 /* =========================================================
@@ -319,10 +321,10 @@ function getOdds(match, market) {
     if (!container) continue;
 
     for (const field of market.fields) {
-      if (Object.prototype.hasOwnProperty.call(container, field)) {
-        const odd = normalizeOdd(container[field]);
-        if (odd) return odd;
-      }
+      if (!Object.prototype.hasOwnProperty.call(container, field)) continue;
+
+      const odd = normalizeOdd(container[field]);
+      if (odd !== null) return odd;
     }
   }
 
@@ -338,7 +340,7 @@ function getTargetResult(match, resultId) {
   if (!definition) return null;
 
   const score = getScore(match, definition.type);
-  if (!score) return null;
+  if (score === null) return null;
 
   return definition.test(score);
 }
@@ -367,19 +369,19 @@ async function loadData() {
 }
 
 /* =========================================================
-   SEÇİLEN TARİHTEKİ OYNANMAMIŞ MAÇLAR
+   SEÇİLEN TARİHTEKİ TÜM MAÇLARI ORANLA EŞLEŞTİR
+   Geçmiş tarih seçildiğinde oynanmış maçlar da dahil edilir.
    ========================================================= */
 
-function buildFutureIndex(matches, targetDate) {
+function buildTargetIndex(matches, targetDate) {
   const index = new Map();
 
   for (const match of matches) {
     if (getDateKey(match) !== targetDate) continue;
-    if (isPlayed(match)) continue;
 
     for (const market of MARKETS) {
       const odd = getOdds(match, market);
-      if (!odd) continue;
+      if (odd === null) continue;
 
       const key = `${market.id}|${odd}`;
 
@@ -398,6 +400,7 @@ function buildFutureIndex(matches, targetDate) {
 function runAnalysis(targetDate, resultId) {
   const startDate = addDays(targetDate, -HISTORY_DAYS);
 
+  // Seçilen tarihten önceki 30 gün içindeki sonuçlanmış maçlar.
   const history = allMatches.filter(match => {
     const date = getDateKey(match);
 
@@ -409,7 +412,8 @@ function runAnalysis(targetDate, resultId) {
     );
   });
 
-  const futureIndex = buildFutureIndex(allMatches, targetDate);
+  // Hedef tarihte oynanmış veya oynanmamış bütün maçlar.
+  const targetIndex = buildTargetIndex(allMatches, targetDate);
   const groups = new Map();
 
   for (const match of history) {
@@ -418,7 +422,7 @@ function runAnalysis(targetDate, resultId) {
 
     for (const market of MARKETS) {
       const odd = getOdds(match, market);
-      if (!odd) continue;
+      if (odd === null) continue;
 
       const key = `${market.id}|${odd}`;
 
@@ -442,27 +446,22 @@ function runAnalysis(targetDate, resultId) {
   const rows = Array.from(groups.values())
     .filter(item => {
       if (item.total < MIN_SAMPLE) return false;
-      if (item.success <= 0) return false;
 
       const rate = (item.success / item.total) * 100;
       if (rate < MIN_SUCCESS) return false;
 
-      // Oynanmamış maçı olmayan grubu tamamen gizle.
-      const futureKey = `${item.marketId}|${item.odd}`;
-      const futureMatches = futureIndex.get(futureKey) || [];
-
-      return futureMatches.length > 0;
+      // Seçilen tarihte aynı market ve birebir aynı oran bulunmalı.
+      return (targetIndex.get(`${item.marketId}|${item.odd}`) || []).length > 0;
     });
 
   for (const row of rows) {
     row.rate = (row.success / row.total) * 100;
-    row.future = futureIndex.get(`${row.marketId}|${row.odd}`) || [];
+    row.future = targetIndex.get(`${row.marketId}|${row.odd}`) || [];
   }
 
   rows.sort((a, b) =>
     b.rate - a.rate ||
     b.total - a.total ||
-    b.success - a.success ||
     Number(a.odd) - Number(b.odd)
   );
 
@@ -475,6 +474,27 @@ function runAnalysis(targetDate, resultId) {
 
 function formatPercent(value) {
   return `${Number(value).toFixed(1).replace(".0", "")}%`;
+}
+
+function getMatchStatus(match, resultId) {
+  const definition = RESULTS[resultId];
+  const score = getScore(match, definition.type);
+
+  if (score === null) {
+    return {
+      text: "Bekliyor",
+      className: "sa-status-pending",
+      score: "-"
+    };
+  }
+
+  const success = definition.test(score);
+
+  return {
+    text: success ? "Başarılı" : "Başarısız",
+    className: success ? "sa-status-success" : "sa-status-failed",
+    score: `${score.home}-${score.away}`
+  };
 }
 
 function renderAnalysis(resultId, targetDate, analysis) {
@@ -493,8 +513,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
   oddsCount.textContent = analysis.rows.length;
 
   status.innerHTML =
+    `<strong>${escapeHtml(formatDate(targetDate))}</strong> · ` +
     `<strong>${escapeHtml(result.label)}</strong> için ` +
     `<strong>${analysis.rows.length}</strong> uygun oran bulundu. ` +
+    `Geçmiş maç: <strong>${analysis.history.length}</strong> · ` +
     `Minimum örnek: <strong>${MIN_SAMPLE}</strong> · ` +
     `Minimum başarı: <strong>%${MIN_SUCCESS}</strong>`;
 
@@ -504,9 +526,9 @@ function renderAnalysis(resultId, targetDate, analysis) {
         <div class="sa-empty-icon">🔎</div>
         <strong>Uygun oran bulunamadı</strong>
         <span>
-          Son ${HISTORY_DAYS} günlük geçmişte en az ${MIN_SAMPLE}
-          örneği ve %${MIN_SUCCESS} başarı oranı olan,
-          seçilen tarihte oynanmamış maçı bulunan birebir açılış oranı yok.
+          ${escapeHtml(formatDate(targetDate))} tarihindeki maçlarla birebir
+          eşleşen; önceki ${HISTORY_DAYS} günde en az ${MIN_SAMPLE} örneği
+          ve en az %${MIN_SUCCESS} başarı oranı bulunan bir oran grubu yok.
         </span>
       </div>
     `;
@@ -544,13 +566,12 @@ function renderAnalysis(resultId, targetDate, analysis) {
           <div>ÖRNEK</div>
           <div>${escapeHtml(result.label)}</div>
           <div>BAŞARI</div>
-          <div>GELECEK</div>
+          <div>MAÇ</div>
         </div>
     `;
 
     group.rows.forEach((row, index) => {
       const rowId = `sa-${market.id}-${index}`.replace(/[^a-zA-Z0-9_-]/g, "");
-      const futureCount = row.future.length;
 
       html += `
         <div class="sa-row" data-row-id="${rowId}">
@@ -558,11 +579,11 @@ function renderAnalysis(resultId, targetDate, analysis) {
           <div class="sa-value sa-sample">${row.total}</div>
           <div class="sa-value sa-success">${row.success}</div>
           <div class="sa-rate">${formatPercent(row.rate)}</div>
-          <div class="sa-expand">▶ ${futureCount} maç</div>
+          <div class="sa-expand">▶ ${row.future.length} maç</div>
         </div>
 
         <div id="${rowId}" class="sa-details">
-          ${renderFutureMatches(row)}
+          ${renderTargetMatches(row, resultId)}
         </div>
       `;
     });
@@ -575,10 +596,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
 }
 
 /* =========================================================
-   OYNANMAMIŞ MAÇ DETAYLARI
+   SEÇİLEN TARİHTEKİ MAÇ DETAYLARI
    ========================================================= */
 
-function renderFutureMatches(row) {
+function renderTargetMatches(row, resultId) {
   if (!row.future.length) return "";
 
   let html = `
@@ -588,11 +609,14 @@ function renderFutureMatches(row) {
     </div>
 
     <div class="sa-details-subtitle">
-      Aynı açılış oranına sahip oynanmamış maçlar
+      ${escapeHtml(formatDate(getDateKey(row.future[0])))} ·
+      Aynı market ve birebir aynı açılış oranına sahip maçlar
     </div>
   `;
 
   for (const match of row.future) {
+    const matchStatus = getMatchStatus(match, resultId);
+
     html += `
       <div class="sa-match">
         <div class="sa-match-time">${escapeHtml(getTime(match))}</div>
@@ -603,12 +627,18 @@ function renderFutureMatches(row) {
             <span>vs</span>
             ${escapeHtml(getTeamName(match, "away"))}
           </div>
-          <div class="sa-match-meta">${escapeHtml(getLeague(match))}</div>
+          <div class="sa-match-meta">
+            ${escapeHtml(getLeague(match))}
+            · Skor: ${escapeHtml(matchStatus.score)}
+          </div>
         </div>
 
         <div class="sa-match-odd">
           ${escapeHtml(row.marketLabel)}
           <strong>${escapeHtml(row.odd)}</strong>
+          <span class="${matchStatus.className}">
+            ${escapeHtml(matchStatus.text)}
+          </span>
         </div>
       </div>
     `;
@@ -653,6 +683,8 @@ async function executeAnalysis() {
   const dateInput = document.getElementById("saDate");
   const status = document.getElementById("saStatus");
 
+  if (!resultSelect || !dateInput || !status) return;
+
   const resultId = resultSelect.value;
   const targetDate = dateInput.value;
 
@@ -666,7 +698,7 @@ async function executeAnalysis() {
     return;
   }
 
-  status.innerHTML = `⏳ Son ${HISTORY_DAYS} günlük geçmiş analiz ediliyor...`;
+  status.innerHTML = `⏳ ${escapeHtml(formatDate(targetDate))} tarihi analiz ediliyor...`;
 
   try {
     const analysis = runAnalysis(targetDate, resultId);
@@ -679,7 +711,7 @@ async function executeAnalysis() {
       <div class="sa-empty">
         <div class="sa-empty-icon">⚠️</div>
         <strong>Analiz yapılamadı</strong>
-        <span>Veri yapısını kontrol edin.</span>
+        <span>Veri yapısını ve tarayıcı konsolunu kontrol edin.</span>
       </div>
     `;
   }
@@ -700,6 +732,7 @@ async function init() {
   }
 
   dateInput.value = todayKey();
+
   runButton.addEventListener("click", executeAnalysis);
 
   try {
