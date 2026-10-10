@@ -161,7 +161,7 @@ button{cursor:pointer}
 <div class="app-layout">
   <main>
     <h2 class="section-title">📊 Sonuçtan Oran Analizi</h2>
-    <p class="section-subtitle">Her pazar, kendi açılış oranı ve gerçekleşen sonucu üzerinden ayrı değerlendirilir.</p>
+    <p class="section-subtitle">Her pazar, kendi açılış oranı ve gerçekleşen sonucu üzerinden ayrı değerlendirilir. Kupona yalnızca oranı en az 1.35 olan tahminler eklenebilir.</p>
     <div id="saContent"></div>
 
     <section class="history-widget" style="margin-top:22px">
@@ -190,7 +190,7 @@ button{cursor:pointer}
         </div>
         <div class="summary-row"><span>Toplam Oran:</span><strong id="totalOddsText">1.00</strong></div>
         <div class="summary-row"><span>Olası Kazanç:</span><strong id="totalPayoutText">0.00 ₺</strong></div>
-        <div class="small-note">Olası kazanç, misli ile toplam oranın çarpımıdır; kesin kazanç değildir. Karışık kupon farklı tahmin türleri içerebilir.</div>
+        <div class="small-note">Her maçın oranı en az 1.35 olmalıdır. Olası kazanç, misli ile toplam oranın çarpımıdır; kesin kazanç değildir. Karışık kupon farklı tahmin türleri içerebilir.</div>
       </div>
       <button id="btnSaveCoupon" class="btn" style="width:100%;margin-bottom:8px">Kuponu Kaydet</button>
       <button id="btnCopyCoupon" class="btn btn-secondary" style="width:100%">Kuponu Kopyala</button>
@@ -211,6 +211,7 @@ const CONFIG = {
   DEFAULT_HISTORY_DAYS: 30,
   DEFAULT_MIN_SAMPLE: 8,
   DEFAULT_MIN_SUCCESS: 80,
+  MIN_PREDICTION_ODD: 1.35,
   STORAGE_KEY: "dna_mixed_coupon_history_v2"
 };
 
@@ -453,15 +454,6 @@ async function loadData() {
 
 /* =========================================================
    ANALİZ
-
-   Her market kendi gerçekleşme sonucuyla ölçülür:
-   - MS1 oranı, MS1 sonucu ile
-   - KG Var oranı, KG Var sonucu ile
-   - 2.5 Üst oranı, 2.5 Üst sonucu ile
-
-   Gruplar aynı market + birebir aynı açılış oranıdır.
-   Hedef günün maçları geçmiş günler için de gösterilir;
-   böylece geçmiş kuponların sonuçları kontrol edilebilir.
 ========================================================= */
 function readSettings() {
   return {
@@ -486,18 +478,27 @@ function runAnalysis(targetDate) {
     for (const market of MARKETS) {
       const odd = getOdds(match,market);
       if (odd === null) continue;
+
       const outcome = getMarketResult(match,market);
       if (outcome === null) continue;
 
       const key = `${market.id}|${odd.toFixed(2)}`;
+
       if (!groups.has(key)) {
         groups.set(key,{
-          key,marketId:market.id,marketLabel:market.label,
-          result:market.result,odd,total:0,success:0
+          key,
+          marketId:market.id,
+          marketLabel:market.label,
+          result:market.result,
+          odd,
+          total:0,
+          success:0
         });
       }
+
       const group = groups.get(key);
       group.total++;
+
       if (outcome) group.success++;
     }
   }
@@ -506,11 +507,19 @@ function runAnalysis(targetDate) {
 
   for (const group of groups.values()) {
     if (group.total < settings.minSample) continue;
-    group.rate = group.success/group.total*100;
+
+    group.rate = group.success / group.total * 100;
+
     if (group.rate < settings.minSuccess) continue;
 
+    const market = MARKETS.find(m=>m.id===group.marketId);
+    if (!market) continue;
+
     const future = targetMatches
-      .filter(match=>getOdds(match,MARKETS.find(m=>m.id===group.marketId))?.toFixed(2)===group.odd.toFixed(2))
+      .filter(match=>{
+        const odd = getOdds(match,market);
+        return odd !== null && odd.toFixed(2) === group.odd.toFixed(2);
+      })
       .map(match=>({
         match,
         matchKey:getMatchKey(match),
@@ -528,12 +537,7 @@ function runAnalysis(targetDate) {
 
     if (!future.length) continue;
 
-    /*
-      Dengeli puan:
-      Başarı oranı %75 ağırlıkta, örneklem gücü %25 ağırlıkta.
-      Örneklem katkısı 40 maçta tavana ulaşır.
-    */
-    group.rankScore = group.rate*0.75 + Math.min(group.total/40,1)*25;
+    group.rankScore = group.rate * 0.75 + Math.min(group.total / 40,1) * 25;
     group.future = future;
     rows.push(group);
   }
@@ -558,7 +562,8 @@ function renderAnalysis(targetDate,analysis) {
     `${formatDate(targetDate)} · ${analysis.targetMatches.length} maç · `+
     `${analysis.history.length} oynanmış geçmiş maç · `+
     `${analysis.rows.length} uygun oran grubu · `+
-    `En az ${analysis.settings.minSample} örnek / %${analysis.settings.minSuccess} başarı.`;
+    `En az ${analysis.settings.minSample} örnek / %${analysis.settings.minSuccess} başarı · `+
+    `Maç başına minimum oran ${CONFIG.MIN_PREDICTION_ODD.toFixed(2)}.`;
 
   if (!analysis.rows.length) {
     content.innerHTML = `
@@ -579,6 +584,7 @@ function renderAnalysis(targetDate,analysis) {
 
   analysis.rows.forEach((row,index)=>{
     const rowId=`details-${index}`;
+
     html+=`
       <div class="sa-market">
         <div class="sa-row" data-row-id="${rowId}" role="button" tabindex="0" aria-expanded="false">
@@ -623,7 +629,9 @@ function renderAnalysis(targetDate,analysis) {
       const open=details.classList.toggle("open");
       row.setAttribute("aria-expanded",String(open));
     };
+
     row.addEventListener("click",toggle);
+
     row.addEventListener("keydown",event=>{
       if(event.key==="Enter"||event.key===" "){
         event.preventDefault();
@@ -635,8 +643,10 @@ function renderAnalysis(targetDate,analysis) {
   content.querySelectorAll("[data-add-row]").forEach(button=>{
     button.addEventListener("click",event=>{
       event.stopPropagation();
+
       const row=currentRows[Number(button.dataset.addRow)];
       const item=row?.future?.[Number(button.dataset.addMatch)];
+
       if(item)addToCoupon(item);
     });
   });
@@ -656,14 +666,23 @@ function calculateTotalOdds(items) {
 
 function addToCoupon(item) {
   if (!item || !Number.isFinite(Number(item.odd))) return;
+
+  // Manuel kupon eklemesinde minimum 1.35 oran kontrolü.
+  if (Number(item.odd) < CONFIG.MIN_PREDICTION_ODD) {
+    alert(`Minimum maç oranı ${CONFIG.MIN_PREDICTION_ODD.toFixed(2)} olmalıdır.`);
+    return;
+  }
+
   if (currentCoupon.some(x=>x.matchKey===item.matchKey)) {
     alert("Bu maç kuponda zaten var. Her maçtan yalnızca bir tahmin seçilebilir.");
     return;
   }
+
   if (currentCoupon.length>=getMaxMatchCount()) {
     alert(`Kupon en fazla ${getMaxMatchCount()} maç içerebilir.`);
     return;
   }
+
   currentCoupon.push({
     matchKey:item.matchKey,
     matchTitle:item.matchTitle,
@@ -677,6 +696,7 @@ function addToCoupon(item) {
     time:getTime(item.match),
     league:getLeague(item.match)
   });
+
   updateCouponUI();
 }
 
@@ -703,6 +723,7 @@ function updateCouponUI() {
   container.innerHTML=currentCoupon.map((item,index)=>{
     const match=allMatches.find(m=>getMatchKey(m)===item.matchKey);
     const status=match?getMatchResultStatus(match,item.marketId):"unknown";
+
     return `
       <div class="coupon-item">
         <button class="coupon-item-remove" data-remove-index="${index}" title="Kaldır" aria-label="Kupondan kaldır">✕</button>
@@ -730,11 +751,6 @@ function updateCouponUI() {
 
 /* =========================================================
    KARIŞIK KUPON ADAYLARI
-
-   Bir maç birden fazla pazarda uygun olabilir. Aynı maçtan
-   sadece en yüksek puanlı pazar alınır. Ardından farklı
-   maçlar sıralanır. Toplam oran eşiği sağlanmazsa uygun
-   alternatifler denenir.
 ========================================================= */
 function candidateScore(item,strategy) {
   const rate=Number(item.rate)||0;
@@ -743,6 +759,7 @@ function candidateScore(item,strategy) {
 
   if(strategy==="rate") return rate;
   if(strategy==="sample") return samplePower;
+
   return rate*0.75+samplePower*0.25;
 }
 
@@ -752,15 +769,25 @@ function collectCandidates() {
 
   for(const row of currentRows) {
     for(const item of row.future) {
+      // Otomatik kuponda 1.35 altındaki maç oranlarını ele.
+      if(!Number.isFinite(Number(item.odd))) continue;
+      if(Number(item.odd)<CONFIG.MIN_PREDICTION_ODD) continue;
+
       const candidate={
         ...item,
         score:candidateScore(item,strategy)
       };
+
       const old=byMatch.get(item.matchKey);
 
-      if(!old ||
-         candidate.score>old.score ||
-         (candidate.score===old.score && candidate.sample>old.sample)) {
+      if(
+        !old ||
+        candidate.score>old.score ||
+        (
+          candidate.score===old.score &&
+          candidate.sample>old.sample
+        )
+      ) {
         byMatch.set(item.matchKey,candidate);
       }
     }
@@ -781,8 +808,9 @@ function generateAutoCoupon() {
   }
 
   const candidates=collectCandidates();
+
   if(!candidates.length) {
-    alert("Kupona eklenebilecek uygun tahmin bulunamadı.");
+    alert(`Oranı en az ${CONFIG.MIN_PREDICTION_ODD.toFixed(2)} olan uygun tahmin bulunamadı.`);
     return;
   }
 
@@ -791,12 +819,15 @@ function generateAutoCoupon() {
   const selected=[];
 
   /*
-    Öncelikle en güçlü adaylar seçilir. Eşik toplam oranı
-    sağlamazsa kalan adaylar sırayla denenir; her maç tek kez.
+    Öncelikle en güçlü adaylar seçilir.
+    Her maçın oranı en az 1.35 olmalıdır.
+    Toplam oran eşiği sağlanmazsa diğer uygun adaylar denenir.
   */
   for(const candidate of candidates) {
     if(selected.length>=maxCount)break;
+
     selected.push(candidate);
+
     if(selected.length>=1 && calculateTotalOdds(selected)>=minOdds)break;
   }
 
@@ -804,7 +835,9 @@ function generateAutoCoupon() {
     for(const candidate of candidates) {
       if(selected.length>=maxCount)break;
       if(selected.some(item=>item.matchKey===candidate.matchKey))continue;
+
       selected.push(candidate);
+
       if(calculateTotalOdds(selected)>=minOdds)break;
     }
   }
@@ -812,8 +845,8 @@ function generateAutoCoupon() {
   if(calculateTotalOdds(selected)<minOdds) {
     alert(
       `Minimum toplam oran ${minOdds.toFixed(2)} sağlanamadı. `+
-      `Mevcut en iyi adayların toplam oranı ${calculateTotalOdds(selected).toFixed(2)}. `+
-      `Maç sayısını artırabilir veya minimum oranı düşürebilirsin.`
+      `Mevcut uygun adayların toplam oranı ${calculateTotalOdds(selected).toFixed(2)}. `+
+      `Maç sayısını artırabilir veya minimum toplam oranı düşürebilirsin.`
     );
     return;
   }
@@ -833,7 +866,11 @@ function generateAutoCoupon() {
   }));
 
   updateCouponUI();
-  document.querySelector(".coupon-widget").scrollIntoView({behavior:"smooth",block:"start"});
+
+  document.querySelector(".coupon-widget").scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
 }
 
 /* =========================================================
@@ -866,8 +903,15 @@ function saveCoupon() {
     return;
   }
 
+  // Kayıt öncesi bütün maçlarda minimum oranı yeniden kontrol et.
+  if(currentCoupon.some(item=>Number(item.odd)<CONFIG.MIN_PREDICTION_ODD)) {
+    alert(`Kuponda oranı ${CONFIG.MIN_PREDICTION_ODD.toFixed(2)} altında olan maç bulunamaz.`);
+    return;
+  }
+
   const date=$("saDate").value||todayKey();
   const history=readCouponHistory();
+
   const record={
     id:`${Date.now()}-${Math.random().toString(36).slice(2,8)}`,
     date,
@@ -889,15 +933,27 @@ function loadSavedCoupon(id) {
   const record=readCouponHistory().find(item=>item.id===id);
   if(!record)return;
 
-  currentCoupon=(record.items||[]).map(item=>({...item}));
+  // Eski kayıtlarda 1.35 altı oran varsa yeni kurala göre yükleme.
+  const savedItems=(record.items||[]);
+  const invalidItems=savedItems.filter(item=>Number(item.odd)<CONFIG.MIN_PREDICTION_ODD);
+
+  currentCoupon=savedItems
+    .filter(item=>Number(item.odd)>=CONFIG.MIN_PREDICTION_ODD)
+    .map(item=>({...item}));
+
   $("saDate").value=record.date||todayKey();
   $("misliInput").value=record.stake||100;
+
   updateCouponUI();
 
-  $("saStatus").textContent=
-    `${formatDate(record.date)} tarihli kayıtlı kupon açıldı. Maç sonuçları güncel JSON verisinden kontrol edilir.`;
+  $("saStatus").textContent=invalidItems.length
+    ? `${formatDate(record.date)} tarihli kupon açıldı. ${invalidItems.length} maç 1.35 minimum oran şartını karşılamadığı için kupona alınmadı.`
+    : `${formatDate(record.date)} tarihli kayıtlı kupon açıldı. Maç sonuçları güncel JSON verisinden kontrol edilir.`;
 
-  document.querySelector(".coupon-widget").scrollIntoView({behavior:"smooth",block:"start"});
+  document.querySelector(".coupon-widget").scrollIntoView({
+    behavior:"smooth",
+    block:"start"
+  });
 }
 
 function deleteSavedCoupon(id) {
@@ -916,14 +972,16 @@ function renderCouponHistory() {
 
   container.innerHTML=history.map(record=>{
     const items=Array.isArray(record.items)?record.items:[];
-    let won=0,lost=0,pending=0;
+    let won=0,lost=0,pending=0,unknown=0;
 
     for(const item of items) {
       const match=allMatches.find(m=>getMatchKey(m)===item.matchKey);
       const status=match?getMatchResultStatus(match,item.marketId):"unknown";
+
       if(status==="won")won++;
       else if(status==="lost")lost++;
       else if(status==="pending")pending++;
+      else unknown++;
     }
 
     const total=Number(record.totalOdds)||calculateTotalOdds(items);
@@ -939,6 +997,7 @@ function renderCouponHistory() {
           Kazandı: <span style="color:#34d399">${won}</span> ·
           Kaybetti: <span style="color:#f87171">${lost}</span> ·
           Bekliyor: <span style="color:#facc15">${pending}</span>
+          ${unknown?`· Bilinmiyor: ${unknown}`:""}
           <br>Misli: ${(Number(record.stake)||0).toFixed(2)} ₺ · Olası kazanç: ${payout.toFixed(2)} ₺
         </div>
         <div class="history-actions">
@@ -950,6 +1009,7 @@ function renderCouponHistory() {
           ${items.map(item=>{
             const match=allMatches.find(m=>getMatchKey(m)===item.matchKey);
             const status=match?getMatchResultStatus(match,item.marketId):"unknown";
+
             return `<div style="padding:8px 0;border-top:1px solid var(--border-color);font-size:11px">
               <strong>${escapeHtml(item.matchTitle)}</strong><br>
               ${escapeHtml(item.prediction)} @ ${Number(item.odd).toFixed(2)}
@@ -967,14 +1027,18 @@ function renderCouponHistory() {
 
   container.querySelectorAll("[data-delete-history]").forEach(button=>{
     button.addEventListener("click",()=>{
-      if(confirm("Bu kayıtlı kupon silinsin mi?"))deleteSavedCoupon(button.dataset.deleteHistory);
+      if(confirm("Bu kayıtlı kupon silinsin mi?")) {
+        deleteSavedCoupon(button.dataset.deleteHistory);
+      }
     });
   });
 
   container.querySelectorAll("[data-toggle-history]").forEach(button=>{
     button.addEventListener("click",()=>{
       const details=$(`history-details-${button.dataset.toggleHistory}`);
-      if(details)details.style.display=details.style.display==="none"?"block":"none";
+      if(details) {
+        details.style.display=details.style.display==="none"?"block":"none";
+      }
     });
   });
 }
@@ -996,6 +1060,7 @@ async function copyCoupon() {
   const lines=[
     "📋 DNA KARIŞIK KUPON",
     `Tarih: ${formatDate($("saDate").value)}`,
+    `Minimum maç oranı: ${CONFIG.MIN_PREDICTION_ODD.toFixed(2)}`,
     ""
   ];
 
@@ -1024,10 +1089,13 @@ async function copyCoupon() {
     textarea.value=text;
     textarea.style.position="fixed";
     textarea.style.opacity="0";
+
     document.body.appendChild(textarea);
     textarea.select();
+
     const ok=document.execCommand("copy");
     textarea.remove();
+
     alert(ok?"Kupon kopyalandı.":"Kopyalama başarısız oldu.");
   }
 }
@@ -1039,6 +1107,7 @@ async function executeAnalysis() {
   if(analysisBusy)return;
 
   const targetDate=$("saDate").value;
+
   if(!targetDate) {
     $("saStatus").textContent="Lütfen bir analiz tarihi seç.";
     return;
@@ -1062,10 +1131,14 @@ async function executeAnalysis() {
       currentCoupon=[];
       updateCouponUI();
     }
+
     renderCouponHistory();
   } catch(error) {
     console.error("DNA analiz hatası:",error);
-    $("saStatus").textContent=`Hata: ${error.message}. ${CONFIG.DATA_URL} dosyasını ve JSON biçimini kontrol et.`;
+
+    $("saStatus").textContent=
+      `Hata: ${error.message}. ${CONFIG.DATA_URL} dosyasını ve JSON biçimini kontrol et.`;
+
     $("saContent").innerHTML=`
       <div class="sa-empty">
         <div style="font-size:28px;margin-bottom:8px">⚠️</div>
@@ -1089,15 +1162,18 @@ function init() {
   $("btnAutoGenerate").addEventListener("click",generateAutoCoupon);
   $("btnSaveCoupon").addEventListener("click",saveCoupon);
   $("btnCopyCoupon").addEventListener("click",copyCoupon);
+
   $("btnClearCoupon").addEventListener("click",()=>{
     currentCoupon=[];
     updateCouponUI();
   });
+
   $("btnClearHistory").addEventListener("click",clearCouponHistory);
   $("misliInput").addEventListener("input",updateCouponUI);
 
   $("maxMatchCount").addEventListener("change",()=>{
     $("maxMatchCount").value=getMaxMatchCount();
+
     if(currentCoupon.length>getMaxMatchCount()) {
       currentCoupon=currentCoupon.slice(0,getMaxMatchCount());
       updateCouponUI();
@@ -1110,10 +1186,14 @@ function init() {
 
   $("minTotalOdds").addEventListener("change",()=>{
     const n=Number($("minTotalOdds").value);
-    if(!Number.isFinite(n)||n<1)$("minTotalOdds").value="2.00";
+
+    if(!Number.isFinite(n)||n<1) {
+      $("minTotalOdds").value="2.00";
+    }
   });
 
   renderCouponHistory();
+  updateCouponUI();
   executeAnalysis();
 }
 
