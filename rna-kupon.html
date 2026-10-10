@@ -6,19 +6,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#07111f">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <title>RNA | Otomatik Kupon</title>
 
   <style>
     :root {
       color-scheme: dark;
-      --bg: #07111f;
-      --panel: #0c1929;
-      --panel2: #101f32;
-      --border: #23354b;
-      --text: #edf3fb;
-      --muted: #93a5ba;
+      --background: #07111f;
+      --surface: #0d1a2b;
+      --surface-light: #122238;
+      --border: #263a52;
+      --text: #edf3fc;
+      --muted: #9aabc0;
       --gold: #e6bc66;
-      --gold2: #ffdf91;
       --green: #36d399;
       --red: #fb7185;
       --yellow: #facc15;
@@ -30,45 +31,32 @@
 
     html {
       min-height: 100%;
-      background: var(--bg) !important;
+      background: var(--background);
     }
 
     body {
       min-height: 100vh;
       margin: 0;
-      padding: 16px 12px 36px;
-      color: var(--text) !important;
+      padding: 16px 12px 35px;
+      color: var(--text);
       background:
-        radial-gradient(ellipse at top, #142740 0%, transparent 48%),
-        var(--bg) !important;
+        radial-gradient(ellipse at 50% 0%, #182c46 0%, transparent 48%),
+        var(--background);
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Arial, sans-serif !important;
-    }
-
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      -webkit-tap-highlight-color: transparent;
+        Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
     #mk-coupon-root {
-      display: block !important;
-      width: 100% !important;
-      max-width: 1100px !important;
-      margin: 0 auto !important;
-      padding: 0 !important;
-      color: var(--text) !important;
-      background: transparent !important;
-      font-family: inherit !important;
+      display: block;
+      width: 100%;
+      max-width: 850px;
+      margin: 0 auto;
+      color: var(--text);
+      font-family: inherit;
     }
 
-    #mk-coupon-root *,
-    #mk-coupon-root *::before,
-    #mk-coupon-root *::after {
+    #mk-coupon-root * {
       box-sizing: border-box;
     }
 
@@ -77,107 +65,248 @@
     #mk-coupon-root h3,
     #mk-coupon-root h4 {
       color: var(--text);
-      line-height: 1.35;
+      line-height: 1.4;
       overflow-wrap: anywhere;
     }
 
-    #mk-coupon-root button {
-      min-height: 38px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 800;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    #mk-coupon-root input,
-    #mk-coupon-root select {
-      width: 100%;
-      min-height: 42px;
-      padding: 9px 11px;
-      color: var(--text) !important;
-      background: #081321 !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 10px !important;
-      outline: none;
-    }
-
-    #mk-coupon-root input:focus,
-    #mk-coupon-root select:focus {
-      border-color: var(--gold) !important;
-      box-shadow: 0 0 0 3px #e6bc6618;
-    }
-
-    #mk-coupon-root button:focus-visible {
-      outline: 2px solid var(--gold);
-      outline-offset: 2px;
-    }
-
-    #mk-coupon-root [id="mk-coupon-content"] {
-      min-width: 0;
-    }
-
-    #mk-coupon-root [id="mk-coupon-message"] {
+    #mk-coupon-root .mk-panel {
       margin: 12px 0;
-      padding: 12px 14px;
-      color: var(--muted);
-      background: var(--panel);
+      padding: 15px;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      font-size: 13px;
+      border-radius: 15px;
+      background: linear-gradient(145deg, var(--surface-light), var(--surface));
+      box-shadow: 0 8px 24px #00000018;
+    }
+
+    #mk-coupon-root .mk-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    #mk-coupon-root .mk-title {
+      margin: 0;
+      color: var(--gold);
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+
+    #mk-coupon-root .mk-muted {
+      color: var(--muted);
+      font-size: 11px;
       line-height: 1.6;
       overflow-wrap: anywhere;
     }
 
-    #mk-coupon-root [id="mk-coupon-content"] > * {
+    #mk-coupon-root .mk-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 15px;
+    }
+
+    #mk-coupon-root label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #mk-coupon-root input,
+    #mk-coupon-root select {
       min-width: 0;
+      min-height: 43px;
+      padding: 10px 11px;
+      color: var(--text);
+      background: #081321;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      outline: none;
+      font: inherit;
+    }
+
+    #mk-coupon-root input[type="date"] {
+      flex: 1 1 155px;
       max-width: 100%;
     }
 
-    #mk-coupon-root section,
-    #mk-coupon-root article {
-      max-width: 100%;
+    #mk-coupon-root input:focus,
+    #mk-coupon-root select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px #e6bc6618;
     }
 
-    #mk-coupon-root .mk-coupon-card,
-    #mk-coupon-root .coupon-card,
-    #mk-coupon-root [class*="coupon-card"] {
-      overflow: hidden;
-      color: var(--text) !important;
-      background: linear-gradient(150deg, #102036, #0a1523 72%) !important;
-      border: 1px solid var(--border) !important;
-      border-radius: 16px !important;
-      box-shadow: 0 10px 30px #0002;
+    #mk-coupon-root button {
+      min-height: 41px;
+      padding: 10px 15px;
+      color: #101827;
+      background: linear-gradient(135deg, #f5d58c, var(--gold));
+      border: 1px solid #f5d58c;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    #mk-coupon-root [class*="match"],
-    #mk-coupon-root [class*="pick"],
-    #mk-coupon-root [class*="item"] {
+    #mk-coupon-root button:active {
+      transform: scale(.98);
+    }
+
+    #mk-coupon-root button:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    #mk-coupon-root #mk-coupon-message {
+      margin-top: 12px;
+      padding: 10px 12px;
+      color: var(--muted);
+      background: #081523;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 11px;
+      line-height: 1.7;
       overflow-wrap: anywhere;
     }
 
-    #mk-coupon-root [class*="odd"],
-    #mk-coupon-root [class*="total"] {
+    #mk-coupon-root #mk-coupon-content {
+      min-width: 0;
+    }
+
+    #mk-coupon-root .mk-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    #mk-coupon-root .mk-stat {
+      min-width: 0;
+      padding: 13px 10px;
+      background: #0a1726;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    #mk-coupon-root .mk-stat-value {
+      color: var(--gold);
+      font-size: 23px;
+      font-weight: 900;
       font-variant-numeric: tabular-nums;
     }
 
-    #mk-coupon-root [class*="success"],
-    #mk-coupon-root [class*="rate"] {
+    #mk-coupon-root .mk-stat-label {
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    #mk-coupon-root .mk-coupon-title {
+      color: var(--gold);
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    #mk-coupon-root .mk-row {
+      min-width: 0;
+      margin-top: 9px;
+      padding: 12px;
+      background: #081624;
+      border: 1px solid #253950;
+      border-radius: 11px;
+    }
+
+    #mk-coupon-root .mk-match {
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 850;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    #mk-coupon-root .mk-market {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    #mk-coupon-root .mk-row-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    #mk-coupon-root .mk-odd {
+      color: var(--gold);
+      font-size: 17px;
+      font-weight: 900;
       font-variant-numeric: tabular-nums;
     }
 
-    #mk-coupon-root [class*="won"],
-    #mk-coupon-root [class*="success"] {
-      color: var(--green);
+    #mk-coupon-root .mk-status {
+      display: inline-block;
+      padding: 6px 9px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 900;
     }
 
-    #mk-coupon-root [class*="lost"],
-    #mk-coupon-root [class*="fail"] {
-      color: var(--red);
+    #mk-coupon-root .mk-won {
+      color: #6ee7ad;
+      background: #123b2b;
     }
 
-    #mk-coupon-root [class*="pending"],
-    #mk-coupon-root [class*="wait"] {
-      color: var(--yellow);
+    #mk-coupon-root .mk-lost {
+      color: #ff9ba8;
+      background: #451f2a;
+    }
+
+    #mk-coupon-root .mk-pending {
+      color: #ffda75;
+      background: #473719;
+    }
+
+    #mk-coupon-root .mk-empty {
+      padding: 14px 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+    }
+
+    #mk-coupon-root .mk-total {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 14px;
+      padding-top: 13px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    #mk-coupon-root .mk-error {
+      padding: 13px;
+      color: #ffabb6;
+      background: #2b1520;
+      border: 1px solid #713b48;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1.8;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
     }
 
     #mk-coupon-root table {
@@ -187,52 +316,73 @@
 
     #mk-coupon-root th,
     #mk-coupon-root td {
-      padding: 9px 8px;
+      padding: 9px 7px;
       border-bottom: 1px solid var(--border);
       text-align: left;
       overflow-wrap: anywhere;
     }
 
     #mk-coupon-root th {
-      color: var(--gold2);
-      font-size: 12px;
+      color: var(--gold);
+      font-size: 11px;
     }
 
     #mk-coupon-root td {
       color: var(--text);
-      font-size: 13px;
+      font-size: 12px;
     }
 
-    @media (max-width: 600px) {
+    @media (max-width: 480px) {
       body {
-        padding: 10px 8px 28px;
+        padding: 10px 8px 25px;
       }
 
-      #mk-coupon-root {
-        width: 100% !important;
+      #mk-coupon-root .mk-panel {
+        padding: 11px;
       }
 
-      #mk-coupon-root button {
-        max-width: 100%;
-        white-space: normal;
+      #mk-coupon-root .mk-summary {
+        gap: 6px;
       }
 
-      #mk-coupon-root table {
-        display: block;
-        overflow-x: auto;
+      #mk-coupon-root .mk-stat {
+        padding: 10px 7px;
       }
 
-      #mk-coupon-root th,
-      #mk-coupon-root td {
-        padding: 8px 6px;
-        font-size: 12px;
+      #mk-coupon-root .mk-stat-value {
+        font-size: 20px;
+      }
+
+      #mk-coupon-root .mk-stat-label {
+        font-size: 9px;
+      }
+
+      #mk-coupon-root .mk-controls {
+        align-items: stretch;
+      }
+
+      #mk-coupon-root .mk-controls button {
+        flex: 1 1 auto;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <!-- Kuponları doğrudan RNA motoru oluşturur. -->
+  <!--
+    RNA motoru kendi kupon arayüzünü oluşturur.
+    Kupon hesaplama mantığı bu HTML içinde tekrar yazılmaz.
+  -->
   <script src="./rna.js"></script>
 </body>
 </html>
