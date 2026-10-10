@@ -10,1703 +10,968 @@
   <style>
     :root {
       color-scheme: dark;
-      --bg: #07111f;
-      --panel: #0e1b2d;
-      --panel2: #122239;
-      --border: #263a54;
-      --text: #e8f0fc;
-      --muted: #91a4bd;
-      --blue: #4b91ff;
-      --green: #28c76f;
-      --red: #ff5263;
-      --yellow: #f5c451;
+      --bg:#07111f; --panel:#0e1b2d; --panel2:#122239;
+      --border:#263a54; --text:#e8f0fc; --muted:#91a4bd;
+      --blue:#4b91ff; --green:#28c76f; --red:#ff5263; --yellow:#f5c451;
     }
 
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing:border-box; }
     body {
-      margin: 0;
-      background:
-        radial-gradient(circle at top, #102847 0, var(--bg) 45%);
-      color: var(--text);
-      font-family: system-ui, -apple-system, BlinkMacSystemFont,
-        "Segoe UI", sans-serif;
-      font-size: 14px;
+      margin:0;
+      background:radial-gradient(circle at top,#102847 0,var(--bg) 45%);
+      color:var(--text);
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-size:14px;
     }
+    button,input,select { font:inherit; }
+    button { cursor:pointer; }
+    button:disabled { opacity:.55; cursor:not-allowed; }
 
-    button,
-    input,
-    select {
-      font: inherit;
-    }
-
-    button {
-      cursor: pointer;
-    }
-
-    .page {
-      width: min(100%, 1050px);
-      margin: 0 auto;
-      padding: 18px 13px 40px;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 18px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 11px;
-    }
-
+    .page { width:min(100%,1050px); margin:0 auto; padding:18px 13px 40px; }
+    .header { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px; }
+    .brand { display:flex; align-items:center; gap:11px; }
     .brand-logo {
-      display: grid;
-      place-items: center;
-      width: 44px;
-      height: 44px;
-      border: 1px solid #355c8a;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #1a477a, #10243c);
-      color: #8fc1ff;
-      font-size: 20px;
-      font-weight: 900;
+      display:grid; place-items:center; width:44px; height:44px;
+      border:1px solid #355c8a; border-radius:14px;
+      background:linear-gradient(135deg,#1a477a,#10243c);
+      color:#8fc1ff; font-size:20px; font-weight:900;
     }
-
-    h1 {
-      margin: 0;
-      font-size: 21px;
-      letter-spacing: .3px;
-    }
-
-    .subtitle {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    .tag {
-      padding: 7px 10px;
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      background: #0d1b2c;
-      color: #b9d6ff;
-      font-size: 11px;
-      font-weight: 800;
-    }
+    h1 { margin:0; font-size:21px; letter-spacing:.3px; }
+    .subtitle { margin-top:4px; color:var(--muted); font-size:12px; }
+    .tag { padding:7px 10px; border:1px solid var(--border); border-radius:20px; background:#0d1b2c; color:#b9d6ff; font-size:11px; font-weight:800; }
 
     .panel {
-      margin-bottom: 15px;
-      padding: 15px;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      background: linear-gradient(145deg, #102038, #0b1727);
-      box-shadow: 0 10px 28px #00000018;
+      margin-bottom:15px; padding:15px; border:1px solid var(--border);
+      border-radius:16px; background:linear-gradient(145deg,#102038,#0b1727);
+      box-shadow:0 10px 28px #00000018;
     }
-
-    .panel-title {
-      margin: 0 0 13px;
-      font-size: 15px;
-      font-weight: 800;
+    .panel-title { margin:0 0 13px; font-size:15px; font-weight:800; }
+    .controls { display:grid; grid-template-columns:1fr 1.5fr auto; gap:10px; align-items:end; }
+    .field label { display:block; margin-bottom:6px; color:var(--muted); font-size:12px; font-weight:700; }
+    .field select,.field input {
+      width:100%; min-height:42px; padding:9px 10px;
+      border:1px solid #344b68; border-radius:10px;
+      outline:none; background:#091525; color:var(--text);
     }
-
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1.5fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-
-    .field label {
-      display: block;
-      margin-bottom: 6px;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .field select,
-    .field input {
-      width: 100%;
-      min-height: 42px;
-      padding: 9px 10px;
-      border: 1px solid #344b68;
-      border-radius: 10px;
-      outline: none;
-      background: #091525;
-      color: var(--text);
-    }
-
-    .field select:focus,
-    .field input:focus {
-      border-color: var(--blue);
-    }
+    .field select:focus,.field input:focus { border-color:var(--blue); }
 
     .btn {
-      display: inline-flex;
-      justify-content: center;
-      align-items: center;
-      gap: 7px;
-      min-height: 41px;
-      padding: 9px 13px;
-      border: 1px solid transparent;
-      border-radius: 10px;
-      font-weight: 800;
-      transition: filter .15s, transform .15s;
+      display:inline-flex; justify-content:center; align-items:center; gap:7px;
+      min-height:41px; padding:9px 13px; border:1px solid transparent;
+      border-radius:10px; font-weight:800; transition:filter .15s,transform .15s;
     }
-
-    .btn:hover {
-      filter: brightness(1.12);
-    }
-
-    .btn:active {
-      transform: scale(.98);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #438dff, #2764cb);
-      color: white;
-    }
-
-    .btn-secondary {
-      border-color: #344b68;
-      background: #172a42;
-      color: #e0ebfa;
-    }
-
-    .btn-danger {
-      border-color: #79333e;
-      background: #351b28;
-      color: #ffb4bd;
-    }
-
-    .btn-small {
-      min-height: 31px;
-      padding: 6px 9px;
-      font-size: 11px;
-    }
-
-    .rules {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 9px;
-      margin-top: 13px;
-    }
-
-    .rule {
-      padding: 11px;
-      border: 1px solid #263d58;
-      border-radius: 11px;
-      background: #0a1727;
-    }
-
-    .rule-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .rule-value {
-      margin-top: 4px;
-      font-size: 17px;
-      font-weight: 900;
-    }
-
-    .notice {
-      display: none;
-      margin-top: 12px;
-      padding: 11px 12px;
-      border: 1px solid #344b68;
-      border-radius: 10px;
-      background: #0a1727;
-      color: #c6d9f1;
-      line-height: 1.5;
-    }
-
-    .notice.show {
-      display: block;
-    }
-
-    .notice.error {
-      border-color: #783642;
-      color: #ffb7bf;
-    }
-
-    .notice.success {
-      border-color: #276b4a;
-      color: #a4f2c5;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-      margin-bottom: 15px;
-    }
-
-    .stat {
-      padding: 12px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #0c192a;
-    }
-
-    .stat-label {
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .stat-value {
-      margin-top: 5px;
-      font-size: 20px;
-      font-weight: 900;
-    }
-
-    .coupon {
-      overflow: hidden;
-      margin-bottom: 15px;
-      border: 1px solid #2d4665;
-      border-radius: 15px;
-      background: linear-gradient(150deg, #102139, #0a1727);
-    }
-
-    .coupon-head {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 13px;
-      border-bottom: 1px solid #263c57;
-      background: #12243b;
-    }
-
-    .coupon-title {
-      margin: 0;
-      font-size: 15px;
-      font-weight: 900;
-    }
-
-    .coupon-date {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .coupon-total {
-      text-align: right;
-    }
-
-    .coupon-total strong {
-      display: block;
-      color: #9bc5ff;
-      font-size: 21px;
-    }
-
-    .coupon-total span {
-      color: var(--muted);
-      font-size: 10px;
-    }
-
-    .coupon-body {
-      padding: 10px;
-    }
-
-    .pick {
-      display: grid;
-      grid-template-columns: 35px minmax(0, 1fr) auto;
-      gap: 10px;
-      align-items: start;
-      padding: 12px 4px;
-      border-bottom: 1px solid #20344d;
-    }
-
-    .pick:last-child {
-      border-bottom: 0;
-    }
-
-    .pick-status {
-      display: grid;
-      place-items: center;
-      width: 29px;
-      height: 29px;
-      border: 1px solid #344b68;
-      border-radius: 50%;
-      background: #102239;
-      font-size: 16px;
-      font-weight: 900;
-    }
-
-    .pick-status.won {
-      border-color: #236b49;
-      background: #103b2b;
-      color: var(--green);
-    }
-
-    .pick-status.lost {
-      border-color: #7c303d;
-      background: #401c28;
-      color: var(--red);
-    }
-
-    .pick-status.pending {
-      border-color: #80672d;
-      background: #3d3217;
-      color: var(--yellow);
-    }
-
-    .pick-teams {
-      overflow-wrap: anywhere;
-      font-size: 13px;
-      font-weight: 850;
-      line-height: 1.45;
-    }
-
-    .pick-teams .versus {
-      padding: 0 4px;
-      color: #6e89a8;
-      font-size: 10px;
-      font-weight: 600;
-    }
-
-    .pick-meta {
-      margin-top: 5px;
-      color: var(--muted);
-      font-size: 11px;
-      line-height: 1.55;
-    }
-
-    .pick-source {
-      margin-top: 7px;
-      padding: 7px 8px;
-      border-left: 2px solid #4c91ff;
-      border-radius: 0 7px 7px 0;
-      background: #0b192a;
-      color: #c2d6f1;
-      font-size: 11px;
-      line-height: 1.55;
-    }
-
-    .pick-odd {
-      min-width: 54px;
-      padding: 7px 8px;
-      border: 1px solid #31527a;
-      border-radius: 9px;
-      background: #102946;
-      color: #b9d7ff;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 900;
-    }
-
-    .coupon-foot {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 9px;
-      padding: 12px;
-      border-top: 1px solid #263c57;
-      background: #0b1929;
-    }
-
-    .coupon-status {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      color: var(--yellow);
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .coupon-status.won {
-      color: var(--green);
-    }
-
-    .coupon-status.lost {
-      color: var(--red);
-    }
-
-    .coupon-actions {
-      display: flex;
-      gap: 7px;
-      flex-wrap: wrap;
-    }
-
-    .empty {
-      padding: 28px 15px;
-      border: 1px dashed #304762;
-      border-radius: 13px;
-      color: var(--muted);
-      text-align: center;
-      line-height: 1.7;
-    }
-
-    .empty-icon {
-      margin-bottom: 8px;
-      font-size: 27px;
-    }
-
-    .history-controls {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 9px;
-      align-items: end;
-      margin-bottom: 13px;
-    }
-
-    .history-group-title {
-      margin: 18px 0 10px;
-      color: #a9c9f4;
-      font-size: 12px;
-      font-weight: 900;
-    }
-
-    .legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .green-text {
-      color: var(--green);
-    }
-
-    .red-text {
-      color: var(--red);
-    }
-
-    .yellow-text {
-      color: var(--yellow);
-    }
-
-    /* dna.js analiz motorunun beklediği elemanlar.
-       Kupon ekranında ayrıca gösterilmez. */
-    #dnaEngineBridge {
-      display: none !important;
-    }
-
-    @media (max-width: 650px) {
-      .page {
-        padding: 12px 9px 30px;
-      }
-
-      h1 {
-        font-size: 18px;
-      }
-
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      .controls .btn {
-        width: 100%;
-      }
-
-      .rules {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .stats {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-      }
-
-      .stat {
-        padding: 9px 7px;
-      }
-
-      .stat-value {
-        font-size: 17px;
-      }
-
-      .pick {
-        grid-template-columns: 30px minmax(0, 1fr) auto;
-        gap: 7px;
-      }
-
-      .pick-status {
-        width: 27px;
-        height: 27px;
-      }
-
-      .pick-teams {
-        font-size: 12px;
-      }
-
-      .pick-source {
-        font-size: 10px;
-      }
-
-      .coupon-total strong {
-        font-size: 18px;
-      }
+    .btn:hover { filter:brightness(1.12); }
+    .btn:active { transform:scale(.98); }
+    .btn-primary { background:linear-gradient(135deg,#438dff,#2764cb); color:white; }
+    .btn-secondary { border-color:#344b68; background:#172a42; color:#e0ebfa; }
+    .btn-danger { border-color:#79333e; background:#351b28; color:#ffb4bd; }
+    .btn-small { min-height:31px; padding:6px 9px; font-size:11px; }
+
+    .rules { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:9px; margin-top:13px; }
+    .rule { padding:11px; border:1px solid #263d58; border-radius:11px; background:#0a1727; }
+    .rule-label { color:var(--muted); font-size:11px; }
+    .rule-value { margin-top:4px; font-size:17px; font-weight:900; }
+
+    .notice { display:none; margin-top:12px; padding:11px 12px; border:1px solid #344b68; border-radius:10px; background:#0a1727; color:#c6d9f1; line-height:1.5; }
+    .notice.show { display:block; }
+    .notice.error { border-color:#783642; color:#ffb7bf; }
+    .notice.success { border-color:#276b4a; color:#a4f2c5; }
+
+    .legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; color:var(--muted); font-size:11px; }
+    .legend span { display:inline-flex; align-items:center; gap:5px; }
+    .green-text { color:var(--green); }
+    .red-text { color:var(--red); }
+    .yellow-text { color:var(--yellow); }
+
+    .stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:9px; margin-bottom:15px; }
+    .stat { padding:12px; border:1px solid var(--border); border-radius:12px; background:#0c192a; }
+    .stat-label { color:var(--muted); font-size:11px; }
+    .stat-value { margin-top:5px; font-size:20px; font-weight:900; }
+
+    .coupon { overflow:hidden; margin-bottom:15px; border:1px solid #2d4665; border-radius:15px; background:linear-gradient(150deg,#102139,#0a1727); }
+    .coupon-head { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; padding:13px; border-bottom:1px solid #263c57; background:#12243b; }
+    .coupon-title { margin:0; font-size:15px; font-weight:900; }
+    .coupon-date { margin-top:4px; color:var(--muted); font-size:11px; }
+    .coupon-total { text-align:right; }
+    .coupon-total strong { display:block; color:#9bc5ff; font-size:21px; }
+    .coupon-total span { color:var(--muted); font-size:10px; }
+    .coupon-body { padding:10px; }
+
+    .pick { display:grid; grid-template-columns:35px minmax(0,1fr) auto; gap:10px; align-items:start; padding:12px 4px; border-bottom:1px solid #20344d; }
+    .pick:last-child { border-bottom:0; }
+    .pick-status { display:grid; place-items:center; width:29px; height:29px; border:1px solid #344b68; border-radius:50%; background:#102239; font-size:16px; font-weight:900; }
+    .pick-status.won { border-color:#236b49; background:#103b2b; color:var(--green); }
+    .pick-status.lost { border-color:#7c303d; background:#401c28; color:var(--red); }
+    .pick-status.pending { border-color:#80672d; background:#3d3217; color:var(--yellow); }
+    .pick-teams { overflow-wrap:anywhere; font-size:13px; font-weight:850; line-height:1.45; }
+    .versus { padding:0 4px; color:#6e89a8; font-size:10px; font-weight:600; }
+    .pick-meta { margin-top:5px; color:var(--muted); font-size:11px; line-height:1.55; }
+    .pick-source { margin-top:7px; padding:7px 8px; border-left:2px solid #4c91ff; border-radius:0 7px 7px 0; background:#0b192a; color:#c2d6f1; font-size:11px; line-height:1.55; }
+    .pick-odd { min-width:54px; padding:7px 8px; border:1px solid #31527a; border-radius:9px; background:#102946; color:#b9d7ff; text-align:center; font-size:14px; font-weight:900; }
+
+    .coupon-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:9px; padding:12px; border-top:1px solid #263c57; background:#0b1929; }
+    .coupon-status { display:inline-flex; align-items:center; gap:7px; color:var(--yellow); font-size:12px; font-weight:900; }
+    .coupon-status.won { color:var(--green); }
+    .coupon-status.lost { color:var(--red); }
+    .coupon-actions { display:flex; gap:7px; flex-wrap:wrap; }
+
+    .empty { padding:28px 15px; border:1px dashed #304762; border-radius:13px; color:var(--muted); text-align:center; line-height:1.7; }
+    .empty-icon { margin-bottom:8px; font-size:27px; }
+    .history-controls { display:grid; grid-template-columns:1fr auto; gap:9px; align-items:end; margin-bottom:13px; }
+    .history-group-title { margin:18px 0 10px; color:#a9c9f4; font-size:12px; font-weight:900; }
+
+    #dnaEngineBridge { display:none !important; }
+
+    @media(max-width:650px) {
+      .page { padding:12px 9px 30px; }
+      h1 { font-size:18px; }
+      .controls { grid-template-columns:1fr; }
+      .controls .btn { width:100%; }
+      .rules { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .stat { padding:9px 7px; }
+      .stat-value { font-size:17px; }
+      .pick { grid-template-columns:30px minmax(0,1fr) auto; gap:7px; }
+      .pick-status { width:27px; height:27px; }
+      .pick-teams { font-size:12px; }
+      .pick-source { font-size:10px; }
+      .coupon-total strong { font-size:18px; }
+      .history-controls { grid-template-columns:1fr; }
     }
   </style>
 </head>
 
 <body>
-  <main class="page">
-    <header class="header">
-      <div class="brand">
-        <div class="brand-logo">DNA</div>
-        <div>
-          <h1>Otomatik Kupon</h1>
-          <div class="subtitle">Geçmiş oran örneklemlerinden kupon oluşturma</div>
-        </div>
+<main class="page">
+  <header class="header">
+    <div class="brand">
+      <div class="brand-logo">DNA</div>
+      <div>
+        <h1>Otomatik Kupon</h1>
+        <div class="subtitle">Geçmiş oran örneklemlerinden kupon oluşturma</div>
       </div>
-      <div class="tag">OTOMATİK SİSTEM</div>
-    </header>
-
-    <section class="panel">
-      <h2 class="panel-title">Kupon ayarları</h2>
-
-      <div class="controls">
-        <div class="field">
-          <label for="saDate">Maç tarihi</label>
-          <input type="date" id="saDate">
-        </div>
-
-        <div class="field">
-          <label for="saResult">Geçmiş başarıya göre sonuç grubu</label>
-          <select id="saResult">
-            <option value="MS1">MS1</option>
-            <option value="MSX">MSX</option>
-            <option value="MS2" selected>MS2</option>
-            <option value="IY1">İY1</option>
-            <option value="IYX">İYX</option>
-            <option value="IY2">İY2</option>
-            <option value="KG_VAR">KG Var</option>
-            <option value="KG_YOK">KG Yok</option>
-            <option value="IY_KG_VAR">İY KG Var</option>
-            <option value="IY_KG_YOK">İY KG Yok</option>
-            <option value="IY15_ALT">İY 1.5 Alt</option>
-            <option value="IY15_UST">İY 1.5 Üst</option>
-            <option value="15_ALT">1.5 Alt</option>
-            <option value="15_UST">1.5 Üst</option>
-            <option value="25_UST">2.5 Üst</option>
-          </select>
-        </div>
-
-        <button class="btn btn-primary" id="generateCoupons">
-          ✦ Kuponları oluştur
-        </button>
-      </div>
-
-      <div class="rules">
-        <div class="rule">
-          <div class="rule-label">En düşük maç oranı</div>
-          <div class="rule-value">1.35</div>
-        </div>
-        <div class="rule">
-          <div class="rule-label">En düşük kupon oranı</div>
-          <div class="rule-value">2.00</div>
-        </div>
-        <div class="rule">
-          <div class="rule-label">Kupon başına maç</div>
-          <div class="rule-value">En fazla 5</div>
-        </div>
-        <div class="rule">
-          <div class="rule-label">Bir üretimde kupon</div>
-          <div class="rule-value">En fazla 3</div>
-        </div>
-      </div>
-
-      <div class="legend">
-        <span><b class="green-text">✓</b> Kazandı</span>
-        <span><b class="red-text">✕</b> Kaybetti</span>
-        <span><b class="yellow-text">●</b> Bekliyor</span>
-      </div>
-
-      <div id="notice" class="notice" role="status" aria-live="polite"></div>
-    </section>
-
-    <section class="stats">
-      <div class="stat">
-        <div class="stat-label">Oluşturulan kupon</div>
-        <div class="stat-value" id="statCoupons">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Kuponlara eklenen maç</div>
-        <div class="stat-value" id="statPicks">0</div>
-      </div>
-      <div class="stat">
-        <div class="stat-label">Geçmiş kupon</div>
-        <div class="stat-value" id="statHistory">0</div>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="panel-title">Oluşturulan kuponlar</h2>
-      <div id="couponList">
-        <div class="empty">
-          <div class="empty-icon">🎟️</div>
-          Tarihi ve sonuç grubunu seç, ardından
-          <b>Kuponları oluştur</b> düğmesine bas.
-        </div>
-      </div>
-    </section>
-
-    <section class="panel" style="margin-top:20px">
-      <h2 class="panel-title">Geçmiş kuponlar</h2>
-
-      <div class="history-controls">
-        <div class="field">
-          <label for="historyDate">Geçmiş kupon tarihi</label>
-          <input type="date" id="historyDate">
-        </div>
-        <button class="btn btn-secondary" id="showAllHistory">
-          Tümünü göster
-        </button>
-      </div>
-
-      <div id="historyList">
-        <div class="empty">
-          Henüz kaydedilmiş kupon bulunmuyor.
-        </div>
-      </div>
-    </section>
-
-    <!-- dna.js tarafından beklenen analiz elemanları -->
-    <div id="dnaEngineBridge" aria-hidden="true">
-      <div id="saPeriod"></div>
-      <div id="saHistoryCount"></div>
-      <div id="saOddsCount"></div>
-      <div id="saStatus"></div>
-      <div id="saContent"></div>
-      <button id="saRun" type="button">Analizi çalıştır</button>
     </div>
-  </main>
+    <div class="tag">OTOMATİK SİSTEM</div>
+  </header>
 
-  <script src="dna.js"></script>
+  <section class="panel">
+    <h2 class="panel-title">Kupon ayarları</h2>
 
-  <script>
-    "use strict";
+    <div class="controls">
+      <div class="field">
+        <label for="autoDate">Maç tarihi</label>
+        <input type="date" id="autoDate">
+      </div>
 
-    const COUPON_CONFIG = {
-      minOdd: 1.35,
-      minTotalOdd: 2.00,
-      maxPicksPerCoupon: 5,
-      maxCouponsPerRun: 3,
-      storageKey: "dna_mixed_coupon_history_v2",
-      maxHistory: 200
-    };
+      <div class="field">
+        <label for="autoResult">Geçmiş başarıya göre sonuç grubu</label>
+        <select id="autoResult">
+          <option value="MS1">MS1</option>
+          <option value="MSX">MSX</option>
+          <option value="MS2" selected>MS2</option>
+          <option value="IY1">İY1</option>
+          <option value="IYX">İYX</option>
+          <option value="IY2">İY2</option>
+          <option value="KG_VAR">KG Var</option>
+          <option value="KG_YOK">KG Yok</option>
+          <option value="IY15_ALT">İY 1.5 Alt</option>
+          <option value="IY15_UST">İY 1.5 Üst</option>
+          <option value="15_ALT">1.5 Alt</option>
+          <option value="15_UST">1.5 Üst</option>
+          <option value="25_ALT">2.5 Alt</option>
+          <option value="25_UST">2.5 Üst</option>
+          <option value="35_ALT">3.5 Alt</option>
+          <option value="35_UST">3.5 Üst</option>
+          <option value="GOL01">0-1 Gol</option>
+          <option value="GOL23">2-3 Gol</option>
+          <option value="GOL46">4-6 Gol</option>
+          <option value="GOL7">7+ Gol</option>
+        </select>
+      </div>
 
-    const COUPON_RESULTS = {
-      MS1: {
-        label: "MS1",
-        half: false,
-        test: s => s.home > s.away
-      },
-      MSX: {
-        label: "MSX",
-        half: false,
-        test: s => s.home === s.away
-      },
-      MS2: {
-        label: "MS2",
-        half: false,
-        test: s => s.away > s.home
-      },
-      IY1: {
-        label: "İY1",
-        half: true,
-        test: s => s.home > s.away
-      },
-      IYX: {
-        label: "İYX",
-        half: true,
-        test: s => s.home === s.away
-      },
-      IY2: {
-        label: "İY2",
-        half: true,
-        test: s => s.away > s.home
-      },
-      KG_VAR: {
-        label: "KG Var",
-        half: false,
-        test: s => s.home > 0 && s.away > 0
-      },
-      KG_YOK: {
-        label: "KG Yok",
-        half: false,
-        test: s => s.home === 0 || s.away === 0
-      },
-      IY_KG_VAR: {
-        label: "İY KG Var",
-        half: true,
-        test: s => s.home > 0 && s.away > 0
-      },
-      IY_KG_YOK: {
-        label: "İY KG Yok",
-        half: true,
-        test: s => s.home === 0 || s.away === 0
-      },
-      IY15_ALT: {
-        label: "İY 1.5 Alt",
-        half: true,
-        test: s => s.home + s.away <= 1
-      },
-      IY15_UST: {
-        label: "İY 1.5 Üst",
-        half: true,
-        test: s => s.home + s.away >= 2
-      },
-      "15_ALT": {
-        label: "1.5 Alt",
-        half: false,
-        test: s => s.home + s.away <= 1
-      },
-      "15_UST": {
-        label: "1.5 Üst",
-        half: false,
-        test: s => s.home + s.away >= 2
-      },
-      "25_UST": {
-        label: "2.5 Üst",
-        half: false,
-        test: s => s.home + s.away >= 3
-      }
-    };
+      <button class="btn btn-primary" id="generateCoupons">✦ Kuponları oluştur</button>
+    </div>
 
-    const MARKET_LABELS = {
-      ms1: "MS1",
-      msX: "MSX",
-      ms2: "MS2",
-      iy1: "İY1",
-      iyX: "İYX",
-      iy2: "İY2",
-      cs1X: "Çifte Şans 1X",
-      cs12: "Çifte Şans 12",
-      csX2: "Çifte Şans X2",
-      kgVar: "KG Var",
-      kgYok: "KG Yok",
-      iy15Alt: "İY 1.5 Alt",
-      iy15Ust: "İY 1.5 Üst",
-      au15Alt: "1.5 Alt",
-      au15Ust: "1.5 Üst",
-      au25Alt: "2.5 Alt",
-      au25Ust: "2.5 Üst",
-      au35Alt: "3.5 Alt",
-      au35Ust: "3.5 Üst",
-      gol01: "0-1 Gol",
-      gol23: "2-3 Gol",
-      gol46: "4-6 Gol",
-      gol7: "7+ Gol",
-      handicap1: "Handikap 1",
-      handicapX: "Handikap X",
-      handicap2: "Handikap 2"
-    };
+    <div class="rules">
+      <div class="rule"><div class="rule-label">En düşük maç oranı</div><div class="rule-value">1.35</div></div>
+      <div class="rule"><div class="rule-label">En düşük kupon oranı</div><div class="rule-value">2.00</div></div>
+      <div class="rule"><div class="rule-label">Kupon başına maç</div><div class="rule-value">En fazla 5</div></div>
+      <div class="rule"><div class="rule-label">Bir üretimde kupon</div><div class="rule-value">En fazla 3</div></div>
+    </div>
 
-    const $ = id => document.getElementById(id);
+    <div class="legend">
+      <span><b class="green-text">✓</b> Kazandı</span>
+      <span><b class="red-text">✕</b> Kaybetti</span>
+      <span><b class="yellow-text">●</b> Bekliyor</span>
+    </div>
+    <div id="notice" class="notice" role="status" aria-live="polite"></div>
+  </section>
 
-    let currentCoupons = [];
-    let showAllHistory = false;
+  <section class="stats">
+    <div class="stat"><div class="stat-label">Oluşturulan kupon</div><div class="stat-value" id="statCoupons">0</div></div>
+    <div class="stat"><div class="stat-label">Kuponlara eklenen maç</div><div class="stat-value" id="statPicks">0</div></div>
+    <div class="stat"><div class="stat-label">Geçmiş kupon</div><div class="stat-value" id="statHistory">0</div></div>
+  </section>
 
-    function localDateString(date = new Date()) {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, "0");
-      const d = String(date.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
+  <section>
+    <h2 class="panel-title">Oluşturulan kuponlar</h2>
+    <div id="couponList">
+      <div class="empty"><div class="empty-icon">🎟️</div>Tarihi ve sonuç grubunu seç, ardından <b>Kuponları oluştur</b> düğmesine bas.</div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:20px">
+    <h2 class="panel-title">Geçmiş kuponlar</h2>
+    <div class="history-controls">
+      <div class="field">
+        <label for="historyDate">Geçmiş kupon tarihi</label>
+        <input type="date" id="historyDate">
+      </div>
+      <button class="btn btn-secondary" id="showAllHistory">Tümünü göster</button>
+    </div>
+    <div id="historyList"><div class="empty">Henüz kaydedilmiş kupon bulunmuyor.</div></div>
+  </section>
+
+  <!-- dna.js analiz motoru için gizli bağlantı alanı -->
+  <div id="dnaEngineBridge" aria-hidden="true">
+    <input type="date" id="saDate">
+    <select id="saResult">
+      <option value="MS1">MS1</option>
+      <option value="MSX">MSX</option>
+      <option value="MS2">MS2</option>
+      <option value="IY1">İY1</option>
+      <option value="IYX">İYX</option>
+      <option value="IY2">İY2</option>
+      <option value="KG_VAR">KG Var</option>
+      <option value="KG_YOK">KG Yok</option>
+      <option value="IY15_ALT">İY 1.5 Alt</option>
+      <option value="IY15_UST">İY 1.5 Üst</option>
+      <option value="15_ALT">1.5 Alt</option>
+      <option value="15_UST">1.5 Üst</option>
+      <option value="25_ALT">2.5 Alt</option>
+      <option value="25_UST">2.5 Üst</option>
+      <option value="35_ALT">3.5 Alt</option>
+      <option value="35_UST">3.5 Üst</option>
+      <option value="GOL01">0-1 Gol</option>
+      <option value="GOL23">2-3 Gol</option>
+      <option value="GOL46">4-6 Gol</option>
+      <option value="GOL7">7+ Gol</option>
+    </select>
+    <button id="saRun" type="button">Analizi çalıştır</button>
+    <div id="saPeriod"></div>
+    <div id="saHistoryCount"></div>
+    <div id="saOddsCount"></div>
+    <div id="saStatus"></div>
+    <div id="saContent"></div>
+  </div>
+</main>
+
+<script src="dna.js"></script>
+<script>
+"use strict";
+
+/*
+ * Otomatik kupon ekranı.
+ * DNA analiz motorunun hesaplamaları değiştirilmez.
+ * Otomatik kupon geçmişi, DNA'nın manuel kupon geçmişinden ayrıdır.
+ */
+const AUTO_CONFIG = {
+  MIN_ODD: 1.35,
+  MIN_TOTAL_ODD: 2,
+  MAX_PICKS: 5,
+  MAX_COUPONS_PER_RUN: 3,
+  MAX_HISTORY: 200,
+  STORAGE_KEY: "dna_auto_coupon_history_v1"
+};
+
+const AUTO_RESULT_LABELS = {
+  MS1:"MS1", MSX:"MSX", MS2:"MS2",
+  IY1:"İY1", IYX:"İYX", IY2:"İY2",
+  KG_VAR:"KG Var", KG_YOK:"KG Yok",
+  IY15_ALT:"İY 1.5 Alt", IY15_UST:"İY 1.5 Üst",
+  "15_ALT":"1.5 Alt", "15_UST":"1.5 Üst",
+  "25_ALT":"2.5 Alt", "25_UST":"2.5 Üst",
+  "35_ALT":"3.5 Alt", "35_UST":"3.5 Üst",
+  GOL01:"0-1 Gol", GOL23:"2-3 Gol", GOL46:"4-6 Gol", GOL7:"7+ Gol"
+};
+
+const AUTO_MARKET_RESULTS = {
+  ms1:"MS1",
+  msX:"MSX",
+  ms2:"MS2",
+  iy1:"IY1",
+  iyX:"IYX",
+  iy2:"IY2",
+  kgVar:"KG_VAR",
+  kgYok:"KG_YOK",
+  au15Alt:"15_ALT",
+  au15Ust:"15_UST",
+  au25Alt:"25_ALT",
+  au25Ust:"25_UST",
+  au35Alt:"35_ALT",
+  au35Ust:"35_UST",
+  iy15Alt:"IY15_ALT",
+  iy15Ust:"IY15_UST",
+  gol01:"GOL01",
+  gol23:"GOL23",
+  gol46:"GOL46",
+  gol7:"GOL7"
+};
+
+let autoCurrentCoupons = [];
+let autoShowAllHistory = false;
+let autoEngineReady = false;
+
+const auto$ = id => document.getElementById(id);
+
+function autoToday() {
+  const now = new Date();
+  return [
+    now.getFullYear(),
+    String(now.getMonth() + 1).padStart(2, "0"),
+    String(now.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function autoEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+  })[char]);
+}
+
+function autoNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(String(value).replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+function autoDate(match) {
+  return typeof dnaDateKey === "function" ? dnaDateKey(match) : "";
+}
+
+function autoTeam(match, side) {
+  return typeof dnaTeam === "function"
+    ? dnaTeam(match, side)
+    : side === "home"
+      ? (match?.home || match?.homeTeam || "-")
+      : (match?.away || match?.awayTeam || "-");
+}
+
+function autoTime(match) {
+  return typeof dnaTime === "function" ? dnaTime(match) : (match?.time || "--:--");
+}
+
+function autoLeague(match) {
+  return typeof dnaLeague === "function" ? dnaLeague(match) : (match?.league || "-");
+}
+
+function autoIdentity(match) {
+  const code = match?.code ?? match?.id ?? match?.matchId;
+  if (code !== undefined && code !== null && String(code).trim()) {
+    return "id:" + String(code).trim();
+  }
+
+  return [
+    autoDate(match),
+    autoTime(match),
+    autoTeam(match, "home"),
+    autoTeam(match, "away")
+  ].join("|").toLocaleLowerCase("tr-TR");
+}
+
+function autoReadHistory() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(AUTO_CONFIG.STORAGE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error("Otomatik kupon geçmişi okunamadı:", error);
+    return [];
+  }
+}
+
+function autoWriteHistory(history) {
+  try {
+    localStorage.setItem(
+      AUTO_CONFIG.STORAGE_KEY,
+      JSON.stringify(history.slice(0, AUTO_CONFIG.MAX_HISTORY))
+    );
+    return true;
+  } catch (error) {
+    console.error("Otomatik kupon geçmişi kaydedilemedi:", error);
+    autoNotice("Kupon geçmişi tarayıcıya kaydedilemedi. Depolama alanını kontrol et.", "error");
+    return false;
+  }
+}
+
+function autoNotice(message, type = "") {
+  const el = auto$("notice");
+  el.textContent = message;
+  el.className = "notice show" + (type ? " " + type : "");
+}
+
+function autoCreateId() {
+  return "auto-" + Date.now().toString(36) + "-" +
+    Math.random().toString(36).slice(2, 9);
+}
+
+function autoGetScore(match, type) {
+  return typeof dnaScore === "function" ? dnaScore(match, type) : null;
+}
+
+/*
+ * Kuponun durumu, analizde seçilen sonuç grubuna göre değil,
+ * gerçekten kupona yazılan marketin sonucu üzerinden hesaplanır.
+ */
+function autoPickStatus(pick) {
+  const match = pick.match;
+  if (!match || !autoGetScore(match, "ft")) return "pending";
+
+  const marketId = pick.marketId;
+  const resultId = AUTO_MARKET_RESULTS[marketId];
+
+  if (resultId && typeof dnaResult === "function") {
+    const result = dnaResult(match, resultId);
+    if (result === true) return "won";
+    if (result === false) return "lost";
+    return "pending";
+  }
+
+  const ft = autoGetScore(match, "ft");
+  const ht = autoGetScore(match, "ht");
+
+  if (marketId === "cs1X") return ft.home >= ft.away ? "won" : "lost";
+  if (marketId === "cs12") return ft.home !== ft.away ? "won" : "lost";
+  if (marketId === "csX2") return ft.away >= ft.home ? "won" : "lost";
+
+  // Handikap oranlarında handikap çizgisi JSON'da tanımlı değilse
+  // sonuç güvenilir biçimde hesaplanamaz; bekliyor olarak bırakılır.
+  if (["handicap1", "handicapX", "handicap2"].includes(marketId)) return "pending";
+
+  // İY marketleri için ilk yarı skoru bulunmuyorsa bekler.
+  if (["iy1", "iyX", "iy2", "iy15Alt", "iy15Ust"].includes(marketId) && !ht) {
+    return "pending";
+  }
+
+  return "pending";
+}
+
+function autoStatusLabel(status) {
+  if (status === "won") return "✓ Kazandı";
+  if (status === "lost") return "✕ Kaybetti";
+  return "● Bekliyor";
+}
+
+function autoStatusSymbol(status) {
+  if (status === "won") return "✓";
+  if (status === "lost") return "✕";
+  return "●";
+}
+
+function autoCouponStatus(coupon) {
+  if (coupon.manualStatus === "won" || coupon.manualStatus === "lost") {
+    return coupon.manualStatus;
+  }
+
+  const statuses = (coupon.picks || []).map(autoPickStatus);
+  if (!statuses.length) return "pending";
+  if (statuses.includes("lost")) return "lost";
+  if (statuses.every(status => status === "won")) return "won";
+  return "pending";
+}
+
+function autoTotal(picks) {
+  return (picks || []).reduce((total, pick) => total * Number(pick.odd || 1), 1);
+}
+
+function autoMakeCandidate(row, match, resultId) {
+  const odd = autoNumber(row.odd);
+  if (odd === null || odd < AUTO_CONFIG.MIN_ODD) return null;
+
+  const date = autoDate(match);
+  if (!date || date !== auto$("autoDate").value) return null;
+
+  const identity = autoIdentity(match);
+  if (!identity || !identity.trim()) return null;
+
+  return {
+    id: identity,
+    match,
+    date,
+    time: autoTime(match),
+    home: autoTeam(match, "home"),
+    away: autoTeam(match, "away"),
+    league: autoLeague(match),
+    marketId: row.marketId,
+    marketLabel: row.marketLabel,
+    odd: Number(odd.toFixed(2)),
+    resultId,
+    resultLabel: AUTO_RESULT_LABELS[resultId] || resultId,
+    sample: Number(row.total || 0),
+    successCount: Number(row.success || 0),
+    successRate: Number(row.rate || 0)
+  };
+}
+
+function autoCollectCandidates(rows, resultId) {
+  const byMatch = new Map();
+
+  for (const row of rows) {
+    if (!Array.isArray(row.future)) continue;
+
+    for (const match of row.future) {
+      const candidate = autoMakeCandidate(row, match, resultId);
+      if (!candidate) continue;
+
+      const old = byMatch.get(candidate.id);
+
+      // Aynı maç birden fazla oran grubunda çıkarsa en yüksek başarı,
+      // ardından en yüksek örneklem esas alınır.
+      const score = candidate.successRate * 100000 + candidate.sample * 100 + candidate.odd;
+      const oldScore = old
+        ? old.successRate * 100000 + old.sample * 100 + old.odd
+        : -1;
+
+      if (!old || score > oldScore) byMatch.set(candidate.id, candidate);
+    }
+  }
+
+  return [...byMatch.values()].sort((a, b) =>
+    b.successRate - a.successRate ||
+    b.sample - a.sample ||
+    b.odd - a.odd
+  );
+}
+
+function autoUsedIds(history) {
+  const used = new Set();
+
+  for (const coupon of history) {
+    for (const pick of coupon.picks || []) {
+      const id = pick.id || (pick.match ? autoIdentity(pick.match) : "");
+      if (id) used.add(id);
+    }
+  }
+
+  return used;
+}
+
+function autoBuildCoupons(candidates, date, resultId, history) {
+  const used = autoUsedIds(history);
+  const remaining = candidates.filter(candidate => !used.has(candidate.id));
+  const coupons = [];
+
+  while (coupons.length < AUTO_CONFIG.MAX_COUPONS_PER_RUN && remaining.length) {
+    const picks = [];
+    const reserved = new Set();
+    let total = 1;
+
+    while (remaining.length && picks.length < AUTO_CONFIG.MAX_PICKS && total < AUTO_CONFIG.MIN_TOTAL_ODD) {
+      const candidate = remaining.shift();
+      if (used.has(candidate.id) || reserved.has(candidate.id)) continue;
+
+      picks.push(candidate);
+      reserved.add(candidate.id);
+      total *= candidate.odd;
     }
 
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-      })[char]);
-    }
-
-    function numberValue(value) {
-      if (value === null || value === undefined || value === "") {
-        return null;
-      }
-
-      const n = Number(String(value).replace(",", "."));
-      return Number.isFinite(n) ? n : null;
-    }
-
-    function readHistory() {
-      try {
-        const raw = localStorage.getItem(COUPON_CONFIG.storageKey);
-        const parsed = raw ? JSON.parse(raw) : [];
-        return Array.isArray(parsed) ? parsed : [];
-      } catch (error) {
-        console.error("Kupon geçmişi okunamadı:", error);
-        return [];
-      }
-    }
-
-    function writeHistory(items) {
-      try {
-        localStorage.setItem(
-          COUPON_CONFIG.storageKey,
-          JSON.stringify(items.slice(0, COUPON_CONFIG.maxHistory))
-        );
-        return true;
-      } catch (error) {
-        console.error("Kupon geçmişi kaydedilemedi:", error);
-        showNotice(
-          "Kupon geçmişi tarayıcıya kaydedilemedi. Tarayıcı depolama alanını kontrol et.",
-          "error"
-        );
-        return false;
-      }
-    }
-
-    function showNotice(message, type = "") {
-      const el = $("notice");
-      el.textContent = message;
-      el.className = "notice show" + (type ? " " + type : "");
-    }
-
-    function getSelectedResult() {
-      const id = $("saResult").value;
-      return {
-        id,
-        label: COUPON_RESULTS[id]?.label || id
+    if (picks.length && total >= AUTO_CONFIG.MIN_TOTAL_ODD) {
+      const coupon = {
+        id: autoCreateId(),
+        date,
+        createdAt: new Date().toISOString(),
+        resultId,
+        resultLabel: AUTO_RESULT_LABELS[resultId] || resultId,
+        picks,
+        totalOdd: Number(total.toFixed(2)),
+        manualStatus: null
       };
+
+      coupons.push(coupon);
+      for (const id of reserved) used.add(id);
+    } else {
+      // Yeterli toplam oran oluşmadıysa eksik kupon kaydedilmez.
+      break;
     }
-
-    function getAnalysisRows() {
-      try {
-        if (typeof dnaAnalysisRows !== "undefined" &&
-            Array.isArray(dnaAnalysisRows)) {
-          return dnaAnalysisRows;
-        }
-      } catch (_) {}
-
-      if (Array.isArray(window.dnaAnalysisRows)) {
-        return window.dnaAnalysisRows;
-      }
-
-      return [];
-    }
-
-    function getRowMatches(row) {
-      const possible = [
-        row?.future,
-        row?.futureMatches,
-        row?.targetMatches,
-        row?.matches
-      ];
-
-      for (const value of possible) {
-        if (Array.isArray(value)) {
-          return value;
-        }
-      }
-
-      return [];
-    }
-
-    function getMatchObject(item) {
-      if (!item || typeof item !== "object") return null;
-      return item.match && typeof item.match === "object"
-        ? item.match
-        : item;
-    }
-
-    function getMatchDate(match) {
-      if (!match) return "";
-
-      const raw = match.date || match.matchDate || match.kickoffDate || "";
-
-      if (/^\d{4}-\d{2}-\d{2}/.test(String(raw))) {
-        return String(raw).slice(0, 10);
-      }
-
-      const m = String(raw).match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-      if (m) {
-        return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
-      }
-
-      return "";
-    }
-
-    function getMatchIdentity(match) {
-      const code = match?.code ?? match?.id ?? match?.matchId;
-      if (code !== undefined && code !== null && String(code).trim()) {
-        return "id:" + String(code).trim();
-      }
-
-      return [
-        getMatchDate(match),
-        String(match?.time || ""),
-        String(match?.home || match?.homeTeam || ""),
-        String(match?.away || match?.awayTeam || "")
-      ].join("|").toLocaleLowerCase("tr-TR");
-    }
-
-    function getMatchOdd(row, item) {
-      const values = [
-        item?.odd,
-        item?.odds,
-        item?.oddValue,
-        row?.odd,
-        row?.odds,
-        row?.oddValue,
-        row?.price
-      ];
-
-      for (const value of values) {
-        const n = numberValue(value);
-        if (n !== null && n > 1) return n;
-      }
-
-      return null;
-    }
-
-    function getMarketId(row, item) {
-      return String(
-        item?.marketId ??
-        item?.marketKey ??
-        item?.market ??
-        row?.marketId ??
-        row?.marketKey ??
-        row?.market ??
-        row?.key ??
-        ""
-      );
-    }
-
-    function getMarketLabel(row, item) {
-      const explicit =
-        item?.marketLabel ||
-        item?.marketName ||
-        row?.marketLabel ||
-        row?.marketName ||
-        row?.label ||
-        "";
-
-      if (explicit && typeof explicit === "string") {
-        return explicit;
-      }
-
-      const marketId = getMarketId(row, item);
-      return MARKET_LABELS[marketId] || marketId || "Oran";
-    }
-
-    function getSample(row) {
-      const possible = [
-        row?.sample,
-        row?.sampleCount,
-        row?.total,
-        row?.count,
-        row?.matchesCount,
-        row?.n
-      ];
-
-      for (const value of possible) {
-        const n = numberValue(value);
-        if (n !== null && n >= 0) return n;
-      }
-
-      return 0;
-    }
-
-    function getSuccessCount(row) {
-      const possible = [
-        row?.successCount,
-        row?.wins,
-        row?.successful,
-        row?.successes
-      ];
-
-      for (const value of possible) {
-        const n = numberValue(value);
-        if (n !== null && n >= 0) return n;
-      }
-
-      return null;
-    }
-
-    function getSuccessRate(row) {
-      const possible = [
-        row?.successRate,
-        row?.rate,
-        row?.percentage,
-        row?.percent,
-        row?.successPercent
-      ];
-
-      for (const value of possible) {
-        const n = numberValue(value);
-        if (n !== null && n >= 0 && n <= 100) return n;
-      }
-
-      const sample = getSample(row);
-      const wins = getSuccessCount(row);
-
-      if (sample > 0 && wins !== null && wins <= sample) {
-        return wins / sample * 100;
-      }
-
-      return 0;
-    }
-
-    function getScore(score) {
-      if (!score || typeof score !== "object") return null;
-
-      const home = numberValue(score.home ?? score.homeScore);
-      const away = numberValue(score.away ?? score.awayScore);
-
-      if (home === null || away === null || home < 0 || away < 0) {
-        return null;
-      }
-
-      return { home, away };
-    }
-
-    function getPickStatus(pick) {
-      const match = pick.match;
-      const rule = COUPON_RESULTS[pick.resultId];
-
-      if (!match || !rule) return "pending";
-
-      const fullScore = getScore(match.score);
-      if (!fullScore) return "pending";
-
-      const score = rule.half
-        ? getScore(match.halfTimeScore)
-        : fullScore;
-
-      if (!score) return "pending";
-
-      return rule.test(score) ? "won" : "lost";
-    }
-
-    function getCouponStatus(coupon) {
-      if (coupon.manualStatus === "won" ||
-          coupon.manualStatus === "lost") {
-        return coupon.manualStatus;
-      }
-
-      const statuses = (coupon.picks || []).map(getPickStatus);
-
-      if (!statuses.length) return "pending";
-      if (statuses.includes("lost")) return "lost";
-      if (statuses.every(status => status === "won")) return "won";
-
-      return "pending";
-    }
-
-    function getStatusLabel(status) {
-      if (status === "won") return "✓ Kazandı";
-      if (status === "lost") return "✕ Kaybetti";
-      return "● Bekliyor";
-    }
-
-    function getStatusSymbol(status) {
-      if (status === "won") return "✓";
-      if (status === "lost") return "✕";
-      return "●";
-    }
-
-    function getMatchName(match) {
-      const home = match?.home || match?.homeTeam || "Ev sahibi";
-      const away = match?.away || match?.awayTeam || "Deplasman";
-      return { home, away };
-    }
-
-    function getMatchTime(match) {
-      return String(match?.time || match?.hour || "--:--");
-    }
-
-    function getTeamScoreText(match) {
-      const score = getScore(match?.score);
-      if (!score) return "";
-
-      return `${score.home} - ${score.away}`;
-    }
-
-    function makeCandidate(row, item, result) {
-      const match = getMatchObject(item);
-      if (!match) return null;
-
-      const odd = getMatchOdd(row, item);
-      if (odd === null || odd < COUPON_CONFIG.minOdd) return null;
-
-      const sample = getSample(row);
-      const rate = getSuccessRate(row);
-
-      // dna.js tarafından uygun bulunmuş, örneklemi olan gruplar kullanılmalı.
-      if (sample < 1 || rate <= 0) return null;
-
-      const date = getMatchDate(match);
-      const selectedDate = $("saDate").value;
-
-      if (date && selectedDate && date !== selectedDate) {
-        return null;
-      }
-
-      const matchId = getMatchIdentity(match);
-      if (!matchId.replace(/\|/g, "").trim()) return null;
-
-      const marketLabel = getMarketLabel(row, item);
-
-      return {
-        id: matchId,
-        match,
-        matchDate: date || selectedDate,
-        time: getMatchTime(match),
-        odd: Number(odd.toFixed(2)),
-        marketLabel,
-        resultId: result.id,
-        resultLabel: result.label,
-        sample,
-        successRate: Number(rate.toFixed(1)),
-        sourceText:
-          `Örneklem: ${result.label} · ${marketLabel} oranı ${Number(odd).toFixed(2)}` +
-          ` · ${sample} maç · %${Number(rate.toFixed(1))} başarı`
-      };
-    }
-
-    function collectCandidates(rows, result) {
-      const candidates = new Map();
-
-      for (const row of rows) {
-        const matches = getRowMatches(row);
-
-        for (const item of matches) {
-          const candidate = makeCandidate(row, item, result);
-          if (!candidate) continue;
-
-          const previous = candidates.get(candidate.id);
-
-          // Aynı maç farklı oran gruplarında bulunursa en güçlü örneklemi seç.
-          const candidateScore =
-            candidate.successRate * 1000 + candidate.sample;
-
-          const previousScore = previous
-            ? previous.successRate * 1000 + previous.sample
-            : -1;
-
-          if (!previous || candidateScore > previousScore) {
-            candidates.set(candidate.id, candidate);
-          }
-        }
-      }
-
-      return [...candidates.values()].sort((a, b) =>
-        b.successRate - a.successRate ||
-        b.sample - a.sample ||
-        b.odd - a.odd
-      );
-    }
-
-    function getUsedMatchIds(history, date) {
-      const used = new Set();
-
-      for (const coupon of history) {
-        // Aynı tarihteki bir maçı farklı kuponlara yeniden yazma.
-        for (const pick of coupon.picks || []) {
-          if (pick.id) {
-            used.add(pick.id);
-          } else if (pick.match) {
-            used.add(getMatchIdentity(pick.match));
-          }
-        }
-      }
-
-      // Parametre, üretimin hangi tarih için olduğunu açık tutmak için var.
-      void date;
-      return used;
-    }
-
-    function buildCoupons(candidates, date, result, history) {
-      const usedIds = getUsedMatchIds(history, date);
-      const available = candidates.filter(candidate => !usedIds.has(candidate.id));
-
-      const coupons = [];
-      let cursor = 0;
-
-      while (
-        coupons.length < COUPON_CONFIG.maxCouponsPerRun &&
-        cursor < available.length
-      ) {
-        const picks = [];
-        let totalOdd = 1;
-
-        while (
-          cursor < available.length &&
-          picks.length < COUPON_CONFIG.maxPicksPerCoupon
-        ) {
-          const candidate = available[cursor++];
-          if (usedIds.has(candidate.id)) continue;
-
-          const nextTotal = totalOdd * candidate.odd;
-
-          picks.push(candidate);
-          totalOdd = nextTotal;
-          usedIds.add(candidate.id);
-
-          if (totalOdd >= COUPON_CONFIG.minTotalOdd) {
-            break;
-          }
-        }
-
-        if (
-          picks.length &&
-          totalOdd >= COUPON_CONFIG.minTotalOdd
-        ) {
-          coupons.push({
-            id: createId(),
-            date,
-            createdAt: new Date().toISOString(),
-            resultId: result.id,
-            resultLabel: result.label,
-            picks,
-            totalOdd: Number(totalOdd.toFixed(2)),
-            manualStatus: null
-          });
-        }
-      }
-
-      return coupons;
-    }
-
-    function createId() {
-      return "dna-" + Date.now().toString(36) + "-" +
-        Math.random().toString(36).slice(2, 9);
-    }
-
-    function renderPick(pick) {
-      const status = getPickStatus(pick);
-      const names = getMatchName(pick.match);
-      const scoreText = getTeamScoreText(pick.match);
-      const league = pick.match?.league || pick.match?.country || "";
-
-      return `
-        <div class="pick">
-          <div class="pick-status ${status}" title="${escapeHTML(getStatusLabel(status))}">
-            ${getStatusSymbol(status)}
-          </div>
-
-          <div>
-            <div class="pick-teams">
-              ${escapeHTML(names.home)}
-              <span class="versus">VS</span>
-              ${escapeHTML(names.away)}
-            </div>
-
-            <div class="pick-meta">
-              ${escapeHTML(pick.time || "--:--")}
-              ${league ? " · " + escapeHTML(league) : ""}
-              ${scoreText ? " · Skor: " + escapeHTML(scoreText) : ""}
-            </div>
-
-            <div class="pick-source">
-              ${escapeHTML(pick.sourceText || (
-                `Örneklem: ${pick.resultLabel || pick.resultId} · ` +
-                `${pick.marketLabel || "Oran"} · ${pick.sample || 0} maç`
-              ))}
-            </div>
-          </div>
-
-          <div class="pick-odd">${Number(pick.odd).toFixed(2)}</div>
+  }
+
+  return coupons;
+}
+
+function autoRenderPick(pick) {
+  const status = autoPickStatus(pick);
+  const match = pick.match || {};
+  const home = pick.home || autoTeam(match, "home");
+  const away = pick.away || autoTeam(match, "away");
+  const score = autoGetScore(match, "ft");
+  const scoreText = score ? `${score.home} - ${score.away}` : "";
+  const league = pick.league || autoLeague(match);
+
+  const sampleText =
+    `Sonuç örneklemi: ${pick.resultLabel || pick.resultId}` +
+    ` · Eşleşen market: ${pick.marketLabel || pick.market || "Oran"}` +
+    ` · Oran ${Number(pick.odd).toFixed(2)}` +
+    ` · ${Number(pick.sample || 0)} maç` +
+    ` · %${Number(pick.successRate ?? pick.rate ?? 0).toFixed(1)} başarı`;
+
+  return `
+    <div class="pick">
+      <div class="pick-status ${status}" title="${autoEscape(autoStatusLabel(status))}">
+        ${autoStatusSymbol(status)}
+      </div>
+      <div>
+        <div class="pick-teams">
+          ${autoEscape(home)} <span class="versus">VS</span> ${autoEscape(away)}
         </div>
-      `;
+        <div class="pick-meta">
+          ${autoEscape(pick.time || autoTime(match) || "--:--")}
+          ${league ? " · " + autoEscape(league) : ""}
+          ${scoreText ? " · Skor: " + autoEscape(scoreText) : ""}
+        </div>
+        <div class="pick-source">${autoEscape(pick.sourceText || sampleText)}</div>
+      </div>
+      <div class="pick-odd">${Number(pick.odd).toFixed(2)}</div>
+    </div>
+  `;
+}
+
+function autoRenderCoupon(coupon, historyMode = false, number = 1) {
+  const status = autoCouponStatus(coupon);
+  const picks = coupon.picks || [];
+  const total = Number(coupon.totalOdd || autoTotal(picks));
+
+  return `
+    <article class="coupon" data-coupon-id="${autoEscape(coupon.id)}">
+      <div class="coupon-head">
+        <div>
+          <h3 class="coupon-title">Kupon ${number}</h3>
+          <div class="coupon-date">
+            ${autoEscape(coupon.date || "Tarih yok")} ·
+            ${autoEscape(coupon.resultLabel || "")} · ${picks.length} maç
+          </div>
+        </div>
+        <div class="coupon-total">
+          <strong>${total.toFixed(2)}</strong>
+          <span>TOPLAM ORAN</span>
+        </div>
+      </div>
+
+      <div class="coupon-body">${picks.map(autoRenderPick).join("")}</div>
+
+      <div class="coupon-foot">
+        <div class="coupon-status ${status}">${autoEscape(autoStatusLabel(status))}</div>
+        <div class="coupon-actions">
+          <button class="btn btn-secondary btn-small" data-auto-action="copy" data-id="${autoEscape(coupon.id)}">Kopyala</button>
+          <button class="btn btn-secondary btn-small" data-auto-action="won" data-id="${autoEscape(coupon.id)}">✓ Kazandı</button>
+          <button class="btn btn-danger btn-small" data-auto-action="lost" data-id="${autoEscape(coupon.id)}">✕ Kaybetti</button>
+          <button class="btn btn-secondary btn-small" data-auto-action="reset" data-id="${autoEscape(coupon.id)}">Otomatik durum</button>
+          ${historyMode ? `<button class="btn btn-danger btn-small" data-auto-action="delete" data-id="${autoEscape(coupon.id)}">Sil</button>` : ""}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function autoRenderCurrent() {
+  const container = auto$("couponList");
+
+  if (!autoCurrentCoupons.length) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔎</div>
+        Bu tarih için kurallara uyan yeni kupon oluşturulamadı.
+        <br>Maç oranı en az 1.35, kupon toplamı en az 2.00 olmalı.
+      </div>
+    `;
+  } else {
+    container.innerHTML = autoCurrentCoupons
+      .map((coupon, index) => autoRenderCoupon(coupon, false, index + 1))
+      .join("");
+  }
+
+  auto$("statCoupons").textContent = String(autoCurrentCoupons.length);
+  auto$("statPicks").textContent = String(
+    autoCurrentCoupons.reduce((sum, coupon) => sum + (coupon.picks || []).length, 0)
+  );
+
+  autoRenderHistory();
+}
+
+function autoRenderHistory() {
+  const history = autoReadHistory();
+  auto$("statHistory").textContent = String(history.length);
+
+  let items = history;
+
+  if (!autoShowAllHistory && auto$("historyDate").value) {
+    items = items.filter(coupon => coupon.date === auto$("historyDate").value);
+  }
+
+  items = [...items].sort((a, b) =>
+    String(b.date || "").localeCompare(String(a.date || "")) ||
+    String(b.createdAt || "").localeCompare(String(a.createdAt || ""))
+  );
+
+  const container = auto$("historyList");
+
+  if (!items.length) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🗂️</div>
+        Seçilen tarihte kayıtlı kupon bulunmuyor.
+      </div>
+    `;
+    return;
+  }
+
+  const grouped = new Map();
+  for (const coupon of items) {
+    const date = coupon.date || "Tarih yok";
+    if (!grouped.has(date)) grouped.set(date, []);
+    grouped.get(date).push(coupon);
+  }
+
+  let html = "";
+  for (const [date, coupons] of grouped) {
+    html += `<div class="history-group-title">${autoEscape(date)}</div>`;
+    html += coupons.map((coupon, index) =>
+      autoRenderCoupon(coupon, true, index + 1)
+    ).join("");
+  }
+
+  container.innerHTML = html;
+}
+
+function autoSaveNewCoupons(coupons, date, resultId) {
+  if (!coupons.length) return true;
+
+  let history = autoReadHistory();
+
+  /*
+   * Aynı tarih ve sonuç grubu tekrar oluşturulursa eski üretim
+   * kayıtları yenileriyle değiştirilir. Diğer tarihler korunur.
+   */
+  history = history.filter(coupon =>
+    !(coupon.date === date && coupon.resultId === resultId)
+  );
+
+  const existingIds = new Set(history.map(coupon => coupon.id));
+  const unique = coupons.filter(coupon => !existingIds.has(coupon.id));
+
+  return autoWriteHistory([...unique, ...history]);
+}
+
+async function autoWaitForEngine() {
+  const start = Date.now();
+
+  while (Date.now() - start < 20000) {
+    if (typeof dnaRunAnalysis === "function" &&
+        typeof dnaLoadData === "function" &&
+        Array.isArray(dnaMatches) &&
+        dnaMatches.length > 0) {
+      autoEngineReady = true;
+      return true;
     }
 
-    function renderCoupon(coupon, historyMode = false) {
-      const status = getCouponStatus(coupon);
-      const dateText = coupon.date || "Tarih yok";
-      const picks = coupon.picks || [];
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
 
-      return `
-        <article class="coupon" data-coupon-id="${escapeHTML(coupon.id)}">
-          <div class="coupon-head">
-            <div>
-              <h3 class="coupon-title">Kupon ${escapeHTML(coupon.displayNumber || "")}</h3>
-              <div class="coupon-date">
-                ${escapeHTML(dateText)} · ${escapeHTML(coupon.resultLabel || "")}
-                · ${picks.length} maç
-              </div>
-            </div>
+  return false;
+}
 
-            <div class="coupon-total">
-              <strong>${Number(coupon.totalOdd || calculateTotal(picks)).toFixed(2)}</strong>
-              <span>TOPLAM ORAN</span>
-            </div>
-          </div>
+async function autoGenerate() {
+  const button = auto$("generateCoupons");
+  const date = auto$("autoDate").value;
+  const resultId = auto$("autoResult").value;
 
-          <div class="coupon-body">
-            ${picks.map(renderPick).join("")}
-          </div>
+  if (!date) {
+    autoNotice("Önce maç tarihini seç.", "error");
+    return;
+  }
 
-          <div class="coupon-foot">
-            <div class="coupon-status ${status}">
-              ${escapeHTML(getStatusLabel(status))}
-            </div>
+  if (!AUTO_RESULT_LABELS[resultId]) {
+    autoNotice("Seçilen sonuç grubu DNA motorunda tanımlı değil.", "error");
+    return;
+  }
 
-            <div class="coupon-actions">
-              <button class="btn btn-secondary btn-small"
-                data-action="copy" data-id="${escapeHTML(coupon.id)}">
-                Kopyala
-              </button>
+  button.disabled = true;
+  button.textContent = "Analiz ediliyor…";
 
-              ${
-                historyMode
-                  ? `
-                    <button class="btn btn-secondary btn-small"
-                      data-action="mark-won" data-id="${escapeHTML(coupon.id)}">
-                      ✓ Kazandı işaretle
-                    </button>
-                    <button class="btn btn-danger btn-small"
-                      data-action="mark-lost" data-id="${escapeHTML(coupon.id)}">
-                      ✕ Kaybetti işaretle
-                    </button>
-                    <button class="btn btn-secondary btn-small"
-                      data-action="reset-status" data-id="${escapeHTML(coupon.id)}">
-                      Otomatik durum
-                    </button>
-                  `
-                  : `
-                    <button class="btn btn-secondary btn-small"
-                      data-action="mark-won" data-id="${escapeHTML(coupon.id)}">
-                      ✓ Kazandı
-                    </button>
-                    <button class="btn btn-danger btn-small"
-                      data-action="mark-lost" data-id="${escapeHTML(coupon.id)}">
-                      ✕ Kaybetti
-                    </button>
-                  `
-              }
-            </div>
-          </div>
-        </article>
-      `;
+  try {
+    autoNotice("DNA verileri bekleniyor…");
+
+    const ready = await autoWaitForEngine();
+    if (!ready) {
+      throw new Error("DNA verileri yüklenemedi. dna.js ve data/matches.json yolunu kontrol et.");
     }
 
-    function calculateTotal(picks) {
-      return (picks || []).reduce((total, pick) => {
-        const odd = numberValue(pick.odd);
-        return odd !== null ? total * odd : total;
-      }, 1);
-    }
+    /*
+     * Görünür ekranın tarih ve sonuç grubu ayrı tutulur.
+     * Motorun beklediği gizli alanlar da senkronize edilir.
+     */
+    auto$("saDate").value = date;
+    auto$("saResult").value = resultId;
 
-    function renderCurrentCoupons() {
-      const container = $("couponList");
+    const analysis = dnaRunAnalysis(date, resultId);
+    const rows = Array.isArray(analysis?.rows) ? analysis.rows : [];
 
-      if (!currentCoupons.length) {
-        container.innerHTML = `
-          <div class="empty">
-            <div class="empty-icon">🔎</div>
-            Bu tarih için kurallara uyan yeterli maç bulunamadı.
-            <br>
-            Uygun olmayan maçlar kupona eklenmez.
-          </div>
-        `;
-      } else {
-        container.innerHTML = currentCoupons.map((coupon, index) => {
-          coupon.displayNumber = index + 1;
-          return renderCoupon(coupon, false);
-        }).join("");
-      }
-
-      $("statCoupons").textContent = String(currentCoupons.length);
-      $("statPicks").textContent = String(
-        currentCoupons.reduce((sum, coupon) => sum + coupon.picks.length, 0)
+    if (!rows.length) {
+      autoCurrentCoupons = [];
+      autoRenderCurrent();
+      autoNotice(
+        "Uygun oran bulunamadı. Seçilen tarihten önceki 30 günde en az 8 örnek ve %80 başarı koşulunu sağlayan birebir oran grubu bulunamadı.",
+        "error"
       );
-
-      renderHistory();
+      return;
     }
 
-    function renderHistory() {
-      const history = readHistory();
-      $("statHistory").textContent = String(history.length);
+    const candidates = autoCollectCandidates(rows, resultId);
 
-      let items = history;
+    /*
+     * Aynı tarih ve sonuç grubundaki eski kuponlar, yeniden üretim
+     * öncesinde kullanılmış maç listesine dahil edilmez.
+     */
+    const historyForExclusion = autoReadHistory().filter(coupon =>
+      !(coupon.date === date && coupon.resultId === resultId)
+    );
 
-      if (!showAllHistory && $("historyDate").value) {
-        items = items.filter(coupon => coupon.date === $("historyDate").value);
-      }
+    const coupons = autoBuildCoupons(candidates, date, resultId, historyForExclusion);
 
-      items = [...items].sort((a, b) => {
-        const dateCompare = String(b.date || "").localeCompare(String(a.date || ""));
-        if (dateCompare !== 0) return dateCompare;
-        return String(b.createdAt || "").localeCompare(String(a.createdAt || ""));
-      });
+    autoCurrentCoupons = coupons;
+    autoSaveNewCoupons(coupons, date, resultId);
+    autoRenderCurrent();
 
-      const container = $("historyList");
-
-      if (!items.length) {
-        container.innerHTML = `
-          <div class="empty">
-            <div class="empty-icon">🗂️</div>
-            Seçilen tarihte kayıtlı kupon bulunmuyor.
-          </div>
-        `;
-        return;
-      }
-
-      const grouped = new Map();
-
-      for (const coupon of items) {
-        const date = coupon.date || "Tarih yok";
-        if (!grouped.has(date)) grouped.set(date, []);
-        grouped.get(date).push(coupon);
-      }
-
-      let html = "";
-
-      for (const [date, coupons] of grouped) {
-        html += `<div class="history-group-title">${escapeHTML(date)}</div>`;
-
-        html += coupons.map((coupon, index) => {
-          coupon.displayNumber = index + 1;
-          return renderCoupon(coupon, true);
-        }).join("");
-      }
-
-      container.innerHTML = html;
+    if (!coupons.length) {
+      autoNotice(
+        "Yeni kupon oluşturulamadı. Yeterli uygun maç olmayabilir veya bu maçlar daha önce başka kuponlara eklenmiş olabilir.",
+        "error"
+      );
+      return;
     }
 
-    function saveGeneratedCoupons(coupons) {
-      if (!coupons.length) return;
+    const count = coupons.reduce((sum, coupon) => sum + coupon.picks.length, 0);
+    autoNotice(
+      `${coupons.length} kupon oluşturuldu. ${count} maç eklendi. Kuponlar geçmişe kaydedildi.`,
+      "success"
+    );
+  } catch (error) {
+    console.error("Otomatik kupon oluşturma hatası:", error);
+    autoNotice("Kupon oluşturulamadı: " + (error?.message || String(error)), "error");
+  } finally {
+    button.disabled = false;
+    button.textContent = "✦ Kuponları oluştur";
+  }
+}
 
-      const history = readHistory();
-      const existingIds = new Set(history.map(coupon => coupon.id));
+function autoUpdateStatus(id, status) {
+  const history = autoReadHistory();
+  const item = history.find(coupon => coupon.id === id);
 
-      const uniqueNew = coupons.filter(coupon => !existingIds.has(coupon.id));
-      const updated = [...uniqueNew, ...history]
-        .slice(0, COUPON_CONFIG.maxHistory);
+  if (item) {
+    item.manualStatus = status === "won" || status === "lost" ? status : null;
+    autoWriteHistory(history);
+  }
 
-      writeHistory(updated);
+  const current = autoCurrentCoupons.find(coupon => coupon.id === id);
+  if (current) {
+    current.manualStatus = status === "won" || status === "lost" ? status : null;
+  }
+
+  autoRenderCurrent();
+  autoNotice("Kupon durumu güncellendi.", "success");
+}
+
+function autoDeleteCoupon(id) {
+  const history = autoReadHistory().filter(coupon => coupon.id !== id);
+  autoWriteHistory(history);
+  autoCurrentCoupons = autoCurrentCoupons.filter(coupon => coupon.id !== id);
+  autoRenderCurrent();
+  autoNotice("Kupon geçmişten silindi.", "success");
+}
+
+async function autoCopyCoupon(id) {
+  const coupon = autoReadHistory().find(item => item.id === id) ||
+    autoCurrentCoupons.find(item => item.id === id);
+
+  if (!coupon) return;
+
+  const lines = [
+    `DNA Otomatik Kupon - ${coupon.date}`,
+    `Sonuç örneklemi: ${coupon.resultLabel || coupon.resultId}`,
+    ""
+  ];
+
+  for (const pick of coupon.picks || []) {
+    lines.push(
+      `${pick.home || autoTeam(pick.match, "home")} - ${pick.away || autoTeam(pick.match, "away")}`,
+      `Market: ${pick.marketLabel || pick.marketId}`,
+      `Oran: ${Number(pick.odd).toFixed(2)}`,
+      `Örneklem: ${pick.sample} maç · Başarı: %${Number(pick.successRate || 0).toFixed(1)}`,
+      `Durum: ${autoStatusLabel(autoPickStatus(pick))}`,
+      ""
+    );
+  }
+
+  lines.push(`Toplam oran: ${Number(coupon.totalOdd || autoTotal(coupon.picks)).toFixed(2)}`);
+  lines.push(`Kupon durumu: ${autoStatusLabel(autoCouponStatus(coupon))}`);
+
+  const text = lines.join("\n");
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      const area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      const copied = document.execCommand("copy");
+      area.remove();
+      if (!copied) throw new Error("Kopyalama başarısız.");
     }
 
-    async function waitForAnalysis() {
-      const start = Date.now();
+    autoNotice("Kupon kopyalandı.", "success");
+  } catch (error) {
+    autoNotice("Kupon kopyalanamadı. Tarayıcı izinlerini kontrol et.", "error");
+  }
+}
 
-      while (Date.now() - start < 15000) {
-        const rows = getAnalysisRows();
+document.addEventListener("click", event => {
+  const button = event.target.closest("[data-auto-action]");
+  if (!button) return;
 
-        if (rows.length) return rows;
+  const id = button.dataset.id;
+  const action = button.dataset.autoAction;
 
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
+  if (action === "copy") autoCopyCoupon(id);
+  else if (action === "won") autoUpdateStatus(id, "won");
+  else if (action === "lost") autoUpdateStatus(id, "lost");
+  else if (action === "reset") autoUpdateStatus(id, null);
+  else if (action === "delete") autoDeleteCoupon(id);
+});
 
-      return getAnalysisRows();
-    }
+auto$("generateCoupons").addEventListener("click", autoGenerate);
 
-    async function generateAutomaticCoupons() {
-      const button = $("generateCoupons");
-      const date = $("saDate").value;
-      const result = getSelectedResult();
+auto$("historyDate").addEventListener("change", () => {
+  autoShowAllHistory = false;
+  autoRenderHistory();
+});
 
-      if (!date) {
-        showNotice("Önce maç tarihini seç.", "error");
-        return;
-      }
+auto$("showAllHistory").addEventListener("click", () => {
+  autoShowAllHistory = true;
+  auto$("historyDate").value = "";
+  autoRenderHistory();
+});
 
-      if (typeof window.dnaRunAnalysis !== "function" &&
-          !$("saRun")) {
-        showNotice("dna.js analiz motoru bulunamadı.", "error");
-        return;
-      }
+const autoInitialDate = autoToday();
+auto$("autoDate").value = autoInitialDate;
+auto$("historyDate").value = autoInitialDate;
 
-      button.disabled = true;
-      button.textContent = "Analiz ediliyor…";
-      showNotice("Mevcut dna.js analiz motoru çalıştırılıyor…");
-
-      try {
-        // Analiz motorunun kullandığı tarih ve sonuç grubunu güncelle.
-        $("saDate").value = date;
-        $("saResult").value = result.id;
-
-        if (typeof window.dnaRunAnalysis === "function") {
-          await window.dnaRunAnalysis();
-        } else {
-          $("saRun").click();
-        }
-
-        // Asenkron veri yükleme durumunda motorun sonuçlarını bekle.
-        let rows = getAnalysisRows();
-
-        if (!rows.length) {
-          rows = await waitForAnalysis();
-        }
-
-        if (!rows.length) {
-          showNotice(
-            "Analiz sonucu bulunamadı. dna.js dosyasının yüklenmesini ve seçilen tarihteki verileri kontrol et.",
-            "error"
-          );
-          currentCoupons = [];
-          renderCurrentCoupons();
-          return;
-        }
-
-        const candidates = collectCandidates(rows, result);
-        const history = readHistory();
-        const coupons = buildCoupons(candidates, date, result, history);
-
-        currentCoupons = coupons;
-        saveGeneratedCoupons(coupons);
-        renderCurrentCoupons();
-
-        if (!coupons.length) {
-          showNotice(
-            "Bu tarih için kurallara uyan yeni kupon oluşturulamadı. " +
-            "Maç oranı en az 1.35, kupon oranı en az 2.00 olmalı. " +
-            "Daha önce kupona yazılan maçlar tekrar kullanılmadı.",
-            "error"
-          );
-        } else {
-          const picks = coupons.reduce((sum, coupon) => sum + coupon.picks.length, 0);
-
-          showNotice(
-            `${coupons.length} kupon oluşturuldu. ${picks} maç eklendi. ` +
-            "Kuponlar geçmişe kaydedildi.",
-            "success"
-          );
-        }
-      } catch (error) {
-        console.error("Kupon oluşturma hatası:", error);
-        showNotice(
-          "Kupon oluşturulurken hata oluştu: " +
-          (error?.message || String(error)),
-          "error"
-        );
-      } finally {
-        button.disabled = false;
-        button.textContent = "✦ Kuponları oluştur";
-      }
-    }
-
-    function findCoupon(id) {
-      return readHistory().find(coupon => coupon.id === id) || null;
-    }
-
-    function updateCouponStatus(id, status) {
-      const history = readHistory();
-      const index = history.findIndex(coupon => coupon.id === id);
-
-      if (index < 0) return;
-
-      history[index].manualStatus =
-        status === "won" || status === "lost" ? status : null;
-
-      writeHistory(history);
-
-      const currentIndex = currentCoupons.findIndex(coupon => coupon.id === id);
-      if (currentIndex >= 0) {
-        currentCoupons[currentIndex].manualStatus = history[index].manualStatus;
-      }
-
-      renderCurrentCoupons();
-      showNotice("Kupon durumu güncellendi.", "success");
-    }
-
-    async function copyCoupon(id) {
-      const coupon = findCoupon(id) ||
-        currentCoupons.find(item => item.id === id);
-
-      if (!coupon) return;
-
-      const lines = [
-        `DNA Kuponu - ${coupon.date}`,
-        `Sonuç grubu: ${coupon.resultLabel || ""}`,
-        ""
-      ];
-
-      for (const pick of coupon.picks || []) {
-        const names = getMatchName(pick.match);
-
-        lines.push(
-          `${names.home} - ${names.away}`,
-          `Seçim: ${pick.resultLabel || pick.resultId}`,
-          `Oran: ${Number(pick.odd).toFixed(2)}`,
-          pick.sourceText || "",
-          `Durum: ${getStatusLabel(getPickStatus(pick))}`,
-          ""
-        );
-      }
-
-      lines.push(`Toplam oran: ${Number(coupon.totalOdd || calculateTotal(coupon.picks)).toFixed(2)}`);
-      lines.push(`Kupon durumu: ${getStatusLabel(getCouponStatus(coupon))}`);
-
-      const text = lines.join("\n");
-
-      try {
-        if (navigator.clipboard && window.isSecureContext) {
-          await navigator.clipboard.writeText(text);
-        } else {
-          const textarea = document.createElement("textarea");
-          textarea.value = text;
-          textarea.style.position = "fixed";
-          textarea.style.opacity = "0";
-          document.body.appendChild(textarea);
-          textarea.select();
-
-          const copied = document.execCommand("copy");
-          textarea.remove();
-
-          if (!copied) throw new Error("Kopyalama başarısız");
-        }
-
-        showNotice("Kupon metni kopyalandı.", "success");
-      } catch (error) {
-        showNotice("Kupon kopyalanamadı. Tarayıcı izinlerini kontrol et.", "error");
-      }
-    }
-
-    document.addEventListener("click", event => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
-
-      const id = button.dataset.id;
-      const action = button.dataset.action;
-
-      if (action === "copy") {
-        copyCoupon(id);
-      } else if (action === "mark-won") {
-        updateCouponStatus(id, "won");
-      } else if (action === "mark-lost") {
-        updateCouponStatus(id, "lost");
-      } else if (action === "reset-status") {
-        updateCouponStatus(id, null);
-      }
-    });
-
-    $("generateCoupons").addEventListener("click", generateAutomaticCoupons);
-
-    $("historyDate").addEventListener("change", () => {
-      showAllHistory = false;
-      renderHistory();
-    });
-
-    $("showAllHistory").addEventListener("click", () => {
-      showAllHistory = true;
-      $("historyDate").value = "";
-      renderHistory();
-    });
-
-    // Bugünün tarihi varsayılan olarak seçilir.
-    const today = localDateString();
-    $("saDate").value = today;
-    $("historyDate").value = today;
-
-    renderCurrentCoupons();
-  </script>
+/*
+ * dna.js kendi başlangıcını DOMContentLoaded sırasında yapar.
+ * Ekran ilk açıldığında kayıtlı kupon geçmişini gösterir.
+ */
+autoRenderCurrent();
+</script>
 </body>
 </html>
