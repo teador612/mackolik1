@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>DNA Skor ve Oran Analizi</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #101d30;
+      --panel2: #15243a;
+      --border: #293b54;
+      --text: #edf4ff;
+      --muted: #98abc4;
+      --blue: #56a5ff;
+      --green: #20c997;
+      --red: #ff6577;
+      --yellow: #f4c75b;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 system-ui, -apple-system, sans-serif;
+    }
+    .dsa-page {
+      max-width: 1200px;
+      margin: auto;
+      padding: 18px;
+    }
+    .dsa-header { margin-bottom: 20px; }
+    .dsa-header h1 {
+      font-size: clamp(22px, 4vw, 32px);
+      margin: 0 0 7px;
+    }
+    .dsa-header p {
+      color: var(--muted);
+      margin: 0;
+    }
+    .dsa-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 16px;
+      min-width: 0;
+    }
+    .dsa-panel h2 {
+      font-size: 17px;
+      margin: 0 0 14px;
+    }
+    .dsa-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .dsa-field { min-width: 0; }
+    .dsa-field label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    .dsa-field select,
+    .dsa-field input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      min-height: 44px;
+      padding: 10px;
+      background: #0a1627;
+      color: #fff;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font: inherit;
+    }
+    .dsa-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .dsa-button {
+      min-height: 44px;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 17px;
+      background: var(--blue);
+      color: #07111f;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .dsa-button.secondary {
+      background: var(--panel2);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .dsa-status {
+      padding: 12px;
+      background: #0a1627;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .dsa-status.error { color: var(--red); }
+    .dsa-status.success { color: var(--green); }
+    .dsa-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .dsa-stat {
+      min-width: 0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      padding: 13px;
+      border-radius: 12px;
+    }
+    .dsa-stat span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .dsa-stat strong {
+      font-size: 22px;
+      overflow-wrap: anywhere;
+    }
+    .dsa-table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: 10px;
+    }
+    .dsa-table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+      font-size: 13px;
+    }
+    .dsa-table th,
+    .dsa-table td {
+      padding: 11px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+    }
+    .dsa-table th {
+      background: #0b1729;
+      color: var(--muted);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .dsa-table tbody tr:hover { background: #17263b; }
+    .dsa-market {
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .dsa-rate { font-weight: 800; }
+    .dsa-good { color: var(--green); }
+    .dsa-bad { color: var(--red); }
+    .dsa-pending { color: var(--yellow); }
+    .dsa-detail {
+      margin-top: 12px;
+      background: #0a1627;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px;
+    }
+    .dsa-detail summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+    .dsa-detail p {
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+    .dsa-empty {
+      padding: 20px 10px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .dsa-note {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 700px) {
+      .dsa-page { padding: 12px; }
+      .dsa-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dsa-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dsa-panel { padding: 12px; }
+    }
+    @media (max-width: 380px) {
+      .dsa-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<main class="dsa-page">
+  <header class="dsa-header">
+    <h1>DNA — Skora Göre Oran Analizi</h1>
+    <p>
+      Geçmiş maçlarda seçtiğin skoru ve aynı açılış oranlarını ara.
+      Mevcut DNA tahmin motorundan bağımsız çalışır.
+    </p>
+  </header>
+  <section class="dsa-panel">
+    <h2>Analiz ayarları</h2>
+    <div class="dsa-grid">
+      <div class="dsa-field">
+        <label for="dsaHomeGoals">Maç sonu ev sahibi golü</label>
+        <select id="dsaHomeGoals"></select>
+      </div>
+      <div class="dsa-field">
+        <label for="dsaAwayGoals">Maç sonu deplasman golü</label>
+        <select id="dsaAwayGoals"></select>
+      </div>
+      <div class="dsa-field">
+        <label for="dsaHtEnabled">İlk yarı skoru filtresi</label>
+        <select id="dsaHtEnabled">
+          <option value="no">Kullanma</option>
+          <option value="yes">İlk yarı skorunu kullan</option>
+        </select>
+      </div>
+      <div class="dsa-field">
+        <label for="dsaPeriod">Geçmiş tarama aralığı</label>
+        <select id="dsaPeriod">
+          <option value="30">Son 30 gün</option>
+          <option value="60" selected>Son 60 gün</option>
+          <option value="90">Son 90 gün</option>
+          <option value="180">Son 180 gün</option>
+          <option value="365">Son 365 gün</option>
+          <option value="all">Tüm geçmiş</option>
+        </select>
+      </div>
+      <div class="dsa-field dsa-ht-field" hidden>
+        <label for="dsaHtHome">İlk yarı ev sahibi golü</label>
+        <select id="dsaHtHome"></select>
+      </div>
+      <div class="dsa-field dsa-ht-field" hidden>
+        <label for="dsaHtAway">İlk yarı deplasman golü</label>
+        <select id="dsaHtAway"></select>
+      </div>
+      <div class="dsa-field">
+        <label for="dsaMinSamples">Minimum eşleşme sayısı</label>
+        <select id="dsaMinSamples">
+          <option value="1">1 maç</option>
+          <option value="2" selected>2 maç</option>
+          <option value="3">3 maç</option>
+          <option value="5">5 maç</option>
+          <option value="10">10 maç</option>
+        </select>
+      </div>
+    </div>
+    <div class="dsa-actions">
+      <button class="dsa-button" id="dsaRun">Skoru analiz et</button>
+      <button class="dsa-button secondary" id="dsaReload">Veriyi yenile</button>
+    </div>
+    <p class="dsa-note">
+      Oran eşleştirmesi toleranssızdır. Örneğin 1.85 yalnızca 1.85 ile
+      eşleşir. İlk yarı filtresi kapalıysa sadece maç sonu skoru kullanılır.
+    </p>
+  </section>
+  <div id="dsaStatus" class="dsa-status">Veriler yükleniyor...</div>
+  <section class="dsa-stats" style="margin-top:16px">
+    <div class="dsa-stat">
+      <span>Yüklenen maç</span>
+      <strong id="dsaTotal">—</strong>
+    </div>
+    <div class="dsa-stat">
+      <span>Skor eşleşmesi</span>
+      <strong id="dsaScoreCount">—</strong>
+    </div>
+    <div class="dsa-stat">
+      <span>Oranı bulunan maç</span>
+      <strong id="dsaOddsCount">—</strong>
+    </div>
+    <div class="dsa-stat">
+      <span>Farklı oran grubu</span>
+      <strong id="dsaGroupCount">—</strong>
+    </div>
+  </section>
+  <section class="dsa-panel">
+    <h2 id="dsaResultTitle">Oran analiz sonuçları</h2>
+    <div id="dsaResults" class="dsa-empty">
+      Analiz için skor seçip butona bas.
+    </div>
+  </section>
+  <section class="dsa-panel">
+    <h2>Skor eşleşen geçmiş maçlar</h2>
+    <div id="dsaMatches" class="dsa-empty">
+      Henüz analiz yapılmadı.
+    </div>
+  </section>
+  <p class="dsa-note">
+    Başarı yüzdesi, seçilen skorla eşleşen geçmiş maçlarda ilgili bahis
+    sonucunun gerçekleşme oranıdır. Geçmiş istatistikler gelecekteki sonucu
+    garanti etmez.
+  </p>
+</main>
+<script>
+"use strict";
+(() => {
+  const DATA_URL = "./data/matches.json";
+  const $ = id => document.getElementById(id);
+  const state = {
+    matches: [],
+    lastFiltered: [],
+    lastGroups: []
+  };
+  const MARKETS = [
+    {
+      name: "Maç Sonucu 1",
+      odds: ["ms1", "MS1", "homeOdds", "odd1", "odds1"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home > s.away ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "Maç Sonucu X",
+      odds: ["msX", "msx", "MSX", "oddX", "oddsX"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home === s.away ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "Maç Sonucu 2",
+      odds: ["ms2", "MS2", "awayOdds", "odd2", "odds2"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.away > s.home ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "İY 1",
+      odds: ["iy1", "IY1", "ht1", "HT1"],
+      result: m => {
+        const s = getScore(m, true);
+        return s ? (s.home > s.away ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "İY X",
+      odds: ["iyX", "iyx", "IYX", "iy0", "IY0", "htX", "HTX"],
+      result: m => {
+        const s = getScore(m, true);
+        return s ? (s.home === s.away ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "İY 2",
+      odds: ["iy2", "IY2", "ht2", "HT2"],
+      result: m => {
+        const s = getScore(m, true);
+        return s ? (s.away > s.home ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "KG Var",
+      odds: ["kgVar", "kgvar", "KGV", "kgv", "bttsYes"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home > 0 && s.away > 0 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "KG Yok",
+      odds: ["kgYok", "kgyok", "KGY", "kgy", "bttsNo"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home === 0 || s.away === 0 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "İY 1.5 Alt",
+      odds: ["iy15Alt", "iy15alt", "IY15A", "iy15A", "IY1.5A"],
+      result: m => {
+        const s = getScore(m, true);
+        return s ? (s.home + s.away < 2 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "İY 1.5 Üst",
+      odds: ["iy15Ust", "iy15ust", "IY15U", "iy15U", "IY1.5U"],
+      result: m => {
+        const s = getScore(m, true);
+        return s ? (s.home + s.away > 1 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "1.5 Alt",
+      odds: ["au15Alt", "au15alt", "1.5A", "a15", "alt15"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home + s.away < 2 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "1.5 Üst",
+      odds: ["au15Ust", "au15ust", "1.5U", "u15", "ust15"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home + s.away > 1 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "2.5 Alt",
+      odds: ["au25Alt", "au25alt", "2.5A", "a25", "alt25"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home + s.away < 3 ? "Kazandı" : "Kaybetti") : null;
+      }
+    },
+    {
+      name: "2.5 Üst",
+      odds: ["au25Ust", "au25ust", "2.5U", "u25", "ust25"],
+      result: m => {
+        const s = getScore(m, false);
+        return s ? (s.home + s.away > 2 ? "Kazandı" : "Kaybetti") : null;
+      }
+    }
+  ];
+  function setStatus(message, type = "") {
+    const el = $("dsaStatus");
+    el.textContent = message;
+    el.className = "dsa-status" + (type ? " " + type : "");
+  }
+  function normalizeKey(key) {
+    return String(key)
+      .toLocaleLowerCase("tr-TR")
+      .replace(/[\s_.-]/g, "");
+  }
+  function findValue(obj, aliases) {
+    if (!obj || typeof obj !== "object") return undefined;
+    for (const alias of aliases) {
+      if (Object.prototype.hasOwnProperty.call(obj, alias) &&
+          obj[alias] !== null && obj[alias] !== "") {
+        return obj[alias];
+      }
+    }
+    const wanted = new Set(aliases.map(normalizeKey));
+    for (const [key, value] of Object.entries(obj)) {
+      if (wanted.has(normalizeKey(key)) &&
+          value !== null && value !== "") {
+        return value;
+      }
+    }
+    return undefined;
+  }
+  function parseScoreValue(value) {
+    if (value == null || value === "") return null;
+    if (Array.isArray(value) && value.length >= 2) {
+      const home = Number(value[0]);
+      const away = Number(value[1]);
+      return Number.isFinite(home) && Number.isFinite(away)
+        ? { home, away }
+        : null;
+    }
+    if (typeof value === "object") {
+      const home = findValue(value, [
+        "home", "homeScore", "home_score", "h", "ev",
+        "evSahibi", "evGol", "scoreHome"
+      ]);
+      const away = findValue(value, [
+        "away", "awayScore", "away_score", "a", "dep",
+        "deplasman", "depGol", "scoreAway"
+      ]);
+      if (home != null && away != null) {
+        const h = Number(home);
+        const a = Number(away);
+        return Number.isFinite(h) && Number.isFinite(a)
+          ? { home: h, away: a }
+          : null;
+      }
+    }
+    const text = String(value).trim();
+    const match = text.match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
+    if (match) {
+      return { home: Number(match[1]), away: Number(match[2]) };
+    }
+    return null;
+  }
+  function getScore(match, halfTime) {
+    const aliases = halfTime
+      ? [
+          "halfTimeScore", "halftimeScore", "htScore",
+          "ht_score", "half_time_score", "iySkor",
+          "ilkYariSkoru", "ht", "iy"
+        ]
+      : [
+          "score", "fullTimeScore", "fulltimeScore",
+          "ftScore", "ft_score", "full_time_score",
+          "result", "macSonucu", "msSkor", "ft"
+        ];
+    for (const key of aliases) {
+      if (Object.prototype.hasOwnProperty.call(match, key)) {
+        const parsed = parseScoreValue(match[key]);
+        if (parsed) return parsed;
+      }
+    }
+    const home = findValue(match, halfTime
+      ? ["htHome", "ht_home", "iyEv", "iy1Gol", "homeHT"]
+      : ["homeScore", "home_score", "scoreHome", "evSkor", "homeGoals"]);
+    const away = findValue(match, halfTime
+      ? ["htAway", "ht_away", "iyDep", "iy2Gol", "awayHT"]
+      : ["awayScore", "away_score", "scoreAway", "depSkor", "awayGoals"]);
+    if (home != null && away != null) {
+      return parseScoreValue([home, away]);
+    }
+    return null;
+  }
+  function getOdds(match, aliases) {
+    const value = findValue(match, aliases);
+    if (value == null) return null;
+    const text = String(value).trim().replace(",", ".");
+    if (!/^\d+(?:\.\d+)?$/.test(text)) return null;
+    const number = Number(text);
+    return Number.isFinite(number) && number > 1
+      ? number.toFixed(2)
+      : null;
+  }
+  function getDate(match) {
+    const raw = findValue(match, [
+      "date", "matchDate", "match_date", "tarih",
+      "datetime", "kickoff", "startTime"
+    ]);
+    if (!raw) return null;
+    if (typeof raw === "number") {
+      const d = new Date(raw > 1e12 ? raw : raw * 1000);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+    const value = String(raw).trim();
+    let m;
+    if ((m = value.match(/^(\d{4})-(\d{2})-(\d{2})/))) {
+      return new Date(+m[1], +m[2] - 1, +m[3]);
+    }
+    if ((m = value.match(/^(\d{2})[./-](\d{2})[./-](\d{4})/))) {
+      return new Date(+m[3], +m[2] - 1, +m[1]);
+    }
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  function getTeam(match, home) {
+    return findValue(match, home
+      ? ["homeTeam", "home_team", "home", "evSahibi", "ev", "team1"]
+      : ["awayTeam", "away_team", "away", "deplasman", "dep", "team2"]
+    ) || (home ? "Ev sahibi" : "Deplasman");
+  }
+  function getLeague(match) {
+    return findValue(match, ["league", "competition", "lig", "tournament"]) || "";
+  }
+  function getMatchId(match, index) {
+    return findValue(match, ["id", "matchId", "match_id", "fixtureId"]) ?? index;
+  }
+  function getAllMatches(json) {
+    if (Array.isArray(json)) return json;
+    if (json && Array.isArray(json.matches)) return json.matches;
+    if (json && Array.isArray(json.data)) return json.data;
+    if (json && Array.isArray(json.results)) return json.results;
+    return [];
+  }
+  async function loadData() {
+    setStatus("Maç verileri yükleniyor...");
+    try {
+      const response = await fetch(DATA_URL + "?_=" + Date.now(), {
+        cache: "no-store"
+      });
+      if (!response.ok) {
+        throw new Error("Veri dosyası yüklenemedi. HTTP " + response.status);
+      }
+      const json = await response.json();
+      const matches = getAllMatches(json);
+      if (!matches.length) {
+        throw new Error("JSON dosyasında maç listesi bulunamadı.");
+      }
+      state.matches = matches;
+      $("dsaTotal").textContent = matches.length.toLocaleString("tr-TR");
+      setStatus(
+        matches.length.toLocaleString("tr-TR") +
+        " maç yüklendi. Skor seçip analizi başlatabilirsin.",
+        "success"
+      );
+      runAnalysis();
+    } catch (error) {
+      console.error("DNA skor analizi veri hatası:", error);
+      setStatus(
+        "Veri yüklenemedi: " + error.message +
+        " — Dosyanın data/matches.json yolunda bulunduğunu ve sayfanın GitHub Pages üzerinden açıldığını kontrol et.",
+        "error"
+      );
+    }
+  }
+  function initializeSelects() {
+    for (const id of ["dsaHomeGoals", "dsaAwayGoals", "dsaHtHome", "dsaHtAway"]) {
+      const select = $(id);
+      for (let i = 0; i <= 10; i++) {
+        const option = document.createElement("option");
+        option.value = String(i);
+        option.textContent = String(i);
+        select.appendChild(option);
+      }
+    }
+    $("dsaHomeGoals").value = "2";
+    $("dsaAwayGoals").value = "1";
+    $("dsaHtHome").value = "1";
+    $("dsaHtAway").value = "0";
+  }
+  function selectedDateLimit() {
+    const period = $("dsaPeriod").value;
+    if (period === "all") return null;
+    const days = Number(period);
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+  function runAnalysis() {
+    if (!state.matches.length) return;
+    const homeGoals = Number($("dsaHomeGoals").value);
+    const awayGoals = Number($("dsaAwayGoals").value);
+    const useHt = $("dsaHtEnabled").value === "yes";
+    const htHome = Number($("dsaHtHome").value);
+    const htAway = Number($("dsaHtAway").value);
+    const dateLimit = selectedDateLimit();
+    const minSamples = Number($("dsaMinSamples").value);
+    const filtered = [];
+    state.matches.forEach((match, index) => {
+      const ft = getScore(match, false);
+      if (!ft) return;
+      if (ft.home !== homeGoals || ft.away !== awayGoals) return;
+      const date = getDate(match);
+      if (dateLimit && (!date || date < dateLimit)) return;
+      let ht = null;
+      if (useHt) {
+        ht = getScore(match, true);
+        if (!ht || ht.home !== htHome || ht.away !== htAway) return;
+      }
+      filtered.push({ match, index, ft, ht, date });
+    });
+    state.lastFiltered = filtered;
+    const groups = [];
+    for (const market of MARKETS) {
+      const buckets = new Map();
+      for (const item of filtered) {
+        const odds = getOdds(item.match, market.odds);
+        if (!odds) continue;
+        if (!buckets.has(odds)) {
+          buckets.set(odds, {
+            market,
+            odds,
+            matches: [],
+            wins: 0,
+            losses: 0,
+            unknown: 0
+          });
+        }
+        const group = buckets.get(odds);
+        group.matches.push(item);
+        const result = market.result(item.match);
+        if (result === "Kazandı") group.wins++;
+        else if (result === "Kaybetti") group.losses++;
+        else group.unknown++;
+      }
+      for (const group of buckets.values()) {
+        if (group.matches.length < minSamples) continue;
+        const decided = group.wins + group.losses;
+        group.rate = decided ? (group.wins / decided) * 100 : null;
+        groups.push(group);
+      }
+    }
+    groups.sort((a, b) =>
+      (b.matches.length - a.matches.length) ||
+      ((b.rate ?? -1) - (a.rate ?? -1)) ||
+      a.market.name.localeCompare(b.market.name, "tr")
+    );
+    state.lastGroups = groups;
+    $("dsaScoreCount").textContent = filtered.length.toLocaleString("tr-TR");
+    const oddsMatchIds = new Set();
+    for (const market of MARKETS) {
+      for (const item of filtered) {
+        if (getOdds(item.match, market.odds)) {
+          oddsMatchIds.add(item.index);
+        }
+      }
+    }
+    $("dsaOddsCount").textContent = oddsMatchIds.size.toLocaleString("tr-TR");
+    $("dsaGroupCount").textContent = groups.length.toLocaleString("tr-TR");
+    const scoreText = homeGoals + "-" + awayGoals;
+    const htText = useHt ? " | İlk yarı: " + htHome + "-" + htAway : "";
+    $("dsaResultTitle").textContent =
+      scoreText + " skoru için açılış oranı analizi" + htText;
+    renderGroups(groups);
+    renderMatches(filtered);
+    if (!filtered.length) {
+      setStatus(
+        "Seçilen skor ve tarih aralığı için geçmiş maç bulunamadı.",
+        "error"
+      );
+    } else {
+      setStatus(
+        filtered.length + " maç skor filtresine uydu. " +
+        groups.length + " oran grubu listelendi. " +
+        "Oranlar birebir karşılaştırıldı.",
+        "success"
+      );
+    }
+  }
+  function renderGroups(groups) {
+    const container = $("dsaResults");
+    if (!groups.length) {
+      container.className = "dsa-empty";
+      container.textContent =
+        "Seçilen minimum eşleşme sayısını karşılayan oran grubu bulunamadı. " +
+        "Minimum örnek sayısını azaltabilir veya tarih aralığını genişletebilirsin.";
+      return;
+    }
+    container.className = "dsa-table-wrap";
+    const table = document.createElement("table");
+    table.className = "dsa-table";
+    const thead = document.createElement("thead");
+    thead.innerHTML =
+      "<tr>" +
+      "<th>Bahis türü</th>" +
+      "<th>Açılış oranı</th>" +
+      "<th>Eşleşme</th>" +
+      "<th>Kazanan</th>" +
+      "<th>Kaybeden</th>" +
+      "<th>Başarı</th>" +
+      "<th>Maçları gör</th>" +
+      "</tr>";
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    groups.forEach((group, index) => {
+      const tr = document.createElement("tr");
+      const rateText = group.rate == null
+        ? "Hesaplanamadı"
+        : "%" + group.rate.toLocaleString("tr-TR", {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+          });
+      const rateClass = group.rate == null
+        ? "dsa-pending"
+        : group.rate >= 70 ? "dsa-good" : "dsa-bad";
+      const cells = [
+        group.market.name,
+        group.odds,
+        group.matches.length,
+        group.wins,
+        group.losses,
+        rateText
+      ];
+      cells.forEach((value, i) => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        if (i === 0) td.className = "dsa-market";
+        if (i === 5) td.className = "dsa-rate " + rateClass;
+        tr.appendChild(td);
+      });
+      const actionCell = document.createElement("td");
+      const button = document.createElement("button");
+      button.className = "dsa-button secondary";
+      button.textContent = "Göster";
+      button.type = "button";
+      button.addEventListener("click", () => {
+        const detail = $("dsaGroupDetail");
+        detail.innerHTML = "";
+        detail.appendChild(buildMatchTable(group.matches));
+        detail.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+      actionCell.appendChild(button);
+      tr.appendChild(actionCell);
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.innerHTML = "";
+    container.appendChild(table);
+    const detail = document.createElement("div");
+    detail.id = "dsaGroupDetail";
+    detail.className = "dsa-detail";
+    detail.style.marginTop = "14px";
+    const summary = document.createElement("p");
+    summary.textContent =
+      "Bir oran grubundaki maçları görmek için ilgili satırdaki Göster butonuna bas.";
+    detail.appendChild(summary);
+    container.appendChild(detail);
+  }
+  function buildMatchTable(items) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "dsa-table-wrap";
+    const table = document.createElement("table");
+    table.className = "dsa-table";
+    const thead = document.createElement("thead");
+    thead.innerHTML =
+      "<tr><th>Tarih</th><th>Lig</th><th>Ev sahibi</th>" +
+      "<th>Skor</th><th>Deplasman</th><th>İlk yarı</th></tr>";
+    table.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    for (const item of items) {
+      const tr = document.createElement("tr");
+      const values = [
+        item.date ? item.date.toLocaleDateString("tr-TR") : "—",
+        getLeague(item.match) || "—",
+        getTeam(item.match, true),
+        item.ft.home + "-" + item.ft.away,
+        getTeam(item.match, false),
+        item.ht ? item.ht.home + "-" + item.ht.away : "—"
+      ];
+      values.forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    }
+    table.appendChild(tbody);
+    wrapper.appendChild(table);
+    return wrapper;
+  }
+  function renderMatches(matches) {
+    const container = $("dsaMatches");
+    if (!matches.length) {
+      container.className = "dsa-empty";
+      container.textContent = "Bu filtrelerle eşleşen maç bulunamadı.";
+      return;
+    }
+    container.className = "";
+    const detail = document.createElement("details");
+    detail.className = "dsa-detail";
+    const summary = document.createElement("summary");
+    summary.textContent = "Eşleşen " + matches.length + " maçı göster";
+    detail.appendChild(summary);
+    detail.appendChild(buildMatchTable(matches));
+    container.innerHTML = "";
+    container.appendChild(detail);
+  }
+  $("dsaHtEnabled").addEventListener("change", () => {
+    const enabled = $("dsaHtEnabled").value === "yes";
+    document.querySelectorAll(".dsa-ht-field").forEach(el => {
+      el.hidden = !enabled;
+    });
+  });
+  $("dsaRun").addEventListener("click", runAnalysis);
+  $("dsaReload").addEventListener("click", loadData);
+  initializeSelects();
+  loadData();
+})();
+</script>
+</body>
+</html>
