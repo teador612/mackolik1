@@ -15,7 +15,7 @@ cancel-in-progress: false
 jobs:
 update:
 runs-on: ubuntu-latest
-timeout-minutes: 10
+timeout-minutes: 15
 
 steps:
   - name: Depoyu indir
@@ -24,203 +24,170 @@ steps:
     uses: actions/setup-python@v5
     with:
       python-version: "3.12"
-  - name: Güncel Spor Toto programını bul
+  - name: Resmi Spor Toto programini indir
     shell: bash
     run: |
       python - <<'PY'
+      import concurrent.futures
       import json
       import os
-      import re
-      import time
       import urllib.request
-      import urllib.error
-      from concurrent.futures import ThreadPoolExecutor, as_completed
-      from datetime import datetime, timezone
-      API = "https://webapi.sportoto.gov.tr/api/GameMatch/GetGameMatches/"
+      from datetime import datetime, timezone, timedelta
+      API = "https://webapi.sportoto.gov.tr/api/GameMatch/GetGameMatches/?gameRoundId="
       OUTPUT = "data/spor-toto.json"
       HEADERS = {
-          "User-Agent": "Mozilla/5.0 (compatible; SporTotoUpdater/1.0)",
+          "User-Agent": "Mozilla/5.0",
           "Accept": "application/json, text/plain, */*",
-          "Origin": "https://www.sportoto.gov.tr",
-          "Referer": "https://www.sportoto.gov.tr/"
+          "Referer": "https://www.sportoto.gov.tr/spor-toto-listeler"
       }
-      def request_round(round_id):
-          url = API + "?gameRoundId=" + str(round_id)
-          req = urllib.request.Request(url, headers=HEADERS)
+      def get(obj, key, default=None):
+          if not isinstance(obj, dict):
+              return default
+          for k, v in obj.items():
+              if str(k).lower() == key.lower():
+                  return v
+          return default
+      def parse_date(value):
+          if not value:
+              return None
+          try:
+              result = datetime.fromisoformat(
+                  str(value).replace("Z", "+00:00")
+              )
+              if result.tzinfo is None:
+                  result = result.replace(tzinfo=timezone.utc)
+              return result.astimezone(timezone.utc)
+          except (ValueError, TypeError):
+              return None
+      def download_round(round_id):
+          req = urllib.request.Request(
+              API + str(round_id),
+              headers=HEADERS
+          )
           try:
               with urllib.request.urlopen(req, timeout=12) as response:
                   if response.status != 200:
-                      return round_id, None
-                  raw = response.read().decode("utf-8-sig")
-                  if not raw.strip():
-                      return round_id, None
-                  return round_id, json.loads(raw)
-          except Exception:
-              return round_id, None
-      def norm(value):
-          if value is None:
-              return ""
-          if isinstance(value, (int, float)):
-              return str(value)
-          if isinstance(value, str):
-              return value.strip()
-          if isinstance(value, dict):
-              for key in (
-                  "name", "teamName", "team_name", "title",
-                  "description", "value", "Name", "TeamName"
-              ):
-                  if value.get(key) not in (None, ""):
-                      return norm(value[key])
-          return ""
-      def first(obj, keys):
-          if not isinstance(obj, dict):
-              return None
-          lower = {str(k).lower(): v for k, v in obj.items()}
-          for key in keys:
-              value = lower.get(key.lower())
-              if value not in (None, ""):
-                  return value
-          return None
-      HOME_KEYS = [
-          "homeTeamName", "homeTeam", "home", "homeTeamTitle",
-          "hostTeam", "team1", "teamA", "localTeam",
-          "HomeTeamName", "HomeTeam"
-      ]
-      AWAY_KEYS = [
-          "awayTeamName", "awayTeam", "away", "awayTeamTitle",
-          "guestTeam", "team2", "teamB", "visitorTeam",
-          "AwayTeamName", "AwayTeam"
-      ]
-      MATCH_ID_KEYS = [
-          "gameMatchId", "matchId", "id", "gameId", "fixtureId"
-      ]
-      DATE_KEYS = [
-          "matchDate", "date", "dateTime", "matchDateTime",
-          "startDate", "fixtureDate"
-      ]
-      WEEK_KEYS = [
-          "gameRoundId", "roundId", "gameRound", "weekId"
-      ]
-      def get_team(obj, keys):
-          value = first(obj, keys)
-          return norm(value)
-      def walk_lists(node):
-          if isinstance(node, list):
-              yield node
-              for item in node:
-                  yield from walk_lists(item)
-          elif isinstance(node, dict):
-              for value in node.values():
-                  yield from walk_lists(value)
-      def parse_matches(payload, round_id):
-          if payload is None:
-              return None
-          candidates = []
-          for items in walk_lists(payload):
-              parsed = []
-              for item in items:
-                  if not isinstance(item, dict):
-                      continue
-                  home = get_team(item, HOME_KEYS)
-                  away = get_team(item, AWAY_KEYS)
-                  # Bazı API yanıtlarında takım isimleri alt nesnelerde olabilir.
-                  if not home or not away:
-                      continue
-                  if home.lower() == away.lower():
-                      continue
-                  match_id = first(item, MATCH_ID_KEYS)
-                  match_date = first(item, DATE_KEYS)
-                  parsed.append({
-                      "id": str(match_id) if match_id is not None else "",
-                      "no": len(parsed) + 1,
-                      "home": home,
-                      "away": away,
-                      "date": str(match_date) if match_date is not None else "",
-                      "roundId": round_id
+                      return None
+                  payload = json.loads(
+                      response.read().decode("utf-8-sig")
+                  )
+              items = get(payload, "object")
+              if not isinstance(items, list) or len(items) != 15:
+                  return None
+              matches = []
+              dates = []
+              unfinished = 0
+              round_name = ""
+              for index, item in enumerate(items, 1):
+                  match = get(item, "match")
+                  if not isinstance(match, dict):
+                      return None
+                  home_obj = get(match, "homeTeam")
+                  away_obj = get(match, "awayTeam")
+                  home = get(home_obj, "name")
+                  away = get(away_obj, "name")
+                  if not isinstance(home, str) or not home.strip():
+                      return None
+                  if not isinstance(away, str) or not away.strip():
+                      return None
+                  date_value = get(match, "date")
+                  parsed_date = parse_date(date_value)
+                  if parsed_date:
+                      dates.append(parsed_date)
+                  result = get(match, "fullTimeWin")
+                  if result not in (0, 1, 2):
+                      unfinished += 1
+                  if not round_name:
+                      round_name = get(item, "gameRoundName", "") or ""
+                  matches.append({
+                      "no": index,
+                      "id": get(match, "externalMatchId"),
+                      "home": home.strip(),
+                      "away": away.strip(),
+                      "homeTeam": home.strip(),
+                      "awayTeam": away.strip(),
+                      "date": date_value,
+                      "result": (
+                          "1" if result == 1 else
+                          "X" if result == 0 else
+                          "2" if result == 2 else None
+                      )
                   })
-              if len(parsed) == 15:
-                  candidates.append(parsed)
-          if not candidates:
+              if len(matches) != 15 or unfinished == 0:
+                  return None
+              now = datetime.now(timezone.utc)
+              if dates and max(dates) < now - timedelta(hours=6):
+                  return None
+              return {
+                  "roundId": round_id,
+                  "roundName": round_name,
+                  "matches": matches,
+                  "startDate": min(dates) if dates else None,
+                  "endDate": max(dates) if dates else None
+              }
+          except Exception as exc:
+              print(f"Round {round_id}: {type(exc).__name__}")
               return None
-          # Aynı liste birden fazla iç içe seviyede bulunabilir.
-          # İlk geçerli 15 maçlık listeyi kullan.
-          matches = candidates[0]
-          ids = [m["id"] for m in matches if m["id"]]
-          if len(ids) != len(set(ids)):
-              return None
-          for index, match in enumerate(matches, start=1):
-              match["no"] = index
-          return matches
-      # Önceki JSON varsa hata durumunda koru.
-      os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
-      # Spor Toto round ID'leri ile Mackolik hafta numaraları aynı
-      # olmak zorunda değildir. Bu nedenle round ID ayrı taranır.
-      #
-      # Yükü azaltmak için ID aralığı partiler halinde taranır.
-      # Daha yüksek ID'li 15 maçlık liste bulunursa sonraki partilere
-      # geçilmez.
-      found = None
-      checked = 0
-      max_id = 3000
-      batch_size = 100
-      workers = 12
-      print("Resmî Spor Toto API'si taranıyor:", API)
-      for batch_end in range(max_id, 0, -batch_size):
-          batch_start = max(1, batch_end - batch_size + 1)
-          ids = list(range(batch_end, batch_start - 1, -1))
-          with ThreadPoolExecutor(max_workers=workers) as pool:
-              futures = [pool.submit(request_round, rid) for rid in ids]
-              results = []
-              for future in as_completed(futures):
-                  rid, payload = future.result()
-                  checked += 1
-                  if payload is not None:
-                      matches = parse_matches(payload, rid)
-                      if matches:
-                          results.append((rid, matches))
-          if results:
-              # Bu partideki en yüksek ID'yi seç.
-              rid, matches = max(results, key=lambda item: item[0])
-              found = (rid, matches)
-              print(f"15 maç bulundu. Round ID: {rid}")
-              break
-          if checked % 500 == 0:
-              print(f"Kontrol edilen round ID sayısı: {checked}")
-      if not found:
-          print("HATA: API yanıtlarından doğrulanabilir 15 maçlık liste bulunamadı.")
-          print("Mevcut JSON dosyası korunuyor; tahmini program yazılmadı.")
+      print("Spor Toto resmi API'si kontrol ediliyor.")
+      candidates = []
+      with concurrent.futures.ThreadPoolExecutor(max_workers=10) as pool:
+          futures = [
+              pool.submit(download_round, rid)
+              for rid in range(1300, 1801)
+          ]
+          for future in concurrent.futures.as_completed(futures):
+              candidate = future.result()
+              if candidate:
+                  candidates.append(candidate)
+                  print(
+                      f"Uygun program: Round {candidate['roundId']}, "
+                      f"{len(candidate['matches'])} mac"
+                  )
+      if not candidates:
+          print("HATA: Gecerli 15 maclik program bulunamadi.")
+          print("Mevcut JSON dosyasi degistirilmedi.")
           raise SystemExit(1)
-      round_id, matches = found
+      dated = [x for x in candidates if x["startDate"]]
+      if dated:
+          selected = min(
+              dated,
+              key=lambda x: (x["startDate"], x["roundId"])
+          )
+      else:
+          selected = max(candidates, key=lambda x: x["roundId"])
       output = {
           "source": API,
           "updatedAt": datetime.now(timezone.utc).isoformat(),
-          "roundId": round_id,
-          "week": round_id,
-          "matchCount": len(matches),
-          "matches": matches
+          "week": selected["roundId"],
+          "roundId": selected["roundId"],
+          "roundName": selected["roundName"],
+          "matchCount": 15,
+          "matches": selected["matches"]
       }
-      if len(output["matches"]) != 15:
-          print("HATA: Maç sayısı 15 değil. Dosya güncellenmedi.")
-          raise SystemExit(1)
+      os.makedirs(os.path.dirname(OUTPUT), exist_ok=True)
       temp = OUTPUT + ".tmp"
-      with open(temp, "w", encoding="utf-8") as f:
-          json.dump(output, f, ensure_ascii=False, indent=2)
-          f.write("\n")
+      with open(temp, "w", encoding="utf-8") as file:
+          json.dump(output, file, ensure_ascii=False, indent=2)
+          file.write("\n")
       os.replace(temp, OUTPUT)
-      print(f"{OUTPUT} güncellendi.")
-      print(f"Round ID: {round_id}; maç sayısı: {len(matches)}")
-      for match in matches:
-          print(f'{match["no"]:02d}. {match["home"]} - {match["away"]}')
+      print(f"{OUTPUT} olusturuldu.")
+      print(f"Hafta: {selected['roundId']}")
+      print("Mac sayisi: 15")
+      for match in selected["matches"]:
+          print(
+              f"{match['no']:02d}. "
+              f"{match['home']} - {match['away']}"
+          )
       PY
-  - name: Değişiklikleri kaydet
-    shell: bash
+  - name: JSON dosyasini kaydet
     run: |
       git add data/spor-toto.json
       if git diff --cached --quiet; then
-        echo "Yeni bir program değişikliği yok."
+        echo "Program degismedi."
       else
         git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git commit -m "Spor Toto programını güncelle"
+        git commit -m "Spor Toto programini guncelle"
         git push
       fi
+      
