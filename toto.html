@@ -1,481 +1,757 @@
-<!doctype html>
 
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#07111f">
-<title>Spor Toto | TotoKazan Programı</title>
+<meta name="theme-color" content="#0f172a">
+<title>Spor Toto Analiz & Tahmin Motoru</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <style>
-:root {
-  color-scheme: dark;
-  --bg: #07111f;
-  --panel: #101d30;
-  --panel2: #16263c;
-  --border: #2a3d56;
-  --text: #edf4ff;
-  --muted: #9aacc4;
-  --blue: #64a8ff;
-  --green: #31c48d;
-  --yellow: #f5c451;
-  --red: #ff7474;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-}
-.wrap { width: min(1050px,100%); margin: auto; padding: 16px; }
-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.eyebrow {
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-}
-h1 { font-size: clamp(25px,5vw,35px); margin: 5px 0; }
-h2 { font-size: 19px; margin: 22px 0 10px; }
-p { color: var(--muted); margin: 5px 0; }
-.panel {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 12px;
-}
-button,select {
-  color: var(--text);
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px 13px;
-  font: inherit;
-}
-button { cursor: pointer; font-weight: 700; }
-button:disabled { opacity: .55; cursor: wait; }
-button.primary { background: #173d67; border-color: #3268a3; }
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 10px;
-}
-.stat small {
-  display: block;
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .8px;
-}
-.stat b { display: block; font-size: 23px; margin-top: 6px; }
-.status {
-  border: 1px solid var(--border);
-  background: #10243b;
-  border-radius: 10px;
-  padding: 12px;
-  margin: 12px 0;
-  font-size: 13px;
-  overflow-wrap: anywhere;
-}
-.status.good { border-color: #237b60; }
-.status.warn { border-color: #82682d; }
-.status.error { border-color: #8b3d4a; }
-.muted { color: var(--muted); font-size: 12px; }
-.table-wrap { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; min-width: 650px; }
-th,td {
-  padding: 12px 9px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  font-size: 13px;
-}
-th { color: var(--muted); font-size: 11px; }
-.team { font-weight: 700; }
-.away { color: var(--muted); margin-top: 3px; }
-.pill {
-  display: inline-block;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  padding: 5px 8px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-.pick { color: var(--green); font-weight: 800; }
-.score { font-weight: 800; }
-footer { color: var(--muted); font-size: 12px; margin: 20px 0 8px; }
-a { color: var(--blue); }
-@media(max-width:600px) {
-  .wrap { padding: 11px; }
-  .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  .stat b { font-size: 21px; }
-  header button { padding: 9px; }
-}
+body{background:#0f172a;color:#f8fafc}
+.glass-card{background:rgba(30,41,59,.7);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1)}
+select,button{cursor:pointer}
+.status{padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700}
+.status-ok{background:#064e3b;color:#6ee7b7;border:1px solid #047857}
+.status-warn{background:#78350f;color:#fcd34d;border:1px solid #92400e}
+.status-error{background:#7f1d1d;color:#fecaca;border:1px solid #991b1b}
+.result-cell{min-width:58px}
 </style>
 </head>
-<body>
-<main class="wrap">
-  <header>
-    <div>
-      <div class="eyebrow">SPOR TOTO · PROGRAM ANALİZİ</div>
-      <h1>Haftalık kupon</h1>
-      <p>Program kaynağı: TotoKazan</p>
-    </div>
-    <button id="reload" class="primary">↻ Yenile</button>
-  </header>
-  <div id="status" class="status">TotoKazan programı yükleniyor...</div>
-  <section class="panel">
-    <label for="week"><b>Hafta seç</b></label>
-    <select id="week" style="width:100%;margin-top:8px" disabled>
-      <option>Haftalar yükleniyor...</option>
-    </select>
-    <p class="muted" style="margin-top:8px">
-      Güncel hafta ve arşiv listesi TotoKazan sayfasından okunur.
-    </p>
-  </section>
-  <section class="stats">
-    <div class="panel stat"><small>MAÇ</small><b id="count">—</b></div>
-    <div class="panel stat"><small>SONUÇLANAN</small><b id="finished">—</b></div>
-    <div class="panel stat"><small>BEKLEYEN</small><b id="pending">—</b></div>
-    <div class="panel stat"><small>YÜZDE BULUNAN</small><b id="percentCount">—</b></div>
-  </section>
-  <section>
-    <h2 id="programTitle">Maç listesi</h2>
-    <p class="muted">
-      Oynanma yüzdeleri TotoKazan'da yayımlanmışsa gösterilir.
-      En yüksek yüzde, en çok oynanan sonucu ifade eder; kesin tahmin değildir.
-    </p>
-<div class="panel table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>No</th>
-        <th>Karşılaşma</th>
-        <th>Skor</th>
-        <th>1 / X / 2 oynanma</th>
-        <th>En çok oynanan</th>
-      </tr>
-    </thead>
-    <tbody id="list">
-      <tr><td colspan="5">Program yükleniyor...</td></tr>
-    </tbody>
-  </table>
+<body class="min-h-screen font-sans antialiased pb-12">
+
+<header class="border-b border-slate-800 bg-slate-900/90 sticky top-0 z-50 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<div class="p-2 bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/30">
+<i data-lucide="trophy" class="w-6 h-6"></i>
 </div>
-  </section>
-  <footer>
-    Kaynak:
-    <a href="https://totokazan.com/spor-toto" target="_blank" rel="noopener">
-      totokazan.com/spor-toto
-    </a>
-    <br><br>
-    Veriler alınamazsa kaynak site veya tarayıcı erişimi engelliyor olabilir.
-  </footer>
+<div>
+<h1 class="text-xl font-bold text-emerald-300">Spor Toto Analiz & Tahmin</h1>
+<p class="text-xs text-slate-400">Mackolik geçmiş oranları + TotoKazan bülteni</p>
+</div>
+</div>
+<button id="btnFetchData" onclick="loadAllData()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-medium flex items-center gap-2">
+<i data-lucide="refresh-cw" id="refreshIcon" class="w-4 h-4"></i>
+Verileri Güncelle
+</button>
+</div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+<section class="space-y-6">
+<div class="glass-card rounded-xl p-5 shadow-xl">
+<h2 class="text-sm font-semibold text-slate-400 uppercase mb-4 flex items-center gap-2">
+<i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Veri Durumu
+</h2>
+<div class="space-y-3 text-sm">
+<div class="flex justify-between items-center gap-3 p-2.5 rounded-lg bg-slate-800/50">
+<span>Mackolik v2 JSON</span><span id="statusMackolik" class="status status-warn">Bekleniyor</span>
+</div>
+<div class="flex justify-between items-center gap-3 p-2.5 rounded-lg bg-slate-800/50">
+<span>Spor Toto Bülteni</span><span id="statusBulten" class="status status-warn">Bekleniyor</span>
+</div>
+<div class="flex justify-between items-center p-2.5 rounded-lg bg-slate-800/50">
+<span>Eşleşen Maç</span><span id="matchedCount" class="font-bold text-emerald-400">0 / 15</span>
+</div>
+<div class="flex justify-between items-center p-2.5 rounded-lg bg-slate-800/50">
+<span>Seçilen Hafta</span><span id="weekName" class="text-right text-emerald-300">—</span>
+</div>
+</div>
+<p id="dataMessage" class="text-xs text-slate-400 mt-4 leading-5">Veriler yükleniyor...</p>
+</div>
+
+<div class="glass-card rounded-xl p-5 shadow-xl space-y-4">
+<h2 class="text-sm font-semibold text-slate-400 uppercase flex items-center gap-2">
+<i data-lucide="sliders" class="w-4 h-4 text-emerald-400"></i> Kupon Oluşturma
+</h2>
+<div>
+<label for="strategySelect" class="block text-xs text-slate-400 mb-1">Tahmin Stratejisi</label>
+<select id="strategySelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
+<option value="balanced">Dengeli — En yüksek iki sonuç arasından</option>
+<option value="banko">Favori ağırlıklı — En yüksek olasılık</option>
+<option value="surprise">Sürpriz — En düşük oynanma yüzdesi</option>
+</select>
+</div>
+<div>
+<label for="doubleChanceLimit" class="block text-xs text-slate-400 mb-1">Çifte şans eklenecek maç</label>
+<select id="doubleChanceLimit" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
+<option value="0">0 maç — 1 kolon</option>
+<option value="2">En belirsiz 2 maç — 4 kolon</option>
+<option value="4" selected>En belirsiz 4 maç — 16 kolon</option>
+<option value="6">En belirsiz 6 maç — 64 kolon</option>
+</select>
+</div>
+<button onclick="generateCoupon()" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold rounded-lg flex items-center justify-center gap-2">
+<i data-lucide="zap" class="w-5 h-5"></i> Kupon Oluştur
+</button>
+<p class="text-xs text-slate-500">Oynanma yüzdesi, kuponlarda seçilme oranıdır; gerçek kazanma olasılığı garantisi değildir.</p>
+</div>
+
+<div id="couponSummaryCard" class="glass-card rounded-xl p-5 shadow-xl hidden">
+<h2 class="text-sm font-semibold text-slate-400 uppercase mb-3">Kupon Özeti</h2>
+<div class="space-y-2 text-sm">
+<div class="flex justify-between"><span class="text-slate-400">Kolon sayısı</span><b id="summaryColumns">0</b></div>
+<div class="flex justify-between"><span class="text-slate-400">Kolon ücreti</span><span>10,00 TL</span></div>
+<div class="border-t border-slate-700 pt-2 flex justify-between text-base font-bold">
+<span class="text-emerald-400">Toplam tutar</span><span id="summaryCost" class="text-emerald-400">0 TL</span>
+</div>
+</div>
+<button onclick="copyCouponText()" class="w-full mt-4 py-2 bg-slate-800 hover:bg-slate-700 text-sm rounded-lg border border-slate-700">Kuponu Kopyala</button>
+</div>
+</section>
+
+<section class="lg:col-span-2 space-y-4">
+<div class="flex items-center justify-between gap-3">
+<div>
+<h2 class="text-lg font-bold flex items-center gap-2"><i data-lucide="list" class="w-5 h-5 text-emerald-400"></i> Haftalık 15 Maç</h2>
+<p class="text-xs text-slate-400 mt-1">Gerçek bülten verileri ve eşleşen geçmiş oranlar</p>
+</div>
+<select id="weekSelect" onchange="loadSelectedWeek()" class="max-w-[55%] bg-slate-800 border border-slate-700 rounded-lg p-2 text-xs">
+<option value="">Güncel hafta</option>
+</select>
+</div>
+<div id="matchesContainer" class="space-y-3">
+<div class="glass-card rounded-xl p-12 text-center text-slate-400">Veriler yükleniyor...</div>
+</div>
+</section>
 </main>
+
 <script>
 "use strict";
-const SOURCE_URL = "https://totokazan.com/spor-toto";
-const PROXY_URL = "https://api.allorigins.win/raw?url=";
-const $ = id => document.getElementById(id);
-let weeks = [];
-let selectedWeek = null;
+
+const MACKOLIK_URL =
+  "https://raw.githubusercontent.com/teador612/mackolik1/main/data/v2-data.json";
+
+const TOTO_URL = "https://totokazan.com/spor-toto";
+const PROXIES = [
+  url => url,
+  url => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url),
+  url => "https://corsproxy.io/?" + encodeURIComponent(url)
+];
+
+let mackolikData = [];
+let totoMatches = [];
+let generatedCoupon = null;
+let weekLinks = [];
+let currentWeekUrl = TOTO_URL;
+let currentWeekTitle = "Güncel hafta";
 let loading = false;
-function setStatus(message, type = "") {
-  const el = $("status");
-  el.textContent = message;
-  el.className = "status" + (type ? " " + type : "");
+
+window.addEventListener("load", () => {
+  try { lucide.createIcons(); } catch(e) {}
+  loadAllData();
+});
+
+function setStatus(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = "status " + (
+    type === "ok" ? "status-ok" :
+    type === "error" ? "status-error" : "status-warn"
+  );
 }
-function clean(text) {
-  return String(text || "")
-    .replace(/\u00a0/g, " ")
+
+function setMessage(text) {
+  document.getElementById("dataMessage").textContent = text;
+}
+
+async function fetchText(url) {
+  let lastError = null;
+
+  for (const makeUrl of PROXIES) {
+    try {
+      const response = await fetch(makeUrl(url), { cache: "no-store" });
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const text = await response.text();
+      if (!text || text.length < 50) throw new Error("Boş veya eksik yanıt");
+      return text;
+    } catch (err) {
+      lastError = err;
+    }
+  }
+
+  throw lastError || new Error("Veri kaynağına erişilemedi");
+}
+
+function normalizeText(value) {
+  return String(value ?? "")
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function extractArray(raw) {
+  if (Array.isArray(raw)) return raw;
+
+  for (const key of ["matches", "data", "history", "results", "items"]) {
+    if (Array.isArray(raw?.[key])) return raw[key];
+  }
+
+  if (raw && typeof raw === "object") {
+    for (const value of Object.values(raw)) {
+      if (Array.isArray(value) && value.length &&
+          typeof value[0] === "object") return value;
+    }
+  }
+
+  return [];
+}
+
+async function fetchMackolikData() {
+  setStatus("statusMackolik", "Yükleniyor", "warn");
+
+  try {
+    const text = await fetchText(MACKOLIK_URL);
+    const raw = JSON.parse(text);
+    mackolikData = extractArray(raw);
+
+    if (!mackolikData.length) {
+      throw new Error("JSON okundu ancak maç dizisi bulunamadı.");
+    }
+
+    setStatus("statusMackolik", "Aktif (" + mackolikData.length + ")", "ok");
+    return true;
+  } catch (err) {
+    mackolikData = [];
+    setStatus("statusMackolik", "Veri alınamadı", "error");
+    console.error("Mackolik verisi:", err);
+    return false;
+  }
+}
+
+function absoluteUrl(href) {
+  try { return new URL(href, TOTO_URL).href; }
+  catch(e) { return ""; }
+}
+
+function extractWeekLinks(doc) {
+  const found = [];
+  const seen = new Set();
+
+  for (const a of doc.querySelectorAll('a[href]')) {
+    const href = absoluteUrl(a.getAttribute("href"));
+    if (!href || !/\/spor-toto\/\d{4}-\d{4}-\d+-hafta/i.test(href)) continue;
+
+    const title = (a.innerText || a.textContent || "").trim();
+    if (seen.has(href)) continue;
+
+    seen.add(href);
+    found.push({ url: href, title: title || href.split("/").pop() });
+  }
+
+  return found;
+}
+
+function fillWeekSelect(links) {
+  const select = document.getElementById("weekSelect");
+  const previous = select.value;
+
+  select.innerHTML = "";
+
+  if (!links.length) {
+    const option = document.createElement("option");
+    option.value = TOTO_URL;
+    option.textContent = "Güncel hafta";
+    select.appendChild(option);
+    return;
+  }
+
+  links.forEach((week, index) => {
+    const option = document.createElement("option");
+    option.value = week.url;
+    option.textContent = week.title;
+    select.appendChild(option);
+  });
+
+  if (previous && links.some(w => w.url === previous)) {
+    select.value = previous;
+  } else {
+    select.value = links[0].url;
+  }
+}
+
+function cellText(cell) {
+  return (cell?.innerText || cell?.textContent || "")
     .replace(/\s+/g, " ")
     .trim();
 }
-function norm(text) {
-  return clean(text).toLocaleLowerCase("tr-TR");
+
+function parsePercentages(text) {
+  const matches = String(text).match(/%?\s*\d{1,3}\s*%/g);
+  if (!matches || matches.length < 3) return null;
+
+  const nums = matches.slice(0, 3).map(v => Number(v.replace(/[^0-9]/g, "")));
+  if (nums.some(n => !Number.isFinite(n) || n < 0 || n > 100)) return null;
+
+  return { p1: nums[0], px: nums[1], p2: nums[2] };
 }
-function absUrl(href, base = SOURCE_URL) {
-  try {
-    return new URL(href, base).href;
-  } catch {
-    return "";
-  }
+
+function parseResult(text) {
+  const value = String(text || "").trim().toUpperCase();
+  return ["1", "X", "2"].includes(value) ? value : "";
 }
-async function fetchHtml(url) {
-  // Önce kaynak siteye doğrudan erişmeyi dene.
-  try {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    const html = await response.text();
-    if (html.length > 500 && /<html|<table/i.test(html)) return html;
-    throw new Error("Beklenen HTML alınamadı");
-  } catch (directError) {
-    // CORS engeli varsa genel amaçlı proxy ile tekrar dene.
-    const proxy = PROXY_URL + encodeURIComponent(url);
-    const response = await fetch(proxy, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(
-        "Kaynak siteye erişilemedi. Doğrudan erişim ve alternatif erişim başarısız."
-      );
-    }
-    const html = await response.text();
-    if (html.length < 300 || !/<html|<table/i.test(html)) {
-      throw new Error("TotoKazan sayfa içeriği okunamadı.");
-    }
-    return html;
-  }
-}
-function parseDocument(html) {
-  return new DOMParser().parseFromString(html, "text/html");
-}
-function getTableData(doc) {
-  const tables = [...doc.querySelectorAll("table")];
-  for (const table of tables) {
-    const rows = [...table.querySelectorAll("tr")];
-    if (rows.length < 2) continue;
-    const headerRow = rows.find(row => row.querySelectorAll("th,td").length >= 3);
-    if (!headerRow) continue;
-    const headers = [...headerRow.querySelectorAll("th,td")].map(
-      cell => norm(cell.textContent)
+
+function parseTotoPage(html, url) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const title = (doc.querySelector("h1")?.textContent ||
+                 doc.title || "Spor Toto").trim();
+
+  const rows = [];
+
+  for (const table of doc.querySelectorAll("table")) {
+    const trs = [...table.querySelectorAll("tr")];
+    if (trs.length < 10) continue;
+
+    const headerIndex = trs.findIndex(tr => {
+      const h = normalizeText(cellText(tr));
+      return h.includes("ev sahibi") && h.includes("deplasman");
+    });
+
+    if (headerIndex < 0) continue;
+
+    const headers = [...trs[headerIndex].querySelectorAll("th,td")]
+      .map(cellText)
+      .map(normalizeText);
+
+    const findIndex = (...patterns) =>
+      headers.findIndex(h => patterns.some(p => h.includes(p)));
+
+    const homeIndex = findIndex("ev sahibi");
+    const awayIndex = findIndex("deplasman");
+    const scoreIndex = findIndex("skor");
+    const resultIndex = headers.findIndex(h => h === "ms" || h.includes("mac sonucu"));
+    const percentIndex = headers.findIndex(h =>
+      h.includes("oynanma") || h.includes("1 x 2")
     );
-    const hasHome = headers.some(h => h.includes("ev sahibi"));
-    const hasAway = headers.some(h => h.includes("deplasman"));
-    if (!hasHome || !hasAway) continue;
-    const index = {
-      no: headers.findIndex(h => h === "no" || h.includes("sıra")),
-      home: headers.findIndex(h => h.includes("ev sahibi")),
-      score: headers.findIndex(h => h.includes("skor")),
-      away: headers.findIndex(h => h.includes("deplasman")),
-      result: headers.findIndex(h => h === "ms" || h.includes("maç sonucu")),
-      percent: headers.findIndex(h =>
-        h.includes("oynanma") || h.includes("1 / x / 2")
-      )
-    };
-    const matches = [];
-    for (const row of rows) {
-      if (row === headerRow) continue;
-      const cells = [...row.querySelectorAll("td")].map(
-        cell => clean(cell.textContent)
-      );
-      if (cells.length < 3) continue;
-      const home = cells[index.home] || "";
-      const away = cells[index.away] || "";
-      if (!home || !away) continue;
-      const score = index.score >= 0 ? cells[index.score] || "—" : "—";
-      const resultText = index.result >= 0 ? cells[index.result] || "" : "";
-      const percentText = index.percent >= 0 ? cells[index.percent] || "" : "";
-      const numbers = percentText.match(/\d{1,3}\s*%?\s*\/\s*\d{1,3}\s*%?\s*\/\s*\d{1,3}/);
-      let percentages = null;
-      if (numbers) {
-        const values = numbers[0].match(/\d{1,3}/g).map(Number);
-        if (values.length === 3 && values.every(n => n >= 0 && n <= 100)) {
-          percentages = { "1": values[0], "X": values[1], "2": values[2] };
-        }
-      }
-      let result = resultText.toUpperCase();
-      if (!["1", "X", "2"].includes(result)) {
-        const scoreMatch = score.match(/(\d+)\s*[-:]\s*(\d+)/);
-        if (scoreMatch) {
-          const h = Number(scoreMatch[1]);
-          const a = Number(scoreMatch[2]);
-          result = h > a ? "1" : h < a ? "2" : "X";
-        } else {
-          result = "";
-        }
-      }
-      const numberText = index.no >= 0 ? cells[index.no] : "";
-      const parsedNumber = Number(numberText);
-      matches.push({
-        no: Number.isFinite(parsedNumber) && parsedNumber > 0
-          ? parsedNumber : matches.length + 1,
+    const numberIndex = findIndex("no");
+
+    for (const tr of trs.slice(headerIndex + 1)) {
+      const cells = [...tr.querySelectorAll("td,th")];
+      if (cells.length < 4) continue;
+
+      const home = cellText(cells[homeIndex]);
+      const away = cellText(cells[awayIndex]);
+
+      if (!home || !away ||
+          normalizeText(home).includes("ev sahibi") ||
+          normalizeText(away).includes("deplasman")) continue;
+
+      const score = scoreIndex >= 0 ? cellText(cells[scoreIndex]) : "";
+      const result = resultIndex >= 0 ? parseResult(cellText(cells[resultIndex])) : "";
+      const percentageText = percentIndex >= 0 ? cellText(cells[percentIndex]) : "";
+
+      rows.push({
+        id: numberIndex >= 0
+          ? Number(cellText(cells[numberIndex])) || rows.length + 1
+          : rows.length + 1,
         home,
         away,
-        score,
+        score: score && score !== "—" ? score : "",
         result,
-        percentages
+        probs: parsePercentages(percentageText),
+        sourceUrl: url
       });
     }
-    if (matches.length === 15) return matches;
+
+    if (rows.length === 15) break;
+    rows.length = 0;
   }
-  return [];
-}
-function findWeekLinks(doc) {
-  const links = [];
-  const seen = new Set();
-  for (const a of doc.querySelectorAll("a[href]")) {
-    const text = clean(a.textContent);
-    const href = absUrl(a.getAttribute("href"));
-    if (!href || !href.includes("totokazan.com")) continue;
-    const isWeek = /spor toto.*hafta|hafta.*spor toto/i.test(text);
-    const isDetails = /detay|sonuç|sonucl/i.test(text);
-    const isWeekUrl = /spor-toto\/\d{4}-\d{4}-\d+-hafta/i.test(href);
-    if (!(isWeek || isDetails || isWeekUrl)) continue;
-    if (seen.has(href)) continue;
-    seen.add(href);
-    links.push({ text: text || href, url: href });
+
+  if (rows.length !== 15) {
+    throw new Error("TotoKazan sayfasında 15 maçlık tablo bulunamadı (" + rows.length + " maç).");
   }
-  return links;
+
+  return { title, matches: rows, doc };
 }
-function titleFromDocument(doc) {
-  const candidates = [
-    doc.querySelector("main h1"),
-    doc.querySelector("h1"),
-    doc.querySelector("main h2")
-  ].filter(Boolean);
-  for (const element of candidates) {
-    const text = clean(element.textContent);
-    if (/spor toto/i.test(text) && /hafta/i.test(text)) return text;
-  }
-  const body = clean(doc.body.textContent);
-  const match = body.match(/(?:Güncel Hafta:\s*)?(\d{4}\/\d{4}\s+Spor Toto\s+\d+\.\s*Hafta)/i);
-  return match ? match[1] : "Spor Toto haftası";
+
+async function fetchTotoPage(url) {
+  const html = await fetchText(url);
+  return parseTotoPage(html, url);
 }
-async function readWeek(link) {
-  const html = await fetchHtml(link.url);
-  const doc = parseDocument(html);
-  const matches = getTableData(doc);
-  if (matches.length !== 15) {
-    throw new Error("Bu hafta sayfasında 15 maçlık tablo bulunamadı.");
-  }
-  return {
-    title: titleFromDocument(doc) || link.text,
-    url: link.url,
-    matches
-  };
-}
-function highestPercentage(percentages) {
-  if (!percentages) return "";
-  const entries = Object.entries(percentages);
-  entries.sort((a, b) => b[1] - a[1]);
-  return entries[0][0];
-}
-function renderWeek(week) {
-  selectedWeek = week;
-  $("programTitle").textContent = week.title;
-  $("count").textContent = week.matches.length;
-  const finished = week.matches.filter(m =>
-    m.result && ["1", "X", "2"].includes(m.result)
-  ).length;
-  const withPercent = week.matches.filter(m => m.percentages).length;
-  $("finished").textContent = finished;
-  $("pending").textContent = week.matches.length - finished;
-  $("percentCount").textContent = withPercent;
-  $("list").innerHTML = week.matches.map(match => {
-    const p = match.percentages;
-    const percentageText = p
-      ? `${p["1"]}% / ${p["X"]}% / ${p["2"]}%`
-      : "—";
-    const top = highestPercentage(p);
-    const topHtml = top
-      ? `<span class="pill pick">${top} · %${p[top]}</span>`
-      : `<span class="pill">Yüzde yok</span>`;
-    return `
-      <tr>
-        <td>${match.no}</td>
-        <td>
-          <div class="team">${escapeHtml(match.home)}</div>
-          <div class="away">${escapeHtml(match.away)}</div>
-        </td>
-        <td class="score">${escapeHtml(match.score || "—")}</td>
-        <td>${escapeHtml(percentageText)}</td>
-        <td>${topHtml}</td>
-      </tr>
-    `;
-  }).join("");
-  setStatus(
-    `${week.title} yüklendi: ${week.matches.length} maç. Kaynak: TotoKazan.`,
-    "good"
-  );
-}
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[ch]);
-}
-async function loadProgram() {
-  if (loading) return;
-  loading = true;
-  $("reload").disabled = true;
-  $("week").disabled = true;
-  $("list").innerHTML = '<tr><td colspan="5">TotoKazan okunuyor...</td></tr>';
-  setStatus("TotoKazan sayfasına bağlanılıyor...");
+
+async function fetchTotoBulten() {
+  setStatus("statusBulten", "Yükleniyor", "warn");
+
   try {
-    const html = await fetchHtml(SOURCE_URL);
-    const doc = parseDocument(html);
-    const links = findWeekLinks(doc);
-    const currentTitle = titleFromDocument(doc);
-    const currentMatches = getTableData(doc);
-    // Ana sayfadaki güncel 15 maçlık tablo varsa önce onu kullan.
-    if (currentMatches.length === 15) {
-      weeks = [{
-        title: currentTitle,
-        url: SOURCE_URL,
-        matches: currentMatches
-      }];
-    } else {
-      // Güncel tablo ana sayfada yoksa hafta detay linklerini dene.
-      const candidates = links.filter(link =>
-        /spor-toto\/\d{4}-\d{4}-\d+-hafta/i.test(link.url)
-      );
-      if (!candidates.length) {
-        throw new Error("TotoKazan sayfasında haftalık maç bağlantısı bulunamadı.");
-      }
-      const loaded = [];
-      for (const link of candidates.slice(0, 10)) {
-        try {
-          loaded.push(await readWeek(link));
-        } catch (error) {
-          console.warn("Hafta yüklenemedi:", link.url, error);
-        }
-        if (loaded.length >= 1) break;
-      }
-      if (!loaded.length) {
-        throw new Error("TotoKazan'dan 15 maçlık hafta okunamadı.");
-      }
-      weeks = loaded;
+    const homeHtml = await fetchText(TOTO_URL);
+    const homeDoc = new DOMParser().parseFromString(homeHtml, "text/html");
+
+    weekLinks = extractWeekLinks(homeDoc);
+    if (!weekLinks.length) {
+      throw new Error("Hafta arşivi bağlantıları bulunamadı.");
     }
-    $("week").innerHTML = "";
-    weeks.forEach((week, index) => {
-      const option = document.createElement("option");
-      option.value = String(index);
-      option.textContent = week.title;
-      $("week").appendChild(option);
-    });
-    $("week").disabled = weeks.length < 2;
-    renderWeek(weeks[0]);
-  } catch (error) {
-    console.error(error);
-    setStatus(
-      "Program alınamadı: " + error.message +
-      " Tarayıcı CORS erişimini engelliyor olabilir.",
-      "error"
-    );
-    $("list").innerHTML =
-      `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
-    $("count").textContent = "0";
-    $("finished").textContent = "0";
-    $("pending").textContent = "—";
-    $("percentCount").textContent = "0";
+
+    fillWeekSelect(weekLinks);
+
+    const selectedUrl = document.getElementById("weekSelect").value || weekLinks[0].url;
+    const page = await fetchTotoPage(selectedUrl);
+
+    currentWeekUrl = selectedUrl;
+    currentWeekTitle = page.title;
+    totoMatches = page.matches;
+
+    document.getElementById("weekName").textContent = currentWeekTitle;
+    setStatus("statusBulten", "Aktif (15 maç)", "ok");
+    return true;
+  } catch (err) {
+    totoMatches = [];
+    setStatus("statusBulten", "Veri alınamadı", "error");
+    document.getElementById("weekName").textContent = "—";
+    console.error("TotoKazan verisi:", err);
+    setMessage("TotoKazan verisi alınamadı: " + err.message +
+      " Tarayıcı/proxy erişimi engellenmiş olabilir. Sabit maç kullanılmadı.");
+    return false;
+  }
+}
+
+async function loadSelectedWeek() {
+  if (loading) return;
+
+  const url = document.getElementById("weekSelect").value;
+  if (!url) return;
+
+  loading = true;
+  document.getElementById("matchesContainer").innerHTML =
+    '<div class="glass-card rounded-xl p-8 text-center text-slate-400">Seçilen hafta yükleniyor...</div>';
+
+  try {
+    const page = await fetchTotoPage(url);
+    currentWeekUrl = url;
+    currentWeekTitle = page.title;
+    totoMatches = page.matches;
+    document.getElementById("weekName").textContent = currentWeekTitle;
+    setStatus("statusBulten", "Aktif (15 maç)", "ok");
+    matchAndAnalyzeData();
+  } catch (err) {
+    setStatus("statusBulten", "Veri alınamadı", "error");
+    document.getElementById("matchesContainer").innerHTML =
+      '<div class="glass-card rounded-xl p-6 text-red-300">Hafta yüklenemedi: ' +
+      escapeHtml(err.message) + '</div>';
   } finally {
     loading = false;
-    $("reload").disabled = false;
   }
 }
-$("reload").addEventListener("click", loadProgram);
-$("week").addEventListener("change", () => {
-  const index = Number($("week").value);
-  if (weeks[index]) renderWeek(weeks[index]);
-});
-loadProgram();
+
+function getTeamName(item, side) {
+  const keys = side === "home"
+    ? ["home_team", "homeTeam", "home", "homeName", "team1", "host", "evSahibi"]
+    : ["away_team", "awayTeam", "away", "awayName", "team2", "guest", "deplasman"];
+
+  for (const key of keys) {
+    if (typeof item?.[key] === "string" && item[key].trim()) return item[key];
+    if (item?.[key] && typeof item[key] === "object") {
+      const name = item[key].name || item[key].title || item[key].teamName;
+      if (name) return name;
+    }
+  }
+
+  return "";
+}
+
+function getOdds(item) {
+  const candidates = [
+    item?.openingOdds, item?.opening_odds, item?.odds,
+    item?.markets, item?.opening, item?.1x2
+  ];
+
+  for (const obj of candidates) {
+    if (!obj || typeof obj !== "object") continue;
+
+    const get = (...keys) => {
+      for (const key of keys) {
+        const value = obj[key];
+        const n = Number(String(value ?? "").replace(",", "."));
+        if (Number.isFinite(n) && n > 1 && n < 100) return n;
+      }
+      return null;
+    };
+
+    const o1 = get("ms1", "MS1", "1", "home", "homeWin", "evSahibi");
+    const ox = get("msx", "MSX", "ms0", "MS0", "x", "draw", "beraberlik");
+    const o2 = get("ms2", "MS2", "2", "away", "awayWin", "deplasman");
+
+    if (o1 && ox && o2) return { o1, ox, o2 };
+  }
+
+  const o1 = Number(String(item?.ms1 ?? item?.MS1 ?? item?.odd1 ?? "").replace(",", "."));
+  const ox = Number(String(item?.msx ?? item?.MSX ?? item?.oddX ?? "").replace(",", "."));
+  const o2 = Number(String(item?.ms2 ?? item?.MS2 ?? item?.odd2 ?? "").replace(",", "."));
+
+  if (o1 > 1 && ox > 1 && o2 > 1) return { o1, ox, o2 };
+  return null;
+}
+
+function findHistoricalMatch(match) {
+  const home = normalizeText(match.home);
+  const away = normalizeText(match.away);
+  if (!home || !away) return null;
+
+  let best = null;
+  let bestScore = 0;
+
+  for (const item of mackolikData) {
+    const h = normalizeText(getTeamName(item, "home"));
+    const a = normalizeText(getTeamName(item, "away"));
+    if (!h || !a) continue;
+
+    let score = 0;
+    if (h === home && a === away) score = 100;
+    else if (home.length >= 5 && away.length >= 5 &&
+             (h.includes(home) || home.includes(h)) &&
+             (a.includes(away) || away.includes(a))) score = 80;
+
+    if (score > bestScore && getOdds(item)) {
+      best = item;
+      bestScore = score;
+    }
+  }
+
+  return best;
+}
+
+function calculateOddsProbabilities(odds) {
+  if (!odds) return null;
+  const a = 1 / odds.o1;
+  const b = 1 / odds.ox;
+  const c = 1 / odds.o2;
+  const total = a + b + c;
+  if (!Number.isFinite(total) || total <= 0) return null;
+
+  const p1 = Math.round(a / total * 100);
+  const px = Math.round(b / total * 100);
+  return { p1, px, p2: 100 - p1 - px, source: "Mackolik açılış oranları" };
+}
+
+function matchAndAnalyzeData() {
+  let matchedCount = 0;
+
+  totoMatches.forEach(match => {
+    const found = findHistoricalMatch(match);
+    match.stats = found || null;
+
+    if (found) {
+      matchedCount++;
+      match.odds = getOdds(found);
+      match.oddsProbs = calculateOddsProbabilities(match.odds);
+    } else {
+      match.odds = null;
+      match.oddsProbs = null;
+    }
+
+    // Mackolik odds are preferred. If unavailable, use actual TotoKazan
+    // playing percentages. Never manufacture percentages from team names.
+    match.probs = match.oddsProbs || (
+      match.probs ? { ...match.probs, source: "TotoKazan oynanma yüzdesi" } : null
+    );
+  });
+
+  document.getElementById("matchedCount").textContent =
+    matchedCount + " / " + totoMatches.length;
+
+  const note = mackolikData.length
+    ? "Mackolik geçmiş verisi yüklendi. Yüzdeler açılış oranlarından hesaplanır; oran eşleşmesi yoksa TotoKazan oynanma yüzdesi gösterilir."
+    : "Mackolik geçmiş verisi alınamadı. Varsa TotoKazan yüzdeleri kullanılır; geçmiş oran verisi varmış gibi gösterilmez.";
+
+  setMessage(note);
+  renderMatches();
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[ch]);
+}
+
+function renderMatches() {
+  const container = document.getElementById("matchesContainer");
+  container.innerHTML = "";
+
+  if (!totoMatches.length) {
+    container.innerHTML = '<div class="glass-card rounded-xl p-8 text-center text-amber-300">Gerçek Spor Toto bülteni alınamadı. Lütfen tekrar deneyin.</div>';
+    return;
+  }
+
+  totoMatches.forEach(match => {
+    const card = document.createElement("div");
+    card.className = "glass-card rounded-xl p-4 transition hover:bg-slate-800/40";
+
+    const probs = match.probs;
+    const cells = probs
+      ? [
+          ["1", probs.p1, "text-emerald-400"],
+          ["X", probs.px, "text-amber-400"],
+          ["2", probs.p2, "text-sky-400"]
+        ].map(([label, value, color]) => `
+          <div class="result-cell flex-1 bg-slate-800/80 rounded-lg p-2 text-center border border-slate-700/50">
+            <div class="${color} font-bold">${label}</div>
+            <div class="text-slate-100">${value}%</div>
+          </div>`).join("")
+      : '<div class="text-xs text-amber-300">Oynanma yüzdesi bulunamadı</div>';
+
+    const score = match.score
+      ? `<span class="text-slate-300">${escapeHtml(match.score)}</span>`
+      : '<span class="text-slate-500">Maç sonucu bekleniyor</span>';
+
+    const sourceText = probs
+      ? escapeHtml(probs.source || "TotoKazan")
+      : "Tahmin verisi yok";
+
+    card.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-start gap-3">
+          <span class="w-7 h-7 shrink-0 flex items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-emerald-400 border border-slate-700">${match.id}</span>
+          <div>
+            <h3 class="font-bold text-slate-100">${escapeHtml(match.home)} – ${escapeHtml(match.away)}</h3>
+            <p class="text-xs text-slate-400 mt-1">${sourceText}</p>
+            <p class="text-xs mt-1">${score}</p>
+            ${match.odds ? `<p class="text-xs text-slate-500 mt-1">MS1 ${match.odds.o1} · MSX ${match.odds.ox} · MS2 ${match.odds.o2}</p>` : ""}
+          </div>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-bold w-full sm:w-auto">${cells}</div>
+      </div>
+      <div id="predictionBadge-${match.id}" class="mt-3 hidden pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
+        <span class="text-slate-400">Kupon tahmini:</span>
+        <span class="prediction-value font-bold px-3 py-1 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"></span>
+      </div>`;
+
+    container.appendChild(card);
+  });
+
+  try { lucide.createIcons(); } catch(e) {}
+}
+
+function generateCoupon() {
+  if (totoMatches.length !== 15) {
+    alert("Kupon oluşturmak için gerçek 15 maçlık bültenin yüklenmesi gerekiyor.");
+    return;
+  }
+
+  const strategy = document.getElementById("strategySelect").value;
+  const doubleLimit = Number(document.getElementById("doubleChanceLimit").value);
+
+  const usable = totoMatches.filter(m => m.probs);
+  if (usable.length !== 15) {
+    alert("Bazı maçlarda oran veya oynanma yüzdesi bulunmuyor. Eksik verilerle tahmin uydurulmadı.");
+    return;
+  }
+
+  const ranked = totoMatches.map(match => {
+    const options = [
+      { choice: "1", val: match.probs.p1 },
+      { choice: "X", val: match.probs.px },
+      { choice: "2", val: match.probs.p2 }
+    ].sort((a, b) => b.val - a.val);
+
+    return { ...match, options, diff: options[0].val - options[1].val };
+  });
+
+  const uncertain = [...ranked].sort((a, b) => a.diff - b.diff);
+  const doubleIds = new Set(
+    uncertain.slice(0, Math.min(doubleLimit, 15)).map(m => m.id)
+  );
+
+  generatedCoupon = ranked.map(m => {
+    let prediction;
+
+    if (strategy === "surprise") {
+      prediction = [...m.options].sort((a, b) => a.val - b.val)[0].choice;
+    } else {
+      prediction = m.options[0].choice;
+    }
+
+    if (doubleIds.has(m.id)) {
+      const topTwo = [...m.options].sort((a, b) => b.val - a.val).slice(0, 2);
+      prediction = topTwo.map(o => o.choice).join(" - ");
+    }
+
+    const badge = document.getElementById("predictionBadge-" + m.id);
+    if (badge) {
+      badge.classList.remove("hidden");
+      badge.querySelector(".prediction-value").textContent = prediction;
+    }
+
+    return {
+      matchId: m.id,
+      teams: m.home + " - " + m.away,
+      prediction
+    };
+  });
+
+  // The configured double limit is the number of double-chance matches.
+  // Each doubles the number of columns.
+  const totalColumns = Math.pow(2, doubleIds.size);
+  document.getElementById("summaryColumns").textContent =
+    totalColumns.toLocaleString("tr-TR");
+  document.getElementById("summaryCost").textContent =
+    (totalColumns * 10).toLocaleString("tr-TR", {
+      minimumFractionDigits: 2, maximumFractionDigits: 2
+    }) + " TL";
+  document.getElementById("couponSummaryCard").classList.remove("hidden");
+}
+
+async function copyCouponText() {
+  if (!generatedCoupon) {
+    alert("Önce kupon oluşturun.");
+    return;
+  }
+
+  let text = "=== SPOR TOTO TAHMİN KUPONU ===\n";
+  text += currentWeekTitle + "\n\n";
+
+  generatedCoupon.forEach(c => {
+    text += `${c.matchId}. ${c.teams} -> ${c.prediction}\n`;
+  });
+
+  text += "\nToplam kolon: " + document.getElementById("summaryColumns").textContent;
+  text += "\nToplam tutar: " + document.getElementById("summaryCost").textContent;
+
+  try {
+    await navigator.clipboard.writeText(text);
+    alert("Kupon kopyalandı.");
+  } catch (err) {
+    window.prompt("Kupon metnini kopyalayın:", text);
+  }
+}
+
+async function loadAllData() {
+  if (loading) return;
+  loading = true;
+
+  const button = document.getElementById("btnFetchData");
+  button.disabled = true;
+  button.classList.add("opacity-60");
+
+  document.getElementById("refreshIcon")?.classList.add("animate-spin");
+  document.getElementById("matchesContainer").innerHTML =
+    '<div class="glass-card rounded-xl p-8 text-center text-slate-400">Gerçek bülten ve geçmiş veriler yükleniyor...</div>';
+
+  try {
+    const results = await Promise.allSettled([
+      fetchMackolikData(),
+      fetchTotoBulten()
+    ]);
+
+    if (totoMatches.length) matchAndAnalyzeData();
+    else {
+      document.getElementById("matchesContainer").innerHTML =
+        '<div class="glass-card rounded-xl p-8 text-center text-red-300">TotoKazan bülteni alınamadı. Sabit maç veya sahte tahmin kullanılmadı. Yenile butonunu tekrar deneyin.</div>';
+    }
+  } finally {
+    loading = false;
+    button.disabled = false;
+    button.classList.remove("opacity-60");
+    document.getElementById("refreshIcon")?.classList.remove("animate-spin");
+    try { lucide.createIcons(); } catch(e) {}
+  }
+}
 </script>
 </body>
 </html>
