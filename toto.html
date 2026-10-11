@@ -3,19 +3,19 @@
 <html lang="tr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07111f">
-<title>Spor Toto | Ortak Karar</title>
+<title>Spor Toto | TotoKazan Programı</title>
 <style>
 :root {
   color-scheme: dark;
   --bg: #07111f;
   --panel: #101d30;
-  --panel2: #15243a;
-  --border: #293d57;
+  --panel2: #16263c;
+  --border: #2a3d56;
   --text: #edf4ff;
   --muted: #9aacc4;
-  --accent: #64a8ff;
+  --blue: #64a8ff;
   --green: #31c48d;
   --yellow: #f5c451;
   --red: #ff7474;
@@ -27,50 +27,45 @@ body {
   color: var(--text);
   font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-.wrap {
-  width: min(1100px,100%);
-  margin: auto;
-  padding: 18px;
-}
+.wrap { width: min(1050px,100%); margin: auto; padding: 16px; }
 header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 14px;
+  justify-content: space-between;
+  gap: 12px;
   margin-bottom: 18px;
 }
 .eyebrow {
-  color: var(--accent);
+  color: var(--blue);
   font-size: 11px;
   font-weight: 800;
-  letter-spacing: 1.6px;
+  letter-spacing: 1.5px;
 }
-h1 { margin: 5px 0; font-size: clamp(25px,5vw,36px); }
+h1 { font-size: clamp(25px,5vw,35px); margin: 5px 0; }
 h2 { font-size: 19px; margin: 22px 0 10px; }
 p { color: var(--muted); margin: 5px 0; }
-button,select {
-  font: inherit;
-  color: var(--text);
-  background: var(--panel2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 11px 13px;
-}
-button { cursor: pointer; font-weight: 700; }
-button:disabled { opacity: .5; cursor: wait; }
-button.primary { background: #173e69; border-color: #3268a3; }
 .panel {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 15px;
+  padding: 14px;
   margin-bottom: 12px;
 }
+button,select {
+  color: var(--text);
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 13px;
+  font: inherit;
+}
+button { cursor: pointer; font-weight: 700; }
+button:disabled { opacity: .55; cursor: wait; }
+button.primary { background: #173d67; border-color: #3268a3; }
 .stats {
   display: grid;
   grid-template-columns: repeat(4,minmax(0,1fr));
   gap: 10px;
-  margin: 12px 0;
 }
 .stat small {
   display: block;
@@ -79,59 +74,48 @@ button.primary { background: #173e69; border-color: #3268a3; }
   font-weight: 800;
   letter-spacing: .8px;
 }
-.stat b { display: block; margin-top: 6px; font-size: 23px; }
+.stat b { display: block; font-size: 23px; margin-top: 6px; }
 .status {
-  padding: 12px 14px;
-  border-radius: 10px;
-  margin: 12px 0;
-  overflow-wrap: anywhere;
-  background: #10243b;
   border: 1px solid var(--border);
+  background: #10243b;
+  border-radius: 10px;
+  padding: 12px;
+  margin: 12px 0;
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 .status.good { border-color: #237b60; }
 .status.warn { border-color: #82682d; }
 .status.error { border-color: #8b3d4a; }
-.muted { color: var(--muted); font-size: 13px; }
+.muted { color: var(--muted); font-size: 12px; }
 .table-wrap { overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 610px; }
+table { border-collapse: collapse; width: 100%; min-width: 650px; }
 th,td {
-  padding: 12px 10px;
+  padding: 12px 9px;
   border-bottom: 1px solid var(--border);
   text-align: left;
   font-size: 13px;
 }
 th { color: var(--muted); font-size: 11px; }
-.num { color: var(--muted); width: 40px; }
-.pick {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 35px;
-  padding: 6px 8px;
-  border: 1px solid var(--border);
-  border-radius: 7px;
-  background: var(--panel2);
-  font-weight: 800;
-}
-.pick.one { color: var(--green); }
-.pick.draw { color: var(--yellow); }
-.pick.two { color: var(--accent); }
-.badge {
+.team { font-weight: 700; }
+.away { color: var(--muted); margin-top: 3px; }
+.pill {
   display: inline-block;
   border: 1px solid var(--border);
-  padding: 4px 7px;
   border-radius: 7px;
-  color: var(--muted);
-  font-size: 11px;
+  padding: 5px 8px;
+  font-size: 12px;
+  white-space: nowrap;
 }
+.pick { color: var(--green); font-weight: 800; }
+.score { font-weight: 800; }
 footer { color: var(--muted); font-size: 12px; margin: 20px 0 8px; }
+a { color: var(--blue); }
 @media(max-width:600px) {
-  .wrap { padding: 12px; }
-  header { align-items: flex-start; }
-  header button { padding: 9px; }
+  .wrap { padding: 11px; }
   .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .stat b { font-size: 21px; }
+  header button { padding: 9px; }
 }
 </style>
 </head>
@@ -139,273 +123,274 @@ footer { color: var(--muted); font-size: 12px; margin: 20px 0 8px; }
 <main class="wrap">
   <header>
     <div>
-      <div class="eyebrow">SPOR TOTO · ORTAK KARAR</div>
+      <div class="eyebrow">SPOR TOTO · PROGRAM ANALİZİ</div>
       <h1>Haftalık kupon</h1>
-      <p>Resmî program ve geçmiş maç analizi</p>
+      <p>Program kaynağı: TotoKazan</p>
     </div>
     <button id="reload" class="primary">↻ Yenile</button>
   </header>
-  <div id="status" class="status">Program kontrol ediliyor...</div>
+  <div id="status" class="status">TotoKazan programı yükleniyor...</div>
   <section class="panel">
-    <label for="week"><b>Bulunan program</b></label>
+    <label for="week"><b>Hafta seç</b></label>
     <select id="week" style="width:100%;margin-top:8px" disabled>
-      <option>Program bekleniyor...</option>
+      <option>Haftalar yükleniyor...</option>
     </select>
-    <p class="muted" style="margin-top:9px">
-      Resmî API'den 15 maçlık program aranır. Program bulunamazsa
-      sahte maç listesi gösterilmez.
+    <p class="muted" style="margin-top:8px">
+      Güncel hafta ve arşiv listesi TotoKazan sayfasından okunur.
     </p>
   </section>
   <section class="stats">
     <div class="panel stat"><small>MAÇ</small><b id="count">—</b></div>
-    <div class="panel stat"><small>ANALİZ EDİLEN</small><b id="analyzed">—</b></div>
+    <div class="panel stat"><small>SONUÇLANAN</small><b id="finished">—</b></div>
     <div class="panel stat"><small>BEKLEYEN</small><b id="pending">—</b></div>
-    <div class="panel stat"><small>GEÇMİŞ VERİ</small><b id="historyCount">—</b></div>
+    <div class="panel stat"><small>YÜZDE BULUNAN</small><b id="percentCount">—</b></div>
   </section>
   <section>
-    <h2>15 maçlık liste</h2>
+    <h2 id="programTitle">Maç listesi</h2>
     <p class="muted">
-      1/X/2 tahmini, programda kullanılabilir açılış oranı varsa
-      birebir oran eşleşmesiyle hesaplanır. Oran bulunamazsa tahmin uydurulmaz.
+      Oynanma yüzdeleri TotoKazan'da yayımlanmışsa gösterilir.
+      En yüksek yüzde, en çok oynanan sonucu ifade eder; kesin tahmin değildir.
     </p>
-    <div class="panel table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>No</th>
-            <th>Karşılaşma</th>
-            <th>MS 1 / X / 2</th>
-            <th>Ortak karar</th>
-            <th>Geçmiş</th>
-          </tr>
-        </thead>
-        <tbody id="list">
-          <tr><td colspan="5">Program yükleniyor...</td></tr>
-        </tbody>
-      </table>
-    </div>
+<div class="panel table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Karşılaşma</th>
+        <th>Skor</th>
+        <th>1 / X / 2 oynanma</th>
+        <th>En çok oynanan</th>
+      </tr>
+    </thead>
+    <tbody id="list">
+      <tr><td colspan="5">Program yükleniyor...</td></tr>
+    </tbody>
+  </table>
+</div>
   </section>
   <footer>
-    Veri kaynağı:
-    <a href="https://www.sportoto.gov.tr/spor-toto-listeler"
-       target="_blank" rel="noopener" style="color:var(--accent)">
-      Resmî Spor Toto listeleri
+    Kaynak:
+    <a href="https://totokazan.com/spor-toto" target="_blank" rel="noopener">
+      totokazan.com/spor-toto
     </a>
     <br><br>
-    İstatistikler geçmiş sonuçları özetler; gelecek maçların sonucunu garanti etmez.
+    Veriler alınamazsa kaynak site veya tarayıcı erişimi engelliyor olabilir.
   </footer>
 </main>
 <script>
 "use strict";
-const API =
-  "https://webapi.sportoto.gov.tr/api/GameMatch/GetGameMatches/?gameRoundId=";
-const HISTORY_URL = "./data/v2-data.json";
-const FIRST_ROUND = 1800;
-const LAST_ROUND = 1300;
-const BATCH_SIZE = 20;
-const CONCURRENCY = 8;
-const MIN_SAMPLE = 5;
+const SOURCE_URL = "https://totokazan.com/spor-toto";
+const PROXY_URL = "https://api.allorigins.win/raw?url=";
 const $ = id => document.getElementById(id);
-let historyMatches = [];
-let programs = [];
-let currentProgram = null;
-let busy = false;
+let weeks = [];
+let selectedWeek = null;
+let loading = false;
 function setStatus(message, type = "") {
   const el = $("status");
   el.textContent = message;
   el.className = "status" + (type ? " " + type : "");
 }
-function normalize(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("tr-TR")
+function clean(text) {
+  return String(text || "")
+    .replace(/\u00a0/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
-function first(obj, keys) {
-  if (!obj || typeof obj !== "object") return undefined;
-  for (const key of keys) {
-    const actual = Object.keys(obj).find(
-      k => k.toLowerCase() === key.toLowerCase()
-    );
-    if (actual && obj[actual] !== null && obj[actual] !== "") {
-      return obj[actual];
-    }
-  }
-  return undefined;
+function norm(text) {
+  return clean(text).toLocaleLowerCase("tr-TR");
 }
-function teamName(value) {
-  if (typeof value === "string") return value.trim();
-  if (value && typeof value === "object") {
-    return String(first(value, ["name", "teamName", "title"]) || "").trim();
-  }
-  return "";
-}
-function parseOfficialProgram(roundId, payload) {
-  const items = first(payload, ["object"]);
-  if (!Array.isArray(items) || items.length !== 15) return null;
-  const matches = [];
-  for (let i = 0; i < items.length; i++) {
-    const item = items[i];
-    const match = first(item, ["match"]);
-    if (!match || typeof match !== "object") return null;
-    const home = teamName(first(match, ["homeTeam"]));
-    const away = teamName(first(match, ["awayTeam"]));
-    if (!home || !away) return null;
-    const rawResult = first(match, ["fullTimeWin"]);
-    const result = rawResult === 1 ? "1" :
-                   rawResult === 0 ? "X" :
-                   rawResult === 2 ? "2" : null;
-    matches.push({
-      no: i + 1,
-      id: first(match, ["externalMatchId", "id", "matchId"]) || "",
-      home,
-      away,
-      date: first(match, ["date", "matchDate"]) || "",
-      result,
-      odds: readOdds(match)
-    });
-  }
-  if (matches.length !== 15) return null;
-  // Tamamlanmış eski programları güncel kupon diye sunma.
-  if (matches.every(m => m.result !== null)) return null;
-  return {
-    roundId,
-    matches,
-    title: "Hafta " + roundId
-  };
-}
-function readOdds(obj) {
-  const ms1 = first(obj, ["ms1", "homeOdds", "odd1", "odds1"]);
-  const msx = first(obj, ["msx", "drawOdds", "oddX", "oddsX"]);
-  const ms2 = first(obj, ["ms2", "awayOdds", "odd2", "odds2"]);
-  const convert = value => {
-    if (value === undefined || value === null || value === "") return null;
-    const number = Number(String(value).replace(",", "."));
-    return Number.isFinite(number) && number > 1 ? number : null;
-  };
-  return {
-    "1": convert(ms1),
-    "X": convert(msx),
-    "2": convert(ms2)
-  };
-}
-async function fetchJson(url) {
-  const response = await fetch(url, {
-    cache: "no-store",
-    headers: { "Accept": "application/json, text/plain, */*" }
-  });
-  if (!response.ok) throw new Error("HTTP " + response.status + ": " + url);
-  return response.json();
-}
-async function getRound(roundId) {
+function absUrl(href, base = SOURCE_URL) {
   try {
-    const payload = await fetchJson(API + roundId);
-    return parseOfficialProgram(roundId, payload);
-  } catch (error) {
-    // Bir ID başarısız olduğunda diğerlerini denemeye devam et.
-    return null;
+    return new URL(href, base).href;
+  } catch {
+    return "";
   }
 }
-async function scanRounds() {
-  const ids = [];
-  for (let id = FIRST_ROUND; id >= LAST_ROUND; id--) ids.push(id);
-  for (let start = 0; start < ids.length; start += BATCH_SIZE) {
-    const batch = ids.slice(start, start + BATCH_SIZE);
-    const found = [];
-    for (let i = 0; i < batch.length; i += CONCURRENCY) {
-      const group = batch.slice(i, i + CONCURRENCY);
-      const results = await Promise.all(group.map(getRound));
-      for (const program of results) {
-        if (program) found.push(program);
-      }
+async function fetchHtml(url) {
+  // Önce kaynak siteye doğrudan erişmeyi dene.
+  try {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const html = await response.text();
+    if (html.length > 500 && /<html|<table/i.test(html)) return html;
+    throw new Error("Beklenen HTML alınamadı");
+  } catch (directError) {
+    // CORS engeli varsa genel amaçlı proxy ile tekrar dene.
+    const proxy = PROXY_URL + encodeURIComponent(url);
+    const response = await fetch(proxy, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(
+        "Kaynak siteye erişilemedi. Doğrudan erişim ve alternatif erişim başarısız."
+      );
     }
-    if (found.length) {
-      found.sort((a, b) => b.roundId - a.roundId);
-      return found;
+    const html = await response.text();
+    if (html.length < 300 || !/<html|<table/i.test(html)) {
+      throw new Error("TotoKazan sayfa içeriği okunamadı.");
     }
-    setStatus(
-      "Resmî program aranıyor... Kontrol edilen ID: " +
-      batch[batch.length - 1]
+    return html;
+  }
+}
+function parseDocument(html) {
+  return new DOMParser().parseFromString(html, "text/html");
+}
+function getTableData(doc) {
+  const tables = [...doc.querySelectorAll("table")];
+  for (const table of tables) {
+    const rows = [...table.querySelectorAll("tr")];
+    if (rows.length < 2) continue;
+    const headerRow = rows.find(row => row.querySelectorAll("th,td").length >= 3);
+    if (!headerRow) continue;
+    const headers = [...headerRow.querySelectorAll("th,td")].map(
+      cell => norm(cell.textContent)
     );
-  }
-  throw new Error(
-    "15 maçlık program bulunamadı. API erişimi engellenmiş olabilir " +
-    "veya resmî API'nin hafta ID aralığı değişmiş olabilir."
-  );
-}
-function extractHistory(data) {
-  if (Array.isArray(data)) return data;
-  if (!data || typeof data !== "object") return [];
-  for (const key of ["matches", "data", "results", "items"]) {
-    if (Array.isArray(data[key])) return data[key];
+    const hasHome = headers.some(h => h.includes("ev sahibi"));
+    const hasAway = headers.some(h => h.includes("deplasman"));
+    if (!hasHome || !hasAway) continue;
+    const index = {
+      no: headers.findIndex(h => h === "no" || h.includes("sıra")),
+      home: headers.findIndex(h => h.includes("ev sahibi")),
+      score: headers.findIndex(h => h.includes("skor")),
+      away: headers.findIndex(h => h.includes("deplasman")),
+      result: headers.findIndex(h => h === "ms" || h.includes("maç sonucu")),
+      percent: headers.findIndex(h =>
+        h.includes("oynanma") || h.includes("1 / x / 2")
+      )
+    };
+    const matches = [];
+    for (const row of rows) {
+      if (row === headerRow) continue;
+      const cells = [...row.querySelectorAll("td")].map(
+        cell => clean(cell.textContent)
+      );
+      if (cells.length < 3) continue;
+      const home = cells[index.home] || "";
+      const away = cells[index.away] || "";
+      if (!home || !away) continue;
+      const score = index.score >= 0 ? cells[index.score] || "—" : "—";
+      const resultText = index.result >= 0 ? cells[index.result] || "" : "";
+      const percentText = index.percent >= 0 ? cells[index.percent] || "" : "";
+      const numbers = percentText.match(/\d{1,3}\s*%?\s*\/\s*\d{1,3}\s*%?\s*\/\s*\d{1,3}/);
+      let percentages = null;
+      if (numbers) {
+        const values = numbers[0].match(/\d{1,3}/g).map(Number);
+        if (values.length === 3 && values.every(n => n >= 0 && n <= 100)) {
+          percentages = { "1": values[0], "X": values[1], "2": values[2] };
+        }
+      }
+      let result = resultText.toUpperCase();
+      if (!["1", "X", "2"].includes(result)) {
+        const scoreMatch = score.match(/(\d+)\s*[-:]\s*(\d+)/);
+        if (scoreMatch) {
+          const h = Number(scoreMatch[1]);
+          const a = Number(scoreMatch[2]);
+          result = h > a ? "1" : h < a ? "2" : "X";
+        } else {
+          result = "";
+        }
+      }
+      const numberText = index.no >= 0 ? cells[index.no] : "";
+      const parsedNumber = Number(numberText);
+      matches.push({
+        no: Number.isFinite(parsedNumber) && parsedNumber > 0
+          ? parsedNumber : matches.length + 1,
+        home,
+        away,
+        score,
+        result,
+        percentages
+      });
+    }
+    if (matches.length === 15) return matches;
   }
   return [];
 }
-function readHistoricalMatch(item) {
-  const home = teamName(first(item, [
-    "home", "homeTeam", "homeTeamName", "evSahibi", "ev"
-  ]));
-  const away = teamName(first(item, [
-    "away", "awayTeam", "awayTeamName", "deplasman", "misafir"
-  ]));
-  const oddsSource = first(item, ["odds", "openingOdds", "opening", "oranlar"]);
-  const odds = readOdds({
-    ...(oddsSource && typeof oddsSource === "object" ? oddsSource : {}),
-    ...item
-  });
-  let result = first(item, [
-    "result", "outcome", "ms", "fullTimeResult", "matchResult"
-  ]);
-  if (result && typeof result === "object") {
-    result = first(result, ["code", "name", "value"]);
+function findWeekLinks(doc) {
+  const links = [];
+  const seen = new Set();
+  for (const a of doc.querySelectorAll("a[href]")) {
+    const text = clean(a.textContent);
+    const href = absUrl(a.getAttribute("href"));
+    if (!href || !href.includes("totokazan.com")) continue;
+    const isWeek = /spor toto.*hafta|hafta.*spor toto/i.test(text);
+    const isDetails = /detay|sonuç|sonucl/i.test(text);
+    const isWeekUrl = /spor-toto\/\d{4}-\d{4}-\d+-hafta/i.test(href);
+    if (!(isWeek || isDetails || isWeekUrl)) continue;
+    if (seen.has(href)) continue;
+    seen.add(href);
+    links.push({ text: text || href, url: href });
   }
-  result = String(result ?? "").trim().toUpperCase();
-  if (["1", "X", "2"].includes(result)) {
-    // Zaten uygun.
-  } else if (result === "0" || result === "DRAW") {
-    result = "X";
-  } else {
-    result = "";
-  }
-  const score = first(item, ["score", "fullTimeScore", "ft", "resultScore"]);
-  if (!result && typeof score === "string") {
-    const m = score.match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
-    if (m) result = Number(m[1]) > Number(m[2]) ? "1" :
-                    Number(m[1]) < Number(m[2]) ? "2" : "X";
-  }
-  return { home, away, odds, result };
+  return links;
 }
-function exactOddsPrediction(odds) {
-  const available = ["1", "X", "2"].filter(k => odds[k] !== null);
-  if (!available.length) return null;
-  const groups = { "1": [], "X": [], "2": [] };
-  for (const item of historyMatches) {
-    if (!item.result || !["1", "X", "2"].includes(item.result)) continue;
-    for (const key of available) {
-      if (item.odds[key] !== odds[key]) continue;
-      groups[key].push(item.result);
-      break;
-    }
+function titleFromDocument(doc) {
+  const candidates = [
+    doc.querySelector("main h1"),
+    doc.querySelector("h1"),
+    doc.querySelector("main h2")
+  ].filter(Boolean);
+  for (const element of candidates) {
+    const text = clean(element.textContent);
+    if (/spor toto/i.test(text) && /hafta/i.test(text)) return text;
   }
-  const pool = [];
-  for (const key of available) pool.push(...groups[key]);
-  if (pool.length < MIN_SAMPLE) return {
-    pick: null,
-    sample: pool.length,
-    confidence: 0
-  };
-  const counts = { "1": 0, "X": 0, "2": 0 };
-  for (const result of pool) counts[result]++;
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const winner = sorted[0];
+  const body = clean(doc.body.textContent);
+  const match = body.match(/(?:Güncel Hafta:\s*)?(\d{4}\/\d{4}\s+Spor Toto\s+\d+\.\s*Hafta)/i);
+  return match ? match[1] : "Spor Toto haftası";
+}
+async function readWeek(link) {
+  const html = await fetchHtml(link.url);
+  const doc = parseDocument(html);
+  const matches = getTableData(doc);
+  if (matches.length !== 15) {
+    throw new Error("Bu hafta sayfasında 15 maçlık tablo bulunamadı.");
+  }
   return {
-    pick: winner[0],
-    sample: pool.length,
-    confidence: Math.round(winner[1] / pool.length * 100),
-    counts
+    title: titleFromDocument(doc) || link.text,
+    url: link.url,
+    matches
   };
+}
+function highestPercentage(percentages) {
+  if (!percentages) return "";
+  const entries = Object.entries(percentages);
+  entries.sort((a, b) => b[1] - a[1]);
+  return entries[0][0];
+}
+function renderWeek(week) {
+  selectedWeek = week;
+  $("programTitle").textContent = week.title;
+  $("count").textContent = week.matches.length;
+  const finished = week.matches.filter(m =>
+    m.result && ["1", "X", "2"].includes(m.result)
+  ).length;
+  const withPercent = week.matches.filter(m => m.percentages).length;
+  $("finished").textContent = finished;
+  $("pending").textContent = week.matches.length - finished;
+  $("percentCount").textContent = withPercent;
+  $("list").innerHTML = week.matches.map(match => {
+    const p = match.percentages;
+    const percentageText = p
+      ? `${p["1"]}% / ${p["X"]}% / ${p["2"]}%`
+      : "—";
+    const top = highestPercentage(p);
+    const topHtml = top
+      ? `<span class="pill pick">${top} · %${p[top]}</span>`
+      : `<span class="pill">Yüzde yok</span>`;
+    return `
+      <tr>
+        <td>${match.no}</td>
+        <td>
+          <div class="team">${escapeHtml(match.home)}</div>
+          <div class="away">${escapeHtml(match.away)}</div>
+        </td>
+        <td class="score">${escapeHtml(match.score || "—")}</td>
+        <td>${escapeHtml(percentageText)}</td>
+        <td>${topHtml}</td>
+      </tr>
+    `;
+  }).join("");
+  setStatus(
+    `${week.title} yüklendi: ${week.matches.length} maç. Kaynak: TotoKazan.`,
+    "good"
+  );
 }
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
@@ -416,121 +401,81 @@ function escapeHtml(value) {
     "'": "&#39;"
   })[ch]);
 }
-function oddsText(odds) {
-  return ["1", "X", "2"].map(key =>
-    odds[key] === null ? "—" : odds[key].toFixed(2)
-  ).join(" / ");
-}
-function renderProgram(program) {
-  currentProgram = program;
-  $("week").innerHTML = "";
-  const option = document.createElement("option");
-  option.value = String(program.roundId);
-  option.textContent = program.title;
-  $("week").appendChild(option);
-  $("week").disabled = false;
-  let analyzed = 0;
-  let pending = 0;
-  const rows = [];
-  for (const match of program.matches) {
-    const prediction = exactOddsPrediction(match.odds);
-    if (prediction && prediction.pick) analyzed++;
-    else pending++;
-    const pickClass = prediction?.pick === "1" ? "one" :
-                      prediction?.pick === "X" ? "draw" :
-                      prediction?.pick === "2" ? "two" : "";
-    const decision = prediction?.pick
-      ? `<span class="pick ${pickClass}">${prediction.pick}</span>
-         <span class="badge">%${prediction.confidence}</span>`
-      : `<span class="badge">Yetersiz veri</span>`;
-    const sample = prediction?.sample ?? 0;
-    rows.push(`
-      <tr>
-        <td class="num">${match.no}</td>
-        <td>
-          <b>${escapeHtml(match.home)}</b><br>
-          <span class="muted">${escapeHtml(match.away)}</span>
-        </td>
-        <td>${escapeHtml(oddsText(match.odds))}</td>
-        <td>${decision}</td>
-        <td>${sample} maç</td>
-      </tr>
-    `);
-  }
-  $("list").innerHTML = rows.join("");
-  $("count").textContent = program.matches.length;
-  $("analyzed").textContent = analyzed;
-  $("pending").textContent = pending;
-  $("historyCount").textContent = historyMatches.length;
-  if (program.matches.every(m => m.result !== null)) {
-    setStatus("Bulunan program tamamlanmış görünüyor.", "warn");
-  } else {
-    setStatus(
-      "Program yüklendi: " + program.title +
-      ". Açılış oranları API yanıtında yoksa analiz beklemede kalır.",
-      "good"
-    );
-  }
-}
-async function loadHistory() {
-  try {
-    const data = await fetchJson(HISTORY_URL);
-    historyMatches = extractHistory(data)
-      .map(readHistoricalMatch)
-      .filter(item => item.home && item.away);
-    $("historyCount").textContent = historyMatches.length;
-    if (!historyMatches.length) {
-      setStatus(
-        "Geçmiş dosyası yüklendi ancak tanınan maç kaydı bulunamadı. " +
-        "JSON alan adları kontrol edilmeli.",
-        "warn"
-      );
-    }
-  } catch (error) {
-    historyMatches = [];
-    $("historyCount").textContent = "0";
-    setStatus(
-      "Geçmiş dosyası okunamadı: " + error.message,
-      "warn"
-    );
-  }
-}
-async function start() {
-  if (busy) return;
-  busy = true;
+async function loadProgram() {
+  if (loading) return;
+  loading = true;
   $("reload").disabled = true;
   $("week").disabled = true;
-  $("list").innerHTML =
-    '<tr><td colspan="5">Resmî program aranıyor...</td></tr>';
+  $("list").innerHTML = '<tr><td colspan="5">TotoKazan okunuyor...</td></tr>';
+  setStatus("TotoKazan sayfasına bağlanılıyor...");
   try {
-    await loadHistory();
-    setStatus("Spor Toto API'sinden program aranıyor...");
-    programs = await scanRounds();
-    renderProgram(programs[0]);
+    const html = await fetchHtml(SOURCE_URL);
+    const doc = parseDocument(html);
+    const links = findWeekLinks(doc);
+    const currentTitle = titleFromDocument(doc);
+    const currentMatches = getTableData(doc);
+    // Ana sayfadaki güncel 15 maçlık tablo varsa önce onu kullan.
+    if (currentMatches.length === 15) {
+      weeks = [{
+        title: currentTitle,
+        url: SOURCE_URL,
+        matches: currentMatches
+      }];
+    } else {
+      // Güncel tablo ana sayfada yoksa hafta detay linklerini dene.
+      const candidates = links.filter(link =>
+        /spor-toto\/\d{4}-\d{4}-\d+-hafta/i.test(link.url)
+      );
+      if (!candidates.length) {
+        throw new Error("TotoKazan sayfasında haftalık maç bağlantısı bulunamadı.");
+      }
+      const loaded = [];
+      for (const link of candidates.slice(0, 10)) {
+        try {
+          loaded.push(await readWeek(link));
+        } catch (error) {
+          console.warn("Hafta yüklenemedi:", link.url, error);
+        }
+        if (loaded.length >= 1) break;
+      }
+      if (!loaded.length) {
+        throw new Error("TotoKazan'dan 15 maçlık hafta okunamadı.");
+      }
+      weeks = loaded;
+    }
+    $("week").innerHTML = "";
+    weeks.forEach((week, index) => {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = week.title;
+      $("week").appendChild(option);
+    });
+    $("week").disabled = weeks.length < 2;
+    renderWeek(weeks[0]);
   } catch (error) {
-    $("count").textContent = "0";
-    $("analyzed").textContent = "0";
-    $("pending").textContent = "15";
-    $("list").innerHTML =
-      `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+    console.error(error);
     setStatus(
-      error.message +
-      " Tarayıcı CORS nedeniyle erişemiyorsa HTML tek başına bunu aşamaz.",
+      "Program alınamadı: " + error.message +
+      " Tarayıcı CORS erişimini engelliyor olabilir.",
       "error"
     );
+    $("list").innerHTML =
+      `<tr><td colspan="5">${escapeHtml(error.message)}</td></tr>`;
+    $("count").textContent = "0";
+    $("finished").textContent = "0";
+    $("pending").textContent = "—";
+    $("percentCount").textContent = "0";
   } finally {
-    busy = false;
+    loading = false;
     $("reload").disabled = false;
   }
 }
-$("reload").addEventListener("click", start);
+$("reload").addEventListener("click", loadProgram);
 $("week").addEventListener("change", () => {
-  const selected = programs.find(
-    program => String(program.roundId) === $("week").value
-  );
-  if (selected) renderProgram(selected);
+  const index = Number($("week").value);
+  if (weeks[index]) renderWeek(weeks[index]);
 });
-start();
+loadProgram();
 </script>
 </body>
 </html>
