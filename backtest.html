@@ -1,0 +1,573 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>DNA | Geçmiş Kupon Kâr/Zarar Analizi</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#101d30;--panel2:#15243a;--border:#263953;--text:#edf4ff;--muted:#9aacc4;--blue:#5c9dff;--green:#28c785;--red:#ff6474;--yellow:#f6c453}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#102847 0,var(--bg) 45%);color:var(--text);font:14px Arial,Helvetica,sans-serif}
+.app{width:min(1120px,100%);margin:auto;padding:16px}
+.header,.coupon-head,.coupon-foot{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{font-size:22px;font-weight:900}.brand span{color:var(--blue)}
+h1{font-size:23px;margin:16px 0 6px}
+.desc{color:var(--muted);font-size:12px;line-height:1.6;margin:0 0 16px}
+.panel,.stat,.coupon{background:var(--panel);border:1px solid var(--border);border-radius:13px}
+.panel{padding:15px;margin-bottom:14px}
+.title{font-size:15px;font-weight:800;margin:0 0 12px}
+.filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+.field input,.field select{width:100%;min-height:42px;padding:9px;color:var(--text);background:#091525;border:1px solid var(--border);border-radius:9px}
+button{border:1px solid var(--border);border-radius:9px;padding:10px 13px;background:var(--panel2);color:var(--text);font-weight:800;cursor:pointer}
+button.primary{background:var(--blue);color:#07111f;border-color:var(--blue)}
+button:disabled{opacity:.55;cursor:wait}
+.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.notice{display:none;margin-top:12px;padding:11px;border:1px solid var(--border);border-radius:9px;background:#091525;line-height:1.5}
+.notice.show{display:block}.notice.error{color:#ffb5bd;border-color:#743442}.notice.ok{color:#9af0c8;border-color:#236b50}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-bottom:14px}
+.stat{padding:12px}.label{font-size:11px;color:var(--muted)}
+.value{font-size:21px;font-weight:900;margin-top:5px;overflow-wrap:anywhere}
+.positive{color:var(--green)}.negative{color:var(--red)}.pending{color:var(--yellow)}
+.coupon{overflow:hidden;margin-bottom:12px;background:#0b1829}
+.coupon.won{border-color:var(--green)}.coupon.lost{border-color:var(--red)}.coupon.pending{border-color:var(--yellow)}
+.coupon-head{padding:12px;background:#13243a;border-bottom:1px solid var(--border)}
+.coupon h3{margin:0;font-size:15px}.meta{color:var(--muted);font-size:11px;margin-top:5px}
+.total{text-align:right}.total strong{display:block;font-size:20px;color:#ffd66b}
+.coupon-body{padding:8px 12px}
+.pick{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;padding:10px 0;border-bottom:1px solid #263953}
+.pick:last-child{border:0}
+.badge{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;font-weight:900;background:#443613;color:var(--yellow)}
+.badge.won{background:#073c27;color:var(--green)}.badge.lost{background:#48121e;color:var(--red)}
+.teams{font-weight:800;line-height:1.4;overflow-wrap:anywhere}
+.pickmeta{color:var(--muted);font-size:11px;margin-top:4px;line-height:1.5}
+.odd{align-self:center;border:1px solid var(--border);border-radius:7px;padding:7px;color:#ffd66b;font-weight:900}
+.coupon-foot{padding:11px 12px;border-top:1px solid var(--border);font-weight:800}
+.empty{padding:24px 12px;border:1px dashed var(--border);border-radius:12px;text-align:center;color:var(--muted);line-height:1.7}
+.small{font-size:11px;color:var(--muted);line-height:1.6}
+#dnaEngineBridge{display:none!important}
+@media(max-width:650px){
+.app{padding:11px}.filters{grid-template-columns:1fr}
+.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+.value{font-size:18px}.pick{grid-template-columns:26px minmax(0,1fr) auto;gap:7px}
+.teams{font-size:12px}.total strong{font-size:17px}
+}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="header">
+<div class="brand">DNA<span>-RNA</span></div>
+<a href="./dna-kupon.html" style="color:var(--blue)">← Otomatik Kupon</a>
+</header>
+
+<h1>Geçmiş Kupon Kâr / Zarar Analizi</h1>
+<p class="desc">Her gün seçilen market için DNA motorunun geçmiş 30 günlük veriyle ürettiği kuponlar otomatik simüle edilir. Kupon başına 50 TL kabul edilir.</p>
+
+<section class="panel">
+<h2 class="title">Analiz ayarları</h2>
+<div class="filters">
+<div class="field">
+<label for="fromDate">Başlangıç</label>
+<input type="date" id="fromDate" value="2026-10-01">
+</div>
+<div class="field">
+<label for="toDate">Bitiş</label>
+<input type="date" id="toDate" value="2026-10-11">
+</div>
+<div class="field">
+<label for="resultMarket">Tahmin edilecek market</label>
+<select id="resultMarket">
+<option value="MS1">MS1</option>
+<option value="MSX">MSX</option>
+<option value="MS2" selected>MS2</option>
+<option value="IY1">İY1</option>
+<option value="IYX">İYX</option>
+<option value="IY2">İY2</option>
+<option value="KG_VAR">KG Var</option>
+<option value="KG_YOK">KG Yok</option>
+<option value="IY15_ALT">İY 1.5 Alt</option>
+<option value="IY15_UST">İY 1.5 Üst</option>
+<option value="15_ALT">1.5 Alt</option>
+<option value="15_UST">1.5 Üst</option>
+<option value="25_ALT">2.5 Alt</option>
+<option value="25_UST">2.5 Üst</option>
+<option value="35_ALT">3.5 Alt</option>
+<option value="35_UST">3.5 Üst</option>
+<option value="GOL01">0-1 Gol</option>
+<option value="GOL23">2-3 Gol</option>
+<option value="GOL46">4-6 Gol</option>
+<option value="GOL7">7+ Gol</option>
+</select>
+</div>
+</div>
+
+<div class="buttons">
+<button class="primary" id="runBacktest">Analizi çalıştır</button>
+<button id="exportCsv">CSV dışa aktar</button>
+</div>
+<div id="notice" class="notice show">Veriler yükleniyor…</div>
+<p class="small">Ayarlar: geçmiş 30 gün, minimum 8 örnek, minimum %80 başarı, tekli oran ≥1,35, toplam oran ≥2,00, en fazla 5 maç ve günde en fazla 3 kupon.</p>
+</section>
+
+<section class="stats">
+<div class="stat"><div class="label">Hesaplanan kupon</div><div class="value" id="sCoupons">0</div></div>
+<div class="stat"><div class="label">Toplam yatırım</div><div class="value" id="sStake">0 TL</div></div>
+<div class="stat"><div class="label">Geri dönüş</div><div class="value" id="sReturn">0 TL</div></div>
+<div class="stat"><div class="label">Net kâr / zarar</div><div class="value" id="sNet">0 TL</div></div>
+<div class="stat"><div class="label">Kazanan kupon</div><div class="value positive" id="sWon">0</div></div>
+<div class="stat"><div class="label">Kaybeden kupon</div><div class="value negative" id="sLost">0</div></div>
+<div class="stat"><div class="label">Bekleyen kupon</div><div class="value pending" id="sPending">0</div></div>
+<div class="stat"><div class="label">Yatırım getirisi (ROI)</div><div class="value" id="sRoi">—</div></div>
+</section>
+
+<section>
+<h2 class="title">Kupon dökümü</h2>
+<div id="couponList"><div class="empty">Analiz çalıştırıldığında kuponlar burada listelenecek.</div></div>
+</section>
+
+<div id="dnaEngineBridge" aria-hidden="true">
+<input type="date" id="saDate">
+<select id="saResult">
+<option value="MS1">MS1</option><option value="MSX">MSX</option><option value="MS2">MS2</option>
+<option value="IY1">İY1</option><option value="IYX">İYX</option><option value="IY2">İY2</option>
+<option value="KG_VAR">KG Var</option><option value="KG_YOK">KG Yok</option>
+<option value="IY15_ALT">İY 1.5 Alt</option><option value="IY15_UST">İY 1.5 Üst</option>
+<option value="15_ALT">1.5 Alt</option><option value="15_UST">1.5 Üst</option>
+<option value="25_ALT">2.5 Alt</option><option value="25_UST">2.5 Üst</option>
+<option value="35_ALT">3.5 Alt</option><option value="35_UST">3.5 Üst</option>
+<option value="GOL01">0-1 Gol</option><option value="GOL23">2-3 Gol</option>
+<option value="GOL46">4-6 Gol</option><option value="GOL7">7+ Gol</option>
+</select>
+<button id="saRun" type="button">Çalıştır</button>
+<div id="saPeriod"></div><div id="saHistoryCount"></div>
+<div id="saOddsCount"></div><div id="saStatus"></div><div id="saContent"></div>
+</div>
+</main>
+
+<script src="./dna.js"></script>
+<script>
+"use strict";
+
+const BT_STAKE = 50;
+const BT_CONFIG = {
+  MIN_ODD: 1.35,
+  MIN_TOTAL_ODD: 2,
+  MAX_PICKS: 5,
+  MAX_COUPONS_PER_RUN: 3
+};
+
+const BT_RESULT_MARKETS = {
+  MS1:"ms1", MSX:"msX", MS2:"ms2",
+  IY1:"iy1", IYX:"iyX", IY2:"iy2",
+  KG_VAR:"kgVar", KG_YOK:"kgYok",
+  IY15_ALT:"iy15Alt", IY15_UST:"iy15Ust",
+  "15_ALT":"au15Alt", "15_UST":"au15Ust",
+  "25_ALT":"au25Alt", "25_UST":"au25Ust",
+  "35_ALT":"au35Alt", "35_UST":"au35Ust",
+  GOL01:"gol01", GOL23:"gol23", GOL46:"gol46", GOL7:"gol7"
+};
+
+const BT_LABELS = {
+  ms1:"MS1", msX:"MSX", ms2:"MS2",
+  iy1:"İY1", iyX:"İYX", iy2:"İY2",
+  kgVar:"KG Var", kgYok:"KG Yok",
+  iy15Alt:"İY 1.5 Alt", iy15Ust:"İY 1.5 Üst",
+  au15Alt:"1.5 Alt", au15Ust:"1.5 Üst",
+  au25Alt:"2.5 Alt", au25Ust:"2.5 Üst",
+  au35Alt:"3.5 Alt", au35Ust:"3.5 Üst",
+  gol01:"0-1 Gol", gol23:"2-3 Gol", gol46:"4-6 Gol", gol7:"7+ Gol"
+};
+
+const BT_RESULT_LABELS = {
+  MS1:"MS1", MSX:"MSX", MS2:"MS2",
+  IY1:"İY1", IYX:"İYX", IY2:"İY2",
+  KG_VAR:"KG Var", KG_YOK:"KG Yok",
+  IY15_ALT:"İY 1.5 Alt", IY15_UST:"İY 1.5 Üst",
+  "15_ALT":"1.5 Alt", "15_UST":"1.5 Üst",
+  "25_ALT":"2.5 Alt", "25_UST":"2.5 Üst",
+  "35_ALT":"3.5 Alt", "35_UST":"3.5 Üst",
+  GOL01:"0-1 Gol", GOL23:"2-3 Gol", GOL46:"4-6 Gol", GOL7:"7+ Gol"
+};
+
+let btCoupons = [];
+const $ = id => document.getElementById(id);
+
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;"
+  }[c]));
+}
+
+function dateKey(d) {
+  return typeof dnaDateKey === "function" ? dnaDateKey(d) : "";
+}
+
+function n(v) {
+  if (v === null || v === undefined || v === "") return null;
+  const x = Number(String(v).replace(",", "."));
+  return Number.isFinite(x) && x > 0 ? x : null;
+}
+
+function team(m, s) {
+  if (typeof dnaTeam === "function") return dnaTeam(m, s);
+  return s === "home"
+    ? (m.home || m.homeTeam || "-")
+    : (m.away || m.awayTeam || "-");
+}
+
+function ident(m) {
+  const id = m?.code ?? m?.id ?? m?.matchId;
+  if (id != null && String(id).trim()) return "id:" + String(id).trim();
+  return [dateKey(m), m.time || "", team(m, "home"), team(m, "away")]
+    .join("|").toLocaleLowerCase("tr-TR");
+}
+
+function fmtDate(d) {
+  return d.split("-").reverse().join(".");
+}
+
+function notice(msg, type = "") {
+  const e = $("notice");
+  e.textContent = msg;
+  e.className = "notice show" + (type ? " " + type : "");
+}
+
+function score(m, type) {
+  return typeof dnaScore === "function" ? dnaScore(m, type) : null;
+}
+
+function pickStatus(p) {
+  const m = p.match || {}, id = p.marketId, ft = score(m, "ft");
+  if (!ft) return "pending";
+
+  const h = +ft.home, a = +ft.away, t = h + a;
+  const out = x => x ? "won" : "lost";
+
+  if (id === "ms1") return out(h > a);
+  if (id === "msX") return out(h === a);
+  if (id === "ms2") return out(a > h);
+  if (id === "kgVar") return out(h > 0 && a > 0);
+  if (id === "kgYok") return out(h === 0 || a === 0);
+  if (id === "au15Alt") return out(t <= 1);
+  if (id === "au15Ust") return out(t >= 2);
+  if (id === "au25Alt") return out(t <= 2);
+  if (id === "au25Ust") return out(t >= 3);
+  if (id === "au35Alt") return out(t <= 3);
+  if (id === "au35Ust") return out(t >= 4);
+  if (id === "gol01") return out(t <= 1);
+  if (id === "gol23") return out(t >= 2 && t <= 3);
+  if (id === "gol46") return out(t >= 4 && t <= 6);
+  if (id === "gol7") return out(t >= 7);
+
+  const ht = score(m, "ht");
+  if (!ht) return "pending";
+  const ih = +ht.home, ia = +ht.away, it = ih + ia;
+
+  if (id === "iy1") return out(ih > ia);
+  if (id === "iyX") return out(ih === ia);
+  if (id === "iy2") return out(ia > ih);
+  if (id === "iy15Alt") return out(it <= 1);
+  if (id === "iy15Ust") return out(it >= 2);
+
+  return "pending";
+}
+
+function statusText(s) {
+  return s === "won" ? "✓ Kazandı" :
+    s === "lost" ? "✕ Kaybetti" : "● Bekliyor";
+}
+
+function marketDef(id) {
+  return (typeof DNA_MARKETS !== "undefined" ? DNA_MARKETS : [])
+    .find(m => m.id === id);
+}
+
+function getMarketOdd(match, id) {
+  const def = marketDef(id);
+  if (!def) return null;
+  return n(dnaOdds(match, def));
+}
+
+function makeCandidate(row, match, resultId, date) {
+  const marketId = BT_RESULT_MARKETS[resultId];
+  if (!marketId || dateKey(match) !== date) return null;
+
+  const odd = getMarketOdd(match, marketId);
+  if (odd === null || odd < BT_CONFIG.MIN_ODD) return null;
+
+  return {
+    id: ident(match), match, date,
+    time: typeof dnaTime === "function" ? dnaTime(match) : "",
+    home: team(match, "home"),
+    away: team(match, "away"),
+    league: typeof dnaLeague === "function" ? dnaLeague(match) : "",
+    marketId,
+    marketLabel: BT_LABELS[marketId] || marketId,
+    odd: Number(odd.toFixed(2)),
+    sampleMarketId: row.marketId,
+    sampleMarketLabel: row.marketLabel || BT_LABELS[row.marketId] || row.marketId,
+    sampleOdd: Number(row.odd),
+    resultId,
+    resultLabel: BT_RESULT_LABELS[resultId] || resultId,
+    sample: Number(row.total || 0),
+    successRate: Number(row.rate || 0)
+  };
+}
+
+function collectCandidates(rows, resultId, date) {
+  const map = new Map();
+
+  for (const row of rows) {
+    if (!Array.isArray(row.future)) continue;
+
+    for (const match of row.future) {
+      const c = makeCandidate(row, match, resultId, date);
+      if (!c) continue;
+
+      const old = map.get(c.id);
+      const scoreNew = c.successRate * 100000 + c.sample * 100 + c.sampleOdd;
+      const scoreOld = old
+        ? old.successRate * 100000 + old.sample * 100 + old.sampleOdd
+        : -1;
+
+      if (!old || scoreNew > scoreOld) map.set(c.id, c);
+    }
+  }
+
+  return [...map.values()].sort((a, b) =>
+    b.successRate - a.successRate ||
+    b.sample - a.sample ||
+    b.sampleOdd - a.sampleOdd
+  );
+}
+
+function buildCoupons(candidates, date, resultId) {
+  const remaining = [...candidates], used = new Set(), coupons = [];
+
+  while (coupons.length < BT_CONFIG.MAX_COUPONS_PER_RUN && remaining.length) {
+    const picks = [], reserved = new Set();
+    let total = 1;
+
+    while (remaining.length && picks.length < BT_CONFIG.MAX_PICKS &&
+           total < BT_CONFIG.MIN_TOTAL_ODD) {
+      const c = remaining.shift();
+      if (used.has(c.id) || reserved.has(c.id)) continue;
+      picks.push(c);
+      reserved.add(c.id);
+      total *= c.odd;
+    }
+
+    if (picks.length && total >= BT_CONFIG.MIN_TOTAL_ODD) {
+      coupons.push({
+        id: `${date}-C${coupons.length + 1}`,
+        date, resultId,
+        resultLabel: BT_RESULT_LABELS[resultId] || resultId,
+        picks,
+        totalOdd: Number(total.toFixed(2))
+      });
+      for (const id of reserved) used.add(id);
+    } else {
+      break;
+    }
+  }
+
+  return coupons;
+}
+
+function renderCoupon(c, i) {
+  const states = c.picks.map(pickStatus);
+  const status = states.includes("lost") ? "lost" :
+    states.every(s => s === "won") ? "won" : "pending";
+  const returned = status === "won" ? BT_STAKE * c.totalOdd : 0;
+
+  return `<article class="coupon ${status}">
+    <div class="coupon-head">
+      <div>
+        <h3>${esc(fmtDate(c.date))} · Kupon ${i + 1}</h3>
+        <div class="meta">${esc(c.resultLabel)} · ${c.picks.length} maç · ${statusText(status)}</div>
+      </div>
+      <div class="total"><strong>${c.totalOdd.toFixed(2)}</strong><span class="meta">TOPLAM ORAN</span></div>
+    </div>
+    <div class="coupon-body">
+      ${c.picks.map(p => {
+        const s = pickStatus(p), sc = score(p.match, "ft");
+        return `<div class="pick">
+          <div class="badge ${s}">${s === "won" ? "✓" : s === "lost" ? "✕" : "●"}</div>
+          <div>
+            <div class="teams">${esc(p.home)} <span style="color:var(--muted)">VS</span> ${esc(p.away)}</div>
+            <div class="pickmeta">${esc(p.time || "--:--")} · ${esc(p.league || "")} · ${esc(p.marketLabel)} ${p.odd.toFixed(2)}${sc ? ` · Skor ${sc.home}-${sc.away}` : ""}
+            <br>DNA örnek eşleşmesi: ${esc(p.sampleMarketLabel)} ${p.sampleOdd.toFixed(2)} · ${p.sample} maç · %${p.successRate.toFixed(1)} başarı</div>
+          </div>
+          <div class="odd">${p.odd.toFixed(2)}</div>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="coupon-foot">
+      <span class="${status === "won" ? "positive" : status === "lost" ? "negative" : "pending"}">${statusText(status)}</span>
+      <span>Yatırım ${BT_STAKE} TL · ${status === "won" ? "Dönüş " + returned.toFixed(2) + " TL" : status === "lost" ? "Dönüş 0 TL" : "Kesinleşmedi"}</span>
+    </div>
+  </article>`;
+}
+
+function updateStats() {
+  const won = btCoupons.filter(c => c.status === "won");
+  const lost = btCoupons.filter(c => c.status === "lost");
+  const pending = btCoupons.filter(c => c.status === "pending");
+  const stake = (won.length + lost.length) * BT_STAKE;
+  const returned = won.reduce((s, c) => s + BT_STAKE * c.totalOdd, 0);
+  const net = returned - stake;
+  const roi = stake ? net / stake * 100 : null;
+
+  $("sCoupons").textContent = String(btCoupons.length);
+  $("sStake").textContent = stake.toFixed(2) + " TL";
+  $("sReturn").textContent = returned.toFixed(2) + " TL";
+  $("sNet").textContent = (net > 0 ? "+" : "") + net.toFixed(2) + " TL";
+  $("sNet").className = "value " + (net > 0 ? "positive" : net < 0 ? "negative" : "");
+  $("sWon").textContent = String(won.length);
+  $("sLost").textContent = String(lost.length);
+  $("sPending").textContent = String(pending.length);
+  $("sRoi").textContent = roi === null ? "—" : roi.toFixed(1) + "%";
+  $("sRoi").className = "value " + (roi > 0 ? "positive" : roi < 0 ? "negative" : "");
+}
+
+async function waitEngine() {
+  const start = Date.now();
+
+  while (Date.now() - start < 30000) {
+    if (typeof dnaRunAnalysis === "function" &&
+        typeof dnaLoadData === "function" &&
+        Array.isArray(dnaMatches) && dnaMatches.length) return true;
+
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  return false;
+}
+
+async function runBacktest() {
+  const btn = $("runBacktest");
+  const from = $("fromDate").value;
+  const to = $("toDate").value;
+  const resultId = $("resultMarket").value;
+
+  if (!from || !to || from > to) {
+    notice("Tarih aralığını kontrol et.", "error");
+    return;
+  }
+
+  btn.disabled = true;
+  btCoupons = [];
+  $("couponList").innerHTML = '<div class="empty">Tarihlerin kuponları yeniden hesaplanıyor…</div>';
+
+  try {
+    notice("DNA motoru ve matches.json bekleniyor…");
+
+    if (!await waitEngine()) {
+      throw new Error("DNA motoru/veri yüklenemedi. dna.js dosyası ve data/matches.json yolunu kontrol et.");
+    }
+
+    const all = [];
+    let d = from, guard = 0;
+
+    while (d <= to && guard++ < 400) {
+      $("saDate").value = d;
+      $("saResult").value = resultId;
+
+      const analysis = dnaRunAnalysis(d, resultId);
+      const rows = Array.isArray(analysis.rows) ? analysis.rows : [];
+      const candidates = collectCandidates(rows, resultId, d);
+      const coupons = buildCoupons(candidates, d, resultId);
+
+      for (const c of coupons) {
+        const states = c.picks.map(pickStatus);
+        c.status = states.includes("lost") ? "lost" :
+          states.every(s => s === "won") ? "won" : "pending";
+        all.push(c);
+      }
+
+      d = nextDay(d);
+    }
+
+    btCoupons = all;
+
+    $("couponList").innerHTML = all.length
+      ? all.map(renderCoupon).join("")
+      : '<div class="empty">Bu tarih aralığında otomatik kupon bulunamadı.</div>';
+
+    updateStats();
+
+    const settled = all.filter(c => c.status !== "pending").length;
+    notice(`${all.length} otomatik kupon hesaplandı. ${settled} kupon sonuçlandı, ${all.length - settled} kupon beklemede.`, "ok");
+  } catch (e) {
+    console.error(e);
+    notice("Analiz hatası: " + (e.message || String(e)), "error");
+    $("couponList").innerHTML = '<div class="empty">Veri işlenemedi. Hata mesajını üst bölümde kontrol et.</div>';
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function nextDay(k) {
+  const [y, m, d] = k.split("-").map(Number);
+  const x = new Date(Date.UTC(y, m - 1, d + 1));
+  return `${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, "0")}-${String(x.getUTCDate()).padStart(2, "0")}`;
+}
+
+function csvCell(v) {
+  return '"' + String(v ?? "").replace(/"/g, '""') + '"';
+}
+
+function exportCsv() {
+  if (!btCoupons.length) {
+    notice("Dışa aktarılacak kupon yok.", "error");
+    return;
+  }
+
+  const rows = [[
+    "Tarih", "Kupon", "Sonuç filtresi", "Maç", "Market", "Oran",
+    "Skor", "Maç durumu", "Kupon oranı", "Kupon durumu",
+    "Bahis TL", "Geri dönüş TL", "Net TL"
+  ]];
+
+  btCoupons.forEach((c, i) => {
+    c.picks.forEach(p => {
+      const st = pickStatus(p), sc = score(p.match, "ft");
+      const ret = c.status === "won" ? BT_STAKE * c.totalOdd : 0;
+
+      rows.push([
+        c.date, i + 1, c.resultLabel, `${p.home} - ${p.away}`,
+        p.marketLabel, p.odd, sc ? `${sc.home}-${sc.away}` : "",
+        statusText(st), c.totalOdd, statusText(c.status),
+        BT_STAKE, ret, c.status === "pending" ? "" : ret - BT_STAKE
+      ]);
+    });
+  });
+
+  const blob = new Blob(
+    ["\uFEFF" + rows.map(r => r.map(csvCell).join(";")).join("\r\n")],
+    { type: "text/csv;charset=utf-8;" }
+  );
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "dna-backtest-2026.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+$("runBacktest").addEventListener("click", runBacktest);
+$("exportCsv").addEventListener("click", exportCsv);
+
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    if (Array.isArray(dnaMatches) && dnaMatches.length) {
+      notice(`${dnaMatches.length} maç verisi yüklendi. Analizi çalıştırabilirsin.`, "ok");
+    }
+  }, 700);
+});
+</script>
+</body>
+</html>
