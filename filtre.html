@@ -1,0 +1,1157 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07111f">
+  <title>Oran Filtreleme | Mackolik</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #0e1b2d;
+      --panel2: #13243a;
+      --border: #263951;
+      --text: #e8eff9;
+      --muted: #96a8bf;
+      --accent: #4e9cff;
+      --green: #20c997;
+      --red: #ff6878;
+      --yellow: #f4c95d;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 18px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    }
+
+    .of-container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .of-header {
+      margin-bottom: 20px;
+    }
+
+    .of-header h1 {
+      margin: 0 0 8px;
+      font-size: clamp(23px, 5vw, 32px);
+    }
+
+    .of-header p {
+      color: var(--muted);
+      margin: 0;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .of-panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 18px;
+    }
+
+    .of-filters {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .of-field {
+      min-width: 0;
+    }
+
+    .of-field label {
+      display: block;
+      font-size: 13px;
+      font-weight: 650;
+      color: #c5d4e8;
+      margin-bottom: 8px;
+    }
+
+    .of-field input,
+    .of-field select {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      min-height: 45px;
+      padding: 11px;
+      color: var(--text);
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    .of-field input:focus,
+    .of-field select:focus {
+      border-color: var(--accent);
+    }
+
+    .of-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .of-button {
+      min-height: 43px;
+      padding: 11px 17px;
+      border: 0;
+      border-radius: 9px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 750;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .of-button.secondary {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+    }
+
+    .of-button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .of-message {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: var(--panel2);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .of-message.error {
+      color: #ffb4bd;
+      border: 1px solid #713844;
+    }
+
+    .of-message.success {
+      color: #a7f3d0;
+    }
+
+    .of-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .of-stat {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--panel);
+      min-width: 0;
+    }
+
+    .of-stat-label {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .of-stat-value {
+      font-size: clamp(20px, 4vw, 27px);
+      font-weight: 800;
+      overflow-wrap: anywhere;
+    }
+
+    .of-results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .of-results-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .of-results-header span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .of-match {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 10px;
+      min-width: 0;
+    }
+
+    .of-match-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 13px;
+    }
+
+    .of-match-date {
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .of-league {
+      color: #8fbcff;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .of-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      padding: 6px 9px;
+      border-radius: 7px;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .of-status.win {
+      color: #a7f3d0;
+      background: #123c35;
+    }
+
+    .of-status.loss {
+      color: #ffb4bd;
+      background: #48222c;
+    }
+
+    .of-status.pending {
+      color: #ffe69b;
+      background: #45391c;
+    }
+
+    .of-teams {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .of-team {
+      font-weight: 750;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .of-team.away {
+      text-align: right;
+    }
+
+    .of-score {
+      min-width: 76px;
+      text-align: center;
+      font-size: 21px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .of-score small {
+      display: block;
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .of-details {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .of-detail {
+      min-width: 0;
+      background: var(--panel2);
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .of-detail-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 5px;
+    }
+
+    .of-detail-value {
+      font-weight: 800;
+      font-size: 15px;
+      overflow-wrap: anywhere;
+    }
+
+    .of-empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 30px 14px;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      line-height: 1.7;
+    }
+
+    .of-footer {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+      padding: 8px 2px 20px;
+    }
+
+    @media (max-width: 650px) {
+      body {
+        padding: 12px;
+      }
+
+      .of-panel {
+        padding: 13px;
+      }
+
+      .of-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .of-filters .of-field:first-child {
+        grid-column: 1 / -1;
+      }
+
+      .of-stats {
+        gap: 7px;
+      }
+
+      .of-stat {
+        padding: 11px;
+      }
+
+      .of-match {
+        padding: 12px;
+      }
+
+      .of-teams {
+        gap: 6px;
+      }
+
+      .of-team {
+        font-size: 13px;
+      }
+
+      .of-score {
+        min-width: 62px;
+        font-size: 19px;
+      }
+
+      .of-details {
+        gap: 6px;
+      }
+
+      .of-detail {
+        padding: 8px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .of-filters {
+        grid-template-columns: 1fr;
+      }
+
+      .of-filters .of-field:first-child {
+        grid-column: auto;
+      }
+
+      .of-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="of-container">
+    <header class="of-header">
+      <h1>⚽ Oran Filtreleme</h1>
+      <p>
+        Mackolik geçmiş maçları içerisinden istediğin açılış oranını
+        bul ve maç sonuçlarını incele.
+      </p>
+    </header>
+
+    <section class="of-panel">
+      <div class="of-filters">
+        <div class="of-field">
+          <label for="of-market">Oran türü</label>
+          <select id="of-market">
+            <option value="iy1" selected>İY1 — İlk yarı ev sahibi</option>
+            <option value="iyX">İYX — İlk yarı beraberlik</option>
+            <option value="iy2">İY2 — İlk yarı deplasman</option>
+            <option value="ms1">MS1 — Ev sahibi kazanır</option>
+            <option value="msX">MSX — Maç beraberlik</option>
+            <option value="ms2">MS2 — Deplasman kazanır</option>
+            <option value="kgVar">KG Var</option>
+            <option value="kgYok">KG Yok</option>
+            <option value="iy15Alt">İY 1,5 Alt</option>
+            <option value="iy15Ust">İY 1,5 Üst</option>
+            <option value="au15Alt">Maç 1,5 Alt</option>
+            <option value="au15Ust">Maç 1,5 Üst</option>
+            <option value="au25Alt">Maç 2,5 Alt</option>
+            <option value="au25Ust">Maç 2,5 Üst</option>
+            <option value="au35Alt">Maç 3,5 Alt</option>
+            <option value="au35Ust">Maç 3,5 Üst</option>
+            <option value="cs1X">Çifte şans 1X</option>
+            <option value="cs12">Çifte şans 12</option>
+            <option value="csX2">Çifte şans X2</option>
+          </select>
+        </div>
+
+        <div class="of-field">
+          <label for="of-odd">Aranan oran</label>
+          <input
+            id="of-odd"
+            type="text"
+            inputmode="decimal"
+            value="2.10"
+            placeholder="Örn. 2.10"
+          >
+        </div>
+
+        <div class="of-field">
+          <label for="of-days">Geçmiş süresi</label>
+          <select id="of-days">
+            <option value="7">Son 7 gün</option>
+            <option value="30" selected>Son 30 gün</option>
+            <option value="60">Son 60 gün</option>
+            <option value="90">Son 90 gün</option>
+            <option value="all">Tüm geçmiş</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="of-actions">
+        <button id="of-search" class="of-button">
+          Oranları Filtrele
+        </button>
+        <button id="of-refresh" class="of-button secondary">
+          Veriyi Yenile
+        </button>
+      </div>
+
+      <div id="of-message" class="of-message">
+        Veriler yükleniyor...
+      </div>
+    </section>
+
+    <section class="of-stats">
+      <div class="of-stat">
+        <div class="of-stat-label">Eşleşen maç</div>
+        <div id="of-total" class="of-stat-value">—</div>
+      </div>
+
+      <div class="of-stat">
+        <div class="of-stat-label">Sonucu belli</div>
+        <div id="of-settled" class="of-stat-value">—</div>
+      </div>
+
+      <div class="of-stat">
+        <div class="of-stat-label">Bahis başarı oranı</div>
+        <div id="of-success" class="of-stat-value">—</div>
+      </div>
+    </section>
+
+    <section>
+      <div class="of-results-header">
+        <h2>Maç sonuçları</h2>
+        <span id="of-result-count">0 maç</span>
+      </div>
+
+      <div id="of-results">
+        <div class="of-empty">Veriler bekleniyor...</div>
+      </div>
+    </section>
+
+    <footer class="of-footer">
+      Kaynak: teador612/mackolik1 — data/matches.json<br>
+      Oranlar açılış oranlarıdır. Başarı oranı yalnızca sonucu belli
+      eşleşmeler üzerinden hesaplanır. Henüz oynanmamış maçlar
+      başarı hesabına katılmaz.
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    /* =====================================================
+       VERİ KAYNAĞI
+    ===================================================== */
+
+    const OF_DATA_URL =
+      "https://raw.githubusercontent.com/teador612/mackolik1/main/data/matches.json";
+
+    const OF_MARKETS = {
+      ms1: {
+        label: "MS1",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h > a;
+        }
+      },
+
+      msX: {
+        label: "MSX",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h === a;
+        }
+      },
+
+      ms2: {
+        label: "MS2",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return a > h;
+        }
+      },
+
+      iy1: {
+        label: "İY1",
+        result: m => {
+          const h = OF_num(m.halfTimeScore?.home);
+          const a = OF_num(m.halfTimeScore?.away);
+          if (h === null || a === null) return null;
+          return h > a;
+        }
+      },
+
+      iyX: {
+        label: "İYX",
+        result: m => {
+          const h = OF_num(m.halfTimeScore?.home);
+          const a = OF_num(m.halfTimeScore?.away);
+          if (h === null || a === null) return null;
+          return h === a;
+        }
+      },
+
+      iy2: {
+        label: "İY2",
+        result: m => {
+          const h = OF_num(m.halfTimeScore?.home);
+          const a = OF_num(m.halfTimeScore?.away);
+          if (h === null || a === null) return null;
+          return a > h;
+        }
+      },
+
+      kgVar: {
+        label: "KG Var",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h > 0 && a > 0;
+        }
+      },
+
+      kgYok: {
+        label: "KG Yok",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h === 0 || a === 0;
+        }
+      },
+
+      iy15Alt: {
+        label: "İY 1,5 Alt",
+        result: m => OF_halfGoals(m, n => n < 2)
+      },
+
+      iy15Ust: {
+        label: "İY 1,5 Üst",
+        result: m => OF_halfGoals(m, n => n >= 2)
+      },
+
+      au15Alt: {
+        label: "Maç 1,5 Alt",
+        result: m => OF_fullGoals(m, n => n < 2)
+      },
+
+      au15Ust: {
+        label: "Maç 1,5 Üst",
+        result: m => OF_fullGoals(m, n => n >= 2)
+      },
+
+      au25Alt: {
+        label: "Maç 2,5 Alt",
+        result: m => OF_fullGoals(m, n => n < 3)
+      },
+
+      au25Ust: {
+        label: "Maç 2,5 Üst",
+        result: m => OF_fullGoals(m, n => n >= 3)
+      },
+
+      au35Alt: {
+        label: "Maç 3,5 Alt",
+        result: m => OF_fullGoals(m, n => n < 4)
+      },
+
+      au35Ust: {
+        label: "Maç 3,5 Üst",
+        result: m => OF_fullGoals(m, n => n >= 4)
+      },
+
+      cs1X: {
+        label: "Çifte şans 1X",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h >= a;
+        }
+      },
+
+      cs12: {
+        label: "Çifte şans 12",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h !== a;
+        }
+      },
+
+      csX2: {
+        label: "Çifte şans X2",
+        result: m => {
+          const h = OF_num(m.score?.home);
+          const a = OF_num(m.score?.away);
+          if (h === null || a === null) return null;
+          return h <= a;
+        }
+      }
+    };
+
+    let OF_matches = [];
+    let OF_loading = false;
+
+    /* =====================================================
+       VERİ YARDIMCILARI
+    ===================================================== */
+
+    function OF_num(value) {
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+        return null;
+      }
+
+      const n = Number(
+        String(value).trim().replace(",", ".")
+      );
+
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function OF_parseDate(value) {
+      if (!value) return null;
+
+      const s = String(value).trim();
+      let y, mo, d;
+
+      let match = s.match(
+        /^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/
+      );
+
+      if (match) {
+        y = Number(match[1]);
+        mo = Number(match[2]);
+        d = Number(match[3]);
+      } else {
+        match = s.match(
+          /^(\d{1,2})[/.](\d{1,2})[/.](\d{4})/
+        );
+
+        if (!match) return null;
+
+        d = Number(match[1]);
+        mo = Number(match[2]);
+        y = Number(match[3]);
+      }
+
+      const date = new Date(y, mo - 1, d);
+
+      if (
+        date.getFullYear() !== y ||
+        date.getMonth() !== mo - 1 ||
+        date.getDate() !== d
+      ) {
+        return null;
+      }
+
+      date.setHours(0, 0, 0, 0);
+      return date;
+    }
+
+    function OF_formatDate(value) {
+      const date = OF_parseDate(value);
+      if (!date) return value || "Tarih yok";
+
+      return new Intl.DateTimeFormat("tr-TR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(date);
+    }
+
+    function OF_halfGoals(match, predicate) {
+      const h = OF_num(match.halfTimeScore?.home);
+      const a = OF_num(match.halfTimeScore?.away);
+
+      if (h === null || a === null) return null;
+
+      return predicate(h + a);
+    }
+
+    function OF_fullGoals(match, predicate) {
+      const h = OF_num(match.score?.home);
+      const a = OF_num(match.score?.away);
+
+      if (h === null || a === null) return null;
+
+      return predicate(h + a);
+    }
+
+    function OF_isPlayed(match) {
+      return (
+        Number(match.status) !== 0 &&
+        OF_num(match.score?.home) !== null &&
+        OF_num(match.score?.away) !== null
+      );
+    }
+
+    function OF_score(home, away) {
+      const h = OF_num(home);
+      const a = OF_num(away);
+
+      if (h === null || a === null) return "—";
+
+      return h + " - " + a;
+    }
+
+    function OF_escape(value) {
+      return String(value ?? "").replace(
+        /[&<>"']/g,
+        char => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[char]
+      );
+    }
+
+    function OF_openingOdd(match, market) {
+      return OF_num(match.openingOdds?.[market]);
+    }
+
+    /* =====================================================
+       JSON ŞEMASI KONTROLÜ
+    ===================================================== */
+
+    function OF_validateData(data) {
+      if (
+        !data ||
+        typeof data !== "object" ||
+        !Array.isArray(data.matches)
+      ) {
+        throw new Error(
+          "JSON şeması geçersiz: matches dizisi bulunamadı."
+        );
+      }
+
+      if (data.matches.length === 0) {
+        throw new Error(
+          "JSON içindeki matches dizisi boş."
+        );
+      }
+
+      const first = data.matches.find(
+        m => m && typeof m === "object"
+      );
+
+      if (!first) {
+        throw new Error(
+          "Maç kayıtları beklenen nesne biçiminde değil."
+        );
+      }
+
+      const required = [
+        "date",
+        "home",
+        "away",
+        "openingOdds",
+        "score",
+        "halfTimeScore"
+      ];
+
+      const missing = required.filter(
+        key => !(key in first)
+      );
+
+      if (missing.length) {
+        throw new Error(
+          "Maç alanları doğrulanamadı: " +
+          missing.join(", ")
+        );
+      }
+
+      if (!("iy1" in first.openingOdds)) {
+        throw new Error(
+          "openingOdds.iy1 alanı bulunamadı."
+        );
+      }
+
+      return data.matches.filter(
+        m =>
+          m &&
+          typeof m === "object" &&
+          m.date &&
+          m.openingOdds &&
+          typeof m.openingOdds === "object"
+      );
+    }
+
+    /* =====================================================
+       VERİYİ YÜKLE
+    ===================================================== */
+
+    async function OF_loadData(forceRefresh = false) {
+      if (OF_loading) return;
+
+      OF_loading = true;
+
+      const button = document.getElementById("of-refresh");
+      const message = document.getElementById("of-message");
+
+      button.disabled = true;
+      message.className = "of-message";
+      message.textContent = "Mackolik maç verileri yükleniyor...";
+
+      try {
+        const url = OF_DATA_URL +
+          (forceRefresh ? "?t=" + Date.now() : "");
+
+        const response = await fetch(url, {
+          cache: forceRefresh ? "no-store" : "default"
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            "JSON dosyası alınamadı. HTTP " +
+            response.status
+          );
+        }
+
+        const data = await response.json();
+
+        OF_matches = OF_validateData(data);
+
+        message.className = "of-message success";
+        message.textContent =
+          "Veri yüklendi. " +
+          OF_matches.length.toLocaleString("tr-TR") +
+          " maç kaydı doğrulandı. " +
+          "Son güncelleme: " +
+          (data.updatedAt || "JSON içinde belirtilmemiş");
+
+        OF_filterMatches();
+      } catch (error) {
+        OF_matches = [];
+
+        message.className = "of-message error";
+        message.textContent =
+          "Veri yükleme hatası: " + error.message +
+          " GitHub JSON adresini ve internet bağlantısını kontrol et.";
+
+        OF_renderEmpty(
+          "Veri yüklenemedi. Hata mesajını yukarıdan kontrol et."
+        );
+      } finally {
+        OF_loading = false;
+        button.disabled = false;
+      }
+    }
+
+    /* =====================================================
+       FİLTRELEME
+    ===================================================== */
+
+    function OF_filterMatches() {
+      const market = document.getElementById("of-market").value;
+      const oddText = document.getElementById("of-odd").value.trim();
+      const daysValue = document.getElementById("of-days").value;
+
+      const targetOdd = OF_num(oddText);
+      const marketInfo = OF_MARKETS[market];
+
+      if (!marketInfo) {
+        OF_renderEmpty("Seçilen oran türü tanınmıyor.");
+        return;
+      }
+
+      if (targetOdd === null || targetOdd <= 0) {
+        OF_renderEmpty("Lütfen geçerli bir oran gir. Örnek: 2.10");
+        return;
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      let startDate = null;
+
+      if (daysValue !== "all") {
+        startDate = new Date(today);
+        startDate.setDate(
+          startDate.getDate() - Number(daysValue) + 1
+        );
+      }
+
+      const filtered = OF_matches.filter(match => {
+        const date = OF_parseDate(match.date);
+        if (!date) return false;
+
+        // Gelecekteki maçları geçmiş performansından çıkar.
+        if (date > today) return false;
+
+        if (startDate && date < startDate) {
+          return false;
+        }
+
+        const odd = OF_openingOdd(match, market);
+
+        if (odd === null) return false;
+
+        // Tam eşleşme: 2.10 ile 2.10 eşleşir.
+        return Math.abs(odd - targetOdd) < 0.000001;
+      });
+
+      filtered.sort((a, b) => {
+        const da = OF_parseDate(a.date);
+        const db = OF_parseDate(b.date);
+        return db - da;
+      });
+
+      OF_renderResults(filtered, market, targetOdd);
+    }
+
+    /* =====================================================
+       SONUÇLARI GÖSTER
+    ===================================================== */
+
+    function OF_renderResults(matches, market, targetOdd) {
+      const results = document.getElementById("of-results");
+      const total = matches.length;
+
+      const settled = matches.filter(OF_isPlayed);
+
+      const outcomes = settled.map(match => ({
+        match,
+        won: OF_MARKETS[market].result(match)
+      })).filter(item => item.won !== null);
+
+      const wins = outcomes.filter(item => item.won).length;
+
+      const success = outcomes.length
+        ? (wins / outcomes.length * 100)
+        : null;
+
+      document.getElementById("of-total").textContent =
+        total.toLocaleString("tr-TR");
+
+      document.getElementById("of-settled").textContent =
+        outcomes.length.toLocaleString("tr-TR");
+
+      document.getElementById("of-success").textContent =
+        success === null
+          ? "—"
+          : "%" + success.toLocaleString("tr-TR", {
+              minimumFractionDigits: 1,
+              maximumFractionDigits: 1
+            });
+
+      document.getElementById("of-result-count").textContent =
+        total + " maç · " +
+        OF_MARKETS[market].label + " · " +
+        targetOdd.toFixed(2);
+
+      if (!total) {
+        OF_renderEmpty(
+          "Seçtiğin tarihlerde bu oranla eşleşen maç bulunamadı."
+        );
+        return;
+      }
+
+      results.innerHTML = matches.map(match => {
+        const played = OF_isPlayed(match);
+        const outcome = played
+          ? OF_MARKETS[market].result(match)
+          : null;
+
+        let statusClass = "pending";
+        let statusText = "BEKLİYOR";
+
+        if (outcome === true) {
+          statusClass = "win";
+          statusText = "✓ BAŞARILI";
+        } else if (outcome === false) {
+          statusClass = "loss";
+          statusText = "✕ BAŞARISIZ";
+        }
+
+        const league = OF_escape(match.league || "Lig belirtilmemiş");
+        const home = OF_escape(match.home || "Ev sahibi");
+        const away = OF_escape(match.away || "Deplasman");
+        const date = OF_escape(OF_formatDate(match.date));
+        const time = match.time
+          ? " · " + OF_escape(match.time)
+          : "";
+
+        const odd = OF_openingOdd(match, market);
+
+        return `
+          <article class="of-match">
+            <div class="of-match-top">
+              <div>
+                <div class="of-match-date">${date}${time}</div>
+                <div class="of-league">${league}</div>
+              </div>
+              <span class="of-status ${statusClass}">
+                ${statusText}
+              </span>
+            </div>
+
+            <div class="of-teams">
+              <div class="of-team">${home}</div>
+
+              <div class="of-score">
+                <small>MAÇ SONU</small>
+                ${OF_score(
+                  match.score?.home,
+                  match.score?.away
+                )}
+              </div>
+
+              <div class="of-team away">${away}</div>
+            </div>
+
+            <div class="of-details">
+              <div class="of-detail">
+                <div class="of-detail-label">Aranan oran</div>
+                <div class="of-detail-value">
+                  ${odd === null ? "—" : odd.toFixed(2)}
+                </div>
+              </div>
+
+              <div class="of-detail">
+                <div class="of-detail-label">İlk yarı skoru</div>
+                <div class="of-detail-value">
+                  ${OF_score(
+                    match.halfTimeScore?.home,
+                    match.halfTimeScore?.away
+                  )}
+                </div>
+              </div>
+
+              <div class="of-detail">
+                <div class="of-detail-label">Maç sonu skoru</div>
+                <div class="of-detail-value">
+                  ${OF_score(
+                    match.score?.home,
+                    match.score?.away
+                  )}
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function OF_renderEmpty(message) {
+      document.getElementById("of-results").innerHTML =
+        '<div class="of-empty">' +
+        OF_escape(message) +
+        '</div>';
+
+      document.getElementById("of-total").textContent = "0";
+      document.getElementById("of-settled").textContent = "0";
+      document.getElementById("of-success").textContent = "—";
+      document.getElementById("of-result-count").textContent = "0 maç";
+    }
+
+    /* =====================================================
+       OLAYLAR
+    ===================================================== */
+
+    document.getElementById("of-search")
+      .addEventListener("click", OF_filterMatches);
+
+    document.getElementById("of-refresh")
+      .addEventListener("click", () => OF_loadData(true));
+
+    document.getElementById("of-market")
+      .addEventListener("change", OF_filterMatches);
+
+    document.getElementById("of-days")
+      .addEventListener("change", OF_filterMatches);
+
+    document.getElementById("of-odd")
+      .addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          OF_filterMatches();
+        }
+      });
+
+    OF_loadData();
+  </script>
+</body>
+</html>
