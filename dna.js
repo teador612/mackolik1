@@ -17,7 +17,7 @@ const DNA_CONFIG = {
   MIN_SAMPLE: 8,
   MIN_SUCCESS: 80,
   MIN_ODD: 1.35,
-  MIN_TOTAL_ODD: 2,
+  MIN_TOTAL_ODD: 4,
   MAX_PICKS: 5,
   MAX_SAVED_COUPONS: 3,
   STORAGE_KEY: "dna_mixed_coupon_history_v2"
