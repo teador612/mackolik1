@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07111f">
+<title>Spor Toto | Karma Tahmin Motoru</title>
+<style>
+:root{color-scheme:dark;--bg:#07111f;--panel:#101d30;--line:#293d57;--text:#eaf1fb;--muted:#9eafc5;--green:#38c989;--yellow:#f3c75a;--red:#ff7777}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px system-ui,-apple-system,sans-serif}
+main{max-width:1000px;margin:auto;padding:16px}
+h1{font-size:25px;margin:5px 0}
+h2{font-size:17px;margin:0 0 12px}
+.sub,.muted{color:var(--muted)}
+.sub{margin:0 0 18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;margin:13px 0}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+button{background:#1b3859;color:white;border:1px solid #385778;border-radius:9px;padding:11px 14px;font-weight:700;cursor:pointer}
+button:disabled{opacity:.5}
+.status{padding:12px;background:#091626;border:1px solid var(--line);border-radius:9px;white-space:pre-wrap;overflow-wrap:anywhere}
+.good{color:var(--green)}.warn{color:var(--yellow)}.bad{color:var(--red)}
+.match{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:9px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.match:last-child{border-bottom:0}
+.num{color:var(--muted);font-weight:800}
+.teams{font-weight:750;overflow-wrap:anywhere}
+.details{font-size:12px;color:var(--muted);margin-top:4px}
+.picks{display:flex;gap:5px}
+.pick{min-width:37px;text-align:center;padding:8px 5px;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-weight:800}
+.pick.active{color:#fff;background:#15523c;border-color:var(--green)}
+.pick.double{color:var(--yellow);border-color:var(--yellow)}
+.gridinfo{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.metric{padding:10px;background:#091626;border-radius:9px}
+.metric strong{display:block;font-size:20px}
+.metric span{font-size:12px;color:var(--muted)}
+.small{font-size:12px;color:var(--muted);line-height:1.6}
+@media(max-width:520px){main{padding:10px}.panel{padding:11px}.match{grid-template-columns:22px minmax(0,1fr) auto;gap:6px}.pick{min-width:30px;padding:8px 4px}.gridinfo{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>⚽ Spor Toto Tahmin Motoru</h1>
+  <p class="sub">Otomatik program · Geçmiş maç analizi · Karma yöntem · Tek kolon</p>
+
+  <section class="panel">
+    <div class="actions">
+      <button id="reload">Verileri yenile</button>
+      <button id="make" disabled>15 maçlık tahmin oluştur</button>
+      <button id="copy">Kuponu kopyala</button>
+    </div>
+    <p id="status" class="status">Program ve geçmiş veriler yükleniyor…</p>
+    <p id="round" class="muted"></p>
+    <p id="updated" class="small"></p>
+  </section>
+
+  <section class="panel">
+    <h2>Analiz özeti</h2>
+    <div class="gridinfo">
+      <div class="metric"><strong id="total">0/15</strong><span>Program maçları</span></div>
+      <div class="metric"><strong id="history">0</strong><span>Geçmiş kayıt</span></div>
+      <div class="metric"><strong id="ready">0/15</strong><span>Analiz edilen maç</span></div>
+    </div>
+    <p id="analysis" class="small">Veriler bekleniyor.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Haftanın 15 maçı</h2>
+    <div id="matches"><p class="muted">Program yükleniyor…</p></div>
+  </section>
+
+  <section class="panel">
+    <h2>Tek kolon</h2>
+    <p id="coupon" class="big">Henüz oluşturulmadı</p>
+    <p id="couponInfo" class="small">Her maç için 1, X veya 2 seçimi.</p>
+  </section>
+
+  <p class="small">
+    Veri dosyaları: <code>data/spor-toto.json</code> ve
+    <code>data/v2-data.json</code>.<br>
+    Tahminler istatistiksel değerlendirmedir; kesin sonuç veya kazanç garantisi değildir.
+  </p>
+</main>
+
+<script>
+"use strict";
+
+const PROGRAM_URL = "./data/spor-toto.json";
+const HISTORY_URL = "./data/v2-data.json";
+
+const $ = id => document.getElementById(id);
+let program = [];
+let history = [];
+let roundName = "";
+let updatedAt = "";
+let generated = false;
+
+function status(message, kind = "") {
+  $("status").textContent = message;
+  $("status").className = "status " + kind;
+}
+
+async function getJson(url) {
+  const response = await fetch(url + "?_=" + Date.now(), {
+    cache: "no-store"
+  });
+  if (!response.ok) throw new Error(url + " okunamadı (HTTP " + response.status + ")");
+  return response.json();
+}
+
+function arr(data) {
+  if (Array.isArray(data)) return data;
+  if (!data || typeof data !== "object") return [];
+  for (const key of ["matches","data","items","results","result","fixtures","program"]) {
+    if (Array.isArray(data[key])) return data[key];
+  }
+  return [];
+}
+
+function val(obj, names) {
+  for (const name of names) {
+    const value = obj && obj[name];
+    if (value !== undefined && value !== null && value !== "") return value;
+  }
+  return "";
+}
+
+function number(value) {
+  if (typeof value === "number") return Number.isFinite(value) ? value : NaN;
+  if (value === "" || value === null || value === undefined) return NaN;
+  const result = Number(String(value).replace(",", "."));
+  return Number.isFinite(result) ? result : NaN;
+}
+
+function team(value) {
+  if (value && typeof value === "object") {
+    return String(val(value, ["name","Name","title","Title","teamName","TeamName"])).trim();
+  }
+  return String(value || "").trim();
+}
+
+function normName(value) {
+  return String(value || "")
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ı/g, "i")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function parseFixture(item, index) {
+  if (!item || typeof item !== "object") return null;
+
+  let home = team(val(item, [
+    "home","Home","homeTeam","HomeTeam","homeTeamName","HomeTeamName",
+    "team1","Team1","team1Name","Team1Name","evSahibi","evSahibiTakim"
+  ]));
+  let away = team(val(item, [
+    "away","Away","awayTeam","AwayTeam","awayTeamName","AwayTeamName",
+    "team2","Team2","team2Name","Team2Name","deplasman","deplasmanTakim"
+  ]));
+
+  const matchName = String(val(item, ["matchName","MatchName","match","Match","fixture","Fixture"]));
+  if ((!home || !away) && matchName) {
+    const parts = matchName.split(/\s+(?:-|–|—|vs\.?)\s+/i);
+    if (parts.length >= 2) {
+      home = home || parts[0].trim();
+      away = away || parts.slice(1).join(" - ").trim();
+    }
+  }
+
+  if (!home || !away) return null;
+
+  return {
+    id: String(val(item, ["id","Id","matchId","MatchId","no","number"]) || index + 1),
+    no: Number(val(item, ["no","number","matchNumber","MatchNumber","order","Order"]) || index + 1),
+    home,
+    away,
+    date: val(item, ["date","Date","matchDate","MatchDate","gameDate"]),
+    time: val(item, ["time","Time","matchTime","MatchTime"]),
+    odds: item.odds || item.Odds || item.openingOdds || item.opening || {},
+    raw: item,
+    prediction: null
+  };
+}
+
+function parseScore(item) {
+  const score = val(item, [
+    "score","Score","resultScore","ResultScore","ftScore","FTScore","fullTimeScore"
+  ]);
+  if (typeof score === "string") {
+    const match = score.match(/(\d+)\s*[-:]\s*(\d+)/);
+    if (match) return [Number(match[1]), Number(match[2])];
+  }
+
+  const home = number(val(item, [
+    "homeScore","HomeScore","scoreHome","ScoreHome","homeGoals","HomeGoals",
+    "goalsHome","GoalsHome","ftHome","FTHome"
+  ]));
+  const away = number(val(item, [
+    "awayScore","AwayScore","scoreAway","ScoreAway","awayGoals","AwayGoals",
+    "goalsAway","GoalsAway","ftAway","FTAway"
+  ]));
+
+  if (Number.isFinite(home) && Number.isFinite(away)) return [home, away];
+  return null;
+}
+
+function outcome(item) {
+  const score = parseScore(item);
+  if (score) return score[0] > score[1] ? "1" : score[0] < score[1] ? "2" : "X";
+
+  let result = String(val(item, [
+    "result","Result","outcome","Outcome","matchResult","MatchResult",
+    "ms","MS","msResult","MSResult"
+  ])).toUpperCase().trim();
+
+  if (["1","MS1","HOME","H","1X2_1"].includes(result)) return "1";
+  if (["X","0","MSX","MS0","DRAW","D"].includes(result)) return "X";
+  if (["2","MS2","AWAY","A","1X2_2"].includes(result)) return "2";
+  return null;
+}
+
+function homeName(item) {
+  return team(val(item, [
+    "home","Home","homeTeam","HomeTeam","homeTeamName","HomeTeamName",
+    "team1","Team1","team1Name","Team1Name"
+  ]));
+}
+
+function awayName(item) {
+  return team(val(item, [
+    "away","Away","awayTeam","AwayTeam","awayTeamName","AwayTeamName",
+    "team2","Team2","team2Name","Team2Name"
+  ]));
+}
+
+function oddsOf(match, outcomeKey) {
+  const obj = match.odds || {};
+  const keys = outcomeKey === "1"
+    ? ["1","ms1","MS1","home","homeWin","odd1"]
+    : outcomeKey === "X"
+      ? ["X","x","0","msX","MSX","MS0","draw","oddX","odd0"]
+      : ["2","ms2","MS2","away","awayWin","odd2"];
+
+  for (const key of keys) {
+    const value = number(obj[key] ?? match.raw?.[key]);
+    if (value > 1 && value < 1000) return value;
+  }
+  return NaN;
+}
+
+function impliedProbabilities(match) {
+  const values = ["1","X","2"].map(k => oddsOf(match, k));
+  if (values.some(v => !Number.isFinite(v) || v <= 1)) return null;
+  const inverse = values.map(v => 1 / v);
+  const sum = inverse.reduce((a,b) => a + b, 0);
+  return inverse.map(v => v / sum);
+}
+
+function addOutcome(stats, result) {
+  if (result === "1") stats[0]++;
+  else if (result === "X") stats[1]++;
+  else if (result === "2") stats[2]++;
+}
+
+function teamForm(name, side) {
+  const wanted = normName(name);
+  const games = [];
+
+  for (const item of history) {
+    const h = normName(homeName(item));
+    const a = normName(awayName(item));
+    const result = outcome(item);
+    if (!wanted || !result) continue;
+
+    if (side === "home" && h === wanted) {
+      games.push({result, score: parseScore(item), venue:"home"});
+    } else if (side === "away" && a === wanted) {
+      games.push({result, score: parseScore(item), venue:"away"});
+    }
+  }
+
+  return games.slice(-8);
+}
+
+function calculate(match) {
+  const scores = [0,0,0];
+  let usedSources = 0;
+  const details = [];
+
+  // 1. Açılış oranı: mevcutsa piyasa olasılığını kullan.
+  const market = impliedProbabilities(match);
+  if (market) {
+    market.forEach((p,i) => scores[i] += p * 0.50);
+    usedSources++;
+    details.push("oran");
+  }
+
+  // 2. Geçmişte aynı ev sahibi-deplasman eşleşmesi.
+  const hWanted = normName(match.home);
+  const aWanted = normName(match.away);
+  const h2h = [0,0,0];
+  let h2hCount = 0;
+
+  for (const item of history) {
+    if (normName(homeName(item)) !== hWanted ||
+        normName(awayName(item)) !== aWanted) continue;
+    const result = outcome(item);
+    if (!result) continue;
+    addOutcome(h2h, result);
+    h2hCount++;
+  }
+
+  if (h2hCount) {
+    h2h.forEach((n,i) => scores[i] += (n / h2hCount) * 0.25);
+    usedSources++;
+    details.push("ikili geçmiş " + h2hCount);
+  }
+
+  // 3. Ev sahibinin evde ve deplasman takımının dış sahadaki sonuçları.
+  const homeGames = teamForm(match.home, "home");
+  const awayGames = teamForm(match.away, "away");
+  const form = [0,0,0];
+  let formCount = 0;
+
+  for (const game of homeGames) {
+    addOutcome(form, game.result);
+    formCount++;
+  }
+
+  for (const game of awayGames) {
+    const reversed = game.result === "1" ? "2" : game.result === "2" ? "1" : "X";
+    addOutcome(form, reversed);
+    formCount++;
+  }
+
+  if (formCount) {
+    form.forEach((n,i) => scores[i] += (n / formCount) * 0.25);
+    usedSources++;
+    details.push("saha formu " + formCount);
+  }
+
+  if (!usedSources) {
+    return {
+      pick: null,
+      probabilities: null,
+      confidence: 0,
+      sources: "Yeterli eşleşen veri yok",
+      note: "Takım formu veya oran verisi eşleşmedi."
+    };
+  }
+
+  const total = scores.reduce((a,b) => a + b, 0);
+  const probs = total ? scores.map(n => n / total) : [1/3,1/3,1/3];
+  const best = Math.max(...probs);
+  const index = probs.indexOf(best);
+  const picks = ["1","X","2"];
+
+  return {
+    pick: picks[index],
+    probabilities: probs,
+    confidence: Math.round(best * 100),
+    sources: details.join(" + "),
+    note: "Tahmini olasılık: " + Math.round(probs[0]*100) + "% / " +
+      Math.round(probs[1]*100) + "% / " + Math.round(probs[2]*100) + "%"
+  };
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, ch => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[ch]);
+}
+
+function render() {
+  $("total").textContent = program.length + "/15";
+  $("history").textContent = history.length;
+  $("ready").textContent = program.filter(m => m.prediction?.pick).length + "/15";
+
+  if (!program.length) {
+    $("matches").innerHTML = '<p class="muted">Program henüz bulunamadı.</p>';
+    return;
+  }
+
+  $("matches").innerHTML = program.map((m,i) => {
+    const p = m.prediction;
+    const selected = p?.pick;
+    const choices = ["1","X","2"].map(key =>
+      '<span class="pick ' + (selected === key ? "active" : "") + '">' +
+      key + '</span>'
+    ).join("");
+
+    return '<div class="match">' +
+      '<div class="num">' + (i + 1) + '</div>' +
+      '<div><div class="teams">' + escapeHtml(m.home) + ' – ' + escapeHtml(m.away) + '</div>' +
+      '<div class="details">' + escapeHtml([m.date,m.time].filter(Boolean).join(" ")) +
+      (p ? ' · ' + escapeHtml(p.sources) + ' · ' + escapeHtml(p.note) : "") +
+      '</div></div><div class="picks">' + choices + '</div></div>';
+  }).join("");
+
+  if (generated) updateCoupon();
+}
+
+function updateCoupon() {
+  const picks = program.map(m => m.prediction?.pick || "?");
+  $("coupon").textContent = picks.join(" - ");
+  const valid = picks.filter(p => ["1","X","2"].includes(p)).length;
+  $("couponInfo").textContent = valid + "/15 maç için tek seçim üretildi. " +
+    (valid < 15 ? "Eksik analizler kesin seçim olarak gösterilmedi." : "Tek kolon hazır.");
+}
+
+async function loadAll() {
+  $("reload").disabled = true;
+  $("make").disabled = true;
+  generated = false;
+  program = [];
+  history = [];
+  $("coupon").textContent = "Henüz oluşturulmadı";
+  $("couponInfo").textContent = "Önce verileri yükleyin.";
+  status("JSON dosyaları yükleniyor…");
+
+  try {
+    const results = await Promise.allSettled([
+      getJson(PROGRAM_URL),
+      getJson(HISTORY_URL)
+    ]);
+
+    if (results[0].status !== "fulfilled") {
+      throw new Error(
+        "Haftalık program dosyası okunamadı: " + results[0].reason.message +
+        "\nGitHub Actions'ın data/spor-toto.json dosyasını oluşturduğunu kontrol et."
+      );
+    }
+
+    if (results[1].status !== "fulfilled") {
+      throw new Error(
+        "Geçmiş veri dosyası okunamadı: " + results[1].reason.message
+      );
+    }
+
+    const programJson = results[0].value;
+    const historyJson = results[1].value;
+
+    roundName = String(val(programJson, ["round","week","roundName","weekName","title"]) || "Spor Toto haftası");
+    updatedAt = String(val(programJson, ["updatedAt","updated_at","lastUpdated"]) || "");
+
+    program = arr(programJson)
+      .map(parseFixture)
+      .filter(Boolean)
+      .sort((a,b) => a.no - b.no)
+      .slice(0,15);
+
+    history = arr(historyJson);
+
+    $("round").textContent = "Program: " + roundName;
+    $("updated").textContent = "Son veri güncellemesi: " + (updatedAt || "JSON içinde tarih yok");
+    $("analysis").textContent =
+      "Geçmiş veri dosyası yüklendi. Karma sistem; açılış oranı, aynı eşleşmenin geçmiş sonuçları ve ev/deplasman formu mevcutsa bunları birlikte değerlendirir. Eksik kaynaklar varsa mevcut kaynaklarla analiz yapar.";
+
+    if (program.length !== 15) {
+      status(
+        "Program JSON dosyası açıldı ancak 15 maç bulunamadı. Bulunan: " +
+        program.length + ". YAML dosyasının JSON alanlarını kontrol et.",
+        "warn"
+      );
+      render();
+      return;
+    }
+
+    status("Program ve geçmiş veri yüklendi. Tahmin oluşturabilirsin.", "good");
+    $("make").disabled = false;
+    render();
+  } catch (error) {
+    status(error.message, "bad");
+    $("analysis").textContent = "Veriler yüklenemedi.";
+    render();
+  } finally {
+    $("reload").disabled = false;
+  }
+}
+
+function makePredictions() {
+  if (program.length !== 15) {
+    status("Önce geçerli 15 maçlık program yüklenmeli.", "warn");
+    return;
+  }
+
+  program = program.map(m => ({...m, prediction: calculate(m)}));
+  generated = true;
+  render();
+
+  const valid = program.filter(m => m.prediction.pick).length;
+  $("analysis").textContent =
+    "15 maç incelendi. " + valid +
+    " maçta kullanılabilir veri bulundu. Oranlar veya geçmiş eşleşmeler eksikse güven seviyesi düşebilir. " +
+    "Gösterilen yüzdeler model tahminidir; kesin gerçekleşme olasılığı olarak değerlendirilmemelidir.";
+
+  status(
+    valid === 15
+      ? "Karma tahminler hazır. Tek kolon oluşturuldu."
+      : valid + "/15 maç için analiz üretildi. Veri eksik olan maçlarda tahmin zorlanmadı.",
+    valid === 15 ? "good" : "warn"
+  );
+
+  updateCoupon();
+}
+
+async function copyCoupon() {
+  const picks = program.map(m => m.prediction?.pick || "?");
+  if (picks.length !== 15 || picks.some(p => !["1","X","2"].includes(p))) {
+    status("Kopyalamak için önce 15 maçın tamamında geçerli tahmin oluşturulmalı.", "warn");
+    return;
+  }
+
+  const text = roundName + "\n" + picks.map((p,i) => (i+1) + ". " + p).join("\n") +
+    "\nTek kolon: " + picks.join(" - ");
+
+  try {
+    await navigator.clipboard.writeText(text);
+    status("Tek kolon panoya kopyalandı.", "good");
+  } catch (_) {
+    status("Tarayıcı panoya erişimi engelledi. Kuponu ekrandan seçip kopyalayabilirsin.", "warn");
+  }
+}
+
+$("reload").addEventListener("click", loadAll);
+$("make").addEventListener("click", makePredictions);
+$("copy").addEventListener("click", copyCoupon);
+
+loadAll();
+</script>
+</body>
+</html>
