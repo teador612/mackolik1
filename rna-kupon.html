@@ -1,533 +1,606 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07111f">
 <title>RNA | Otomatik Kupon</title>
 <style>
-body {
-  margin: 0;
-  padding: 24px 12px;
-  background: #07111f;
-  color: #e8f0fc;
-  font-family: system-ui, sans-serif;
-}
-#loading {
-  max-width: 900px;
-  margin: 40px auto;
-  padding: 20px;
-  border: 1px solid #263a54;
-  border-radius: 14px;
-  background: #102038;
-  line-height: 1.7;
-}
+  #rna-loading {
+    max-width: 1050px;
+    margin: 30px auto;
+    padding: 18px;
+    color: #e8f0fc;
+    background: #0b1727;
+    border: 1px solid #263a54;
+    border-radius: 14px;
+    font: 14px system-ui, sans-serif;
+  }
+  #mk-coupon-root {
+    display: none !important;
+  }
+  .rna-diagnostics {
+    margin-top: 12px;
+    padding: 11px 12px;
+    border: 1px solid #344b68;
+    border-radius: 10px;
+    background: #0a1727;
+    color: #c6d9f1;
+    font-size: 12px;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
+  }
+  .rna-diagnostics strong { color: #8fc1ff; }
 </style>
 </head>
 <body>
-<div id="loading">RNA kupon ekranı hazırlanıyor...</div>
+<div id="rna-loading">RNA kupon ekranı hazırlanıyor...</div>
+
 <script>
 "use strict";
+
 (async function () {
-  const loading = document.getElementById("loading");
-  try {
-    /*
-      DNA ekranının mevcut HTML/CSS dosyasını okur.
-      Orijinal dna-kupon.html dosyası değiştirilmez.
-    */
-    const response = await fetch("./dna-kupon.html", {
-      cache: "no-store"
-    });
-    if (!response.ok) {
-      throw new Error(
-        "dna-kupon.html okunamadı. Dosyanın depo kökünde olduğunu kontrol et."
+  const TEMPLATE_URL = "./dna-kupon.html";
+  const RNA_SCRIPT_URL = "./rna.js";
+
+  const MARKETS = [
+    ["ms1", "MS1"],
+    ["msX", "MSX"],
+    ["ms2", "MS2"],
+    ["iy1", "İY 1"],
+    ["iyX", "İY X"],
+    ["iy2", "İY 2"],
+    ["iy15Ust", "İY 1,5 Üst"],
+    ["iy15Alt", "İY 1,5 Alt"],
+    ["au15Ust", "Maç 1,5 Üst"],
+    ["au15Alt", "Maç 1,5 Alt"],
+    ["au25Ust", "Maç 2,5 Üst"],
+    ["au25Alt", "Maç 2,5 Alt"],
+    ["au35Ust", "Maç 3,5 Üst"],
+    ["au35Alt", "Maç 3,5 Alt"],
+    ["kgVar", "KG Var"],
+    ["kgYok", "KG Yok"],
+    ["iyKgVar", "İY KG Var"],
+    ["iyKgYok", "İY KG Yok"],
+    ["gol01", "0-1 Gol"],
+    ["gol23", "2-3 Gol"],
+    ["gol46", "4-6 Gol"],
+    ["gol7", "7+ Gol"],
+    ["cs1X", "Çifte Şans 1X"],
+    ["cs12", "Çifte Şans 12"],
+    ["csX2", "Çifte Şans X2"]
+  ];
+
+  const CONFIG = {
+    MIN_ODD: 1.35,
+    MIN_TOTAL_ODD: 2.00,
+    MAX_PICKS: 5,
+    MAX_COUPONS: 3
+  };
+
+  const $ = id => document.getElementById(id);
+  let coupons = [];
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[ch]);
+  }
+
+  function today() {
+    const d = new Date();
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, "0"),
+      String(d.getDate()).padStart(2, "0")
+    ].join("-");
+  }
+
+  function showNotice(message, type) {
+    const el = $("notice");
+    if (!el) return;
+    el.textContent = message;
+    el.className = "notice show" + (type ? " " + type : "");
+  }
+
+  function formatOdd(value) {
+    return Number(value || 0).toFixed(2);
+  }
+
+  function getIdentity(candidate) {
+    const match = candidate.match || {};
+    const id = match.id ?? match.matchId ?? match.code;
+
+    if (id !== undefined && id !== null && String(id).trim()) {
+      return "id:" + String(id).trim();
+    }
+
+    return [
+      candidate.date,
+      candidate.time,
+      candidate.matchName
+    ].join("|").toLocaleLowerCase("tr-TR");
+  }
+
+  function getOutcome(candidate) {
+    try {
+      if (typeof window.marketOutcome !== "function") return null;
+      return window.marketOutcome(candidate.match, candidate.market);
+    } catch (error) {
+      console.warn("Market sonucu hesaplanamadı:", error);
+      return null;
+    }
+  }
+
+  function pickStatus(candidate) {
+    const outcome = getOutcome(candidate);
+    if (outcome === true) return "won";
+    if (outcome === false) return "lost";
+    return "pending";
+  }
+
+  function statusLabel(status) {
+    if (status === "won") return "✓ Kazandı";
+    if (status === "lost") return "✕ Kaybetti";
+    return "● Bekliyor";
+  }
+
+  function couponStatus(coupon) {
+    if (coupon.manualStatus === "won" ||
+        coupon.manualStatus === "lost") {
+      return coupon.manualStatus;
+    }
+
+    const states = coupon.picks.map(pickStatus);
+
+    if (states.includes("lost")) return "lost";
+    if (states.length && states.every(s => s === "won")) return "won";
+    return "pending";
+  }
+
+  function createCoupons(candidates, date) {
+    const tiers = [
+      { label: "Güvenli Kupon", minSuccess: 90 },
+      { label: "Orta Risk Kupon", minSuccess: 85 },
+      { label: "Alternatif Kupon", minSuccess: 80 }
+    ];
+
+    const result = [];
+    const globallyUsed = new Set();
+
+    for (const tier of tiers) {
+      if (result.length >= CONFIG.MAX_COUPONS) break;
+
+      const eligible = candidates
+        .filter(c =>
+          Number(c.success) >= tier.minSuccess &&
+          Number(c.odd) >= CONFIG.MIN_ODD &&
+          !globallyUsed.has(getIdentity(c))
+        )
+        .sort((a, b) =>
+          Number(b.success) - Number(a.success) ||
+          Number(b.sample) - Number(a.sample) ||
+          Number(b.odd) - Number(a.odd)
+        );
+
+      const picks = [];
+      const localUsed = new Set();
+      let total = 1;
+
+      for (const candidate of eligible) {
+        if (picks.length >= CONFIG.MAX_PICKS) break;
+
+        const id = getIdentity(candidate);
+        if (localUsed.has(id) || globallyUsed.has(id)) continue;
+
+        localUsed.add(id);
+        picks.push(candidate);
+        total *= Number(candidate.odd);
+
+        if (total >= CONFIG.MIN_TOTAL_ODD) break;
+      }
+
+      if (picks.length && total >= CONFIG.MIN_TOTAL_ODD) {
+        result.push({
+          id: "rna-" + Date.now() + "-" + result.length,
+          date,
+          label: tier.label,
+          minSuccess: tier.minSuccess,
+          picks,
+          totalOdd: total,
+          manualStatus: null
+        });
+
+        for (const id of localUsed) globallyUsed.add(id);
+      }
+    }
+
+    return result;
+  }
+
+  function renderPick(candidate) {
+    const status = pickStatus(candidate);
+    const match = candidate.match || {};
+    const score = typeof window.fullScore === "function"
+      ? window.fullScore(match)
+      : null;
+
+    const scoreText = score &&
+      score.home !== undefined &&
+      score.away !== undefined
+      ? `${score.home} - ${score.away}`
+      : "Skor bekleniyor";
+
+    const marketName = candidate.marketLabel ||
+      MARKETS.find(m => m[0] === candidate.marketKey)?.[1] ||
+      candidate.marketKey ||
+      "Market";
+
+    return `
+      <div class="pick">
+        <div class="pick-status ${status}">
+          ${status === "won" ? "✓" : status === "lost" ? "✕" : "●"}
+        </div>
+        <div>
+          <div class="pick-teams">
+            ${escapeHTML(candidate.matchName || "Takım bilgisi yok")}
+          </div>
+          <div class="pick-meta">
+            ${escapeHTML(candidate.date || "")}
+            ${candidate.time ? " · " + escapeHTML(candidate.time) : ""}
+            ${candidate.league ? " · " + escapeHTML(candidate.league) : ""}
+            · Skor: ${escapeHTML(scoreText)}
+          </div>
+          <div class="pick-source">
+            <b>${escapeHTML(marketName)}</b><br>
+            Geçmiş örnek: ${Number(candidate.sample || 0)} maç
+            · Başarı: %${Number(candidate.success || 0).toFixed(1)}<br>
+            Kazanan örnek: ${Number(candidate.wins || 0)}
+            · Kaybeden örnek: ${Number(candidate.losses || 0)}
+          </div>
+        </div>
+        <div class="pick-odd">${formatOdd(candidate.odd)}</div>
+      </div>`;
+  }
+
+  function renderCoupon(coupon, index) {
+    const status = couponStatus(coupon);
+
+    return `
+      <article class="coupon">
+        <div class="coupon-head">
+          <div>
+            <h3 class="coupon-title">${escapeHTML(coupon.label)}</h3>
+            <div class="coupon-date">
+              ${escapeHTML(coupon.date)} · ${coupon.picks.length} maç
+              · %${coupon.minSuccess} ve üzeri geçmiş başarı
+            </div>
+          </div>
+          <div class="coupon-total">
+            <strong>${formatOdd(coupon.totalOdd)}</strong>
+            <span>TOPLAM ORAN</span>
+          </div>
+        </div>
+        <div class="coupon-body">
+          ${coupon.picks.map(renderPick).join("")}
+        </div>
+        <div class="coupon-foot">
+          <div class="coupon-status ${status}">
+            ${statusLabel(status)}
+          </div>
+          <div class="coupon-actions">
+            <button class="btn btn-secondary btn-small"
+              data-rna-action="copy" data-id="${coupon.id}">Kopyala</button>
+            <button class="btn btn-secondary btn-small"
+              data-rna-action="won" data-id="${coupon.id}">✓ Kazandı</button>
+            <button class="btn btn-danger btn-small"
+              data-rna-action="lost" data-id="${coupon.id}">✕ Kaybetti</button>
+            <button class="btn btn-secondary btn-small"
+              data-rna-action="reset" data-id="${coupon.id}">Otomatik durum</button>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function renderCoupons() {
+    const list = $("couponList");
+    if (!list) return;
+
+    if (!coupons.length) {
+      list.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">🔎</div>
+          Seçilen tarihte ve markette kupon koşullarını karşılayan
+          yeterli aday bulunamadı. Aşağıdaki market tanı bilgilerini kontrol et.
+        </div>`;
+    } else {
+      list.innerHTML = coupons.map(renderCoupon).join("");
+    }
+
+    $("statCoupons").textContent = String(coupons.length);
+    $("statPicks").textContent = String(
+      coupons.reduce((sum, coupon) => sum + coupon.picks.length, 0)
+    );
+  }
+
+  function renderDiagnostics(allCandidates, selectedCandidates, diagnostics, marketKey) {
+    let diagnosticsEl = $("rnaDiagnostics");
+
+    if (!diagnosticsEl) {
+      diagnosticsEl = document.createElement("div");
+      diagnosticsEl.id = "rnaDiagnostics";
+      diagnosticsEl.className = "rna-diagnostics";
+      $("notice").insertAdjacentElement("afterend", diagnosticsEl);
+    }
+
+    diagnosticsEl.innerHTML = `
+      <strong>RNA market eşleşme kontrolü</strong><br>
+      Seçilen market anahtarı: <strong>${escapeHTML(marketKey)}</strong><br>
+      RNA motorunun uygun adayları: <strong>${allCandidates.length}</strong><br>
+      Seçilen marketle eşleşen aday: <strong>${selectedCandidates.length}</strong><br>
+      Günün maç sayısı: <strong>${Number(diagnostics?.dayMatches || 0)}</strong><br>
+      Oranı bulunamayan market sayacı: <strong>${Number(diagnostics?.noOdd || 0)}</strong><br>
+      Geçmiş eşleşmesi bulunamayan: <strong>${Number(diagnostics?.noHistoryGroup || 0)}</strong><br>
+      Minimum örneklem koşulunu geçemeyen: <strong>${Number(diagnostics?.lowSample || 0)}</strong><br>
+      Başarı koşulunu geçemeyen: <strong>${Number(diagnostics?.lowSuccess || 0)}</strong><br>
+      Başarı koşulunu geçen aday: <strong>${Number(diagnostics?.successAccepted || 0)}</strong>
+    `;
+  }
+
+  async function generate() {
+    const button = $("generateCoupons");
+    const date = $("autoDate").value;
+    const marketKey = $("autoResult").value;
+
+    if (!date) {
+      showNotice("Önce maç tarihini seç.", "error");
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Analiz ediliyor…";
+
+    try {
+      if (typeof window.getCandidatesForDate !== "function") {
+        throw new Error("RNA motoru yüklenmedi. rna.js dosya yolunu kontrol et.");
+      }
+
+      const allCandidates = window.getCandidatesForDate(date) || [];
+      const diagnostics = window.getCandidatesForDate.lastDiagnostics;
+
+      // Market adı eşleştirmesi tam anahtar üzerinden yapılır.
+      // Örneğin au15Ust ile iy15Ust birbirinin yerine kullanılmaz.
+      const selectedCandidates = allCandidates.filter(candidate =>
+        String(candidate.marketKey) === marketKey
+      );
+
+      renderDiagnostics(
+        allCandidates,
+        selectedCandidates,
+        diagnostics,
+        marketKey
+      );
+
+      coupons = createCoupons(selectedCandidates, date);
+      renderCoupons();
+
+      if (!selectedCandidates.length) {
+        showNotice(
+          `Seçilen market (${marketKey}) için RNA motorunda uygun aday yok. ` +
+          `Toplam ${allCandidates.length} uygun aday bulundu; ` +
+          `seçilen marketle eşleşen aday sayısı ${selectedCandidates.length}. ` +
+          `Market anahtarı ve geçmiş örnek koşullarını kontrol et.`,
+          "error"
+        );
+      } else if (!coupons.length) {
+        showNotice(
+          `${selectedCandidates.length} uygun aday bulundu; ancak ` +
+          `en az ${CONFIG.MIN_TOTAL_ODD.toFixed(2)} toplam oran koşulunu ` +
+          `karşılayan kupon üretilemedi. Ayrıntılar aşağıda gösteriliyor.`,
+          "error"
+        );
+      } else {
+        const pickCount = coupons.reduce(
+          (sum, coupon) => sum + coupon.picks.length, 0
+        );
+        showNotice(
+          `${coupons.length} kupon oluşturuldu. ${pickCount} maç eklendi. ` +
+          `Seçilen market: ${MARKETS.find(m => m[0] === marketKey)?.[1] || marketKey}.`,
+          "success"
+        );
+      }
+    } catch (error) {
+      console.error("RNA kupon hatası:", error);
+      coupons = [];
+      renderCoupons();
+      showNotice(
+        "Kupon oluşturulamadı: " + (error?.message || String(error)),
+        "error"
+      );
+    } finally {
+      button.disabled = false;
+      button.textContent = "✦ Kuponları oluştur";
+    }
+  }
+
+  async function copyCoupon(coupon) {
+    const lines = [
+      `RNA Otomatik Kupon - ${coupon.date}`,
+      coupon.label,
+      ""
+    ];
+
+    for (const pick of coupon.picks) {
+      lines.push(
+        pick.matchName || "Maç",
+        `${pick.marketLabel || pick.marketKey}: ${formatOdd(pick.odd)}`,
+        `Başarı: %${Number(pick.success || 0).toFixed(1)} · Örnek: ${pick.sample || 0}`,
+        ""
       );
     }
+
+    lines.push("Toplam oran: " + formatOdd(coupon.totalOdd));
+
+    const text = lines.join("\n");
+
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        if (!document.execCommand("copy")) {
+          throw new Error("Kopyalama başarısız.");
+        }
+
+        textarea.remove();
+      }
+
+      showNotice("Kupon kopyalandı.", "success");
+    } catch (error) {
+      showNotice("Kupon kopyalanamadı. Tarayıcı izinlerini kontrol et.", "error");
+    }
+  }
+
+  document.addEventListener("click", async event => {
+    const button = event.target.closest("[data-rna-action]");
+    if (!button) return;
+
+    const coupon = coupons.find(item => item.id === button.dataset.id);
+    if (!coupon) return;
+
+    const action = button.dataset.rnaAction;
+
+    if (action === "copy") {
+      await copyCoupon(coupon);
+      return;
+    }
+
+    if (action === "won") coupon.manualStatus = "won";
+    else if (action === "lost") coupon.manualStatus = "lost";
+    else coupon.manualStatus = null;
+
+    renderCoupons();
+    showNotice("Kupon durumu güncellendi.", "success");
+  });
+
+  try {
+    // DNA HTML dosyasının mevcut tasarımını al.
+    const response = await fetch(TEMPLATE_URL, { cache: "no-cache" });
+    if (!response.ok) {
+      throw new Error("DNA ekranı alınamadı (HTTP " + response.status + ").");
+    }
+
     const html = await response.text();
     const parsed = new DOMParser().parseFromString(html, "text/html");
-    /*
-      DNA motorunu ve eski kupon scriptini çalıştırmıyoruz.
-      Yalnızca mevcut arayüzü ve CSS tasarımını alıyoruz.
-    */
+
+    // DNA'nın stil dosyalarını aynen kullan.
+    parsed.querySelectorAll("style").forEach(style => {
+      document.head.appendChild(style.cloneNode(true));
+    });
+
+    // DNA motorunu çalıştırma; yalnızca ekran tasarımı kullanılacak.
     parsed.querySelectorAll("script").forEach(script => script.remove());
-    document.head.innerHTML = parsed.head.innerHTML;
+    parsed.querySelector("#dnaEngineBridge")?.remove();
+
     document.body.innerHTML = parsed.body.innerHTML;
-    document.title = "RNA | Otomatik Kupon";
+
     const logo = document.querySelector(".brand-logo");
     if (logo) logo.textContent = "RNA";
-    const heading = document.querySelector("h1");
-    if (heading) heading.textContent = "RNA Otomatik Kupon";
+
+    document.title = "RNA | Otomatik Kupon";
+
+    const title = document.querySelector("h1");
+    if (title) title.textContent = "Otomatik Kupon";
+
     const subtitle = document.querySelector(".subtitle");
     if (subtitle) {
-      subtitle.textContent =
-        "RNA verileriyle geçmiş oran örneklerinden otomatik kupon";
+      subtitle.textContent = "RNA geçmiş oran örneklemlerinden kupon oluşturma";
     }
-    /*
-      DNA motoruna ait gizli analiz bağlantısını kaldır.
-      RNA motorunun kendi arayüzü gizli bir alanda çalışır.
-    */
-    document.getElementById("dnaEngineBridge")?.remove();
-    const hiddenRoot = document.createElement("div");
-    hiddenRoot.id = "mk-coupon-root";
-    hiddenRoot.style.cssText =
-      "display:none!important;visibility:hidden!important";
-    document.body.appendChild(hiddenRoot);
-    /*
-      RNA market listesiyle uyumlu seçenekler.
-    */
-    const marketSelect = document.getElementById("autoResult");
-    const options = [
-      ["MS1", "MS1"],
-      ["MSX", "MSX"],
-      ["MS2", "MS2"],
-      ["IY1", "İY 1"],
-      ["IYX", "İY X"],
-      ["IY2", "İY 2"],
-      ["KG_VAR", "KG Var"],
-      ["KG_YOK", "KG Yok"],
-      ["IY15_ALT", "İY 1.5 Alt"],
-      ["IY15_UST", "İY 1.5 Üst"],
-      ["15_ALT", "1.5 Alt"],
-      ["15_UST", "1.5 Üst"],
-      ["25_ALT", "2.5 Alt"],
-      ["25_UST", "2.5 Üst"],
-      ["35_ALT", "3.5 Alt"],
-      ["35_UST", "3.5 Üst"],
-      ["GOL01", "0-1 Gol"],
-      ["GOL23", "2-3 Gol"],
-      ["GOL46", "4-6 Gol"],
-      ["GOL7", "7+ Gol"]
-    ];
-    if (marketSelect) {
-      marketSelect.replaceChildren();
-      for (const [value, label] of options) {
-        const option = document.createElement("option");
-        option.value = value;
-        option.textContent = label;
-        marketSelect.appendChild(option);
-      }
-      marketSelect.value = "MS2";
+
+    // Ekran seçenekleri RNA'nın gerçek market anahtarlarıyla doldurulur.
+    const select = $("autoResult");
+    select.innerHTML = MARKETS.map(([key, label]) =>
+      `<option value="${escapeHTML(key)}">${escapeHTML(label)}</option>`
+    ).join("");
+    select.value = "ms2";
+
+    // DNA sayfasındaki 2.00 / 5 maç / 3 kupon kurallarını koru.
+    const ruleValues = document.querySelectorAll(".rule-value");
+    if (ruleValues.length >= 4) {
+      ruleValues[0].textContent = CONFIG.MIN_ODD.toFixed(2);
+      ruleValues[1].textContent = CONFIG.MIN_TOTAL_ODD.toFixed(2);
+      ruleValues[2].textContent = "En fazla " + CONFIG.MAX_PICKS;
+      ruleValues[3].textContent = "En fazla " + CONFIG.MAX_COUPONS;
     }
-    /*
-      RNA motorunu yükle.
-      RNA kendi verisini ./data/v2-data.json dosyasından alır.
-    */
+
+    $("autoDate").value = today();
+
+    // RNA kendi arayüzünü bu gizli alana oluşturur; DNA görünümü bozulmaz.
+    const root = document.createElement("div");
+    root.id = "mk-coupon-root";
+    root.setAttribute("aria-hidden", "true");
+    document.querySelector("main.page")?.appendChild(root);
+
+    const loading = $("rna-loading");
+    if (loading) loading.remove();
+
+    // RNA motorunu klasik script olarak yükle ki fonksiyonlar window'dan erişilsin.
     await new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "./rna.js";
+      script.src = RNA_SCRIPT_URL;
       script.onload = resolve;
       script.onerror = () => reject(
-        new Error("rna.js yüklenemedi.")
+        new Error("rna.js yüklenemedi. Dosyanın ana klasörde olduğundan emin ol.")
       );
       document.body.appendChild(script);
     });
-    const MARKET_MAP = {
-      MS1: "ms1",
-      MSX: "msX",
-      MS2: "ms2",
-      IY1: "iy1",
-      IYX: "iyX",
-      IY2: "iy2",
-      KG_VAR: "kgVar",
-      KG_YOK: "kgYok",
-      IY15_ALT: "iy15Alt",
-      IY15_UST: "iy15Ust",
-      "15_ALT": "au15Alt",
-      "15_UST": "au15Ust",
-      "25_ALT": "au25Alt",
-      "25_UST": "au25Ust",
-      "35_ALT": "au35Alt",
-      "35_UST": "au35Ust",
-      GOL01: "gol01",
-      GOL23: "gol23",
-      GOL46: "gol46",
-      GOL7: "gol7"
-    };
-    const LABELS = Object.fromEntries(options);
-    const CONFIG = {
-      MIN_ODD: 1.35,
-      MIN_TOTAL_ODD: 3,
-      MAX_PICKS: 5,
-      MAX_COUPONS: 3
-    };
-    let coupons = [];
-    const $ = id => document.getElementById(id);
-    function escapeHTML(value) {
-      return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
-      })[char]);
+
+    // RNA verisi yüklenene kadar bekle.
+    const started = Date.now();
+    while (Date.now() - started < 25000) {
+      const message = document.querySelector("#mk-coupon-root .mk-message");
+      const loaded = typeof window.getCandidatesForDate === "function" &&
+        message &&
+        !message.textContent.includes("Veriler yükleniyor");
+
+      if (loaded) break;
+      await new Promise(resolve => setTimeout(resolve, 250));
     }
-    function today() {
-      const date = new Date();
-      return [
-        date.getFullYear(),
-        String(date.getMonth() + 1).padStart(2, "0"),
-        String(date.getDate()).padStart(2, "0")
-      ].join("-");
+
+    if (typeof window.getCandidatesForDate !== "function") {
+      throw new Error("RNA analiz fonksiyonları bulunamadı.");
     }
-    function team(match, side) {
-      const home = side === "home";
-      return String(
-        home
-          ? match?.home ?? match?.homeTeam ?? match?.homeName ??
-            match?.team1 ?? match?.evSahibi ?? "Ev sahibi"
-          : match?.away ?? match?.awayTeam ?? match?.awayName ??
-            match?.team2 ?? match?.deplasman ?? "Deplasman"
-      );
-    }
-    function matchID(match) {
-      const id = match?.id ?? match?.matchId ?? match?.code;
-      if (id != null && String(id).trim()) {
-        return "id:" + String(id);
-      }
-      return [
-        match?.date ?? match?.matchDate ?? "",
-        match?.time ?? match?.matchTime ?? "",
-        team(match, "home"),
-        team(match, "away")
-      ].join("|").toLocaleLowerCase("tr-TR");
-    }
-    function score(match, type) {
-      const fn = type === "ht" ? window.halfScore : window.fullScore;
-      if (typeof fn === "function") {
-        return fn(match);
-      }
-      return null;
-    }
-    function pickStatus(pick) {
-      if (!pick.match || !pick.market) return "pending";
-      const result = window.marketOutcome(
-        pick.match,
-        pick.market
-      );
-      if (result === true) return "won";
-      if (result === false) return "lost";
-      return "pending";
-    }
-    function statusLabel(status) {
-      if (status === "won") return "✓ Kazandı";
-      if (status === "lost") return "✕ Kaybetti";
-      return "● Bekliyor";
-    }
-    function couponStatus(coupon) {
-      if (coupon.manualStatus) return coupon.manualStatus;
-      const states = coupon.picks.map(pickStatus);
-      if (states.includes("lost")) return "lost";
-      if (states.length && states.every(s => s === "won")) return "won";
-      return "pending";
-    }
-    function totalOdd(picks) {
-      return picks.reduce((total, pick) => total * pick.odd, 1);
-    }
-    function buildCoupons(candidates, date, resultId) {
-      const remaining = [...candidates];
-      const used = new Set();
-      const result = [];
-      while (
-        result.length < CONFIG.MAX_COUPONS &&
-        remaining.length
-      ) {
-        const picks = [];
-        let total = 1;
-        while (
-          remaining.length &&
-          picks.length < CONFIG.MAX_PICKS &&
-          total < CONFIG.MIN_TOTAL_ODD
-        ) {
-          const candidate = remaining.shift();
-          const id = candidate.id;
-          if (used.has(id)) continue;
-          picks.push(candidate);
-          used.add(id);
-          total *= candidate.odd;
-        }
-        if (picks.length && total >= CONFIG.MIN_TOTAL_ODD) {
-          result.push({
-            id: "rna-" + Date.now().toString(36) +
-              "-" + Math.random().toString(36).slice(2, 8),
-            date,
-            resultId,
-            resultLabel: LABELS[resultId] || resultId,
-            picks,
-            totalOdd: Number(total.toFixed(2)),
-            manualStatus: null
-          });
-        } else {
-          break;
-        }
-      }
-      return result;
-    }
-    function renderPick(pick) {
-      const status = pickStatus(pick);
-      const match = pick.match;
-      const ft = score(match, "ft");
-      const scoreText = ft
-        ? `${ft.home} - ${ft.away}`
-        : "";
-      const home = team(match, "home");
-      const away = team(match, "away");
-      return `
-        <div class="pick">
-          <div class="pick-status ${status}">
-            ${status === "won" ? "✓" : status === "lost" ? "✕" : "●"}
-          </div>
-          <div>
-            <div class="pick-teams">
-              ${escapeHTML(home)}
-              <span class="versus">VS</span>
-              ${escapeHTML(away)}
-            </div>
-            <div class="pick-meta">
-              ${escapeHTML(pick.time || "--:--")}
-              ${pick.league ? " · " + escapeHTML(pick.league) : ""}
-              ${scoreText ? " · Skor: " + scoreText : ""}
-            </div>
-            <div class="pick-source">
-              <b>${escapeHTML(pick.marketLabel)}</b>
-              ${pick.odd.toFixed(2)}
-              <br>
-              Eşleşen geçmiş: ${pick.sample} maç
-              · Başarı: %${pick.success.toFixed(1)}
-            </div>
-          </div>
-          <div class="pick-odd">${pick.odd.toFixed(2)}</div>
-        </div>
-      `;
-    }
-    function renderCoupon(coupon, index) {
-      const status = couponStatus(coupon);
-      return `
-        <article class="coupon">
-          <div class="coupon-head">
-            <div>
-              <h3 class="coupon-title">Kupon ${index + 1}</h3>
-              <div class="coupon-date">
-                ${escapeHTML(coupon.date)}
-                · ${escapeHTML(coupon.resultLabel)}
-                · ${coupon.picks.length} maç
-              </div>
-            </div>
-            <div class="coupon-total">
-              <strong>${coupon.totalOdd.toFixed(2)}</strong>
-              <span>TOPLAM ORAN</span>
-            </div>
-          </div>
-          <div class="coupon-body">
-            ${coupon.picks.map(renderPick).join("")}
-          </div>
-          <div class="coupon-foot">
-            <div class="coupon-status ${status}">
-              ${statusLabel(status)}
-            </div>
-            <div class="coupon-actions">
-              <button class="btn btn-secondary btn-small"
-                data-action="copy" data-id="${coupon.id}">Kopyala</button>
-              <button class="btn btn-secondary btn-small"
-                data-action="won" data-id="${coupon.id}">✓ Kazandı</button>
-              <button class="btn btn-danger btn-small"
-                data-action="lost" data-id="${coupon.id}">✕ Kaybetti</button>
-              <button class="btn btn-secondary btn-small"
-                data-action="reset" data-id="${coupon.id}">Otomatik durum</button>
-            </div>
-          </div>
-        </article>
-      `;
-    }
-    function render() {
-      $("couponList").innerHTML = coupons.length
-        ? coupons.map(renderCoupon).join("")
-        : `<div class="empty">
-             <div class="empty-icon">🔎</div>
-             Bu tarih ve market için kupon oluşturulamadı.
-           </div>`;
-      $("statCoupons").textContent = String(coupons.length);
-      $("statPicks").textContent = String(
-        coupons.reduce((sum, coupon) => sum + coupon.picks.length, 0)
-      );
-    }
-    async function waitForRNA() {
-      const start = Date.now();
-      while (Date.now() - start < 25000) {
-        if (
-          typeof window.getCandidatesForDate === "function" &&
-          typeof window.marketOutcome === "function" &&
-          typeof window.fullScore === "function"
-        ) {
-          try {
-            const dateInput = $("autoDate");
-            const date = dateInput.value || today();
-            const rows = window.getCandidatesForDate(date);
-            if (Array.isArray(rows)) return true;
-          } catch (_) {}
-        }
-        await new Promise(resolve => setTimeout(resolve, 250));
-      }
-      return false;
-    }
-    async function generate() {
-      const button = $("generateCoupons");
-      const date = $("autoDate").value;
-      const resultId = $("autoResult").value;
-      const marketKey = MARKET_MAP[resultId];
-      if (!date) {
-        showNotice("Önce maç tarihini seç.", "error");
-        return;
-      }
-      if (!marketKey) {
-        showNotice("Seçilen market RNA motorunda tanımlı değil.", "error");
-        return;
-      }
-      button.disabled = true;
-      button.textContent = "Analiz ediliyor…";
-      try {
-        showNotice("RNA verileri kontrol ediliyor...");
-        if (!await waitForRNA()) {
-          throw new Error(
-            "RNA motoru hazır değil. rna.js ve data/v2-data.json dosyalarını kontrol et."
-          );
-        }
-        const rows = window.getCandidatesForDate(date);
-        const candidates = rows
-          .filter(row =>
-            row.marketKey === marketKey &&
-            Number(row.odd) >= CONFIG.MIN_ODD &&
-            Number(row.sample) >= 8 &&
-            Number(row.success) >= 80
-          )
-          .map(row => ({
-            id: matchID(row.match),
-            match: row.match,
-            market: row.market,
-            marketId: row.marketKey,
-            marketLabel: row.marketLabel,
-            odd: Number(Number(row.odd).toFixed(2)),
-            sample: Number(row.sample),
-            success: Number(row.success),
-            date: row.date || date,
-            time: row.time || "",
-            league: row.league || ""
-          }))
-          .sort((a, b) =>
-            b.success - a.success ||
-            b.sample - a.sample ||
-            b.odd - a.odd
-          );
-        const unique = [];
-        const seen = new Set();
-        for (const candidate of candidates) {
-          if (seen.has(candidate.id)) continue;
-          seen.add(candidate.id);
-          unique.push(candidate);
-        }
-        coupons = buildCoupons(unique, date, resultId);
-        render();
-        if (!coupons.length) {
-          showNotice(
-            "Kupon oluşturulamadı. Seçilen markette yeterli maç bulunamadı veya toplam oran koşulu karşılanmadı.",
-            "error"
-          );
-        } else {
-          const count = coupons.reduce(
-            (sum, coupon) => sum + coupon.picks.length,
-            0
-          );
-          showNotice(
-            `${coupons.length} kupon oluşturuldu. ${count} maç eklendi.`,
-            "success"
-          );
-        }
-      } catch (error) {
-        console.error(error);
-        showNotice(error.message || "Kupon oluşturulamadı.", "error");
-      } finally {
-        button.disabled = false;
-        button.textContent = "✦ Kuponları oluştur";
-      }
-    }
-    function showNotice(message, type = "") {
-      const notice = $("notice");
-      if (!notice) return;
-      notice.textContent = message;
-      notice.className = "notice show" + (type ? " " + type : "");
-    }
-    async function copyCoupon(coupon) {
-      const lines = [
-        `RNA Otomatik Kupon - ${coupon.date}`,
-        `Market: ${coupon.resultLabel}`,
-        ""
-      ];
-      for (const pick of coupon.picks) {
-        lines.push(
-          `${team(pick.match, "home")} - ${team(pick.match, "away")}`,
-          `${pick.marketLabel}: ${pick.odd.toFixed(2)}`,
-          `Geçmiş: ${pick.sample} maç · Başarı: %${pick.success.toFixed(1)}`,
-          `Durum: ${statusLabel(pickStatus(pick))}`,
-          ""
-        );
-      }
-      lines.push(`Toplam oran: ${coupon.totalOdd.toFixed(2)}`);
-      try {
-        await navigator.clipboard.writeText(lines.join("\n"));
-        showNotice("Kupon kopyalandı.", "success");
-      } catch (_) {
-        const textarea = document.createElement("textarea");
-        textarea.value = lines.join("\n");
-        document.body.appendChild(textarea);
-        textarea.select();
-        const ok = document.execCommand("copy");
-        textarea.remove();
-        showNotice(
-          ok ? "Kupon kopyalandı." : "Kupon kopyalanamadı.",
-          ok ? "success" : "error"
-        );
-      }
-    }
-    document.addEventListener("click", event => {
-      const button = event.target.closest("[data-action]");
-      if (!button) return;
-      const coupon = coupons.find(item => item.id === button.dataset.id);
-      if (!coupon) return;
-      switch (button.dataset.action) {
-        case "copy":
-          copyCoupon(coupon);
-          break;
-        case "won":
-          coupon.manualStatus = "won";
-          render();
-          break;
-        case "lost":
-          coupon.manualStatus = "lost";
-          render();
-          break;
-        case "reset":
-          coupon.manualStatus = null;
-          render();
-          break;
-      }
-    });
+
     $("generateCoupons").addEventListener("click", generate);
-    $("autoDate").value = today();
-    render();
-    /*
-      Ekran açılırken RNA motorunun veri yüklemesini bekle.
-    */
-    showNotice("RNA verileri yükleniyor...");
-    if (await waitForRNA()) {
-      showNotice("RNA motoru hazır. Tarih ve market seçerek kupon oluşturabilirsin.", "success");
-    } else {
-      showNotice("RNA motoru hazır olmadı. rna.js ve data/v2-data.json dosyalarını kontrol et.", "error");
-    }
+
+    // Sayfa ilk açıldığında seçili tarih/market için otomatik üret.
+    await generate();
+
   } catch (error) {
-    console.error(error);
-    loading.textContent =
-      "RNA kupon ekranı açılamadı: " +
-      (error?.message || String(error)) +
-      " — dna-kupon.html, rna.js ve data/v2-data.json dosyalarının GitHub deposunda bulunduğunu kontrol et.";
+    console.error("RNA ekranı başlatılamadı:", error);
+
+    document.body.innerHTML = `
+      <div style="margin:20px;padding:18px;border:1px solid #783642;
+      border-radius:12px;background:#1b0b11;color:#ffb7bf;
+      font:14px system-ui,sans-serif;line-height:1.7">
+        <strong>RNA kupon ekranı açılamadı.</strong><br>
+        ${escapeHTML(error?.message || String(error))}<br><br>
+        Kontrol et: <code>dna-kupon.html</code>, <code>rna.js</code> ve
+        <code>data/v2-data.json</code> dosyalarının yolları doğru olmalı.
+        Sayfayı GitHub Pages üzerinden aç; bilgisayardaki file:// adresinden
+        çalıştırma.
+      </div>`;
   }
 })();
 </script>
