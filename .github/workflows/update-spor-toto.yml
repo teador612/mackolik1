@@ -1,31 +1,26 @@
-name: Spor Toto veri güncelleme
+name: Spor Toto Update
 
 on:
 workflow_dispatch:
 schedule:
-- cron: ‘17 */6 * * *’
-
-permissions:
-contents: write
-
-concurrency:
-group: spor-toto-update
-cancel-in-progress: false
+- cron: “17 */6 * * *”
 
 jobs:
 update:
 runs-on: ubuntu-latest
+permissions:
+contents: write
 steps:
-- name: Depoyu indir
+- name: Checkout
 uses: actions/checkout@v4
 
-  - name: Node.js kur
+  - name: Setup Node
     uses: actions/setup-node@v4
     with:
-      node-version: 20
-  - name: Spor Toto verisini güncelle
+      node-version: "20"
+  - name: Update Spor Toto data
     run: node scripts/update-spor-toto.mjs
-  - name: Değişiklikleri kaydet
+  - name: Commit data
     shell: bash
     run: |
       git config user.name "github-actions[bot]"
@@ -34,6 +29,6 @@ uses: actions/checkout@v4
       if git diff --cached --quiet; then
         echo "Yeni değişiklik yok."
       else
-        git commit -m "Spor Toto verilerini güncelle"
+        git commit -m "Update Spor Toto data"
         git push
       fi
