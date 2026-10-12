@@ -1,594 +1,851 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07111f">
-  <meta name="color-scheme" content="dark">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#080d18">
+<meta name="description" content="RNA otomatik futbol oran analizi ve kupon sistemi">
+<title>RNA | Akıllı Kupon Merkezi</title>
 
-  <title>RNA | Otomatik Kupon Motoru</title>
+<style>
+:root {
+    color-scheme: dark;
+    --bg: #080d18;
+    --panel: #101827;
+    --panel-2: #151f31;
+    --border: #26344b;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --green: #35d49a;
+    --blue: #65a9ff;
+    --yellow: #f5c451;
+    --red: #ff727f;
+    --radius: 18px;
+}
 
-  <style>
-    :root {
-      color-scheme: dark;
-      --bg: #050b14;
-      --panel: #0b1625;
-      --panel-light: #101f32;
-      --border: #223650;
-      --text: #edf4ff;
-      --muted: #91a5bf;
-      --blue: #3b82f6;
-      --green: #4ade80;
-      --yellow: #facc15;
-      --red: #fb7185;
-      --radius: 16px;
-    }
+* {
+    box-sizing: border-box;
+}
 
-    * {
-      box-sizing: border-box;
-    }
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
 
-    html {
-      min-height: 100%;
-      background: var(--bg);
-      scroll-behavior: smooth;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(
-          ellipse at 50% -10%,
-          rgba(37, 99, 235, 0.17),
-          transparent 55%
-        ),
+body {
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse at 15% 0%, rgba(37, 99, 235, .15), transparent 35%),
+        radial-gradient(ellipse at 95% 15%, rgba(16, 185, 129, .08), transparent 28%),
         var(--bg);
-      color: var(--text);
-      font-family:
-        -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, Helvetica, Arial, sans-serif;
-      font-size: 14px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-    }
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+}
 
-    button,
-    input {
-      font: inherit;
-    }
+button, input, select {
+    font: inherit;
+}
 
-    button {
-      -webkit-tap-highlight-color: transparent;
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.page {
+    width: min(100% - 28px, 1080px);
+    margin: 0 auto;
+    padding: 22px 0 calc(36px + env(safe-area-inset-bottom));
+}
+
+/* ÜST ALAN */
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 25px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+
+.brand-logo {
+    display: grid;
+    place-items: center;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    border: 1px solid rgba(101, 169, 255, .4);
+    border-radius: 15px;
+    background: linear-gradient(145deg, #1d3b65, #14243a);
+    color: #9dcaff;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: -1px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+}
+
+.brand-name {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: .8px;
+    line-height: 1.2;
+}
+
+.brand-subtitle {
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.top-badge {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(16, 24, 39, .8);
+    color: #cbd5e1;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+.top-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(53, 212, 154, .5);
+}
+
+/* KARŞILAMA */
+
+.hero {
+    position: relative;
+    overflow: hidden;
+    padding: 25px;
+    margin-bottom: 18px;
+    border: 1px solid #2a4161;
+    border-radius: 23px;
+    background:
+        linear-gradient(115deg, rgba(28, 56, 91, .97), rgba(16, 31, 51, .96) 55%, rgba(13, 30, 42, .98));
+}
+
+.hero::after {
+    content: "RNA";
+    position: absolute;
+    right: -10px;
+    bottom: -38px;
+    color: rgba(255, 255, 255, .035);
+    font-size: clamp(90px, 20vw, 180px);
+    line-height: 1;
+    font-weight: 1000;
+    letter-spacing: -10px;
+    pointer-events: none;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 670px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    color: #91c4ff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.7px;
+    text-transform: uppercase;
+}
+
+.hero h1 {
+    max-width: 600px;
+    margin: 0;
+    font-size: clamp(25px, 5vw, 39px);
+    font-weight: 900;
+    line-height: 1.12;
+    letter-spacing: -1.1px;
+}
+
+.hero h1 span {
+    color: #7db8ff;
+}
+
+.hero p {
+    max-width: 540px;
+    margin: 13px 0 0;
+    color: #bdcce0;
+    font-size: 13px;
+    line-height: 1.8;
+}
+
+.hero-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.hero-tag {
+    padding: 7px 10px;
+    border: 1px solid rgba(180, 210, 255, .16);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, .045);
+    color: #d8e7fa;
+    font-size: 11px;
+}
+
+/* AYAR KARTLARI */
+
+.section-heading {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 26px 2px 12px;
+}
+
+.section-heading h2 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 850;
+    letter-spacing: -.25px;
+}
+
+.section-heading p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.section-label {
+    color: #8dbdff;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 11px;
+}
+
+.metric {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    background: linear-gradient(145deg, rgba(20, 31, 49, .98), rgba(13, 21, 35, .98));
+}
+
+.metric-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.metric-icon {
+    display: grid;
+    place-items: center;
+    width: 31px;
+    height: 31px;
+    border-radius: 10px;
+    background: #1b2e48;
+    color: #8ec2ff;
+    font-size: 15px;
+}
+
+.metric-value {
+    margin-top: 13px;
+    font-size: clamp(21px, 4vw, 28px);
+    line-height: 1;
+    font-weight: 900;
+    letter-spacing: -.8px;
+}
+
+.metric-title {
+    margin-top: 7px;
+    color: #d7e0ed;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.metric-note {
+    margin-top: 4px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.metric.green .metric-value {
+    color: var(--green);
+}
+
+.metric.blue .metric-value {
+    color: var(--blue);
+}
+
+.metric.yellow .metric-value {
+    color: var(--yellow);
+}
+
+/* MOTOR ALANI */
+
+.engine-section {
+    margin-top: 26px;
+    scroll-margin-top: 14px;
+}
+
+.engine-heading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 14px;
+}
+
+.engine-icon {
+    display: grid;
+    place-items: center;
+    flex: 0 0 43px;
+    height: 43px;
+    border: 1px solid #27523f;
+    border-radius: 14px;
+    background: #102b25;
+    color: var(--green);
+    font-size: 20px;
+}
+
+.engine-heading h2 {
+    margin: 0;
+    font-size: 19px;
+    font-weight: 900;
+    letter-spacing: -.4px;
+}
+
+.engine-heading p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.engine-kicker {
+    margin-left: auto;
+    padding: 7px 9px;
+    border: 1px solid #24503e;
+    border-radius: 9px;
+    background: rgba(20, 83, 45, .17);
+    color: #8ce5b9;
+    font-size: 10px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.engine-frame {
+    overflow: hidden;
+    min-width: 0;
+    padding: 13px;
+    border: 1px solid #29384d;
+    border-radius: 19px;
+    background: #0d1523;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .16);
+}
+
+/*
+  Motor kendi arayüzünü #mk-coupon-root içine üretir.
+  Bu alanın içine ikinci bir durum kartı eklemiyoruz;
+  motorun oluşturduğu içerik korunur.
+*/
+
+#mk-coupon-root {
+    width: 100%;
+    min-width: 0;
+    color: var(--text);
+}
+
+/* Motorun ana bileşenleriyle uyumlu görünüm */
+
+#mk-coupon-root .mk-head,
+#mk-coupon-root .mk-summary,
+#mk-coupon-root .mk-card,
+#mk-coupon-root .mk-coupon,
+#mk-coupon-root .mk-panel,
+#mk-coupon-root .mk-box {
+    border-radius: 13px;
+}
+
+#mk-coupon-root input,
+#mk-coupon-root select,
+#mk-coupon-root button {
+    max-width: 100%;
+}
+
+#mk-coupon-root input,
+#mk-coupon-root select {
+    min-height: 40px;
+}
+
+#mk-coupon-root input,
+#mk-coupon-root select,
+#mk-coupon-root textarea {
+    color: #f1f5f9;
+    background-color: #111d2d;
+    border-color: #34445b;
+}
+
+#mk-coupon-root input::placeholder,
+#mk-coupon-root textarea::placeholder {
+    color: #8393a9;
+}
+
+#mk-coupon-root button {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#mk-coupon-root table {
+    max-width: 100%;
+}
+
+#mk-coupon-root .mk-head,
+#mk-coupon-root .mk-summary {
+    overflow-wrap: anywhere;
+}
+
+/* SONUÇ AÇIKLAMALARI */
+
+.legend {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 9px;
+    margin-top: 14px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 11px 10px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(16, 24, 39, .72);
+    color: #d7e0ed;
+    font-size: 11px;
+}
+
+.legend-dot {
+    flex: 0 0 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+}
+
+.legend-dot.won {
+    background: var(--green);
+}
+
+.legend-dot.lost {
+    background: var(--red);
+}
+
+.legend-dot.pending {
+    background: var(--yellow);
+}
+
+/* BİLGİ KARTI */
+
+.info-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    margin-top: 18px;
+    padding: 15px;
+    border: 1px solid #293b55;
+    border-radius: 14px;
+    background: rgba(17, 29, 46, .72);
+}
+
+.info-symbol {
+    display: grid;
+    place-items: center;
+    flex: 0 0 29px;
+    height: 29px;
+    border-radius: 9px;
+    background: #1c304b;
+    color: #8fc2ff;
+    font-weight: 900;
+}
+
+.info-card strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+}
+
+.info-card p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.8;
+}
+
+/* ALT BİLGİ */
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 26px;
+    padding-top: 17px;
+    border-top: 1px solid #202c3e;
+    color: #78879d;
+    font-size: 10px;
+}
+
+.footer strong {
+    color: #a9b8cc;
+}
+
+.footer-right {
+    text-align: right;
+}
+
+/* TELEFON */
+
+@media (max-width: 600px) {
+    .page {
+        width: min(100% - 20px, 1080px);
+        padding-top: 14px;
     }
 
     .topbar {
-      position: relative;
-      border-bottom: 1px solid var(--border);
-      background: rgba(5, 11, 20, 0.94);
-    }
-
-    .topbar-inner {
-      width: min(100%, 1080px);
-      margin: 0 auto;
-      padding: 17px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-width: 0;
+        margin-bottom: 17px;
     }
 
     .brand-logo {
-      flex: 0 0 46px;
-      width: 46px;
-      height: 46px;
-      display: grid;
-      place-items: center;
-      border: 1px solid #315783;
-      border-radius: 14px;
-      background: linear-gradient(145deg, #173b66, #0c1d32);
-      color: #93c5fd;
-      font-size: 17px;
-      font-weight: 900;
-      letter-spacing: -1px;
-      box-shadow: 0 6px 22px rgba(0, 0, 0, 0.2);
+        flex-basis: 41px;
+        width: 41px;
+        height: 41px;
+        border-radius: 13px;
     }
 
-    .brand-title {
-      margin: 0;
-      color: #f4f8ff;
-      font-size: 19px;
-      font-weight: 850;
-      line-height: 1.25;
-      letter-spacing: -0.4px;
+    .brand-name {
+        font-size: 17px;
     }
 
     .brand-subtitle {
-      margin: 5px 0 0;
-      color: var(--muted);
-      font-size: 11px;
+        font-size: 10px;
     }
 
-    .header-badge {
-      flex-shrink: 0;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 7px 10px;
-      border: 1px solid #24523e;
-      border-radius: 999px;
-      background: rgba(22, 101, 52, 0.15);
-      color: #86efac;
-      font-size: 11px;
-      font-weight: 750;
-      white-space: nowrap;
+    .top-badge {
+        padding: 7px 9px;
+        font-size: 10px;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 9px rgba(74, 222, 128, 0.4);
+    .hero {
+        padding: 21px 17px;
+        border-radius: 19px;
     }
 
-    .page {
-      width: min(100%, 1080px);
-      margin: 0 auto;
-      padding: 20px 14px 36px;
+    .hero h1 {
+        font-size: 29px;
     }
 
-    .intro {
-      position: relative;
-      overflow: hidden;
-      padding: 19px;
-      margin-bottom: 15px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(
-          115deg,
-          rgba(30, 64, 110, 0.28),
-          rgba(11, 22, 37, 0.95) 65%
-        );
+    .hero p {
+        font-size: 12px;
     }
 
-    .intro::after {
-      content: "";
-      position: absolute;
-      width: 145px;
-      height: 145px;
-      right: -65px;
-      top: -80px;
-      border-radius: 50%;
-      background: rgba(59, 130, 246, 0.12);
-      pointer-events: none;
+    .hero-tags {
+        gap: 6px;
     }
 
-    .intro-label {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      margin-bottom: 9px;
-      color: #93c5fd;
-      font-size: 10px;
-      font-weight: 850;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-    }
-
-    .intro h2 {
-      margin: 0;
-      font-size: clamp(20px, 4vw, 27px);
-      line-height: 1.25;
-      font-weight: 850;
-      letter-spacing: -0.6px;
-    }
-
-    .intro p {
-      max-width: 650px;
-      margin: 9px 0 0;
-      color: #9eb0c9;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-
-    .settings {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 9px;
-      margin-bottom: 18px;
-    }
-
-    .setting {
-      min-width: 0;
-      padding: 12px 13px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: rgba(11, 22, 37, 0.92);
-    }
-
-    .setting-label {
-      color: var(--muted);
-      font-size: 10px;
-      line-height: 1.5;
-    }
-
-    .setting-value {
-      margin-top: 4px;
-      color: #eaf2ff;
-      font-size: 17px;
-      font-weight: 850;
-      letter-spacing: -0.3px;
+    .hero-tag {
+        padding: 6px 8px;
+        font-size: 10px;
     }
 
     .section-heading {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      margin: 22px 2px 12px;
+        margin-top: 22px;
     }
 
-    .section-icon {
-      flex: 0 0 34px;
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
-      border: 1px solid #294c72;
-      border-radius: 10px;
-      background: #10243b;
-      color: #93c5fd;
-      font-size: 16px;
+    .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
     }
 
-    .section-heading h2 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 850;
+    .metric {
+        padding: 13px;
     }
 
-    .section-heading p {
-      margin: 3px 0 0;
-      color: var(--muted);
-      font-size: 11px;
+    .metric-value {
+        margin-top: 11px;
+        font-size: 25px;
     }
 
-    /*
-      ÖNEMLİ:
-      Motorun kendi kapsayıcısı ve oluşturduğu alt elemanlar korunur.
-      Motor CSS'i #mk-coupon-root içindeki kartları kendisi biçimlendirir.
-    */
+    .metric-title {
+        font-size: 11px;
+    }
+
+    .engine-heading h2 {
+        font-size: 17px;
+    }
+
+    .engine-kicker {
+        padding: 6px 7px;
+        font-size: 9px;
+    }
+
+    .engine-frame {
+        padding: 8px;
+        border-radius: 15px;
+    }
 
     #mk-coupon-root {
-      min-width: 0;
-      width: 100%;
-      margin: 0;
-      padding: 16px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: rgba(7, 17, 31, 0.96);
-      color: var(--text);
-      overflow-wrap: anywhere;
-    }
-
-    #mk-coupon-root:empty::before {
-      content: "RNA motoru başlatılıyor...";
-      display: block;
-      padding: 25px 10px;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    #mk-coupon-root input,
-    #mk-coupon-root select {
-      max-width: 100%;
-    }
-
-    #mk-coupon-root .mk-head {
-      align-items: center;
-    }
-
-    #mk-coupon-root .mk-title {
-      letter-spacing: -0.3px;
-    }
-
-    #mk-coupon-root .mk-message {
-      overflow-wrap: anywhere;
-    }
-
-    #mk-coupon-root .mk-coupon-card {
-      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
-    }
-
-    #mk-coupon-root .mk-market {
-      max-width: 100%;
-      overflow-wrap: anywhere;
+        font-size: 13px;
     }
 
     .legend {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px 14px;
-      margin-top: 14px;
-      padding: 12px 14px;
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      background: var(--panel);
-    }
-
-    .legend-title {
-      width: 100%;
-      color: #dce8f8;
-      font-size: 11px;
-      font-weight: 800;
+        gap: 6px;
     }
 
     .legend-item {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 11px;
-    }
-
-    .legend-dot {
-      width: 8px;
-      height: 8px;
-      flex: 0 0 8px;
-      border-radius: 50%;
-    }
-
-    .legend-dot.green {
-      background: var(--green);
-    }
-
-    .legend-dot.red {
-      background: var(--red);
-    }
-
-    .legend-dot.yellow {
-      background: var(--yellow);
-    }
-
-    .notice {
-      margin-top: 14px;
-      padding: 13px 14px;
-      border: 1px solid #273b54;
-      border-radius: 12px;
-      background: rgba(11, 22, 37, 0.7);
-      color: #9db0c9;
-      font-size: 11px;
-      line-height: 1.75;
-    }
-
-    .notice strong {
-      color: #dce9fa;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 10px 8px;
+        font-size: 10px;
     }
 
     .footer {
-      padding: 23px 12px 8px;
-      color: #637994;
-      text-align: center;
-      font-size: 10px;
-      line-height: 1.8;
-    }
-
-    @media (min-width: 700px) {
-      .page {
-        padding: 26px 20px 45px;
-      }
-
-      .intro {
-        padding: 25px;
-      }
-
-      .settings {
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 480px) {
-      .topbar-inner {
-        padding: 13px 12px;
         align-items: flex-start;
-      }
-
-      .brand {
-        gap: 9px;
-      }
-
-      .brand-logo {
-        flex-basis: 40px;
-        width: 40px;
-        height: 40px;
-        border-radius: 11px;
-        font-size: 15px;
-      }
-
-      .brand-title {
-        font-size: 16px;
-      }
-
-      .brand-subtitle {
-        max-width: 200px;
-        font-size: 10px;
-      }
-
-      .header-badge {
-        padding: 6px 8px;
         font-size: 9px;
-      }
+    }
+}
 
-      .page {
-        padding: 13px 10px 28px;
-      }
+@media (max-width: 360px) {
+    .top-badge {
+        max-width: 100px;
+        white-space: normal;
+    }
 
-      .intro {
-        padding: 16px;
-        margin-bottom: 11px;
-      }
+    .hero h1 {
+        font-size: 26px;
+    }
 
-      .intro p {
-        font-size: 11px;
-      }
+    .engine-kicker {
+        display: none;
+    }
 
-      .settings {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+    .metrics {
         gap: 7px;
-        margin-bottom: 16px;
-      }
-
-      .setting {
-        padding: 10px 11px;
-      }
-
-      .setting-value {
-        font-size: 16px;
-      }
-
-      #mk-coupon-root {
-        padding: 10px;
-        border-radius: 13px;
-      }
-
-      .section-heading {
-        margin-top: 19px;
-      }
     }
+}
 
-    @media (prefers-reduced-motion: reduce) {
-      html {
+@media (prefers-reduced-motion: reduce) {
+    html {
         scroll-behavior: auto;
-      }
-
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
     }
-  </style>
+}
+</style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="brand">
-        <div class="brand-logo">RNA</div>
-        <div>
-          <h1 class="brand-title">Otomatik Kupon Motoru</h1>
-          <p class="brand-subtitle">Geçmiş oran analizi ve kupon oluşturucu</p>
+<div class="page">
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-logo" aria-label="RNA">RNA</div>
+            <div>
+                <div class="brand-name">RNA ANALİZ</div>
+                <div class="brand-subtitle">Otomatik oran ve kupon merkezi</div>
+            </div>
         </div>
-      </div>
 
-      <div class="header-badge">
-        <span class="status-dot"></span>
-        Otomatik analiz
-      </div>
-    </div>
-  </header>
+        <div class="top-badge">Analiz paneli</div>
+    </header>
 
-  <main class="page">
-    <section class="intro">
-      <div class="intro-label">
-        <span>◆</span>
-        RNA ANALİZ SİSTEMİ
-      </div>
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <div class="eyebrow">◆ AKILLI ANALİZ SİSTEMİ</div>
 
-      <h2>Oranları geçmiş sonuçlarla karşılaştır.</h2>
+                <h1>
+                    Oranları analiz et.<br>
+                    <span>Veriye dayalı</span> kuponları incele.
+                </h1>
 
-      <p>
-        Seçtiğin maç tarihini, önceki 30 günlük sonuçlarla karşılaştırır.
-        Aynı market ve aynı iki ondalıklı oran için geçmiş başarı oranını
-        hesaplayarak uygun kuponları oluşturur.
-      </p>
-    </section>
+                <p>
+                    Geçmiş maç verilerindeki aynı market ve aynı oran eşleşmelerini
+                    inceleyen otomatik analiz motoru. Kuponları seçilen tarihe göre
+                    görüntüle ve sonuçlarını takip et.
+                </p>
 
-    <section class="settings" aria-label="Motor ayarları">
-      <div class="setting">
-        <div class="setting-label">Geçmiş aralığı</div>
-        <div class="setting-value">30 gün</div>
-      </div>
+                <div class="hero-tags">
+                    <span class="hero-tag">◷ 30 günlük geçmiş</span>
+                    <span class="hero-tag">⌁ Otomatik oran analizi</span>
+                    <span class="hero-tag">✓ Sonuç takibi</span>
+                </div>
+            </div>
+        </section>
 
-      <div class="setting">
-        <div class="setting-label">Minimum örnek</div>
-        <div class="setting-value">8 maç</div>
-      </div>
+        <section aria-labelledby="settings-title">
+            <div class="section-heading">
+                <div>
+                    <h2 id="settings-title">Motor ayarları</h2>
+                    <p>Mevcut RNA motorunun ayarları</p>
+                </div>
+                <span class="section-label">SABİT PARAMETRELER</span>
+            </div>
 
-      <div class="setting">
-        <div class="setting-label">Başarı eşiği</div>
-        <div class="setting-value">%80</div>
-      </div>
+            <div class="metrics">
+                <article class="metric blue">
+                    <div class="metric-top">
+                        <span class="metric-icon">◷</span>
+                    </div>
+                    <div class="metric-value">30 gün</div>
+                    <div class="metric-title">Geçmiş taraması</div>
+                    <div class="metric-note">Geçmiş maç penceresi</div>
+                </article>
 
-      <div class="setting">
-        <div class="setting-label">Minimum tekli oran</div>
-        <div class="setting-value">1,35</div>
-      </div>
+                <article class="metric">
+                    <div class="metric-top">
+                        <span class="metric-icon">▤</span>
+                    </div>
+                    <div class="metric-value">8+</div>
+                    <div class="metric-title">Minimum örnek</div>
+                    <div class="metric-note">Oran eşleşmesi başına</div>
+                </article>
 
-      <div class="setting">
-        <div class="setting-label">Minimum kupon oranı</div>
-        <div class="setting-value">2,00</div>
-      </div>
+                <article class="metric green">
+                    <div class="metric-top">
+                        <span class="metric-icon">%</span>
+                    </div>
+                    <div class="metric-value">%80</div>
+                    <div class="metric-title">Minimum başarı</div>
+                    <div class="metric-note">Risk kategorisi alt sınırı</div>
+                </article>
 
-      <div class="setting">
-        <div class="setting-label">Maksimum seçim</div>
-        <div class="setting-value">5 maç</div>
-      </div>
-    </section>
+                <article class="metric blue">
+                    <div class="metric-top">
+                        <span class="metric-icon">↗</span>
+                    </div>
+                    <div class="metric-value">1.35</div>
+                    <div class="metric-title">Minimum tekli oran</div>
+                    <div class="metric-note">Motorun mevcut filtresi</div>
+                </article>
 
-    <div class="section-heading">
-      <div class="section-icon">▦</div>
-      <div>
-        <h2>Kupon merkezi</h2>
-        <p>Tarih seç, verileri yenile ve oluşturulan kuponları incele.</p>
-      </div>
-    </div>
+                <article class="metric yellow">
+                    <div class="metric-top">
+                        <span class="metric-icon">Σ</span>
+                    </div>
+                    <div class="metric-value">2.00+</div>
+                    <div class="metric-title">Minimum kupon oranı</div>
+                    <div class="metric-note">Toplam oran hedefi</div>
+                </article>
 
-    <!-- RNA motorunun tek ve gerçek kapsayıcısı -->
-    <section id="mk-coupon-root" aria-label="Otomatik kupon analizi"></section>
+                <article class="metric">
+                    <div class="metric-top">
+                        <span class="metric-icon">⚑</span>
+                    </div>
+                    <div class="metric-value">5</div>
+                    <div class="metric-title">Maksimum maç</div>
+                    <div class="metric-note">Kupon başına</div>
+                </article>
+            </div>
+        </section>
 
-    <section class="legend" aria-label="Maç sonuçlarının açıklaması">
-      <div class="legend-title">Sonuç göstergeleri</div>
+        <section class="engine-section" id="kuponlar" aria-labelledby="engine-title">
+            <div class="engine-heading">
+                <div class="engine-icon">⌁</div>
+                <div>
+                    <h2 id="engine-title">Kupon merkezi</h2>
+                    <p>Tarih seçimini ve kuponları aşağıdan yönet.</p>
+                </div>
+                <span class="engine-kicker">RNA MOTORU</span>
+            </div>
 
-      <div class="legend-item">
-        <span class="legend-dot green"></span>
-        Kazandı
-      </div>
+            <div class="engine-frame">
+                <div id="mk-coupon-root">
+                    <div style="padding:28px 12px;text-align:center;color:#94a3b8">
+                        <div style="font-size:25px;margin-bottom:10px">⌁</div>
+                        <strong style="display:block;color:#f1f5f9;font-size:14px">
+                            Analiz motoru başlatılıyor
+                        </strong>
+                        <span style="display:block;margin-top:6px;font-size:12px">
+                            Veri dosyası yükleniyor...
+                        </span>
+                    </div>
+                </div>
+            </div>
 
-      <div class="legend-item">
-        <span class="legend-dot red"></span>
-        Kaybetti
-      </div>
+            <div class="section-heading">
+                <div>
+                    <h2>Kupon sonuçları</h2>
+                    <p>Motorun maç durumlarını yorumlamak için</p>
+                </div>
+            </div>
 
-      <div class="legend-item">
-        <span class="legend-dot yellow"></span>
-        Bekliyor
-      </div>
-    </section>
+            <div class="legend" aria-label="Maç sonuç renkleri">
+                <div class="legend-item">
+                    <span class="legend-dot won"></span>
+                    <span>Kazandı</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot lost"></span>
+                    <span>Kaybetti</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-dot pending"></span>
+                    <span>Bekliyor</span>
+                </div>
+            </div>
+        </section>
 
-    <aside class="notice">
-      <strong>Hesaplama bilgisi</strong><br>
-      Başarı yüzdesi, seçilen maçın marketi ve aynı iki ondalıklı oranıyla
-      eşleşen geçmiş maçların sonuçlarından hesaplanır. Geçmişteki başarı
-      yüzdesi gelecekte aynı sonucun gerçekleşeceğini garanti etmez.
-    </aside>
+        <aside class="info-card">
+            <div class="info-symbol">i</div>
+            <div>
+                <strong>Önemli bilgi</strong>
+                <p>
+                    Başarı yüzdeleri geçmiş verilerdeki eşleşmelerden hesaplanır;
+                    gelecekteki maçlar için garanti değildir. Maç henüz oynanmadıysa
+                    sonucu beklemede değerlendirilmelidir. Veri dosyasının güncel ve
+                    doğru olması analiz kalitesi için önemlidir.
+                </p>
+            </div>
+        </aside>
+    </main>
 
     <footer class="footer">
-      RNA Otomatik Kupon Motoru<br>
-      Veriler: <code>./data/v2-data.json</code>
+        <div>
+            <strong>RNA ANALİZ</strong><br>
+            Otomatik kupon sistemi
+        </div>
+        <div class="footer-right">
+            Veri kaynağı<br>
+            <strong>./data/v2-data.json</strong>
+        </div>
     </footer>
-  </main>
 
-  <script src="./rna.js"></script>
+</div>
+
+<script src="./rna.js"></script>
 </body>
 </html>
