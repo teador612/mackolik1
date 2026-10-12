@@ -1,498 +1,392 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#07111f">
-<title>RNA | Otomatik Kupon Motoru</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="RNA otomatik futbol oran analizi ve kupon motoru">
+  <title>RNA | Otomatik Kupon Motoru</title>
 
-<style>
-:root {
-  color-scheme: dark;
-  --bg: #07111f;
-  --border: #263a54;
-  --text: #e8f0fc;
-  --muted: #91a4bd;
-  --blue: #4b91ff;
-  --green: #00ff91;
-  --red: #ff304f;
-  --yellow: #ffc857;
-}
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --panel: #0d1a2b;
+      --panel-2: #112238;
+      --border: #263b55;
+      --text: #edf4ff;
+      --muted: #91a5bd;
+      --blue: #60a5fa;
+      --green: #22c55e;
+      --yellow: #facc15;
+      --red: #f87171;
+      --radius: 14px;
+    }
 
-* { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  background: radial-gradient(circle at top,#102847 0,var(--bg) 45%);
-  color: var(--text);
-  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-  font-size: 14px;
-}
+    html {
+      min-height: 100%;
+      background: var(--bg);
+      -webkit-text-size-adjust: 100%;
+    }
 
-button,input,select { font: inherit; }
-button { cursor: pointer; }
-button:disabled { opacity: .55; cursor: not-allowed; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at top, #122742 0, transparent 55%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+    }
 
-.page { width: min(100%,1050px); margin: 0 auto; padding: 18px 13px 40px; }
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
 
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 18px;
-}
+    button {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-.brand { display: flex; align-items: center; gap: 11px; }
+    .app-header {
+      padding: 22px 16px 16px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(7, 17, 31, .92);
+    }
 
-.brand-logo {
-  display: grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border: 1px solid #355c8a;
-  border-radius: 14px;
-  background: linear-gradient(135deg,#1a477a,#10243c);
-  color: #8fc1ff;
-  font-size: 18px;
-  font-weight: 900;
-}
+    .header-inner {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
 
-h1 { margin: 0; font-size: 21px; letter-spacing: .3px; }
-.subtitle { margin-top: 4px; color: var(--muted); font-size: 12px; }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
 
-.tag {
-  padding: 7px 10px;
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: #0d1b2c;
-  color: #b9d6ff;
-  font-size: 11px;
-  font-weight: 800;
-}
+    .brand-icon {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      flex: 0 0 43px;
+      place-items: center;
+      border: 1px solid #315b89;
+      border-radius: 12px;
+      background: #132d4a;
+      color: #93c5fd;
+      font-size: 19px;
+      font-weight: 900;
+    }
 
-.panel {
-  margin-bottom: 15px;
-  padding: 15px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background: linear-gradient(145deg,#102038,#0b1727);
-  box-shadow: 0 10px 28px #00000018;
-}
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(18px, 4vw, 24px);
+      font-weight: 850;
+      letter-spacing: -.5px;
+    }
 
-.panel-title { margin: 0 0 13px; font-size: 15px; font-weight: 800; }
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
 
-.controls {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  align-items: end;
-}
+    .rules {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 16px;
+    }
 
-.field label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
+    .rule {
+      padding: 5px 9px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: #0d1a2b;
+      color: #c9d8ea;
+      font-size: 11px;
+    }
 
-.field select,.field input {
-  width: 100%;
-  min-height: 42px;
-  padding: 9px 10px;
-  border: 1px solid #344b68;
-  border-radius: 10px;
-  outline: none;
-  background: #091525;
-  color: var(--text);
-  color-scheme: dark;
-}
+    .rule strong {
+      color: #93c5fd;
+    }
 
-.field select:focus,.field input:focus { border-color: var(--blue); }
+    main {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 12px 40px;
+    }
 
-.btn {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  gap: 7px;
-  min-height: 41px;
-  padding: 9px 18px;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  font-weight: 800;
-}
+    /*
+      RNA MOTORU
+      rna.js kendi arayüzünü #coupon-root içine oluşturur.
+      Eski HTML'deki ikinci kupon motoru burada bulunmamalıdır.
+    */
 
-.btn-primary { background: linear-gradient(135deg,#438dff,#2764cb); color: white; }
-.btn-secondary { border-color: #344b68; background: #172a42; color: #e0ebfa; }
-.btn-danger { border-color: #79333e; background: #351b28; color: #ffb4bd; }
-.btn-small { min-height: 31px; padding: 6px 9px; font-size: 11px; }
+    #coupon-root,
+    #kupon-root,
+    [data-coupon-root],
+    #mk-coupon-root {
+      width: 100%;
+      min-width: 0;
+      color: var(--text);
+    }
 
-.rules {
-  display: grid;
-  grid-template-columns: repeat(4,minmax(0,1fr));
-  gap: 9px;
-  margin-top: 13px;
-}
+    #mk-coupon-root {
+      display: grid;
+      gap: 14px;
+    }
 
-.rule { padding: 11px; border: 1px solid #263d58; border-radius: 11px; background: #0a1727; }
-.rule-label { color: var(--muted); font-size: 11px; }
-.rule-value { margin-top: 4px; font-size: 17px; font-weight: 900; }
+    #mk-coupon-root * {
+      box-sizing: border-box;
+    }
 
-.notice {
-  display: none;
-  margin-top: 12px;
-  padding: 11px 12px;
-  border: 1px solid #344b68;
-  border-radius: 10px;
-  background: #0a1727;
-  color: #c6d9f1;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
+    #mk-coupon-root h1,
+    #mk-coupon-root h2,
+    #mk-coupon-root h3,
+    #mk-coupon-root h4 {
+      color: var(--text);
+      line-height: 1.35;
+    }
 
-.notice.show { display: block; }
-.notice.error { border-color: #783642; color: #ffb7bf; }
-.notice.success { border-color: #276b4a; color: #a4f2c5; }
+    #mk-coupon-root h1 {
+      font-size: clamp(20px, 4vw, 26px);
+    }
 
-.legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; color: var(--muted); font-size: 11px; }
-.legend span { display: inline-flex; align-items: center; gap: 5px; }
-.green-text { color: var(--green); }
-.red-text { color: #ff5263; }
-.yellow-text { color: var(--yellow); }
+    #mk-coupon-root h2 {
+      font-size: 18px;
+    }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(2,minmax(0,1fr));
-  gap: 9px;
-  margin-bottom: 15px;
-}
+    #mk-coupon-root h3 {
+      font-size: 15px;
+    }
 
-.stat { padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: #0c192a; }
-.stat-label { color: var(--muted); font-size: 11px; }
-.stat-value { margin-top: 5px; font-size: 20px; font-weight: 900; }
+    #mk-coupon-root p {
+      overflow-wrap: anywhere;
+    }
 
-.coupon {
-  overflow: hidden;
-  margin-bottom: 17px;
-  border: 2px solid #80672d;
-  border-radius: 15px;
-  background: linear-gradient(150deg,#302711,#1c180d);
-  box-shadow: 0 0 8px #ffc85733, 0 0 18px #ffc85722;
-}
+    #mk-coupon-root section,
+    #mk-coupon-root .card,
+    #mk-coupon-root .panel,
+    #mk-coupon-root .coupon-card,
+    #mk-coupon-root .coupon,
+    #mk-coupon-root .box,
+    #mk-coupon-root .stat-card,
+    #mk-coupon-root .summary-card {
+      min-width: 0;
+      border-color: var(--border);
+      border-radius: var(--radius);
+    }
 
-.coupon-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 13px;
-  border-bottom: 1px solid #80672d;
-  background: #302710;
-}
+    #mk-coupon-root .card,
+    #mk-coupon-root .panel,
+    #mk-coupon-root .coupon-card,
+    #mk-coupon-root .coupon,
+    #mk-coupon-root .box,
+    #mk-coupon-root .stat-card,
+    #mk-coupon-root .summary-card {
+      background: var(--panel);
+    }
 
-.coupon-title { margin: 0; font-size: 15px; font-weight: 900; }
-.coupon-date { margin-top: 4px; color: var(--muted); font-size: 11px; }
-.coupon-total { text-align: right; }
-.coupon-total strong { display: block; color: #ffd66b; font-size: 21px; }
-.coupon-total span { color: var(--muted); font-size: 10px; }
-.coupon-body { padding: 10px; }
+    #mk-coupon-root button {
+      min-height: 38px;
+      max-width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #34506f;
+      border-radius: 9px;
+      background: #16304d;
+      color: var(--text);
+      font-weight: 650;
+      overflow-wrap: anywhere;
+    }
 
-.pick {
-  display: grid;
-  grid-template-columns: 35px minmax(0,1fr) auto;
-  gap: 10px;
-  align-items: start;
-  padding: 12px 4px;
-  border-bottom: 1px solid #584720;
-}
+    #mk-coupon-root button:hover {
+      border-color: var(--blue);
+      background: #1a3b60;
+    }
 
-.pick:last-child { border-bottom: 0; }
+    #mk-coupon-root button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
 
-.pick-status {
-  display: grid;
-  place-items: center;
-  width: 29px;
-  height: 29px;
-  border: 1px solid #80672d;
-  border-radius: 50%;
-  background: #443613;
-  color: var(--yellow);
-  font-size: 16px;
-  font-weight: 900;
-}
+    #mk-coupon-root input,
+    #mk-coupon-root select,
+    #mk-coupon-root textarea {
+      width: 100%;
+      min-width: 0;
+      min-height: 40px;
+      padding: 9px 11px;
+      border: 1px solid #304761;
+      border-radius: 9px;
+      outline: none;
+      background: #091525;
+      color: var(--text);
+    }
 
-.pick-status.won { border-color: var(--green); background: #073c27; color: var(--green); }
-.pick-status.lost { border-color: var(--red); background: #48121e; color: #ff5269; }
-.pick-status.pending { border-color: var(--yellow); background: #443613; color: #ffd66b; }
+    #mk-coupon-root input:focus,
+    #mk-coupon-root select:focus,
+    #mk-coupon-root textarea:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 2px rgba(96, 165, 250, .12);
+    }
 
-.pick-teams { overflow-wrap: anywhere; font-size: 13px; font-weight: 850; line-height: 1.45; }
-.versus { padding: 0 4px; color: #6e89a8; font-size: 10px; font-weight: 600; }
-.pick-meta { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.55; }
+    #mk-coupon-root label {
+      color: #c9d8ea;
+    }
 
-.pick-source {
-  margin-top: 7px;
-  padding: 8px 9px;
-  border-left: 2px solid #4c91ff;
-  border-radius: 0 7px 7px 0;
-  background: #0b192a;
-  color: #c2d6f1;
-  font-size: 11px;
-  line-height: 1.65;
-  overflow-wrap: anywhere;
-}
-.pick-source b { color: #8fc1ff; }
+    #mk-coupon-root table {
+      width: 100%;
+      border-collapse: collapse;
+      color: var(--text);
+      font-size: 12px;
+    }
 
-.pick-odd {
-  min-width: 54px;
-  padding: 7px 8px;
-  border: 1px solid #80672d;
-  border-radius: 9px;
-  background: #302710;
-  color: #ffd66b;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 900;
-}
+    #mk-coupon-root th,
+    #mk-coupon-root td {
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: middle;
+      overflow-wrap: anywhere;
+    }
 
-.coupon-foot {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 9px;
-  padding: 12px;
-  border-top: 1px solid #80672d;
-  background: #241e0e;
-}
+    #mk-coupon-root th {
+      background: #112238;
+      color: #a9c8ed;
+      font-weight: 750;
+    }
 
-.coupon-status { display: inline-flex; align-items: center; gap: 7px; color: var(--yellow); font-size: 12px; font-weight: 900; }
-.coupon-actions { display: flex; gap: 7px; flex-wrap: wrap; }
+    #mk-coupon-root tr:last-child td {
+      border-bottom: 0;
+    }
 
-.empty {
-  padding: 28px 15px;
-  border: 1px dashed #304762;
-  border-radius: 13px;
-  color: var(--muted);
-  text-align: center;
-  line-height: 1.7;
-}
-.empty-icon { margin-bottom: 8px; font-size: 27px; }
+    #mk-coupon-root .success,
+    #mk-coupon-root .won,
+    #mk-coupon-root .win {
+      color: var(--green);
+    }
 
-@media(max-width:650px) {
-  .page { padding: 12px 9px 30px; }
-  .controls { grid-template-columns: 1fr; }
-  .rules { grid-template-columns: repeat(2,minmax(0,1fr)); }
-}
-</style>
+    #mk-coupon-root .pending,
+    #mk-coupon-root .waiting {
+      color: var(--yellow);
+    }
+
+    #mk-coupon-root .failure,
+    #mk-coupon-root .lost,
+    #mk-coupon-root .lose {
+      color: var(--red);
+    }
+
+    #mk-coupon-root .muted,
+    #mk-coupon-root .secondary {
+      color: var(--muted);
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(13, 26, 43, .75);
+      color: var(--muted);
+      font-size: 11px;
+      text-align: center;
+    }
+
+    @media (max-width: 600px) {
+      .app-header {
+        padding: 17px 12px 13px;
+      }
+
+      main {
+        padding: 12px 9px 28px;
+      }
+
+      .rules {
+        gap: 6px;
+      }
+
+      .rule {
+        font-size: 10px;
+      }
+
+      #mk-coupon-root button {
+        min-height: 40px;
+      }
+
+      #mk-coupon-root table {
+        font-size: 11px;
+      }
+
+      #mk-coupon-root th,
+      #mk-coupon-root td {
+        padding: 7px 5px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
 </head>
 
 <body>
-<main class="page">
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">RNA</div>
+        <div>
+          <h1>Otomatik Kupon Motoru</h1>
+          <p>Geçmiş oran analizi · Otomatik market taraması</p>
+        </div>
+      </div>
 
-<header class="header">
-  <div class="brand">
-    <div class="brand-logo">RNA</div>
-    <div>
-      <h1>Otomatik Kupon Motoru</h1>
-      <div class="subtitle">DNA hesaplama yöntemiyle geçmiş oran analizleri</div>
-    </div>
-  </div>
-  <div class="tag">RNA SİSTEMİ</div>
-</header>
-
-<section class="panel">
-  <h2 class="panel-title">Kupon ayarları</h2>
-
-  <div class="controls">
-    <div class="field">
-      <label for="autoDate">Maç tarihi</label>
-      <input type="date" id="autoDate">
-    </div>
-    <button class="btn btn-primary" id="generateCoupons">✦ Kuponları oluştur</button>
-  </div>
-
-  <div class="rules">
-    <div class="rule"><div class="rule-label">Geçmiş Analiz</div><div class="rule-value">30 Gün</div></div>
-    <div class="rule"><div class="rule-label">Min. Başarı</div><div class="rule-value">%80</div></div>
-    <div class="rule"><div class="rule-label">Min. Örnek</div><div class="rule-value">8 Maç</div></div>
-    <div class="rule"><div class="rule-label">Min. Kupon Oranı</div><div class="rule-value">2.00</div></div>
-  </div>
-
-  <div class="legend">
-    <span><b class="green-text">✓</b> Kazandı</span>
-    <span><b class="red-text">✕</b> Kaybetti</span>
-    <span><b class="yellow-text">●</b> Bekliyor</span>
-  </div>
-
-  <div id="notice" class="notice" role="status" aria-live="polite"></div>
-</section>
-
-<section class="stats">
-  <div class="stat">
-    <div class="stat-label">Toplam Uygun Tahmin</div>
-    <div class="stat-value" id="statCandidates">0</div>
-  </div>
-  <div class="stat">
-    <div class="stat-label">Oluşturulan Kupon</div>
-    <div class="stat-value" id="statCoupons">0</div>
-  </div>
-</section>
-
-<section>
-  <h2 class="panel-title">Oluşturulan kuponlar (Güvenli, Orta, Riskli)</h2>
-  <div id="couponList">
-    <div class="empty">
-      <div class="empty-icon">🎟️</div>
-      Tarihi seç, ardından <b>Kuponları oluştur</b> düğmesine bas.
-    </div>
-  </div>
-</section>
-
-</main>
-
-<!-- rna.js dosyasına dokunulmadan doğrudan bağlanmıştır -->
-<script src="rna.js"></script>
-<script>
-"use strict";
-
-let activeCoupons = [];
-const auto$ = id => document.getElementById(id);
-
-function autoToday() {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-
-function autoEscape(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[c]));
-}
-
-function autoNotice(message, type="") {
-  const el = auto$("notice");
-  el.textContent = message;
-  el.className = "notice show" + (type ? " " + type : "");
-}
-
-// rna.js motorunun içindeki fonksiyonları kullanarak maç durumunu çözer
-function getPickStatus(item) {
-  if (!item || !item.match || typeof marketOutcome !== "function") return "pending";
-  const outcome = marketOutcome(item.match, item.market);
-  if (outcome === true) return "won";
-  if (outcome === false) return "lost";
-  return "pending";
-}
-
-function renderPick(item) {
-  const status = getPickStatus(item);
-  const score = typeof fullScore === "function" ? fullScore(item.match) : null;
-  const scoreText = score ? `${score.home} - ${score.away}` : "Skor bekleniyor";
-
-  return `
-  <div class="pick">
-    <div class="pick-status ${status}">${status === "won" ? "✓" : status === "lost" ? "✕" : "●"}</div>
-    <div>
-      <div class="pick-teams">${autoEscape(item.matchName)}</div>
-      <div class="pick-meta">${autoEscape(item.time || "--:--")}${item.league ? " · " + autoEscape(item.league) : ""} · Skor: ${scoreText}</div>
-      <div class="pick-source">
-        <b>Market: ${autoEscape(item.marketLabel)} · Oran: ${item.odd}</b><br>
-        Geçmiş Başarı: %${Math.round(item.success)} (${item.wins}/${item.sample} örnek)
+      <div class="rules">
+        <span class="rule">Geçmiş: <strong>30 gün</strong></span>
+        <span class="rule">Min. örnek: <strong>8</strong></span>
+        <span class="rule">Min. başarı: <strong>%80</strong></span>
+        <span class="rule">Min. tekli: <strong>1.35</strong></span>
+        <span class="rule">Min. kupon: <strong>2.00</strong></span>
+        <span class="rule">Maks. maç: <strong>5</strong></span>
       </div>
     </div>
-    <div class="pick-odd">${item.odd.toFixed(2)}</div>
-  </div>`;
-}
+  </header>
 
-function renderCouponCard(coupon, title, description) {
-  if (!coupon || !coupon.items || !coupon.items.length) return "";
+  <main>
+    <!--
+      RNA motorunun arayüzü bu kapsayıcıya eklenir.
+      Eski HTML'deki dnaRunAnalysis(), dnaMatches ve ikinci
+      kupon üretim kodu bu dosyada bulunmamalıdır.
+    -->
+    <div id="coupon-root"></div>
 
-  const status = couponStatus ? couponStatus(coupon) : "pending";
-  const statusText = status === "won" ? "Kazandı" : status === "lost" ? "Kaybetti" : "Bekliyor";
-  const statusClass = status;
-
-  return `
-  <article class="coupon">
-    <div class="coupon-head">
-      <div>
-        <h3 class="coupon-title">${autoEscape(title)}</h3>
-        <div class="coupon-date">${autoEscape(description)} · ${coupon.items.length} maç</div>
-      </div>
-      <div class="coupon-total"><strong>${coupon.totalOdd.toFixed(2)}</strong><span>TOPLAM ORAN</span></div>
+    <div class="footer-note">
+      İstatistikler yüklenen geçmiş maç verilerine bağlıdır.
+      Gelecek maçlar sonuçlanana kadar bekliyor olarak değerlendirilir.
     </div>
-    <div class="coupon-body">${coupon.items.map(renderPick).join("")}</div>
-    <div class="coupon-foot">
-      <div class="coupon-status ${statusClass}">● ${statusText}</div>
-    </div>
-  </article>`;
-}
+  </main>
 
-async function waitForEngine() {
-  const start = Date.now();
-  while (Date.now() - start < 15000) {
-    if (typeof getCandidatesForDate === "function" && typeof buildCoupon === "function" && Array.isArray(allMatches) && allMatches.length > 0) {
-      return true;
-    }
-    await new Promise(r => setTimeout(r, 200));
-  }
-  return false;
-}
-
-async function handleGenerate() {
-  const btn = auto$("generateCoupons");
-  const dateVal = auto$("autoDate").value;
-
-  if (!dateVal) {
-    autoNotice("Lütfen geçerli bir tarih seçin.", "error");
-    return;
-  }
-
-  btn.disabled = true;
-  btn.textContent = "Hesaplanıyor...";
-
-  try {
-    autoNotice("RNA motoru verileri işliyor...");
-    if (!await waitForEngine()) {
-      throw new Error("RNA motoru veya veri seti yüklenemedi.");
-    }
-
-    // rna.js motorunun doğrudan kendi fonksiyonlarını çağırıyoruz
-    const candidates = getCandidatesForDate(dateVal);
-    const safe = buildCoupon(candidates, "safe");
-    const medium = buildCoupon(candidates, "medium");
-    const risk = buildCoupon(candidates, "risk");
-
-    activeCoupons = [safe, medium, risk].filter(c => c && c.items && c.items.length > 0);
-
-    auto$("statCandidates").textContent = String(candidates.length);
-    auto$("statCoupons").textContent = String(activeCoupons.length);
-
-    const container = auto$("couponList");
-    if (!activeCoupons.length) {
-      container.innerHTML = `<div class="empty"><div class="empty-icon">🔎</div>Seçilen tarih ve kriterlere (%80 başarı, min 8 örnek) uyan kupon üretilemedi.</div>`;
-      autoNotice("Kriterlere uyan kupon bulunamadı.", "error");
-    } else {
-      container.innerHTML = `
-        ${renderCouponCard(safe, "Güvenli Kupon", "%90+ Geçmiş Başarı")}
-        ${renderCouponCard(medium, "Orta Risk Kupon", "%85+ Geçmiş Başarı")}
-        ${renderCouponCard(risk, "Alternatif Kupon", "%80+ Geçmiş Başarı")}
-      `;
-      autoNotice("Kuponlar başarıyla oluşturuldu!", "success");
-    }
-
-  } catch (err) {
-    autoNotice("Hata: " + err.message, "error");
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "✦ Kuponları oluştur";
-  }
-}
-
-auto$("generateCoupons").addEventListener("click", handleGenerate);
-auto$("autoDate").value = autoToday();
-</script>
+  <script src="./rna.js"></script>
 </body>
 </html>
