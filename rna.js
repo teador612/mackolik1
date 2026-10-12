@@ -4,18 +4,18 @@
 /* =========================================================
    RNA — OTOMATİK KUPON MOTORU
 
-   Veri              : ./data/v2-data.json
-   Geçmiş            : 30 gün
-   Minimum örnek     : 8
-   Minimum başarı    : %80
-   Minimum tekli oran: 1.35
-   Minimum kupon oran: 2.00
-   Maksimum maç      : 5
+   Veri               : ./data/v2-data.json
+   Geçmiş             : 30 gün
+   Minimum örnek      : 8
+   Minimum başarı     : %80
+   Minimum tekli oran : 1.35
+   Minimum kupon oran : 2.00
+   Maksimum maç       : 5
 
    Eşleştirme:
-   1. Market birebir eşleşir.
-   2. Oran iki ondalık basamağa yuvarlanır.
-   3. Her market kendi gerçek sonucuna göre değerlendirilir.
+   - Aynı market
+   - Aynı iki ondalıklı oran
+   - Her market kendi sonucuyla değerlendirilir
    ========================================================= */
 
 (() => {
@@ -31,61 +31,158 @@
     });
 
     const MARKETS = [
-        { key: "ms1", label: "MS 1", aliases: ["ms1", "MS1", "1"] },
-        { key: "msX", label: "MS 0", aliases: ["msX", "ms0", "MSX", "MS0", "X"] },
-        { key: "ms2", label: "MS 2", aliases: ["ms2", "MS2", "2"] },
+        {
+            key: "ms1", label: "MS 1",
+            aliases: ["ms1", "MS1", "1", "MS 1", "ev sahibi", "home win"]
+        },
+        {
+            key: "msX", label: "MS 0",
+            aliases: ["msX", "ms0", "MSX", "MS0", "X", "MS X", "beraberlik", "draw"]
+        },
+        {
+            key: "ms2", label: "MS 2",
+            aliases: ["ms2", "MS2", "2", "MS 2", "deplasman", "away win"]
+        },
 
-        { key: "iy1", label: "İY 1", aliases: ["iy1", "İY1", "ht1"] },
-        { key: "iyX", label: "İY 0", aliases: ["iyX", "iy0", "İYX", "İY0", "htX"] },
-        { key: "iy2", label: "İY 2", aliases: ["iy2", "İY2", "ht2"] },
+        {
+            key: "iy1", label: "İY 1",
+            aliases: ["iy1", "İY1", "ht1", "iy 1", "ilk yari 1"]
+        },
+        {
+            key: "iyX", label: "İY 0",
+            aliases: ["iyX", "iy0", "İYX", "İY0", "htX", "iy x", "ilk yari x"]
+        },
+        {
+            key: "iy2", label: "İY 2",
+            aliases: ["iy2", "İY2", "ht2", "iy 2", "ilk yari 2"]
+        },
 
-        { key: "iy05Ust", label: "İY 0.5 Üst", aliases: ["iy05Ust", "iy05üst", "iy05_over"] },
-        { key: "iy15Ust", label: "İY 1.5 Üst", aliases: ["iy15Ust", "iy15üst", "iy15_over"] },
-        { key: "iy15Alt", label: "İY 1.5 Alt", aliases: ["iy15Alt", "iy15alt", "iy15_under"] },
+        {
+            key: "iy05Ust", label: "İY 0.5 Üst",
+            aliases: ["iy05Ust", "iy05üst", "iy05_over", "iy 0.5 üst", "iy 0,5 üst"]
+        },
+        {
+            key: "iy15Ust", label: "İY 1.5 Üst",
+            aliases: ["iy15Ust", "iy15üst", "iy15_over", "iy 1.5 üst", "iy 1,5 üst"]
+        },
+        {
+            key: "iy15Alt", label: "İY 1.5 Alt",
+            aliases: ["iy15Alt", "iy15alt", "iy15_under", "iy 1.5 alt", "iy 1,5 alt"]
+        },
 
-        { key: "kgVar", label: "KG Var", aliases: ["kgVar", "KG Var", "kgvar", "bttsYes"] },
-        { key: "kgYok", label: "KG Yok", aliases: ["kgYok", "KG Yok", "kgyok", "bttsNo"] },
+        {
+            key: "kgVar", label: "KG Var",
+            aliases: ["kgVar", "KG Var", "kgvar", "bttsYes", "kg var", "karşılıklı gol var"]
+        },
+        {
+            key: "kgYok", label: "KG Yok",
+            aliases: ["kgYok", "KG Yok", "kgyok", "bttsNo", "kg yok", "karşılıklı gol yok"]
+        },
 
-        { key: "au15Ust", label: "2.5 Alt/Üst — 1.5 Üst", aliases: ["au15Ust", "au15üst", "au15_over"] },
-        { key: "au15Alt", label: "1.5 Alt", aliases: ["au15Alt", "au15alt", "au15_under"] },
-        { key: "au25Ust", label: "2.5 Üst", aliases: ["au25Ust", "au25üst", "au25_over"] },
-        { key: "au25Alt", label: "2.5 Alt", aliases: ["au25Alt", "au25alt", "au25_under"] },
+        {
+            key: "au15Ust", label: "1.5 Üst",
+            aliases: ["au15Ust", "au15üst", "au15_over", "1.5 üst", "1,5 üst", "toplam 1.5 üst"]
+        },
+        {
+            key: "au15Alt", label: "1.5 Alt",
+            aliases: ["au15Alt", "au15alt", "au15_under", "1.5 alt", "1,5 alt", "toplam 1.5 alt"]
+        },
+        {
+            key: "au25Ust", label: "2.5 Üst",
+            aliases: ["au25Ust", "au25üst", "au25_over", "2.5 üst", "2,5 üst", "toplam 2.5 üst"]
+        },
+        {
+            key: "au25Alt", label: "2.5 Alt",
+            aliases: ["au25Alt", "au25alt", "au25_under", "2.5 alt", "2,5 alt", "toplam 2.5 alt"]
+        },
 
-        { key: "iyms11", label: "İY/MS 1/1", aliases: ["iyms11"] },
-        { key: "iyms12", label: "İY/MS 1/2", aliases: ["iyms12"] },
-        { key: "iyms21", label: "İY/MS 2/1", aliases: ["iyms21"] },
-        { key: "iyms22", label: "İY/MS 2/2", aliases: ["iyms22"] },
-        { key: "iyms00", label: "İY/MS 0/0", aliases: ["iyms00"] },
-        { key: "iyms10", label: "İY/MS 1/0", aliases: ["iyms10"] },
-        { key: "iyms20", label: "İY/MS 2/0", aliases: ["iyms20"] }
+        { key: "iyms11", label: "İY/MS 1/1", aliases: ["iyms11", "1/1", "1-1"] },
+        { key: "iyms12", label: "İY/MS 1/2", aliases: ["iyms12", "1/2", "1-2"] },
+        { key: "iyms21", label: "İY/MS 2/1", aliases: ["iyms21", "2/1", "2-1"] },
+        { key: "iyms22", label: "İY/MS 2/2", aliases: ["iyms22", "2/2", "2-2"] },
+        { key: "iyms00", label: "İY/MS 0/0", aliases: ["iyms00", "0/0", "x/x"] },
+        { key: "iyms10", label: "İY/MS 1/0", aliases: ["iyms10", "1/0", "1/x"] },
+        { key: "iyms20", label: "İY/MS 2/0", aliases: ["iyms20", "2/0", "2/x"] }
     ];
 
     const state = {
         matches: [],
         selectedDate: todayISO(),
-        selectedMarkets: new Set(MARKETS.map(market => market.key)),
+        selectedMarkets: new Set(MARKETS.map(m => m.key)),
         historyCache: new Map(),
-        loading: false
+        loadError: "",
+        diagnostics: {
+            rawCount: 0,
+            matchCount: 0,
+            datedCount: 0,
+            targetCount: 0,
+            playedCount: 0,
+            oddsCount: 0,
+            historyGroups: 0,
+            validHistoryGroups: 0
+        }
     };
 
-    const number = value => {
-        if (typeof value === "number") {
-            return Number.isFinite(value) ? value : null;
-        }
+    const SCORE_FIELDS = [
+        "score", "result", "fullTimeScore", "full_time_score",
+        "macSonucu", "skor", "sonuc", "ftScore", "ft_score",
+        "scoreFT", "score_ft", "finalScore"
+    ];
 
-        if (value === null || value === undefined || value === "") {
-            return null;
-        }
+    const DATE_FIELDS = [
+        "date", "matchDate", "match_date", "datetime", "dateTime",
+        "matchDatetime", "match_datetime", "kickoff", "kickOff",
+        "startTime", "start_time", "eventDate", "event_date",
+        "tarih", "macTarihi", "maçTarihi", "fixtureDate",
+        "fixture_date", "timestamp", "matchTimestamp"
+    ];
 
-        const parsed = Number(
-            String(value)
-                .trim()
-                .replace(",", ".")
-                .replace(/[^\d.-]/g, "")
-        );
+    const HOME_FIELDS = [
+        "homeTeam", "home_team", "home", "homeName", "home_name",
+        "evSahibi", "evSahibiTakim", "ev", "evTakim", "team1",
+        "teamHome", "team_home", "host", "localTeam"
+    ];
 
-        return Number.isFinite(parsed) ? parsed : null;
-    };
+    const AWAY_FIELDS = [
+        "awayTeam", "away_team", "away", "awayName", "away_name",
+        "deplasman", "deplasmanTakim", "dep", "depTakim", "team2",
+        "teamAway", "team_away", "visitor", "awaySide"
+    ];
+
+    const STATUS_FIELDS = [
+        "status", "matchStatus", "match_status", "durum",
+        "fixtureStatus", "fixture_status", "state"
+    ];
+
+    const HOME_SCORE_FIELDS = [
+        "homeScore", "home_score", "scoreHome", "score_home",
+        "evSahibiSkor", "evSkor", "homeGoals", "home_goals",
+        "goalsHome", "goals_home", "ftHome", "ft_home"
+    ];
+
+    const AWAY_SCORE_FIELDS = [
+        "awayScore", "away_score", "scoreAway", "score_away",
+        "deplasmanSkor", "depSkor", "awayGoals", "away_goals",
+        "goalsAway", "goals_away", "ftAway", "ft_away"
+    ];
+
+    const HALF_HOME_FIELDS = [
+        "halfHomeScore", "half_home_score", "htHomeScore",
+        "iyHomeScore", "iy_home_score", "firstHalfHomeScore",
+        "homeHalfScore", "home_half_score"
+    ];
+
+    const HALF_AWAY_FIELDS = [
+        "halfAwayScore", "half_away_score", "htAwayScore",
+        "iyAwayScore", "iy_away_score", "firstHalfAwayScore",
+        "awayHalfScore", "away_half_score"
+    ];
+
+    const HALF_SCORE_FIELDS = [
+        "halfTimeScore", "half_time_score", "htScore", "ht_score",
+        "iySkor", "ilkYariSkor", "firstHalfScore", "first_half_score",
+        "scoreHT", "score_ht"
+    ];
 
     function todayISO() {
         const now = new Date();
@@ -93,40 +190,49 @@
         return local.toISOString().slice(0, 10);
     }
 
-    function normalizeDate(value) {
-        if (!value) return null;
-
-        if (typeof value === "number") {
-            const date = new Date(value);
-            return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
-        }
-
-        const raw = String(value).trim();
-
-        const iso = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
-        if (iso) {
-            return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
-        }
-
-        const local = raw.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})/);
-        if (local) {
-            return `${local[3]}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
-        }
-
-        const parsed = new Date(raw);
-        return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
-    }
-
     function normalizeKey(value) {
         return String(value ?? "")
             .trim()
             .toLocaleLowerCase("tr-TR")
-            .replace(/[\s_-]+/g, "")
-            .replace(/[ıİ]/g, "i");
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/ı/g, "i")
+            .replace(/[\s_.-]+/g, "")
+            .replace(/[()[\]]/g, "");
+    }
+
+    function number(value) {
+        if (typeof value === "number") {
+            return Number.isFinite(value) ? value : null;
+        }
+
+        if (value === null || value === undefined || value === "") return null;
+
+        if (typeof value === "object") return null;
+
+        let text = String(value).trim();
+
+        // Sayı dışındaki karakterleri kaldır; ondalık virgülü destekle.
+        text = text.replace(/\s/g, "").replace(/[^\d,.-]/g, "");
+
+        if (text.includes(",") && text.includes(".")) {
+            if (text.lastIndexOf(",") > text.lastIndexOf(".")) {
+                text = text.replace(/\./g, "").replace(",", ".");
+            } else {
+                text = text.replace(/,/g, "");
+            }
+        } else {
+            text = text.replace(",", ".");
+        }
+
+        const result = Number(text);
+        return Number.isFinite(result) ? result : null;
     }
 
     function getValue(object, names) {
-        if (!object || typeof object !== "object") return undefined;
+        if (!object || typeof object !== "object" || Array.isArray(object)) {
+            return undefined;
+        }
 
         for (const name of names) {
             if (Object.prototype.hasOwnProperty.call(object, name)) {
@@ -137,13 +243,13 @@
             }
         }
 
-        const normalized = new Map(
-            Object.keys(object).map(key => [normalizeKey(key), object[key]])
-        );
+        const wanted = new Set(names.map(normalizeKey));
 
-        for (const name of names) {
-            const value = normalized.get(normalizeKey(name));
-            if (value !== undefined && value !== null && value !== "") {
+        for (const [key, value] of Object.entries(object)) {
+            if (wanted.has(normalizeKey(key)) &&
+                value !== undefined &&
+                value !== null &&
+                value !== "") {
                 return value;
             }
         }
@@ -151,138 +257,364 @@
         return undefined;
     }
 
-    function getOddsObject(match) {
-        return (
-            match.odds ||
-            match.openingOdds ||
-            match.opening_odds ||
-            match.openOdds ||
-            match.open_odds ||
-            match.markets ||
-            match.oranlar ||
-            match.oran ||
-            match
-        );
+    function normalizeDate(value) {
+        if (value === null || value === undefined || value === "") return null;
+
+        if (typeof value === "number") {
+            // Unix timestamp saniye veya milisaniye olabilir.
+            const milliseconds = value < 100000000000 ? value * 1000 : value;
+            const date = new Date(milliseconds);
+            return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+        }
+
+        const raw = String(value).trim();
+        if (!raw) return null;
+
+        // ISO tarih: YYYY-MM-DD veya YYYY-MM-DDTHH:mm:ss...
+        const iso = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (iso) {
+            return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+        }
+
+        // Türkçe tarih: DD.MM.YYYY veya DD/MM/YYYY
+        const local = raw.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})/);
+        if (local) {
+            return `${local[3]}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
+        }
+
+        // DD-MM-YYYY biçimi
+        const dash = raw.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+        if (dash) {
+            return `${dash[3]}-${dash[2].padStart(2, "0")}-${dash[1].padStart(2, "0")}`;
+        }
+
+        const parsed = new Date(raw);
+        if (Number.isNaN(parsed.getTime())) return null;
+
+        // Tarih saat içermiyorsa UTC dönüşümünden gün kaydırma.
+        if (!/[T ]\d{1,2}:\d{2}/.test(raw)) {
+            return raw.slice(0, 10);
+        }
+
+        return parsed.toISOString().slice(0, 10);
     }
 
-    function getOdd(match, market) {
-        const oddsObject = getOddsObject(match);
-        const names = [market.key, ...market.aliases];
-
-        let raw = getValue(oddsObject, names);
+    function getMatchDate(match) {
+        let raw = getValue(match, DATE_FIELDS);
 
         if (raw && typeof raw === "object") {
-            raw = getValue(raw, [
-                "odd", "odds", "oran", "opening", "openingOdd",
-                "openingOdds", "acilis", "acilisOrani", "value"
-            ]);
+            raw = getValue(raw, ["date", "datetime", "value", "timestamp"]);
         }
 
-        const odd = number(raw);
-        return odd !== null && odd > 1 ? odd : null;
-    }
-
-    // DNA tarzı: oranı iki ondalık basamağa sabitle.
-    function oddKey(value) {
-        const odd = number(value);
-        return odd === null ? null : odd.toFixed(2);
-    }
-
-    function getFullScore(match) {
-        const directHome = getValue(match, [
-            "homeScore", "home_score", "scoreHome", "score_home",
-            "evSahibiSkor", "evSkor"
-        ]);
-
-        const directAway = getValue(match, [
-            "awayScore", "away_score", "scoreAway", "score_away",
-            "deplasmanSkor", "depSkor"
-        ]);
-
-        if (directHome !== undefined && directAway !== undefined) {
-            const home = number(directHome);
-            const away = number(directAway);
-            if (home !== null && away !== null) return { home, away };
+        if (raw === undefined) {
+            // Bazı JSON'larda tarih ayrı bir nesnenin içinde olabilir.
+            for (const [key, value] of Object.entries(match || {})) {
+                const k = normalizeKey(key);
+                if (
+                    (k.includes("date") || k.includes("tarih") || k.includes("kickoff")) &&
+                    (typeof value === "string" || typeof value === "number")
+                ) {
+                    raw = value;
+                    break;
+                }
+            }
         }
 
-        const score = getValue(match, [
-            "score", "result", "fullTimeScore", "full_time_score",
-            "macSonucu", "skor", "sonuc"
-        ]);
-
-        return parseScore(score);
-    }
-
-    function getHalfScore(match) {
-        const directHome = getValue(match, [
-            "halfHomeScore", "half_home_score", "htHomeScore",
-            "iyHomeScore", "iy_home_score", "firstHalfHomeScore"
-        ]);
-
-        const directAway = getValue(match, [
-            "halfAwayScore", "half_away_score", "htAwayScore",
-            "iyAwayScore", "iy_away_score", "firstHalfAwayScore"
-        ]);
-
-        if (directHome !== undefined && directAway !== undefined) {
-            const home = number(directHome);
-            const away = number(directAway);
-            if (home !== null && away !== null) return { home, away };
-        }
-
-        const half = getValue(match, [
-            "halfTimeScore", "half_time_score", "htScore",
-            "iySkor", "ilkYariSkor", "firstHalfScore"
-        ]);
-
-        return parseScore(half);
+        return normalizeDate(raw);
     }
 
     function parseScore(value) {
         if (value && typeof value === "object") {
-            const home = number(getValue(value, ["home", "homeScore", "h", "ev"]));
-            const away = number(getValue(value, ["away", "awayScore", "a", "dep"]));
+            const home = number(getValue(value, [
+                "home", "homeScore", "home_score", "h", "ev", "homeGoals"
+            ]));
+
+            const away = number(getValue(value, [
+                "away", "awayScore", "away_score", "a", "dep", "awayGoals"
+            ]));
+
             if (home !== null && away !== null) return { home, away };
         }
 
+        if (typeof value === "number") return null;
         if (typeof value !== "string") return null;
 
-        const match = value.match(/(\d+)\s*[-:]\s*(\d+)/);
+        const match = value.match(/(?:^|\D)(\d{1,2})\s*[-:–]\s*(\d{1,2})(?:\D|$)/);
         if (!match) return null;
 
         return { home: Number(match[1]), away: Number(match[2]) };
     }
 
-    function getMatchDate(match) {
-        return normalizeDate(getValue(match, [
-            "date", "matchDate", "match_date", "datetime",
-            "kickoff", "startTime", "start_time", "tarih"
-        ]));
+    function getFullScore(match) {
+        const directHome = number(getValue(match, HOME_SCORE_FIELDS));
+        const directAway = number(getValue(match, AWAY_SCORE_FIELDS));
+
+        if (directHome !== null && directAway !== null) {
+            return { home: directHome, away: directAway };
+        }
+
+        const score = getValue(match, SCORE_FIELDS);
+        const parsed = parseScore(score);
+        if (parsed) return parsed;
+
+        // Skor başka bir nesnenin altında bulunabilir.
+        const nested = findScoreObject(match, false);
+        return nested;
     }
 
-    function getMatchId(match, index) {
-        return String(getValue(match, ["id", "matchId", "match_id", "fixtureId"]) ?? index);
+    function getHalfScore(match) {
+        const directHome = number(getValue(match, HALF_HOME_FIELDS));
+        const directAway = number(getValue(match, HALF_AWAY_FIELDS));
+
+        if (directHome !== null && directAway !== null) {
+            return { home: directHome, away: directAway };
+        }
+
+        const half = getValue(match, HALF_SCORE_FIELDS);
+        const parsed = parseScore(half);
+        if (parsed) return parsed;
+
+        return findScoreObject(match, true);
+    }
+
+    function findScoreObject(root, halfTime) {
+        const seen = new Set();
+        const queue = [{ value: root, depth: 0 }];
+
+        const patterns = halfTime
+            ? ["halftime", "firsthalf", "htscore", "iyskor", "ilkyari"]
+            : ["fulltime", "finalscore", "ftscore", "macsonucu", "skor"];
+
+        while (queue.length) {
+            const current = queue.shift();
+            const object = current.value;
+
+            if (!object || typeof object !== "object" || seen.has(object)) continue;
+            seen.add(object);
+
+            if (Array.isArray(object)) {
+                for (const child of object) {
+                    if (child && typeof child === "object") {
+                        queue.push({ value: child, depth: current.depth + 1 });
+                    }
+                }
+                continue;
+            }
+
+            const home = number(getValue(object, [
+                "homeScore", "home_score", "homeGoals", "home_goals", "evSkor"
+            ]));
+            const away = number(getValue(object, [
+                "awayScore", "away_score", "awayGoals", "away_goals", "depSkor"
+            ]));
+
+            if (home !== null && away !== null) {
+                const parentKeys = Object.keys(object).map(normalizeKey).join("|");
+                const looksHalf = patterns.some(pattern => parentKeys.includes(pattern));
+
+                if (!halfTime || looksHalf) return { home, away };
+            }
+
+            for (const [key, value] of Object.entries(object)) {
+                if (typeof value === "string") {
+                    const normalized = normalizeKey(key);
+                    const isHalf = [
+                        "halftimescore", "firsthalfscore", "htscore",
+                        "iyskor", "ilkyariskor", "scoreht"
+                    ].includes(normalized);
+
+                    const isFull = [
+                        "score", "result", "fulltimescore", "ftscore",
+                        "macsonucu", "skor", "finalscore"
+                    ].includes(normalized);
+
+                    if ((halfTime && isHalf) || (!halfTime && isFull)) {
+                        const parsed = parseScore(value);
+                        if (parsed) return parsed;
+                    }
+                }
+
+                if (value && typeof value === "object" && current.depth < 5) {
+                    queue.push({ value, depth: current.depth + 1 });
+                }
+            }
+        }
+
+        return null;
     }
 
     function getTeamName(match, side) {
-        const names = side === "home"
-            ? ["homeTeam", "home_team", "home", "evSahibi", "ev", "team1"]
-            : ["awayTeam", "away_team", "away", "deplasman", "dep", "team2"];
-
+        const names = side === "home" ? HOME_FIELDS : AWAY_FIELDS;
         const value = getValue(match, names);
 
         if (value && typeof value === "object") {
-            return String(getValue(value, ["name", "teamName", "title"]) ?? "Bilinmiyor");
+            return String(getValue(value, ["name", "teamName", "team_name", "title", "displayName"]) ?? "Bilinmiyor");
         }
 
-        return String(value ?? "Bilinmiyor");
+        if (value !== undefined) return String(value);
+
+        // İç içe takımlar nesnesi desteği.
+        const teams = getValue(match, ["teams", "takimlar", "participants"]);
+        if (teams && typeof teams === "object") {
+            const nested = getValue(teams, side === "home"
+                ? ["home", "homeTeam", "ev", "team1"]
+                : ["away", "awayTeam", "deplasman", "team2"]);
+
+            if (nested && typeof nested === "object") {
+                return String(getValue(nested, ["name", "teamName", "title"]) ?? "Bilinmiyor");
+            }
+
+            if (nested !== undefined) return String(nested);
+        }
+
+        return "Bilinmiyor";
+    }
+
+    function getMatchId(match, index) {
+        const id = getValue(match, [
+            "id", "matchId", "match_id", "fixtureId", "fixture_id",
+            "eventId", "event_id", "gameId", "game_id"
+        ]);
+
+        if (id !== undefined) return String(id);
+
+        // ID yoksa farklı maçların tek maç sayılmasını önle.
+        return [
+            getMatchDate(match) || "tarihsiz",
+            getTeamName(match, "home"),
+            getTeamName(match, "away"),
+            index
+        ].join("|");
     }
 
     function matchLabel(match) {
         return `${getTeamName(match, "home")} - ${getTeamName(match, "away")}`;
     }
 
+    function getOddsRoots(match) {
+        const roots = [];
+        const keys = [
+            "odds", "openingOdds", "opening_odds", "openOdds", "open_odds",
+            "opening", "oranlar", "oran", "markets", "marketOdds",
+            "market_odds", "oddsData", "odds_data", "prices", "iddaa",
+            "iddaaOdds", "iddaa_odds"
+        ];
+
+        for (const key of keys) {
+            const value = getValue(match, [key]);
+            if (value && typeof value === "object") roots.push(value);
+        }
+
+        // Oranlar doğrudan maç nesnesinde tutuluyorsa onu da tara.
+        roots.push(match);
+
+        return [...new Set(roots)];
+    }
+
+    function getOddFromValue(value) {
+        if (typeof value === "number" || typeof value === "string") {
+            const parsed = number(value);
+            return parsed !== null && parsed > 1 && parsed < 10000 ? parsed : null;
+        }
+
+        if (!value || typeof value !== "object") return null;
+
+        // Market objesi { odd: 1.75 } veya { opening: 1.75 } olabilir.
+        const price = getValue(value, [
+            "odd", "odds", "oran", "price", "value", "opening",
+            "openingOdd", "openingOdds", "opening_odd", "opening_odds",
+            "acilis", "acilisOrani", "acilis_orani", "decimal", "decimalOdds"
+        ]);
+
+        if (price !== undefined && price !== value) {
+            const parsed = number(price);
+            if (parsed !== null && parsed > 1 && parsed < 10000) return parsed;
+        }
+
+        return null;
+    }
+
+    function findOddInTree(root, aliases) {
+        const wanted = new Set(aliases.map(normalizeKey));
+        const visited = new Set();
+        const queue = [{ value: root, depth: 0 }];
+
+        while (queue.length) {
+            const { value, depth } = queue.shift();
+
+            if (!value || typeof value !== "object" || visited.has(value)) continue;
+            visited.add(value);
+
+            if (Array.isArray(value)) {
+                for (const item of value) {
+                    if (item && typeof item === "object") {
+                        // Dizi öğeleri {market:"MS1", odd:1.80} biçiminde olabilir.
+                        const marketName = getValue(item, [
+                            "market", "marketKey", "market_key", "name", "key",
+                            "type", "label", "betType"
+                        ]);
+
+                        if (marketName !== undefined && wanted.has(normalizeKey(marketName))) {
+                            const odd = getOddFromValue(item);
+                            if (odd !== null) return odd;
+                        }
+
+                        if (depth < 5) queue.push({ value: item, depth: depth + 1 });
+                    }
+                }
+                continue;
+            }
+
+            // Market adı nesnenin anahtarıysa değerinden oranı al.
+            for (const [key, child] of Object.entries(value)) {
+                if (wanted.has(normalizeKey(key))) {
+                    const odd = getOddFromValue(child);
+                    if (odd !== null) return odd;
+                }
+            }
+
+            // Bazı dosyalarda marketler "name"/"key" alanı olan nesnelerde tutulur.
+            const marketName = getValue(value, [
+                "market", "marketKey", "market_key", "betType", "bet_type"
+            ]);
+
+            if (marketName !== undefined && wanted.has(normalizeKey(marketName))) {
+                const odd = getOddFromValue(value);
+                if (odd !== null) return odd;
+            }
+
+            if (depth < 5) {
+                for (const child of Object.values(value)) {
+                    if (child && typeof child === "object") {
+                        queue.push({ value: child, depth: depth + 1 });
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    function getOdd(match, market) {
+        const aliases = [market.key, market.label, ...market.aliases];
+
+        for (const root of getOddsRoots(match)) {
+            const found = findOddInTree(root, aliases);
+            if (found !== null) return found;
+        }
+
+        return null;
+    }
+
+    // DNA yöntemi: market anahtarına ek olarak oranı iki basamağa sabitle.
+    function oddKey(value) {
+        const odd = number(value);
+        return odd === null ? null : odd.toFixed(2);
+    }
+
     function getMarketOutcome(match, market) {
+        if (!market) return null;
+
         const full = getFullScore(match);
         const half = getHalfScore(match);
 
@@ -297,28 +629,22 @@
 
             case "iy05Ust":
                 return half ? half.home + half.away >= 1 : null;
-
             case "iy15Ust":
                 return half ? half.home + half.away >= 2 : null;
-
             case "iy15Alt":
                 return half ? half.home + half.away <= 1 : null;
 
             case "kgVar":
                 return full ? full.home > 0 && full.away > 0 : null;
-
             case "kgYok":
                 return full ? full.home === 0 || full.away === 0 : null;
 
             case "au15Ust":
                 return full ? full.home + full.away >= 2 : null;
-
             case "au15Alt":
                 return full ? full.home + full.away <= 1 : null;
-
             case "au25Ust":
                 return full ? full.home + full.away >= 3 : null;
-
             case "au25Alt":
                 return full ? full.home + full.away <= 2 : null;
 
@@ -346,15 +672,83 @@
         const full = getFullScore(match);
         if (!full) return false;
 
-        const status = normalizeKey(getValue(match, [
-            "status", "matchStatus", "match_status", "durum"
-        ]));
+        const status = normalizeKey(getValue(match, STATUS_FIELDS));
 
-        if (["scheduled", "upcoming", "notstarted", "bekliyor", "ertelendi"].includes(status)) {
-            return false;
-        }
+        const unfinished = [
+            "scheduled", "upcoming", "notstarted", "bekliyor",
+            "ertelendi", "postponed", "cancelled", "canceled",
+            "iptal", "oynanmadi", "oynanmamis"
+        ];
+
+        if (unfinished.includes(status)) return false;
 
         return true;
+    }
+
+    function collectMatchArrays(payload) {
+        const results = [];
+        const visited = new Set();
+        const queue = [{ value: payload, depth: 0 }];
+
+        while (queue.length) {
+            const { value, depth } = queue.shift();
+
+            if (!value || typeof value !== "object" || visited.has(value)) continue;
+            visited.add(value);
+
+            if (Array.isArray(value)) {
+                const objects = value.filter(item =>
+                    item && typeof item === "object" && !Array.isArray(item)
+                );
+
+                if (objects.length) {
+                    const matchLikeCount = objects.filter(item => {
+                        const hasDate = getMatchDate(item) !== null;
+                        const hasTeams =
+                            getTeamName(item, "home") !== "Bilinmiyor" ||
+                            getTeamName(item, "away") !== "Bilinmiyor";
+                        const hasOdds = MARKETS.some(market => getOdd(item, market) !== null);
+
+                        return hasDate || hasTeams || hasOdds;
+                    }).length;
+
+                    if (matchLikeCount > 0) {
+                        results.push({
+                            rows: objects,
+                            score: matchLikeCount / objects.length
+                        });
+                    }
+                }
+
+                if (depth < 6) {
+                    for (const item of value) {
+                        if (item && typeof item === "object") {
+                            queue.push({ value: item, depth: depth + 1 });
+                        }
+                    }
+                }
+
+                continue;
+            }
+
+            if (depth < 6) {
+                for (const child of Object.values(value)) {
+                    if (child && typeof child === "object") {
+                        queue.push({ value: child, depth: depth + 1 });
+                    }
+                }
+            }
+        }
+
+        if (!results.length) return [];
+
+        results.sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return b.rows.length - a.rows.length;
+        });
+
+        // En uygun maç dizisini kullan; iç içe aynı kayıtları üst üste ekleme.
+        return results[0].rows;
     }
 
     function normalizeMatches(payload) {
@@ -363,8 +757,17 @@
         if (payload && Array.isArray(payload.matches)) return payload.matches;
         if (payload && Array.isArray(payload.data)) return payload.data;
         if (payload && Array.isArray(payload.fixtures)) return payload.fixtures;
+        if (payload && Array.isArray(payload.events)) return payload.events;
 
-        return [];
+        return collectMatchArrays(payload);
+    }
+
+    function setMessage(message, isError = false) {
+        const element = document.getElementById("rnaMessage");
+        if (!element) return;
+
+        element.textContent = message;
+        element.classList.toggle("error", isError);
     }
 
     async function loadData() {
@@ -374,40 +777,73 @@
         const timeout = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
 
         try {
-            const response = await fetch(
-                `${CONFIG.DATA_URL}${CONFIG.DATA_URL.includes("?") ? "&" : "?"}t=${Date.now()}`,
-                {
-                    cache: "no-store",
-                    signal: controller.signal
-                }
-            );
+            const url = `${CONFIG.DATA_URL}${CONFIG.DATA_URL.includes("?") ? "&" : "?"}t=${Date.now()}`;
+
+            const response = await fetch(url, {
+                cache: "no-store",
+                signal: controller.signal
+            });
 
             if (!response.ok) {
-                throw new Error(`Veri dosyası yüklenemedi: HTTP ${response.status}`);
+                throw new Error(`JSON yüklenemedi: HTTP ${response.status}. Dosya yolu: ${CONFIG.DATA_URL}`);
             }
 
             const payload = await response.json();
+
+            state.diagnostics.rawCount = Array.isArray(payload)
+                ? payload.length
+                : Object.keys(payload || {}).length;
+
             state.matches = normalizeMatches(payload);
             state.historyCache.clear();
+            state.loadError = "";
 
             if (!state.matches.length) {
-                throw new Error("JSON dosyasında maç verisi bulunamadı.");
+                throw new Error(
+                    "JSON yüklendi fakat maç listesi bulunamadı. Dosyada maçların bulunduğu dizinin alan adı farklı olabilir."
+                );
             }
 
+            state.diagnostics.matchCount = state.matches.length;
+            state.diagnostics.datedCount = state.matches.filter(m => getMatchDate(m)).length;
+            state.diagnostics.playedCount = state.matches.filter(isPlayed).length;
+            state.diagnostics.oddsCount = state.matches.reduce((count, match) =>
+                count + MARKETS.filter(market => getOdd(match, market) !== null).length, 0
+            );
+
             render();
-            setMessage(`${state.matches.length} maç yüklendi.`);
+
+            const dated = state.diagnostics.datedCount;
+            const odds = state.diagnostics.oddsCount;
+
+            if (dated === 0) {
+                setMessage(
+                    `JSON yüklendi (${state.matches.length} kayıt), ancak maç tarihleri tanınamadı. Analiz ayrıntılarını kontrol et.`,
+                    true
+                );
+            } else if (odds === 0) {
+                setMessage(
+                    `JSON yüklendi (${state.matches.length} kayıt), ancak market oranları bulunamadı. Oran alanlarının gerçek adları gerekli.`,
+                    true
+                );
+            } else {
+                setMessage(`${state.matches.length} maç yüklendi · ${dated} tarihli kayıt · ${odds} oran alanı bulundu.`);
+            }
         } catch (error) {
+            state.loadError = error.message;
             console.error("[RNA] Veri yükleme hatası:", error);
             setMessage(`Veri yüklenemedi: ${error.message}`, true);
+            renderDiagnosticsOnly();
         } finally {
             clearTimeout(timeout);
         }
     }
 
     function getHistoryWindow(targetDate) {
-        const end = new Date(`${targetDate}T00:00:00`);
+        // UTC gün başlangıçlarıyla hesapla; yerel saat nedeniyle tarih kaymasın.
+        const end = new Date(`${targetDate}T00:00:00.000Z`);
         const start = new Date(end);
-        start.setDate(start.getDate() - CONFIG.HISTORY_DAYS);
+        start.setUTCDate(start.getUTCDate() - CONFIG.HISTORY_DAYS);
 
         return {
             start: start.toISOString().slice(0, 10),
@@ -416,7 +852,8 @@
     }
 
     function buildHistoryIndex(targetDate) {
-        const cacheKey = `${targetDate}|${CONFIG.HISTORY_DAYS}|${[...state.selectedMarkets].sort().join(",")}`;
+        const selected = [...state.selectedMarkets].sort().join(",");
+        const cacheKey = `${targetDate}|${CONFIG.HISTORY_DAYS}|${selected}`;
 
         if (state.historyCache.has(cacheKey)) {
             return state.historyCache.get(cacheKey);
@@ -448,33 +885,38 @@
                         odd: oddKey(odd),
                         sample: 0,
                         wins: 0,
-                        losses: 0
+                        losses: 0,
+                        success: 0
                     });
                 }
 
                 const group = index.get(key);
                 group.sample += 1;
 
-                if (result) {
-                    group.wins += 1;
-                } else {
-                    group.losses += 1;
-                }
+                if (result) group.wins += 1;
+                else group.losses += 1;
             }
         }
 
         for (const group of index.values()) {
-            group.success = group.sample
-                ? (group.wins / group.sample) * 100
+            group.success = group.sample > 0
+                ? group.wins / group.sample * 100
                 : 0;
         }
+
+        state.diagnostics.historyGroups = index.size;
+        state.diagnostics.validHistoryGroups = [...index.values()].filter(group =>
+            group.sample >= CONFIG.MIN_SAMPLE &&
+            group.success >= CONFIG.MIN_SUCCESS
+        ).length;
 
         state.historyCache.set(cacheKey, index);
         return index;
     }
 
-    function analyzeMatch(match, index) {
+    function analyzeMatch(match, index, matchIndex) {
         const candidates = [];
+        const matchId = getMatchId(match, matchIndex);
 
         for (const market of MARKETS) {
             if (!state.selectedMarkets.has(market.key)) continue;
@@ -491,7 +933,7 @@
 
             candidates.push({
                 match,
-                matchId: getMatchId(match, 0),
+                matchId,
                 matchName: matchLabel(match),
                 date: getMatchDate(match),
                 marketKey: market.key,
@@ -515,8 +957,9 @@
         return candidates;
     }
 
-    function buildCoupon(candidates, minimumSuccess, usedMatchIds) {
+    function buildCoupon(candidates, minimumSuccess) {
         const coupon = [];
+        const usedMatchIds = new Set();
         let totalOdds = 1;
 
         for (const item of candidates) {
@@ -524,16 +967,12 @@
             if (item.success < minimumSuccess) continue;
             if (usedMatchIds.has(item.matchId)) continue;
 
-            const nextTotal = totalOdds * item.odd;
-
-            if (coupon.length > 0 && nextTotal < totalOdds) continue;
-
             coupon.push(item);
-            totalOdds = nextTotal;
             usedMatchIds.add(item.matchId);
+            totalOdds *= item.odd;
         }
 
-        if (totalOdds < CONFIG.MIN_TOTAL_ODDS) {
+        if (coupon.length === 0 || totalOdds < CONFIG.MIN_TOTAL_ODDS) {
             return { items: [], totalOdds: 1 };
         }
 
@@ -541,21 +980,33 @@
     }
 
     function getCoupons(candidates) {
-        const used = new Set();
-
-        const safe = buildCoupon(candidates, 90, used);
-        const medium = buildCoupon(candidates, 85, used);
-        const risk = buildCoupon(candidates, 80, used);
-
+        // Her kupon kendi seçim havuzunu kullanır.
+        // Güvenli kupondaki maçlar diğer kuponların adaylarını engellemez.
         return [
-            { key: "safe", title: "Güvenli Kupon", threshold: 90, ...safe },
-            { key: "medium", title: "Orta Risk Kupon", threshold: 85, ...medium },
-            { key: "risk", title: "Riskli Kupon", threshold: 80, ...risk }
+            {
+                key: "safe",
+                title: "Güvenli Kupon",
+                threshold: 90,
+                ...buildCoupon(candidates, 90)
+            },
+            {
+                key: "medium",
+                title: "Orta Risk Kupon",
+                threshold: 85,
+                ...buildCoupon(candidates, 85)
+            },
+            {
+                key: "risk",
+                title: "Riskli Kupon",
+                threshold: 80,
+                ...buildCoupon(candidates, 80)
+            }
         ];
     }
 
     function getResultStatus(item) {
-        const outcome = getMarketOutcome(item.match, MARKETS.find(m => m.key === item.marketKey));
+        const market = MARKETS.find(m => m.key === item.marketKey);
+        const outcome = getMarketOutcome(item.match, market);
 
         if (outcome === true) return "success";
         if (outcome === false) return "failure";
@@ -579,15 +1030,7 @@
     }
 
     function formatPercent(value) {
-        return `${value.toFixed(1).replace(".", ",")}%`;
-    }
-
-    function setMessage(message, isError = false) {
-        const element = document.getElementById("rnaMessage");
-        if (!element) return;
-
-        element.textContent = message;
-        element.classList.toggle("error", isError);
+        return `${Number(value).toFixed(1).replace(".", ",")}%`;
     }
 
     function ensureUI() {
@@ -658,10 +1101,6 @@
                     padding: 9px 14px;
                     font-weight: 700;
                 }
-                #rnaRoot button:disabled {
-                    opacity: .5;
-                    cursor: wait;
-                }
                 #rnaRoot .rna-market-grid {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
@@ -727,6 +1166,7 @@
                     color: #9ca3af;
                     padding: 12px 0;
                     font-size: 13px;
+                    line-height: 1.5;
                 }
                 #rnaRoot details summary {
                     cursor: pointer;
@@ -782,6 +1222,7 @@
 
         const dateInput = root.querySelector("#rnaDate");
         dateInput.value = state.selectedDate;
+
         dateInput.addEventListener("change", () => {
             state.selectedDate = dateInput.value || todayISO();
             render();
@@ -790,7 +1231,7 @@
         root.querySelector("#rnaRefresh").addEventListener("click", loadData);
 
         root.querySelector("#rnaSelectAll").addEventListener("click", () => {
-            state.selectedMarkets = new Set(MARKETS.map(market => market.key));
+            state.selectedMarkets = new Set(MARKETS.map(m => m.key));
             state.historyCache.clear();
             renderMarketFilters();
             render();
@@ -851,7 +1292,7 @@
                     </div>
                 `;
             }).join("")
-            : `<div class="rna-empty">Bu eşikte kupon oluşturacak yeterli eşleşme bulunamadı.</div>`;
+            : `<div class="rna-empty">Bu başarı eşiğinde yeterli eşleşme bulunamadı.</div>`;
 
         return `
             <article class="rna-coupon">
@@ -863,6 +1304,16 @@
         `;
     }
 
+    function renderDiagnosticsOnly() {
+        const diagnostics = document.getElementById("rnaDiagnostics");
+        if (!diagnostics) return;
+
+        diagnostics.innerHTML = `
+            <p>Veri kaynağı: ${escapeHTML(CONFIG.DATA_URL)}</p>
+            <p>Hata: ${escapeHTML(state.loadError || "Bilinmeyen hata")}</p>
+        `;
+    }
+
     function render() {
         ensureUI();
 
@@ -871,14 +1322,25 @@
             dateInput.value = state.selectedDate;
         }
 
-        const targetMatches = state.matches.filter(match =>
+        const datedMatches = state.matches.filter(match => getMatchDate(match) !== null);
+
+        const targetMatches = datedMatches.filter(match =>
             getMatchDate(match) === state.selectedDate && !isPlayed(match)
         );
 
         const history = buildHistoryIndex(state.selectedDate);
-        const candidates = targetMatches.flatMap(match => analyzeMatch(match, history));
 
-        // Aynı maçtan birden fazla market gelirse en güçlü eşleşmeyi kullan.
+        const candidates = [];
+
+        for (let i = 0; i < targetMatches.length; i++) {
+            candidates.push(...analyzeMatch(targetMatches[i], history, i));
+        }
+
+        /*
+         * Bir maç için birden fazla market uygunsa en yüksek başarı oranına
+         * sahip market kupona aday olur. Böylece aynı maç aynı kuponda iki
+         * farklı tahmin olarak kullanılmaz.
+         */
         const bestByMatch = new Map();
 
         for (const candidate of candidates) {
@@ -887,7 +1349,12 @@
             if (
                 !previous ||
                 candidate.success > previous.success ||
-                (candidate.success === previous.success && candidate.sample > previous.sample)
+                (candidate.success === previous.success && candidate.sample > previous.sample) ||
+                (
+                    candidate.success === previous.success &&
+                    candidate.sample === previous.sample &&
+                    candidate.odd > previous.odd
+                )
             ) {
                 bestByMatch.set(candidate.matchId, candidate);
             }
@@ -901,12 +1368,13 @@
 
         const coupons = getCoupons(uniqueCandidates);
 
+        state.diagnostics.targetCount = targetMatches.length;
+
         const summary = document.getElementById("rnaSummary");
         if (summary) {
             summary.textContent =
-                `${state.selectedDate} · ${targetMatches.length} maç · ` +
-                `${uniqueCandidates.length} uygun eşleşme · ` +
-                `${history.size} market/oran grubu`;
+                `${state.selectedDate} · ${targetMatches.length} oynanmamış maç · ` +
+                `${uniqueCandidates.length} uygun maç · ${history.size} market/oran grubu`;
         }
 
         const couponContainer = document.getElementById("rnaCoupons");
@@ -916,22 +1384,39 @@
 
         const diagnostics = document.getElementById("rnaDiagnostics");
         if (diagnostics) {
-            const grouped = [...history.values()]
-                .sort((a, b) => b.success - a.success || b.sample - a.sample);
+            const groups = [...history.values()];
+            const validGroups = groups.filter(group =>
+                group.sample >= CONFIG.MIN_SAMPLE &&
+                group.success >= CONFIG.MIN_SUCCESS
+            ).length;
+
+            const missingDate = state.matches.length - datedMatches.length;
+            const missingOdds = state.diagnostics.oddsCount === 0;
 
             diagnostics.innerHTML = `
                 <p>Veri kaynağı: ${escapeHTML(CONFIG.DATA_URL)}</p>
-                <p>Geçmiş aralığı: ${CONFIG.HISTORY_DAYS} gün</p>
+                <p>Yüklenen maç kaydı: ${state.matches.length}</p>
+                <p>Tarih alanı tanınan kayıt: ${datedMatches.length}</p>
+                <p>Tarih alanı tanınmayan kayıt: ${missingDate}</p>
+                <p>Skoru tamamlanmış kayıt: ${state.diagnostics.playedCount}</p>
+                <p>Bulunan oran alanı sayısı: ${state.diagnostics.oddsCount}</p>
                 <p>Seçili market sayısı: ${state.selectedMarkets.size}</p>
+                <p>Seçilen tarihte oynanmamış maç: ${targetMatches.length}</p>
+                <p>Geçmiş aralığı: ${CONFIG.HISTORY_DAYS} gün</p>
+                <p>Geçmiş market/oran grubu: ${groups.length}</p>
+                <p>Örnek ve başarı şartlarını karşılayan grup: ${validGroups}</p>
                 <p>Minimum örnek: ${CONFIG.MIN_SAMPLE}</p>
                 <p>Minimum başarı: %${CONFIG.MIN_SUCCESS}</p>
-                <p>Eşleştirme anahtarı: market anahtarı + iki ondalıklı oran</p>
-                <p>Market sonucu, aynı marketin kendi sonuç fonksiyonuyla değerlendirilir.</p>
-                <p>Uygun geçmiş grubu: ${grouped.filter(group =>
-                    group.sample >= CONFIG.MIN_SAMPLE &&
-                    group.success >= CONFIG.MIN_SUCCESS
-                ).length}</p>
+                <p>Oran eşleştirmesi: market anahtarı + iki ondalıklı oran</p>
+                <p>Başarı hesabı: her market kendi gerçek sonucuna göre</p>
+                ${missingOdds ? "<p>Oranlar bulunamadı. JSON'daki oran alanlarının gerçek yapısı kontrol edilmeli.</p>" : ""}
+                ${targetMatches.length === 0 ? "<p>Seçili tarihte oynanmamış maç bulunamadı. Tarih alanlarını ve tarih seçimini kontrol et.</p>" : ""}
+                ${groups.length === 0 ? "<p>Geçmiş grubu oluşturulamadı. Geçmiş tarih, skor veya oran alanları eşleşmiyor olabilir.</p>" : ""}
             `;
+        }
+
+        if (state.loadError) {
+            setMessage(`Veri yükleme hatası: ${state.loadError}`, true);
         }
     }
 
@@ -941,7 +1426,6 @@
         loadData();
     }
 
-    // Mevcut sayfada başka scriptlerin kullanabilmesi için API.
     window.RNA = Object.freeze({
         config: CONFIG,
         markets: MARKETS,
@@ -949,6 +1433,9 @@
         render,
         getOdd,
         oddKey,
+        getMatchDate,
+        getFullScore,
+        getHalfScore,
         getMarketOutcome,
         buildHistoryIndex
     });
