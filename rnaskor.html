@@ -97,8 +97,9 @@ tbody tr.result-row:hover{background:#14263d}
     <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
     <p>
       Bitiş skorunu seç. Sistem, geçmiş maçlardaki marketleri ve açılış
-      oranlarını otomatik tarar. En az %70 skor sıklığına sahip grupları
-      ve aynı market-oran eşleşmesine sahip oynanmamış maçları gösterir.
+      oranlarını otomatik tarar. Otomatik oran analizinde yalnızca en az
+      %70 skor sıklığına sahip gruplar gösterilir. Oynanmamış maçlar ise
+      geçmişteki market-oran eşleşmelerine göre listelenir.
     </p>
   </header>
   <section class="panel">
@@ -141,10 +142,11 @@ tbody tr.result-row:hover{background:#14263d}
     </div>
     <div id="status" class="status">Veri yükleniyor...</div>
     <div class="note">
-      <strong>Filtre:</strong> Yalnızca %70 ve üzerindeki skor sıklığı
-      grupları gösterilir. Örneğin aynı markette 2.08 açılış oranına sahip
-      20 geçmiş maçın 15'i seçilen skorla bittiyse sıklık %75'tir.
-      Oran eşleşmesi iki ondalık basamakla yapılır; tolerans uygulanmaz.
+      <strong>Oran Sıklığı filtresi:</strong> Yalnızca bu bölümde %70 ve
+      üzerindeki skor sıklığına sahip gruplar gösterilir. Örneğin aynı
+      markette 2.08 açılış oranına sahip 20 geçmiş maçın 15'i seçilen
+      skorla bittiyse sıklık %75'tir. Oran eşleşmesi iki ondalık basamakla
+      yapılır; tolerans uygulanmaz. Oynanmamış maçlarda %70 şartı aranmaz.
     </div>
   </section>
   <section class="stats">
@@ -168,7 +170,7 @@ tbody tr.result-row:hover{background:#14263d}
   <section class="panel">
     <div class="result-heading">
       <h2>Otomatik oran analizi</h2>
-      <span class="badge">Başarı oranına göre sıralı</span>
+      <span class="badge">En az %70 sıklık · Başarı oranına göre sıralı</span>
     </div>
     <div class="table-wrap">
       <table>
@@ -199,9 +201,9 @@ tbody tr.result-row:hover{background:#14263d}
       <span class="pending-label">Bekliyor</span>
     </div>
     <div class="note" style="margin-top:0;margin-bottom:12px">
-      Burada yalnızca henüz skoru bulunmayan maçların açılış oranları,
-      seçilen hedef skor için geçmişte en az %70 sıklık göstermiş aynı
-      market-oran gruplarıyla eşleşirse listelenir.
+      Henüz skoru bulunmayan maçların açılış oranları geçmiş market-oran
+      gruplarıyla karşılaştırılır. Burada %70 başarı şartı uygulanmaz.
+      Seçtiğin minimum geçmiş maç sayısını karşılayan eşleşmeler listelenir.
     </div>
     <div class="table-wrap">
       <table>
@@ -256,10 +258,6 @@ tbody tr.result-row:hover{background:#14263d}
 (() => {
   const DATA_URL = "./data/v2-data.json";
   const MIN_SUCCESS = 70;
-  /*
-   * Market anahtarları ve adları RNA motorundaki MARKETS dizisiyle uyumludur.
-   * Bu sayfa yalnızca marketlerin açılış oranlarını kullanır.
-   */
   const MARKETS = [
     {key:"ms1",name:"MS 1"},
     {key:"msX",name:"MS X"},
@@ -310,10 +308,6 @@ tbody tr.result-row:hover{background:#14263d}
     {key:"iyms20",name:"İY/MS 2/0"},
     {key:"iyms22",name:"İY/MS 2/2"}
   ];
-  /*
-   * RNA motorundaki oran okuma takma adları.
-   * Veri farklı bir desteklenen alan adını kullanıyorsa da okunabilir.
-   */
   const ODD_ALIASES = {
     ms1:["ms1","MS1","MS 1","1"],
     msX:["msX","msx","MSX","MS0","ms0","0"],
@@ -663,9 +657,8 @@ tbody tr.result-row:hover{background:#14263d}
     const status=$("upcomingStatus");
     const rows=[];
     /*
-     * Oynanmamış maçları seçili skorun geçmiş gruplarıyla karşılaştır.
-     * Tarih aralığı geçmiş istatistiklerine uygulanır; yaklaşan maçlar
-     * seçilen geçmiş aralığından bağımsız olarak taranır.
+     * Oynanmamış maçlarda %70 başarı filtresi uygulanmaz.
+     * Yalnızca seçilen minimum geçmiş maç sayısı korunur.
      */
     const upcoming=allMatches
       .filter(match=>getFinalScore(match)===null)
@@ -682,8 +675,9 @@ tbody tr.result-row:hover{background:#14263d}
         const key=market.key+"|"+odds;
         const group=groupsByKey.get(key);
         if(!group)continue;
+        // Minimum geçmiş maç sayısı korunur.
         if(group.total<minSample)continue;
-        if(group.rate<MIN_SUCCESS)continue;
+        // DİKKAT: Burada %70 başarı şartı özellikle uygulanmıyor.
         rows.push({
           date:matchDate(match),
           time:timeLabel(match),
@@ -704,7 +698,7 @@ tbody tr.result-row:hover{background:#14263d}
     );
     if(!rows.length){
       body.innerHTML='<tr><td colspan="8" class="empty">'+
-        'Seçilen skor için %70 ve üzeri sıklık gösteren aynı market-oran grubuyla eşleşen oynanmamış maç bulunamadı.'+
+        'Seçilen minimum geçmiş maç sayısını karşılayan market-oran eşleşmesi bulunamadı.'+
         '</td></tr>';
       status.textContent=
         "Taranan oynanmamış maç: "+upcoming.length.toLocaleString("tr-TR")+
@@ -721,7 +715,7 @@ tbody tr.result-row:hover{background:#14263d}
         <td><span class="badge">${escapeHtml(row.odds)}</span></td>
         <td>${row.total.toLocaleString("tr-TR")}</td>
         <td>
-          <span class="rate high">${formatPercent(row.rate)}</span>
+          <span class="rate ${row.rate>=70?"high":row.rate>=50?"medium":"low"}">${formatPercent(row.rate)}</span>
           <div class="bar"><span style="width:${Math.min(100,row.rate)}%"></span></div>
           <div class="note">${row.targetCount}/${row.total} maç hedef skorla bitti</div>
         </td>
@@ -730,7 +724,8 @@ tbody tr.result-row:hover{background:#14263d}
     status.textContent=
       "Taranan oynanmamış maç: "+upcoming.length.toLocaleString("tr-TR")+
       ". Eşleşen market-oran satırı: "+rows.length.toLocaleString("tr-TR")+
-      ". Aynı maç farklı marketlerde birden fazla satırda görünebilir.";
+      ". %70 şartı uygulanmadı; minimum geçmiş maç sayısı korundu. "+
+      "Aynı maç farklı marketlerde birden fazla satırda görünebilir.";
   }
   function showDetails(key){
     const group=currentGroups.find(item=>item.key===key);
@@ -778,9 +773,10 @@ tbody tr.result-row:hover{background:#14263d}
     setStatus(
       matches.length.toLocaleString("tr-TR")+" tamamlanmış maç tarandı. "+
       result.allGroups.length.toLocaleString("tr-TR")+" market-oran grubu bulundu. "+
-      "En az "+minSample+" örnek ve en az %"+MIN_SUCCESS+
+      "Otomatik oran analizinde en az "+minSample+
+      " örnek ve en az %"+MIN_SUCCESS+
       " sıklık şartıyla "+currentGroups.length.toLocaleString("tr-TR")+
-      " grup listeleniyor.",
+      " grup listeleniyor. Oynanmamış maçlarda %70 filtresi uygulanmıyor.",
       "success"
     );
   }
