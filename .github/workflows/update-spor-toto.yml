@@ -1,34 +1,41 @@
-name: Spor Toto Update
+name: Spor Toto Veri Guncelleme
 
 on:
-workflow_dispatch:
-schedule:
-- cron: “17 */6 * * *”
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+
+permissions:
+  contents: write
 
 jobs:
-update:
-runs-on: ubuntu-latest
-permissions:
-contents: write
-steps:
-- name: Checkout
-uses: actions/checkout@v4
+  update-spor-toto:
+    runs-on: ubuntu-latest  # Hata düzeltildi
 
-  - name: Setup Node
-    uses: actions/setup-node@v4
-    with:
-      node-version: "20"
-  - name: Update Spor Toto data
-    run: node scripts/update-spor-toto.mjs
-  - name: Commit data
-    shell: bash
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      git add data/spor-toto-data.js
-      if git diff --cached --quiet; then
-        echo "Yeni değişiklik yok."
-      else
-        git commit -m "Update Spor Toto data"
-        git push
-      fi
+    steps:
+      - name: Depoyu indir
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Node.js kur
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Spor Toto verisini guncelle
+        run: node scripts/update-spor-toto.mjs
+
+      - name: Degisiklikleri kaydet
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/spor-toto-data.js
+          if git diff --cached --quiet; then
+            echo "Yeni degisiklik yok."
+          else
+            git commit -m "Spor Toto verilerini guncelle"
+            git push
+          fi
