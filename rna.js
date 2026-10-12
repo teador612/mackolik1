@@ -1,4 +1,3 @@
-
 "use strict";
 
 /* =========================================================
@@ -16,7 +15,7 @@
    - Aynı market + aynı iki ondalıklı oran
    - Yalnızca sonuçlanmış geçmiş maçlar
    - Seçilen tarihten önceki 30 gün
-   - Her market kendi gerçek maç sonucuyla değerlendirilir
+   - Veride hiç bulunmayan marketler otomatik devre dışı
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -67,6 +66,7 @@ const MARKETS = [
    ========================================================= */
 
 let allMatches = [];
+let activeMarkets = [];
 let matchesByDate = new Map();
 let selectedDate = localDateValue(new Date());
 let isLoading = false;
@@ -304,6 +304,17 @@ function matchLeague(match) {
   );
 }
 
+function getMatchDate(match) {
+  return dateKey(
+    match?.date ??
+    match?.matchDate ??
+    match?.gameDate ??
+    match?.tarih ??
+    match?.datetime ??
+    match?.dateTime
+  );
+}
+
 /* =========================================================
    ORAN OKUMA
    ========================================================= */
@@ -312,6 +323,7 @@ function normalizeOdd(value) {
   if (value == null || value === "") return null;
 
   const parsed = Number(String(value).trim().replace(",", "."));
+
   if (!Number.isFinite(parsed) || parsed <= 1) return null;
 
   return Number(parsed.toFixed(2));
@@ -381,6 +393,18 @@ function getOdd(match, key) {
   return null;
 }
 
+/*
+ * ÖNEMLİ:
+ * Sadece veri setinde en az bir geçerli oranı bulunan marketler
+ * etkinleştirilir. Böylece veri dosyasında hiç olmayan marketler,
+ * her maçta tekrar tekrar "oranı eksik" sayılmaz.
+ */
+function detectActiveMarkets(records) {
+  return MARKETS.filter(market =>
+    records.some(match => getOdd(match, market.key) != null)
+  );
+}
+
 /* =========================================================
    MARKET SONUCU
    ========================================================= */
@@ -395,17 +419,6 @@ function marketOutcome(match, market) {
 /* =========================================================
    TARİH İNDEKSİ
    ========================================================= */
-
-function getMatchDate(match) {
-  return dateKey(
-    match?.date ??
-    match?.matchDate ??
-    match?.gameDate ??
-    match?.tarih ??
-    match?.datetime ??
-    match?.dateTime
-  );
-}
 
 function buildDateIndex() {
   matchesByDate = new Map();
@@ -443,7 +456,7 @@ function buildHistoryIndex(targetDate) {
     for (const match of matches) {
       if (!isPlayed(match)) continue;
 
-      for (const market of MARKETS) {
+      for (const market of activeMarkets) {
         const odd = getOdd(match, market.key);
         if (odd == null || odd < MIN_ODD) continue;
 
@@ -552,6 +565,9 @@ function getCandidatesForDate(dateValue) {
 
   const diagnostics = {
     dayMatches: dayMatches.length,
+    activeMarketCount: activeMarkets.length,
+    totalMarketCount: MARKETS.length,
+    ignoredMarketCount: MARKETS.length - activeMarkets.length,
     oddsAccepted: 0,
     noOdd: 0,
     lowOdd: 0,
@@ -565,8 +581,14 @@ function getCandidatesForDate(dateValue) {
   const candidates = [];
 
   for (const match of dayMatches) {
-    for (const market of MARKETS) {
-      const candidate = analyzeMarket(match, market, historyIndex, diagnostics);
+    for (const market of activeMarkets) {
+      const candidate = analyzeMarket(
+        match,
+        market,
+        historyIndex,
+        diagnostics
+      );
+
       if (candidate) candidates.push(candidate);
     }
   }
@@ -632,7 +654,9 @@ function buildCoupon(candidates, type) {
       type,
       items: [],
       totalOdd: 0,
-      message: `Toplam oranı ${formatter.format(MIN_TOTAL_ODDS)} yapacak yeterli uygun maç bulunamadı.`
+      message:
+        `Toplam oranı ${formatter.format(MIN_TOTAL_ODDS)} yapacak ` +
+        "yeterli uygun maç bulunamadı."
     };
   }
 
@@ -713,7 +737,9 @@ function installStyles() {
 
     #mk-coupon-root *,
     #mk-coupon-root *::before,
-    #mk-coupon-root *::after { box-sizing: border-box; }
+    #mk-coupon-root *::after {
+      box-sizing: border-box;
+    }
 
     #mk-coupon-root .mk-head {
       display: flex;
@@ -857,7 +883,9 @@ function installStyles() {
       border-bottom: 1px solid #1b2b3e;
     }
 
-    #mk-coupon-root .mk-leg:last-child { border-bottom: 0; }
+    #mk-coupon-root .mk-leg:last-child {
+      border-bottom: 0;
+    }
 
     #mk-coupon-root .mk-match-name {
       font-size: 14px;
@@ -901,9 +929,17 @@ function installStyles() {
       font-weight: 800;
     }
 
-    #mk-coupon-root .mk-won { color: #54e08a; }
-    #mk-coupon-root .mk-lost { color: #ff7373; }
-    #mk-coupon-root .mk-pending { color: #f6ca61; }
+    #mk-coupon-root .mk-won {
+      color: #54e08a;
+    }
+
+    #mk-coupon-root .mk-lost {
+      color: #ff7373;
+    }
+
+    #mk-coupon-root .mk-pending {
+      color: #f6ca61;
+    }
 
     #mk-coupon-root .mk-empty {
       padding: 18px 14px;
@@ -944,13 +980,33 @@ function installStyles() {
     }
 
     @media (max-width: 480px) {
-      #mk-coupon-root { padding: 11px; }
-      #mk-coupon-root .mk-title { font-size: 18px; }
-      #mk-coupon-root .mk-summary { grid-template-columns: 1fr; }
-      #mk-coupon-root .mk-stat { padding: 10px; }
-      #mk-coupon-root .mk-stat-value { font-size: 17px; }
-      #mk-coupon-root .mk-leg { padding: 11px; }
-      #mk-coupon-root .mk-diagnostic-grid { grid-template-columns: 1fr; }
+      #mk-coupon-root {
+        padding: 11px;
+      }
+
+      #mk-coupon-root .mk-title {
+        font-size: 18px;
+      }
+
+      #mk-coupon-root .mk-summary {
+        grid-template-columns: 1fr;
+      }
+
+      #mk-coupon-root .mk-stat {
+        padding: 10px;
+      }
+
+      #mk-coupon-root .mk-stat-value {
+        font-size: 17px;
+      }
+
+      #mk-coupon-root .mk-leg {
+        padding: 11px;
+      }
+
+      #mk-coupon-root .mk-diagnostic-grid {
+        grid-template-columns: 1fr;
+      }
     }
   `;
 
@@ -1007,6 +1063,7 @@ function renderShell() {
 
   root.querySelector("#mk-coupon-date").addEventListener("change", event => {
     if (!event.target.value) return;
+
     selectedDate = event.target.value;
     renderCouponsForDate(selectedDate);
   });
@@ -1119,13 +1176,15 @@ function renderDiagnostics(d) {
 
   const entries = [
     ["Seçilen gündeki maç", d.dayMatches],
+    ["Veride bulunan market", d.activeMarketCount],
+    ["Veride hiç bulunmayan market", d.ignoredMarketCount],
     ["Oranı bulunan market", d.oddsAccepted],
     ["Oranı eksik market", d.noOdd],
     ["1,35 altı oran", d.lowOdd],
     ["Geçmiş eşleşmesi olmayan", d.noHistoryGroup],
-    ["8 örnekten az", d.lowSample],
+    [`${MIN_SAMPLE} örnekten az`, d.lowSample],
     ["Örnek şartını geçen", d.sampleAccepted],
-    ["%80 başarı altı", d.lowSuccess],
+    [`%${MIN_SUCCESS} başarı altı`, d.lowSuccess],
     ["Başarı şartını geçen", d.successAccepted]
   ];
 
@@ -1138,9 +1197,10 @@ function renderDiagnostics(d) {
         `).join("")}
       </div>
       <div style="margin-top:10px">
-        Not: Oran alanı bulunamıyorsa kaynak JSON'daki ilgili market alanı
-        kontrol edilmelidir. Geçmiş eşleşmesi yoksa aynı market ve iki
-        ondalığa normalize edilmiş oran için önceki 30 günde kayıt yoktur.
+        Yalnızca veri dosyasında en az bir geçerli oranı bulunan marketler
+        analiz edilir. Bir maçta bu marketin oranı boşsa eksik sayılır.
+        Geçmiş eşleşmesi, aynı market ve aynı iki ondalıklı oran için
+        seçilen tarihten önceki ${HISTORY_DAYS} günlük sonuçlardan hesaplanır.
       </div>
     </details>
   `;
@@ -1204,9 +1264,9 @@ function renderCouponsForDate(dateValue = selectedDate) {
       </div>
     </div>
 
-    ${renderCouponCard(safe, "Güvenli Kupon", "%90 ve üzeri geçmiş başarı")}
-    ${renderCouponCard(medium, "Orta Risk Kupon", "%85 ve üzeri geçmiş başarı")}
-    ${renderCouponCard(risk, "Alternatif Kupon", `%${MIN_SUCCESS} ve üzeri geçmiş başarı`)}
+    ${renderCouponCard(safe, "Kupon 1", "%90 ve üzeri geçmiş başarı")}
+    ${renderCouponCard(medium, "Kupon 2", "%85 ve üzeri geçmiş başarı")}
+    ${renderCouponCard(risk, "Kupon 3", `%${MIN_SUCCESS} ve üzeri geçmiş başarı`)}
     ${renderDiagnostics(diagnostics)}
 
     <div class="mk-footnote">
@@ -1261,13 +1321,34 @@ async function loadCouponData(force = false) {
           : [];
 
     allMatches = records.filter(match =>
-      match && typeof match === "object" && Boolean(getMatchDate(match))
+      match &&
+      typeof match === "object" &&
+      Boolean(getMatchDate(match))
     );
+
+    /*
+     * Market kapsamı veriden belirlenir.
+     * Alanı tüm veri setinde boş olan marketler taranmaz.
+     */
+    activeMarkets = detectActiveMarkets(allMatches);
 
     buildDateIndex();
 
     if (!allMatches.length) {
-      setMessage("Veri dosyası açıldı ancak geçerli tarihli maç bulunamadı.");
+      setMessage(
+        "Veri dosyası açıldı ancak geçerli tarihli maç bulunamadı."
+      );
+
+      const content = document.getElementById("mk-coupon-content");
+      if (content) content.innerHTML = "";
+      return;
+    }
+
+    if (!activeMarkets.length) {
+      setMessage(
+        "Maçlar yüklendi ancak veri dosyasında geçerli oran bulunamadı."
+      );
+
       const content = document.getElementById("mk-coupon-content");
       if (content) content.innerHTML = "";
       return;
@@ -1305,6 +1386,7 @@ window.getCouponsForDate = function(date) {
 };
 
 window.renderCouponsForDate = renderCouponsForDate;
+
 window.reloadCouponData = function() {
   return loadCouponData(true);
 };
