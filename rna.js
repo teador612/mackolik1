@@ -1,1400 +1,961 @@
+
 "use strict";
+
 /* =========================================================
-   RNA — DNA SONUÇTAN ORAN ANALİZİ + KUPON MOTORU
-   Veri: ./data/v2-data.json
-   Geçmiş: Seçilen tarihten önceki 30 gün
-   Minimum örnek: 8
-   Minimum başarı: %80
+   RNA — OTOMATİK KUPON MOTORU
+
+   Veri              : ./data/v2-data.json
+   Geçmiş            : 30 gün
+   Minimum örnek     : 8
+   Minimum başarı    : %80
    Minimum tekli oran: 1.35
-   Minimum kupon oranı: 2.00
-   Maksimum maç: 5
-   DNA HESAPLAMA MANTIĞI:
-   Seçilen sonuç grubu bütün marketlerin geçmiş oran gruplarına
-   uygulanır. Gruplama: market + birebir aynı iki ondalıklı oran.
-   RNA KURALLARI:
-   - Mevcut 16 seçilebilir market korunur.
-   - 3 kupon seviyesi korunur.
-   - Aynı maç farklı kuponlarda tekrar etmez.
-   - İ14 kupona eklenmez.
+   Minimum kupon oran: 2.00
+   Maksimum maç      : 5
+
+   Eşleştirme:
+   1. Market birebir eşleşir.
+   2. Oran iki ondalık basamağa yuvarlanır.
+   3. Her market kendi gerçek sonucuna göre değerlendirilir.
    ========================================================= */
-const DATA_URL = "./data/v2-data.json";
-const HISTORY_DAYS = 30;
-const MIN_SAMPLE = 8;
-const MIN_SUCCESS = 80;
-const MIN_ODD = 1.35;
-const MIN_TOTAL_ODDS = 2.00;
-const MAX_MATCHES = 5;
-const SELECTABLE_MARKETS = [
-  { key: "ms1", label: "MS 1" },
-  { key: "msX", label: "MS 0" },
-  { key: "ms2", label: "MS 2" },
-  { key: "iy05Ust", label: "İY 0,5 Üst" },
-  { key: "iy15Ust", label: "İY 1,5 Üst" },
-  { key: "iy15Alt", label: "İY 1,5 Alt" },
-  { key: "kgVar", label: "KG Var" },
-  { key: "au15Ust", label: "MS 1,5 Üst" },
-  { key: "au25Ust", label: "MS 2,5 Üst" },
-  { key: "iyms11", label: "İY/MS 1/1" },
-  { key: "iyms12", label: "İY/MS 1/2" },
-  { key: "iyms21", label: "İY/MS 2/1" },
-  { key: "iyms22", label: "İY/MS 2/2" },
-  { key: "iyms00", label: "İY/MS 0/0" },
-  { key: "iyms10", label: "İY/MS 1/0" },
-  { key: "iyms20", label: "İY/MS 2/0" }
-];
-let selectedMarketKeys = new Set(
-  SELECTABLE_MARKETS.map(m => m.key)
-);
-/* =========================================================
-   DNA SONUÇ GRUPLARI
-   ========================================================= */
-const DNA_RESULTS = {
-  MS1: {
-    label: "MS1",
-    type: "ft",
-    test: s => s.home > s.away
-  },
-  MSX: {
-    label: "MS 0",
-    type: "ft",
-    test: s => s.home === s.away
-  },
-  MS2: {
-    label: "MS2",
-    type: "ft",
-    test: s => s.home < s.away
-  },
-  IY1: {
-    label: "İY1",
-    type: "ht",
-    test: s => s.home > s.away
-  },
-  IYX: {
-    label: "İY 0",
-    type: "ht",
-    test: s => s.home === s.away
-  },
-  IY2: {
-    label: "İY2",
-    type: "ht",
-    test: s => s.home < s.away
-  },
-  KG_VAR: {
-    label: "KG Var",
-    type: "ft",
-    test: s => s.home > 0 && s.away > 0
-  },
-  KG_YOK: {
-    label: "KG Yok",
-    type: "ft",
-    test: s => s.home === 0 || s.away === 0
-  },
-  IY15_ALT: {
-    label: "İY 1,5 Alt",
-    type: "ht",
-    test: s => s.home + s.away <= 1
-  },
-  IY15_UST: {
-    label: "İY 1,5 Üst",
-    type: "ht",
-    test: s => s.home + s.away >= 2
-  },
-  "15_ALT": {
-    label: "MS 1,5 Alt",
-    type: "ft",
-    test: s => s.home + s.away <= 1
-  },
-  "15_UST": {
-    label: "MS 1,5 Üst",
-    type: "ft",
-    test: s => s.home + s.away >= 2
-  },
-  "25_ALT": {
-    label: "MS 2,5 Alt",
-    type: "ft",
-    test: s => s.home + s.away <= 2
-  },
-  "25_UST": {
-    label: "MS 2,5 Üst",
-    type: "ft",
-    test: s => s.home + s.away >= 3
-  },
-  "35_ALT": {
-    label: "MS 3,5 Alt",
-    type: "ft",
-    test: s => s.home + s.away <= 3
-  },
-  "35_UST": {
-    label: "MS 3,5 Üst",
-    type: "ft",
-    test: s => s.home + s.away >= 4
-  },
-  GOL01: {
-    label: "0-1 Gol",
-    type: "ft",
-    test: s => s.home + s.away <= 1
-  },
-  GOL23: {
-    label: "2-3 Gol",
-    type: "ft",
-    test: s => s.home + s.away >= 2 && s.home + s.away <= 3
-  },
-  GOL46: {
-    label: "4-6 Gol",
-    type: "ft",
-    test: s => s.home + s.away >= 4 && s.home + s.away <= 6
-  },
-  GOL7: {
-    label: "7+ Gol",
-    type: "ft",
-    test: s => s.home + s.away >= 7
-  }
-};
-let selectedResultId = "MS1";
-/* =========================================================
-   MARKET TANIMLARI
-   ========================================================= */
-const MARKETS = [
-  { key: "ms1", label: "MS 1", half: false, test: (h, a) => h > a },
-  { key: "msX", label: "MS 0", half: false, test: (h, a) => h === a },
-  { key: "ms2", label: "MS 2", half: false, test: (h, a) => h < a },
-  { key: "i14", label: "İ14", half: false, test: (h, a) => h + a >= 1 && h + a <= 4 },
-  { key: "olmaz", label: "OLMAZ", half: false, test: () => false },
-  { key: "ms1Alt", label: "MS 1 ve Alt", half: false, test: (h, a) => h > a && h + a <= 2 },
-  { key: "msXAlt", label: "MS X ve Alt", half: false, test: (h, a) => h === a && h + a <= 2 },
-  { key: "ms2Alt", label: "MS 2 ve Alt", half: false, test: (h, a) => h < a && h + a <= 2 },
-  { key: "ms1Ust", label: "MS 1 ve Üst", half: false, test: (h, a) => h > a && h + a >= 3 },
-  { key: "msXUst", label: "MS X ve Üst", half: false, test: (h, a) => h === a && h + a >= 4 },
-  { key: "ms2Ust", label: "MS 2 ve Üst", half: false, test: (h, a) => h < a && h + a >= 3 },
-  { key: "iy1", label: "İY 1", half: true, test: (h, a) => h > a },
-  { key: "iyX", label: "İY X", half: true, test: (h, a) => h === a },
-  { key: "iy2", label: "İY 2", half: true, test: (h, a) => h < a },
-  { key: "iy05Ust", label: "İY 0,5 Üst", half: true, test: (h, a) => h + a >= 1 },
-  { key: "iy15Ust", label: "İY 1,5 Üst", half: true, test: (h, a) => h + a >= 2 },
-  { key: "iy15Alt", label: "İY 1,5 Alt", half: true, test: (h, a) => h + a <= 1 },
-  { key: "au15Ust", label: "MS 1,5 Üst", half: false, test: (h, a) => h + a >= 2 },
-  { key: "au15Alt", label: "MS 1,5 Alt", half: false, test: (h, a) => h + a <= 1 },
-  { key: "au25Ust", label: "MS 2,5 Üst", half: false, test: (h, a) => h + a >= 3 },
-  { key: "au25Alt", label: "MS 2,5 Alt", half: false, test: (h, a) => h + a <= 2 },
-  { key: "au35Ust", label: "MS 3,5 Üst", half: false, test: (h, a) => h + a >= 4 },
-  { key: "au35Alt", label: "MS 3,5 Alt", half: false, test: (h, a) => h + a <= 3 },
-  { key: "kgVar", label: "KG Var", half: false, test: (h, a) => h > 0 && a > 0 },
-  { key: "kgYok", label: "KG Yok", half: false, test: (h, a) => h === 0 || a === 0 },
-  { key: "iyKgVar", label: "İY KG Var", half: true, test: (h, a) => h > 0 && a > 0 },
-  { key: "iyKgYok", label: "İY KG Yok", half: true, test: (h, a) => h === 0 || a === 0 },
-  { key: "gol01", label: "0-1 Gol", half: false, test: (h, a) => h + a <= 1 },
-  { key: "gol23", label: "2-3 Gol", half: false, test: (h, a) => h + a >= 2 && h + a <= 3 },
-  { key: "gol45", label: "4-5 Gol", half: false, test: (h, a) => h + a >= 4 && h + a <= 5 },
-  { key: "gol6plus", label: "6+ Gol", half: false, test: (h, a) => h + a >= 6 },
-  { key: "gol46", label: "4-6 Gol", half: false, test: (h, a) => h + a >= 4 && h + a <= 6 },
-  { key: "gol7", label: "7+ Gol", half: false, test: (h, a) => h + a >= 7 },
-  { key: "cs1X", label: "ÇŞ 1X", half: false, test: (h, a) => h >= a },
-  { key: "cs12", label: "ÇŞ 12", half: false, test: (h, a) => h !== a },
-  { key: "csX2", label: "ÇŞ X2", half: false, test: (h, a) => h <= a },
-  { key: "iyms11", label: "İY/MS 1/1", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home > s.away && h > a; } },
-  { key: "iyms10", label: "İY/MS 1/0", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home > s.away && h === a; } },
-  { key: "iyms12", label: "İY/MS 1/2", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home > s.away && h < a; } },
-  { key: "iyms01", label: "İY/MS 0/1", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home === s.away && h > a; } },
-  { key: "iyms00", label: "İY/MS 0/0", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home === s.away && h === a; } },
-  { key: "iyms02", label: "İY/MS 0/2", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home === s.away && h < a; } },
-  { key: "iyms21", label: "İY/MS 2/1", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home < s.away && h > a; } },
-  { key: "iyms20", label: "İY/MS 2/0", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home < s.away && h === a; } },
-  { key: "iyms22", label: "İY/MS 2/2", half: false, test: (h, a, m) => { const s = halfScore(m); return !!s && s.home < s.away && h < a; } }
-];
-/* =========================================================
-   GLOBAL DURUM
-   ========================================================= */
-let allMatches = [];
-let activeMarkets = [];
-let matchesByDate = new Map();
-let selectedDate = localDateValue(new Date());
-let isLoading = false;
-let loadError = "";
-const historyCache = new Map();
-const MAX_HISTORY_CACHE = 8;
-const formatter = new Intl.NumberFormat("tr-TR", {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-});
-/* =========================================================
-   TARİH
-   ========================================================= */
-function localDateValue(date) {
-  return [
-    date.getFullYear(),
-    String(date.getMonth() + 1).padStart(2, "0"),
-    String(date.getDate()).padStart(2, "0")
-  ].join("-");
-}
-function parseDate(value) {
-  if (!value) return null;
-  if (value instanceof Date) {
-    if (Number.isNaN(value.getTime())) return null;
-    return new Date(value.getFullYear(), value.getMonth(), value.getDate());
-  }
-  const text = String(value).trim();
-  let m;
-  if ((m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) {
-    return validDateParts(
-      new Date(+m[1], +m[2] - 1, +m[3]),
-      +m[1], +m[2] - 1, +m[3]
-    );
-  }
-  if ((m = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/))) {
-    return validDateParts(
-      new Date(+m[3], +m[2] - 1, +m[1]),
-      +m[3], +m[2] - 1, +m[1]
-    );
-  }
-  const parsed = new Date(text);
-  if (Number.isNaN(parsed.getTime())) return null;
-  return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-}
-function validDateParts(date, year, month, day) {
-  return date.getFullYear() === year &&
-    date.getMonth() === month &&
-    date.getDate() === day ? date : null;
-}
-function dateKey(value) {
-  const date = parseDate(value);
-  return date ? localDateValue(date) : "";
-}
-function formatDate(value) {
-  const date = parseDate(value);
-  if (!date) return String(value || "-");
-  return date.toLocaleDateString("tr-TR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  });
-}
-/* =========================================================
-   SKOR OKUMA
-   ========================================================= */
-function parseScore(value) {
-  if (value == null || value === "") return null;
-  if (typeof value === "object") {
-    const h = value.home ?? value.homeScore ?? value.homeGoals ??
-      value.h ?? value.ev ?? value.evSahibi;
-    const a = value.away ?? value.awayScore ?? value.awayGoals ??
-      value.a ?? value.dep ?? value.deplasman;
-    if (h == null || a == null || h === "" || a === "") return null;
-    const home = Number(h);
-    const away = Number(a);
-    if (Number.isFinite(home) && Number.isFinite(away) && home >= 0 && away >= 0) {
-      return { home, away };
-    }
-    return null;
-  }
-  const m = String(value).match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
-  return m ? { home: Number(m[1]), away: Number(m[2]) } : null;
-}
-function firstScore(match, fields) {
-  for (const field of fields) {
-    const score = parseScore(match?.[field]);
-    if (score) return score;
-  }
-  return null;
-}
-function fullScore(match) {
-  const direct = firstScore(match, [
-    "score", "fullTimeScore", "full_time_score",
-    "ftScore", "ms", "result"
-  ]);
-  if (direct) return direct;
-  for (const value of [
-    match?.scores?.fullTime,
-    match?.scores?.full_time,
-    match?.scores?.ft,
-    match?.result?.fullTime,
-    match?.result?.ft
-  ]) {
-    const score = parseScore(value);
-    if (score) return score;
-  }
-  return null;
-}
-function halfScore(match) {
-  const direct = firstScore(match, [
-    "halfTimeScore", "half_time_score", "htScore",
-    "ht", "iy", "firstHalfScore", "first_half_score"
-  ]);
-  if (direct) return direct;
-  for (const value of [
-    match?.scores?.halfTime,
-    match?.scores?.half_time,
-    match?.scores?.ht,
-    match?.result?.halfTime,
-    match?.result?.ht
-  ]) {
-    const score = parseScore(value);
-    if (score) return score;
-  }
-  return null;
-}
-function isPlayed(match) {
-  return fullScore(match) !== null;
-}
-function dnaResult(match, resultId = selectedResultId) {
-  const definition = DNA_RESULTS[resultId];
-  if (!definition) return null;
-  const score = definition.type === "ht"
-    ? halfScore(match)
-    : fullScore(match);
-  if (!score) return null;
-  return Boolean(definition.test(score));
-}
-/* =========================================================
-   MAÇ BİLGİLERİ
-   ========================================================= */
-function matchName(match) {
-  const home = match?.home ?? match?.homeTeam ?? match?.homeName ??
-    match?.team1 ?? match?.evSahibi ?? "Ev sahibi";
-  const away = match?.away ?? match?.awayTeam ?? match?.awayName ??
-    match?.team2 ?? match?.deplasman ?? "Deplasman";
-  return `${home} - ${away}`;
-}
-function matchTime(match) {
-  const value = match?.time ?? match?.matchTime ?? match?.hour ??
-    match?.saat ?? match?.datetime ?? match?.dateTime ?? "";
-  const m = String(value).match(/\b([01]?\d|2[0-3]):[0-5]\d\b/);
-  return m ? m[0] : (String(value).length <= 8 ? String(value) : "");
-}
-function matchLeague(match) {
-  return String(
-    match?.league ?? match?.leagueName ?? match?.competition ??
-    match?.tournament ?? match?.lig ?? ""
-  );
-}
-function getMatchDate(match) {
-  return dateKey(
-    match?.date ?? match?.matchDate ?? match?.gameDate ??
-    match?.tarih ?? match?.datetime ?? match?.dateTime
-  );
-}
-/* =========================================================
-   MAÇ KİMLİĞİ
-   ========================================================= */
-function normalizeIdentityPart(value) {
-  return String(value ?? "")
-    .trim()
-    .toLocaleLowerCase("tr-TR")
-    .replace(/\s+/g, " ");
-}
-function matchIdentity(item) {
-  const match = item?.match ?? item ?? {};
-  const date = getMatchDate(match);
-  const id = match.id ?? match.matchId ?? match.match_id ??
-    match.fixtureId ?? match.fixture_id ??
-    match.eventId ?? match.event_id ??
-    match.gameId ?? match.game_id;
-  if (id != null && String(id).trim() !== "") {
-    return `${date}|id:${normalizeIdentityPart(id)}`;
-  }
-  const home = normalizeIdentityPart(
-    match.home ?? match.homeTeam ?? match.homeName ??
-    match.team1 ?? match.evSahibi ?? ""
-  );
-  const away = normalizeIdentityPart(
-    match.away ?? match.awayTeam ?? match.awayName ??
-    match.team2 ?? match.deplasman ?? ""
-  );
-  return `${date}|${home}|${away}|${normalizeIdentityPart(matchTime(match))}`;
-}
-/* =========================================================
-   ORANLAR
-   ========================================================= */
-function normalizeOdd(value) {
-  if (value == null || value === "") return null;
-  const parsed = Number(String(value).trim().replace(",", "."));
-  if (!Number.isFinite(parsed) || parsed <= 1) return null;
-  return Number(parsed.toFixed(2));
-}
-function oddKey(value) {
-  const odd = normalizeOdd(value);
-  return odd == null ? "" : odd.toFixed(2);
-}
-const ODD_ALIASES = {
-  ms1: ["ms1", "MS1", "MS 1", "1"],
-  msX: ["msX", "msx", "MSX", "MS0", "ms0", "0"],
-  ms2: ["ms2", "MS2", "MS 2", "2"],
-  i14: ["i14", "İ14", "I14"],
-  olmaz: ["olmaz", "OLMAZ"],
-  ms1Alt: ["ms1Alt", "1VEALT"],
-  msXAlt: ["msXAlt", "0VEALT"],
-  ms2Alt: ["ms2Alt", "2VEALT"],
-  ms1Ust: ["ms1Ust", "1VEÜST", "1VEUST"],
-  msXUst: ["msXUst", "0VEÜST", "0VEUST"],
-  ms2Ust: ["ms2Ust", "2VEÜST", "2VEUST"],
-  iy1: ["iy1", "IY1", "İY1", "İY 1"],
-  iyX: ["iyX", "iyx", "IYX", "İYX", "iy0", "İY 0"],
-  iy2: ["iy2", "IY2", "İY2", "İY 2"],
-  iy05Ust: ["iy05Ust", "iy05ust", "IY05_UST", "İY 0,5 Üst", "İY 0.5 Üst", "iy05"],
-  au15Alt: ["au15Alt", "ms15Alt", "15_ALT", "ms15alt"],
-  au15Ust: ["au15Ust", "ms15Ust", "15_UST", "ms15ust"],
-  au25Alt: ["au25Alt", "25_ALT", "2,5 A"],
-  au25Ust: ["au25Ust", "25_UST", "2,5 Ü"],
-  au35Alt: ["au35Alt", "35_ALT", "3,5 A"],
-  au35Ust: ["au35Ust", "35_UST", "3,5 Ü"],
-  iy15Alt: ["iy15Alt", "IY15_ALT", "İY 1,5 A"],
-  iy15Ust: ["iy15Ust", "IY15_UST", "İY 1,5 Ü"],
-  kgVar: ["kgVar", "KGVar", "KG_VAR", "VAR"],
-  kgYok: ["kgYok", "KGYok", "KG_YOK", "YOK"],
-  iyKgVar: ["iyKgVar", "iyKGVar", "IYKG_VAR", "İY KG VAR"],
-  iyKgYok: ["iyKgYok", "iyKGYok", "IYKG_YOK", "İY KG YOK"],
-  gol01: ["gol01", "gol0_1", "0-1"],
-  gol23: ["gol23", "gol2_3", "2-3"],
-  gol45: ["gol45", "gol4_5", "4-5"],
-  gol46: ["gol46", "gol4_6"],
-  gol6plus: ["gol6plus", "6+"],
-  gol7: ["gol7", "gol7plus"],
-  cs1X: ["cs1X", "CS1X", "1X"],
-  cs12: ["cs12", "CS12", "12"],
-  csX2: ["csX2", "CSX2", "X2"],
-  iyms11: ["iyms11", "1/1"],
-  iyms10: ["iyms10", "1/0"],
-  iyms12: ["iyms12", "1/2"],
-  iyms01: ["iyms01", "0/1"],
-  iyms00: ["iyms00", "0/0"],
-  iyms02: ["iyms02", "0/2"],
-  iyms21: ["iyms21", "2/1"],
-  iyms20: ["iyms20", "2/0"],
-  iyms22: ["iyms22", "2/2"]
-};
-function getOdd(match, key) {
-  const containers = [
-    match?.openingOdds,
-    match?.openOdds,
-    match?.opening,
-    match?.odds,
-    match?.oranlar,
-    match?.markets,
-    match?.marketOdds,
-    match
-  ];
-  const fields = [...new Set([key, ...(ODD_ALIASES[key] || [])])];
-  for (const container of containers) {
-    if (!container || typeof container !== "object") continue;
-    for (const field of fields) {
-      if (!Object.prototype.hasOwnProperty.call(container, field)) continue;
-      const odd = normalizeOdd(container[field]);
-      if (odd != null) return odd;
-    }
-  }
-  return null;
-}
-function detectActiveMarkets(records) {
-  return MARKETS.filter(market =>
-    selectedMarketKeys.has(market.key) &&
-    records.some(match => getOdd(match, market.key) != null)
-  );
-}
-/* =========================================================
-   TARİH İNDEKSİ
-   ========================================================= */
-function buildDateIndex() {
-  matchesByDate = new Map();
-  historyCache.clear();
-  for (const match of allMatches) {
-    const key = getMatchDate(match);
-    if (!key) continue;
-    if (!matchesByDate.has(key)) matchesByDate.set(key, []);
-    matchesByDate.get(key).push(match);
-  }
-}
-/* =========================================================
-   DNA GEÇMİŞ ANALİZİ
-   ÖNEMLİ:
-   Burada marketOutcome kullanılmaz.
-   Seçilen DNA sonuç grubu her marketin geçmiş maçlarına uygulanır.
-   Örnek: MS1 seçildiyse, her market+oran grubunda MS1 biten
-   maçların yüzdesi hesaplanır.
-   ========================================================= */
-function buildHistoryIndex(targetDate) {
-  const cacheKey = `${targetDate}|${selectedResultId}`;
-  if (historyCache.has(cacheKey)) {
-    return historyCache.get(cacheKey);
-  }
-  const target = parseDate(targetDate);
-  const index = new Map();
-  if (!target) return index;
-  for (let offset = 1; offset <= HISTORY_DAYS; offset++) {
-    const date = new Date(target);
-    date.setDate(date.getDate() - offset);
-    const matches = matchesByDate.get(localDateValue(date)) || [];
-    for (const match of matches) {
-      if (!isPlayed(match)) continue;
-      const result = dnaResult(match, selectedResultId);
-      if (result == null) continue;
-      for (const market of activeMarkets) {
-        const odd = getOdd(match, market.key);
-        if (odd == null || odd < MIN_ODD) continue;
-        const groupKey = `${market.key}|${oddKey(odd)}`;
-        if (!index.has(groupKey)) {
-          index.set(groupKey, {
-            marketKey: market.key,
-            odd: Number(oddKey(odd)),
-            sample: 0,
-            wins: 0,
-            losses: 0
-          });
-        }
-        const group = index.get(groupKey);
-        group.sample++;
-        if (result) group.wins++;
-        else group.losses++;
-      }
-    }
-  }
-  if (historyCache.size >= MAX_HISTORY_CACHE) {
-    historyCache.delete(historyCache.keys().next().value);
-  }
-  historyCache.set(cacheKey, index);
-  return index;
-}
-/* =========================================================
-   TEK MAÇ ANALİZİ
-   ========================================================= */
-function analyzeMarket(match, market, historyIndex, diagnostics) {
-  const odd = getOdd(match, market.key);
-  if (odd == null) {
-    diagnostics.noOdd++;
-    return null;
-  }
-  if (odd < MIN_ODD) {
-    diagnostics.lowOdd++;
-    return null;
-  }
-  diagnostics.oddsAccepted++;
-  const key = `${market.key}|${oddKey(odd)}`;
-  const stats = historyIndex.get(key);
-  if (!stats) {
-    diagnostics.noHistoryGroup++;
-    return null;
-  }
-  if (stats.sample < MIN_SAMPLE) {
-    diagnostics.lowSample++;
-    return null;
-  }
-  diagnostics.sampleAccepted++;
-  const success = stats.wins / stats.sample * 100;
-  if (success < MIN_SUCCESS) {
-    diagnostics.lowSuccess++;
-    return null;
-  }
-  diagnostics.successAccepted++;
-  return {
-    match,
-    market,
-    marketKey: market.key,
-    marketLabel: market.label,
-    odd: Number(oddKey(odd)),
-    sample: stats.sample,
-    wins: stats.wins,
-    losses: stats.losses,
-    success,
-    resultId: selectedResultId,
-    resultLabel: DNA_RESULTS[selectedResultId].label,
-    date: getMatchDate(match),
-    time: matchTime(match),
-    league: matchLeague(match),
-    matchName: matchName(match)
-  };
-}
-function getCandidatesForDate(dateValue) {
-  const targetDate = dateKey(dateValue);
-  if (!targetDate) return [];
-  const dayMatches = matchesByDate.get(targetDate) || [];
-  const historyIndex = buildHistoryIndex(targetDate);
-  const diagnostics = {
-    dayMatches: dayMatches.length,
-    activeMarketCount: activeMarkets.length,
-    totalMarketCount: SELECTABLE_MARKETS.length,
-    ignoredMarketCount: SELECTABLE_MARKETS.filter(
-      market => !activeMarkets.some(active => active.key === market.key)
-    ).length,
-    oddsAccepted: 0,
-    noOdd: 0,
-    lowOdd: 0,
-    noHistoryGroup: 0,
-    lowSample: 0,
-    sampleAccepted: 0,
-    lowSuccess: 0,
-    successAccepted: 0
-  };
-  const candidates = [];
-  for (const match of dayMatches) {
-    for (const market of activeMarkets) {
-      const candidate = analyzeMarket(
-        match,
-        market,
-        historyIndex,
-        diagnostics
-      );
-      if (candidate) candidates.push(candidate);
-    }
-  }
-  candidates.sort((a, b) =>
-    b.success - a.success ||
-    b.sample - a.sample ||
-    b.odd - a.odd
-  );
-  getCandidatesForDate.lastDiagnostics = diagnostics;
-  return candidates;
-}
-getCandidatesForDate.lastDiagnostics = null;
-/* =========================================================
-   KUPON MOTORU
-   ========================================================= */
-function buildCoupon(candidates, type, sharedUsedMatches = new Set()) {
-  const thresholds = {
-    safe: 90,
-    medium: 85,
-    risk: MIN_SUCCESS
-  };
-  const threshold = thresholds[type] ?? MIN_SUCCESS;
-  const ordered = candidates
-    .filter(item =>
-      item.marketKey !== "i14" &&
-      item.market?.key !== "i14" &&
-      item.success >= threshold &&
-      item.odd >= MIN_ODD
-    )
-    .slice()
-    .sort((a, b) =>
-      b.success - a.success ||
-      b.sample - a.sample ||
-      b.odd - a.odd
-    );
-  const selected = [];
-  const localUsedMatches = new Set();
-  let totalOdd = 1;
-  for (const candidate of ordered) {
-    if (selected.length >= MAX_MATCHES) break;
-    const identity = matchIdentity(candidate);
-    if (!identity || identity.endsWith("|||")) continue;
-    if (sharedUsedMatches.has(identity)) continue;
-    if (localUsedMatches.has(identity)) continue;
-    localUsedMatches.add(identity);
-    selected.push(candidate);
-    totalOdd *= candidate.odd;
-    if (totalOdd >= MIN_TOTAL_ODDS) break;
-  }
-  if (!selected.length || totalOdd < MIN_TOTAL_ODDS) {
-    return {
-      type,
-      items: [],
-      totalOdd: 0,
-      message:
-        `Toplam oranı ${formatter.format(MIN_TOTAL_ODDS)} yapacak ` +
-        "yeterli uygun maç bulunamadı."
+
+(() => {
+    const CONFIG = Object.freeze({
+        DATA_URL: "./data/v2-data.json",
+        HISTORY_DAYS: 30,
+        MIN_SAMPLE: 8,
+        MIN_SUCCESS: 80,
+        MIN_ODD: 1.35,
+        MIN_TOTAL_ODDS: 2.00,
+        MAX_MATCHES: 5,
+        FETCH_TIMEOUT: 20000
+    });
+
+    const MARKETS = [
+        { key: "ms1", label: "MS 1", aliases: ["ms1", "MS1", "1"] },
+        { key: "msX", label: "MS 0", aliases: ["msX", "ms0", "MSX", "MS0", "X"] },
+        { key: "ms2", label: "MS 2", aliases: ["ms2", "MS2", "2"] },
+
+        { key: "iy1", label: "İY 1", aliases: ["iy1", "İY1", "ht1"] },
+        { key: "iyX", label: "İY 0", aliases: ["iyX", "iy0", "İYX", "İY0", "htX"] },
+        { key: "iy2", label: "İY 2", aliases: ["iy2", "İY2", "ht2"] },
+
+        { key: "iy05Ust", label: "İY 0.5 Üst", aliases: ["iy05Ust", "iy05üst", "iy05_over"] },
+        { key: "iy15Ust", label: "İY 1.5 Üst", aliases: ["iy15Ust", "iy15üst", "iy15_over"] },
+        { key: "iy15Alt", label: "İY 1.5 Alt", aliases: ["iy15Alt", "iy15alt", "iy15_under"] },
+
+        { key: "kgVar", label: "KG Var", aliases: ["kgVar", "KG Var", "kgvar", "bttsYes"] },
+        { key: "kgYok", label: "KG Yok", aliases: ["kgYok", "KG Yok", "kgyok", "bttsNo"] },
+
+        { key: "au15Ust", label: "2.5 Alt/Üst — 1.5 Üst", aliases: ["au15Ust", "au15üst", "au15_over"] },
+        { key: "au15Alt", label: "1.5 Alt", aliases: ["au15Alt", "au15alt", "au15_under"] },
+        { key: "au25Ust", label: "2.5 Üst", aliases: ["au25Ust", "au25üst", "au25_over"] },
+        { key: "au25Alt", label: "2.5 Alt", aliases: ["au25Alt", "au25alt", "au25_under"] },
+
+        { key: "iyms11", label: "İY/MS 1/1", aliases: ["iyms11"] },
+        { key: "iyms12", label: "İY/MS 1/2", aliases: ["iyms12"] },
+        { key: "iyms21", label: "İY/MS 2/1", aliases: ["iyms21"] },
+        { key: "iyms22", label: "İY/MS 2/2", aliases: ["iyms22"] },
+        { key: "iyms00", label: "İY/MS 0/0", aliases: ["iyms00"] },
+        { key: "iyms10", label: "İY/MS 1/0", aliases: ["iyms10"] },
+        { key: "iyms20", label: "İY/MS 2/0", aliases: ["iyms20"] }
+    ];
+
+    const state = {
+        matches: [],
+        selectedDate: todayISO(),
+        selectedMarkets: new Set(MARKETS.map(market => market.key)),
+        historyCache: new Map(),
+        loading: false
     };
-  }
-  for (const identity of localUsedMatches) {
-    sharedUsedMatches.add(identity);
-  }
-  return { type, items: selected, totalOdd, message: "" };
-}
-function buildAllCoupons(candidates) {
-  const usedMatches = new Set();
-  return {
-    safe: buildCoupon(candidates, "safe", usedMatches),
-    medium: buildCoupon(candidates, "medium", usedMatches),
-    risk: buildCoupon(candidates, "risk", usedMatches)
-  };
-}
-/* =========================================================
-   KUPON SONUCU
-   Seçilen DNA sonuç grubu üzerinden değerlendirilir.
-   ========================================================= */
-function couponStatus(coupon) {
-  if (!coupon?.items?.length) return "empty";
-  let hasPending = false;
-  for (const item of coupon.items) {
-    const outcome = dnaResult(item.match, item.resultId || selectedResultId);
-    if (outcome === false) return "lost";
-    if (outcome == null) hasPending = true;
-  }
-  return hasPending ? "pending" : "won";
-}
-function couponStatusLabel(status) {
-  return ({
-    won: "Kazandı",
-    lost: "Kaybetti",
-    pending: "Bekliyor",
-    empty: "Kupon oluşturulamadı"
-  })[status] || "Bekliyor";
-}
-/* =========================================================
-   HTML YARDIMCILARI
-   ========================================================= */
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;"
-  })[char]);
-}
-function formatOdd(value) {
-  return formatter.format(Number(value) || 0);
-}
-/* =========================================================
-   STİLLER
-   ========================================================= */
-function installStyles() {
-  if (document.getElementById("mk-coupon-styles")) return;
-  const style = document.createElement("style");
-  style.id = "mk-coupon-styles";
-  style.textContent = `
-    #mk-coupon-root {
-      box-sizing: border-box;
-      width: 100%;
-      color: #e8eef8;
-      background: #07111f;
-      padding: 16px;
-      border-radius: 16px;
-      font-family: Arial, Helvetica, sans-serif;
+
+    const number = value => {
+        if (typeof value === "number") {
+            return Number.isFinite(value) ? value : null;
+        }
+
+        if (value === null || value === undefined || value === "") {
+            return null;
+        }
+
+        const parsed = Number(
+            String(value)
+                .trim()
+                .replace(",", ".")
+                .replace(/[^\d.-]/g, "")
+        );
+
+        return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    function todayISO() {
+        const now = new Date();
+        const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+        return local.toISOString().slice(0, 10);
     }
-    #mk-coupon-root *,
-    #mk-coupon-root *::before,
-    #mk-coupon-root *::after {
-      box-sizing: border-box;
+
+    function normalizeDate(value) {
+        if (!value) return null;
+
+        if (typeof value === "number") {
+            const date = new Date(value);
+            return Number.isNaN(date.getTime()) ? null : date.toISOString().slice(0, 10);
+        }
+
+        const raw = String(value).trim();
+
+        const iso = raw.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+        if (iso) {
+            return `${iso[1]}-${iso[2].padStart(2, "0")}-${iso[3].padStart(2, "0")}`;
+        }
+
+        const local = raw.match(/^(\d{1,2})[/.](\d{1,2})[/.](\d{4})/);
+        if (local) {
+            return `${local[3]}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
+        }
+
+        const parsed = new Date(raw);
+        return Number.isNaN(parsed.getTime()) ? null : parsed.toISOString().slice(0, 10);
     }
-    #mk-coupon-root .mk-head {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 16px;
+
+    function normalizeKey(value) {
+        return String(value ?? "")
+            .trim()
+            .toLocaleLowerCase("tr-TR")
+            .replace(/[\s_-]+/g, "")
+            .replace(/[ıİ]/g, "i");
     }
-    #mk-coupon-root .mk-title {
-      margin: 0;
-      font-size: 21px;
-      font-weight: 800;
-      color: #f3f7ff;
+
+    function getValue(object, names) {
+        if (!object || typeof object !== "object") return undefined;
+
+        for (const name of names) {
+            if (Object.prototype.hasOwnProperty.call(object, name)) {
+                const value = object[name];
+                if (value !== undefined && value !== null && value !== "") {
+                    return value;
+                }
+            }
+        }
+
+        const normalized = new Map(
+            Object.keys(object).map(key => [normalizeKey(key), object[key]])
+        );
+
+        for (const name of names) {
+            const value = normalized.get(normalizeKey(name));
+            if (value !== undefined && value !== null && value !== "") {
+                return value;
+            }
+        }
+
+        return undefined;
     }
-    #mk-coupon-root .mk-subtitle {
-      color: #9caec7;
-      font-size: 12px;
-      margin-top: 6px;
+
+    function getOddsObject(match) {
+        return (
+            match.odds ||
+            match.openingOdds ||
+            match.opening_odds ||
+            match.openOdds ||
+            match.open_odds ||
+            match.markets ||
+            match.oranlar ||
+            match.oran ||
+            match
+        );
     }
-    #mk-coupon-root .mk-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+
+    function getOdd(match, market) {
+        const oddsObject = getOddsObject(match);
+        const names = [market.key, ...market.aliases];
+
+        let raw = getValue(oddsObject, names);
+
+        if (raw && typeof raw === "object") {
+            raw = getValue(raw, [
+                "odd", "odds", "oran", "opening", "openingOdd",
+                "openingOdds", "acilis", "acilisOrani", "value"
+            ]);
+        }
+
+        const odd = number(raw);
+        return odd !== null && odd > 1 ? odd : null;
     }
-    #mk-coupon-root input[type="date"],
-    #mk-coupon-root select {
-      min-height: 40px;
-      padding: 8px 10px;
-      border: 1px solid #2b3b52;
-      border-radius: 9px;
-      background: #101d2e;
-      color: #f3f7ff;
-      color-scheme: dark;
-      font: inherit;
-      max-width: 100%;
+
+    // DNA tarzı: oranı iki ondalık basamağa sabitle.
+    function oddKey(value) {
+        const odd = number(value);
+        return odd === null ? null : odd.toFixed(2);
     }
-    #mk-coupon-root button {
-      min-height: 40px;
-      padding: 9px 13px;
-      border: 1px solid #2c7ce5;
-      border-radius: 9px;
-      background: #1768c4;
-      color: #fff;
-      font-weight: 700;
-      cursor: pointer;
+
+    function getFullScore(match) {
+        const directHome = getValue(match, [
+            "homeScore", "home_score", "scoreHome", "score_home",
+            "evSahibiSkor", "evSkor"
+        ]);
+
+        const directAway = getValue(match, [
+            "awayScore", "away_score", "scoreAway", "score_away",
+            "deplasmanSkor", "depSkor"
+        ]);
+
+        if (directHome !== undefined && directAway !== undefined) {
+            const home = number(directHome);
+            const away = number(directAway);
+            if (home !== null && away !== null) return { home, away };
+        }
+
+        const score = getValue(match, [
+            "score", "result", "fullTimeScore", "full_time_score",
+            "macSonucu", "skor", "sonuc"
+        ]);
+
+        return parseScore(score);
     }
-    #mk-coupon-root button:disabled {
-      opacity: .55;
-      cursor: wait;
+
+    function getHalfScore(match) {
+        const directHome = getValue(match, [
+            "halfHomeScore", "half_home_score", "htHomeScore",
+            "iyHomeScore", "iy_home_score", "firstHalfHomeScore"
+        ]);
+
+        const directAway = getValue(match, [
+            "halfAwayScore", "half_away_score", "htAwayScore",
+            "iyAwayScore", "iy_away_score", "firstHalfAwayScore"
+        ]);
+
+        if (directHome !== undefined && directAway !== undefined) {
+            const home = number(directHome);
+            const away = number(directAway);
+            if (home !== null && away !== null) return { home, away };
+        }
+
+        const half = getValue(match, [
+            "halfTimeScore", "half_time_score", "htScore",
+            "iySkor", "ilkYariSkor", "firstHalfScore"
+        ]);
+
+        return parseScore(half);
     }
-    #mk-coupon-root .mk-market-filter {
-      margin: 12px 0 16px;
-      padding: 12px;
-      border: 1px solid #263950;
-      border-radius: 10px;
-      background: #0d1a2b;
+
+    function parseScore(value) {
+        if (value && typeof value === "object") {
+            const home = number(getValue(value, ["home", "homeScore", "h", "ev"]));
+            const away = number(getValue(value, ["away", "awayScore", "a", "dep"]));
+            if (home !== null && away !== null) return { home, away };
+        }
+
+        if (typeof value !== "string") return null;
+
+        const match = value.match(/(\d+)\s*[-:]\s*(\d+)/);
+        if (!match) return null;
+
+        return { home: Number(match[1]), away: Number(match[2]) };
     }
-    #mk-coupon-root .mk-market-filter-title {
-      margin-bottom: 10px;
-      color: #f3f7ff;
-      font-size: 13px;
-      font-weight: 800;
+
+    function getMatchDate(match) {
+        return normalizeDate(getValue(match, [
+            "date", "matchDate", "match_date", "datetime",
+            "kickoff", "startTime", "start_time", "tarih"
+        ]));
     }
-    #mk-coupon-root .mk-market-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+
+    function getMatchId(match, index) {
+        return String(getValue(match, ["id", "matchId", "match_id", "fixtureId"]) ?? index);
     }
-    #mk-coupon-root .mk-market-option {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      padding: 8px 10px;
-      border: 1px solid #2b3b52;
-      border-radius: 8px;
-      background: #101d2e;
-      color: #e8eef8;
-      font-size: 12px;
-      cursor: pointer;
+
+    function getTeamName(match, side) {
+        const names = side === "home"
+            ? ["homeTeam", "home_team", "home", "evSahibi", "ev", "team1"]
+            : ["awayTeam", "away_team", "away", "deplasman", "dep", "team2"];
+
+        const value = getValue(match, names);
+
+        if (value && typeof value === "object") {
+            return String(getValue(value, ["name", "teamName", "title"]) ?? "Bilinmiyor");
+        }
+
+        return String(value ?? "Bilinmiyor");
     }
-    #mk-coupon-root .mk-market-option input {
-      margin: 0;
-      accent-color: #38bdf8;
+
+    function matchLabel(match) {
+        return `${getTeamName(match, "home")} - ${getTeamName(match, "away")}`;
     }
-    #mk-coupon-root .mk-message {
-      padding: 11px 13px;
-      margin: 10px 0 14px;
-      border: 1px solid #263950;
-      border-radius: 10px;
-      background: #0d1a2b;
-      color: #b8c7dc;
-      font-size: 13px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
+
+    function getMarketOutcome(match, market) {
+        const full = getFullScore(match);
+        const half = getHalfScore(match);
+
+        switch (market.key) {
+            case "ms1": return full ? full.home > full.away : null;
+            case "msX": return full ? full.home === full.away : null;
+            case "ms2": return full ? full.home < full.away : null;
+
+            case "iy1": return half ? half.home > half.away : null;
+            case "iyX": return half ? half.home === half.away : null;
+            case "iy2": return half ? half.home < half.away : null;
+
+            case "iy05Ust":
+                return half ? half.home + half.away >= 1 : null;
+
+            case "iy15Ust":
+                return half ? half.home + half.away >= 2 : null;
+
+            case "iy15Alt":
+                return half ? half.home + half.away <= 1 : null;
+
+            case "kgVar":
+                return full ? full.home > 0 && full.away > 0 : null;
+
+            case "kgYok":
+                return full ? full.home === 0 || full.away === 0 : null;
+
+            case "au15Ust":
+                return full ? full.home + full.away >= 2 : null;
+
+            case "au15Alt":
+                return full ? full.home + full.away <= 1 : null;
+
+            case "au25Ust":
+                return full ? full.home + full.away >= 3 : null;
+
+            case "au25Alt":
+                return full ? full.home + full.away <= 2 : null;
+
+            case "iyms11":
+                return half && full ? half.home > half.away && full.home > full.away : null;
+            case "iyms12":
+                return half && full ? half.home > half.away && full.home < full.away : null;
+            case "iyms21":
+                return half && full ? half.home < half.away && full.home > full.away : null;
+            case "iyms22":
+                return half && full ? half.home < half.away && full.home < full.away : null;
+            case "iyms00":
+                return half && full ? half.home === half.away && full.home === full.away : null;
+            case "iyms10":
+                return half && full ? half.home > half.away && full.home === full.away : null;
+            case "iyms20":
+                return half && full ? half.home < half.away && full.home === full.away : null;
+
+            default:
+                return null;
+        }
     }
-    #mk-coupon-root .mk-summary {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin: 14px 0;
+
+    function isPlayed(match) {
+        const full = getFullScore(match);
+        if (!full) return false;
+
+        const status = normalizeKey(getValue(match, [
+            "status", "matchStatus", "match_status", "durum"
+        ]));
+
+        if (["scheduled", "upcoming", "notstarted", "bekliyor", "ertelendi"].includes(status)) {
+            return false;
+        }
+
+        return true;
     }
-    #mk-coupon-root .mk-stat {
-      min-width: 0;
-      padding: 12px;
-      border: 1px solid #23364e;
-      border-radius: 11px;
-      background: #0d1a2b;
+
+    function normalizeMatches(payload) {
+        if (Array.isArray(payload)) return payload;
+
+        if (payload && Array.isArray(payload.matches)) return payload.matches;
+        if (payload && Array.isArray(payload.data)) return payload.data;
+        if (payload && Array.isArray(payload.fixtures)) return payload.fixtures;
+
+        return [];
     }
-    #mk-coupon-root .mk-stat-label {
-      color: #98aac3;
-      font-size: 11px;
-      margin-bottom: 6px;
+
+    async function loadData() {
+        setMessage("Veriler yükleniyor…");
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), CONFIG.FETCH_TIMEOUT);
+
+        try {
+            const response = await fetch(
+                `${CONFIG.DATA_URL}${CONFIG.DATA_URL.includes("?") ? "&" : "?"}t=${Date.now()}`,
+                {
+                    cache: "no-store",
+                    signal: controller.signal
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`Veri dosyası yüklenemedi: HTTP ${response.status}`);
+            }
+
+            const payload = await response.json();
+            state.matches = normalizeMatches(payload);
+            state.historyCache.clear();
+
+            if (!state.matches.length) {
+                throw new Error("JSON dosyasında maç verisi bulunamadı.");
+            }
+
+            render();
+            setMessage(`${state.matches.length} maç yüklendi.`);
+        } catch (error) {
+            console.error("[RNA] Veri yükleme hatası:", error);
+            setMessage(`Veri yüklenemedi: ${error.message}`, true);
+        } finally {
+            clearTimeout(timeout);
+        }
     }
-    #mk-coupon-root .mk-stat-value {
-      font-size: 19px;
-      font-weight: 800;
-      color: #f5f8ff;
-      overflow-wrap: anywhere;
+
+    function getHistoryWindow(targetDate) {
+        const end = new Date(`${targetDate}T00:00:00`);
+        const start = new Date(end);
+        start.setDate(start.getDate() - CONFIG.HISTORY_DAYS);
+
+        return {
+            start: start.toISOString().slice(0, 10),
+            end: targetDate
+        };
     }
-    #mk-coupon-root .mk-coupon-card {
-      border: 1px solid #2a3c54;
-      border-radius: 13px;
-      background: #0b1727;
-      margin: 12px 0;
-      overflow: hidden;
+
+    function buildHistoryIndex(targetDate) {
+        const cacheKey = `${targetDate}|${CONFIG.HISTORY_DAYS}|${[...state.selectedMarkets].sort().join(",")}`;
+
+        if (state.historyCache.has(cacheKey)) {
+            return state.historyCache.get(cacheKey);
+        }
+
+        const window = getHistoryWindow(targetDate);
+        const index = new Map();
+
+        for (const match of state.matches) {
+            const date = getMatchDate(match);
+
+            if (!date || date < window.start || date >= window.end) continue;
+            if (!isPlayed(match)) continue;
+
+            for (const market of MARKETS) {
+                if (!state.selectedMarkets.has(market.key)) continue;
+
+                const odd = getOdd(match, market);
+                if (odd === null || odd < CONFIG.MIN_ODD) continue;
+
+                const result = getMarketOutcome(match, market);
+                if (result === null) continue;
+
+                const key = `${market.key}|${oddKey(odd)}`;
+
+                if (!index.has(key)) {
+                    index.set(key, {
+                        marketKey: market.key,
+                        odd: oddKey(odd),
+                        sample: 0,
+                        wins: 0,
+                        losses: 0
+                    });
+                }
+
+                const group = index.get(key);
+                group.sample += 1;
+
+                if (result) {
+                    group.wins += 1;
+                } else {
+                    group.losses += 1;
+                }
+            }
+        }
+
+        for (const group of index.values()) {
+            group.success = group.sample
+                ? (group.wins / group.sample) * 100
+                : 0;
+        }
+
+        state.historyCache.set(cacheKey, index);
+        return index;
     }
-    #mk-coupon-root .mk-coupon-head {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 14px;
-      border-bottom: 1px solid #25364c;
-      background: #101e31;
+
+    function analyzeMatch(match, index) {
+        const candidates = [];
+
+        for (const market of MARKETS) {
+            if (!state.selectedMarkets.has(market.key)) continue;
+
+            const odd = getOdd(match, market);
+            if (odd === null || odd < CONFIG.MIN_ODD) continue;
+
+            const key = `${market.key}|${oddKey(odd)}`;
+            const history = index.get(key);
+
+            if (!history) continue;
+            if (history.sample < CONFIG.MIN_SAMPLE) continue;
+            if (history.success < CONFIG.MIN_SUCCESS) continue;
+
+            candidates.push({
+                match,
+                matchId: getMatchId(match, 0),
+                matchName: matchLabel(match),
+                date: getMatchDate(match),
+                marketKey: market.key,
+                marketLabel: market.label,
+                odd,
+                oddKey: oddKey(odd),
+                sample: history.sample,
+                wins: history.wins,
+                losses: history.losses,
+                success: history.success,
+                result: getMarketOutcome(match, market)
+            });
+        }
+
+        candidates.sort((a, b) =>
+            b.success - a.success ||
+            b.sample - a.sample ||
+            a.odd - b.odd
+        );
+
+        return candidates;
     }
-    #mk-coupon-root .mk-coupon-title {
-      color: #f2f6ff;
-      font-size: 16px;
-      font-weight: 800;
+
+    function buildCoupon(candidates, minimumSuccess, usedMatchIds) {
+        const coupon = [];
+        let totalOdds = 1;
+
+        for (const item of candidates) {
+            if (coupon.length >= CONFIG.MAX_MATCHES) break;
+            if (item.success < minimumSuccess) continue;
+            if (usedMatchIds.has(item.matchId)) continue;
+
+            const nextTotal = totalOdds * item.odd;
+
+            if (coupon.length > 0 && nextTotal < totalOdds) continue;
+
+            coupon.push(item);
+            totalOdds = nextTotal;
+            usedMatchIds.add(item.matchId);
+        }
+
+        if (totalOdds < CONFIG.MIN_TOTAL_ODDS) {
+            return { items: [], totalOdds: 1 };
+        }
+
+        return { items: coupon, totalOdds };
     }
-    #mk-coupon-root .mk-coupon-description {
-      color: #9caec7;
-      font-size: 12px;
-      margin-top: 4px;
-      line-height: 1.5;
+
+    function getCoupons(candidates) {
+        const used = new Set();
+
+        const safe = buildCoupon(candidates, 90, used);
+        const medium = buildCoupon(candidates, 85, used);
+        const risk = buildCoupon(candidates, 80, used);
+
+        return [
+            { key: "safe", title: "Güvenli Kupon", threshold: 90, ...safe },
+            { key: "medium", title: "Orta Risk Kupon", threshold: 85, ...medium },
+            { key: "risk", title: "Riskli Kupon", threshold: 80, ...risk }
+        ];
     }
-    #mk-coupon-root .mk-total {
-      color: #6ee7a0;
-      font-size: 22px;
-      font-weight: 900;
-      white-space: nowrap;
+
+    function getResultStatus(item) {
+        const outcome = getMarketOutcome(item.match, MARKETS.find(m => m.key === item.marketKey));
+
+        if (outcome === true) return "success";
+        if (outcome === false) return "failure";
+        return "pending";
     }
-    #mk-coupon-root .mk-leg {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      padding: 12px 14px;
-      border-bottom: 1px solid #1b2b3e;
+
+    function statusLabel(status) {
+        if (status === "success") return "Başarılı";
+        if (status === "failure") return "Başarısız";
+        return "Bekliyor";
     }
-    #mk-coupon-root .mk-leg:last-child {
-      border-bottom: 0;
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[character]);
     }
-    #mk-coupon-root .mk-match-name {
-      font-size: 14px;
-      line-height: 1.45;
-      font-weight: 700;
-      color: #edf3ff;
-      overflow-wrap: anywhere;
+
+    function formatPercent(value) {
+        return `${value.toFixed(1).replace(".", ",")}%`;
     }
-    #mk-coupon-root .mk-match-meta {
-      margin-top: 4px;
-      color: #91a5bf;
-      font-size: 11px;
-      line-height: 1.5;
+
+    function setMessage(message, isError = false) {
+        const element = document.getElementById("rnaMessage");
+        if (!element) return;
+
+        element.textContent = message;
+        element.classList.toggle("error", isError);
     }
-    #mk-coupon-root .mk-market {
-      display: inline-block;
-      margin-top: 7px;
-      padding: 5px 8px;
-      border: 1px solid #31547b;
-      border-radius: 7px;
-      background: #122b46;
-      color: #c4e1ff;
-      font-size: 12px;
-      font-weight: 800;
+
+    function ensureUI() {
+        if (document.getElementById("rnaRoot")) return;
+
+        const root = document.createElement("main");
+        root.id = "rnaRoot";
+
+        root.innerHTML = `
+            <style>
+                #rnaRoot {
+                    color: #e5e7eb;
+                    font-family: Arial, sans-serif;
+                    max-width: 1100px;
+                    margin: 0 auto;
+                    padding: 16px;
+                    box-sizing: border-box;
+                }
+                #rnaRoot * { box-sizing: border-box; }
+                #rnaRoot .rna-panel {
+                    background: #111827;
+                    border: 1px solid #273449;
+                    border-radius: 14px;
+                    padding: 14px;
+                    margin-bottom: 14px;
+                }
+                #rnaRoot h1 {
+                    font-size: 23px;
+                    margin: 0 0 8px;
+                    color: #f9fafb;
+                }
+                #rnaRoot h2 {
+                    font-size: 18px;
+                    margin: 0 0 12px;
+                    color: #f9fafb;
+                }
+                #rnaRoot .rna-muted {
+                    color: #9ca3af;
+                    font-size: 13px;
+                    line-height: 1.5;
+                }
+                #rnaRoot .rna-controls {
+                    display: flex;
+                    gap: 8px;
+                    flex-wrap: wrap;
+                    align-items: center;
+                    margin-top: 12px;
+                }
+                #rnaRoot input,
+                #rnaRoot select,
+                #rnaRoot button {
+                    font: inherit;
+                    border-radius: 8px;
+                    min-height: 40px;
+                }
+                #rnaRoot input,
+                #rnaRoot select {
+                    background: #0b1220;
+                    color: #f9fafb;
+                    border: 1px solid #374151;
+                    padding: 8px 10px;
+                }
+                #rnaRoot button {
+                    cursor: pointer;
+                    color: white;
+                    border: 0;
+                    background: #2563eb;
+                    padding: 9px 14px;
+                    font-weight: 700;
+                }
+                #rnaRoot button:disabled {
+                    opacity: .5;
+                    cursor: wait;
+                }
+                #rnaRoot .rna-market-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(125px, 1fr));
+                    gap: 8px;
+                }
+                #rnaRoot .rna-market {
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                    border: 1px solid #374151;
+                    background: #0b1220;
+                    border-radius: 8px;
+                    padding: 9px;
+                    min-height: 38px;
+                    font-size: 13px;
+                }
+                #rnaRoot .rna-market input { min-height: auto; }
+                #rnaRoot .rna-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 12px;
+                }
+                #rnaRoot .rna-coupon {
+                    background: #0b1220;
+                    border: 1px solid #374151;
+                    border-radius: 12px;
+                    padding: 12px;
+                    min-width: 0;
+                }
+                #rnaRoot .rna-coupon h3 {
+                    font-size: 16px;
+                    margin: 0 0 8px;
+                }
+                #rnaRoot .rna-total {
+                    font-size: 20px;
+                    font-weight: 800;
+                    margin: 8px 0;
+                }
+                #rnaRoot .rna-leg {
+                    padding: 10px 0;
+                    border-top: 1px solid #273449;
+                }
+                #rnaRoot .rna-leg strong { color: #f9fafb; }
+                #rnaRoot .rna-leg small {
+                    display: block;
+                    color: #9ca3af;
+                    margin-top: 4px;
+                    line-height: 1.45;
+                }
+                #rnaRoot .rna-status {
+                    display: inline-block;
+                    padding: 4px 7px;
+                    border-radius: 6px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    margin-top: 5px;
+                }
+                #rnaRoot .success { color: #86efac; background: #052e16; }
+                #rnaRoot .failure { color: #fca5a5; background: #450a0a; }
+                #rnaRoot .pending { color: #fde68a; background: #422006; }
+                #rnaRoot .error { color: #fca5a5; }
+                #rnaRoot .rna-empty {
+                    color: #9ca3af;
+                    padding: 12px 0;
+                    font-size: 13px;
+                }
+                #rnaRoot details summary {
+                    cursor: pointer;
+                    color: #d1d5db;
+                    padding: 8px 0;
+                }
+                @media (max-width: 480px) {
+                    #rnaRoot { padding: 10px; }
+                    #rnaRoot .rna-panel { padding: 11px; }
+                    #rnaRoot .rna-controls > * { flex: 1 1 100%; }
+                    #rnaRoot h1 { font-size: 21px; }
+                }
+            </style>
+
+            <section class="rna-panel">
+                <h1>RNA | Otomatik Kupon</h1>
+                <div class="rna-muted">
+                    Geçmiş ${CONFIG.HISTORY_DAYS} gün · Minimum örnek ${CONFIG.MIN_SAMPLE} ·
+                    Minimum başarı %${CONFIG.MIN_SUCCESS} · Minimum oran ${CONFIG.MIN_ODD.toFixed(2)}
+                </div>
+                <div class="rna-controls">
+                    <label for="rnaDate">Maç tarihi</label>
+                    <input type="date" id="rnaDate">
+                    <button type="button" id="rnaRefresh">Verileri yenile</button>
+                </div>
+                <p id="rnaMessage" class="rna-muted" role="status">Hazırlanıyor…</p>
+            </section>
+
+            <section class="rna-panel">
+                <h2>Market filtreleri</h2>
+                <div class="rna-controls">
+                    <button type="button" id="rnaSelectAll">Tümünü seç</button>
+                    <button type="button" id="rnaSelectNone">Seçimi temizle</button>
+                </div>
+                <div id="rnaMarkets" class="rna-market-grid"></div>
+            </section>
+
+            <section class="rna-panel">
+                <h2>Kuponlar</h2>
+                <div id="rnaSummary" class="rna-muted"></div>
+                <div id="rnaCoupons" class="rna-grid"></div>
+            </section>
+
+            <section class="rna-panel">
+                <details>
+                    <summary>Analiz ayrıntıları</summary>
+                    <div id="rnaDiagnostics" class="rna-muted"></div>
+                </details>
+            </section>
+        `;
+
+        document.body.appendChild(root);
+
+        const dateInput = root.querySelector("#rnaDate");
+        dateInput.value = state.selectedDate;
+        dateInput.addEventListener("change", () => {
+            state.selectedDate = dateInput.value || todayISO();
+            render();
+        });
+
+        root.querySelector("#rnaRefresh").addEventListener("click", loadData);
+
+        root.querySelector("#rnaSelectAll").addEventListener("click", () => {
+            state.selectedMarkets = new Set(MARKETS.map(market => market.key));
+            state.historyCache.clear();
+            renderMarketFilters();
+            render();
+        });
+
+        root.querySelector("#rnaSelectNone").addEventListener("click", () => {
+            state.selectedMarkets.clear();
+            state.historyCache.clear();
+            renderMarketFilters();
+            render();
+        });
+
+        renderMarketFilters();
     }
-    #mk-coupon-root .mk-odd {
-      align-self: center;
-      font-size: 17px;
-      font-weight: 900;
-      color: #f4f7ff;
-      white-space: nowrap;
+
+    function renderMarketFilters() {
+        const container = document.getElementById("rnaMarkets");
+        if (!container) return;
+
+        container.innerHTML = MARKETS.map(market => `
+            <label class="rna-market">
+                <input
+                    type="checkbox"
+                    data-market="${escapeHTML(market.key)}"
+                    ${state.selectedMarkets.has(market.key) ? "checked" : ""}
+                >
+                <span>${escapeHTML(market.label)}</span>
+            </label>
+        `).join("");
+
+        container.querySelectorAll("input[data-market]").forEach(input => {
+            input.addEventListener("change", () => {
+                const key = input.dataset.market;
+
+                if (input.checked) state.selectedMarkets.add(key);
+                else state.selectedMarkets.delete(key);
+
+                state.historyCache.clear();
+                render();
+            });
+        });
     }
-    #mk-coupon-root .mk-result {
-      display: inline-block;
-      margin-top: 6px;
-      font-size: 11px;
-      font-weight: 800;
+
+    function renderCoupon(coupon) {
+        const body = coupon.items.length
+            ? coupon.items.map(item => {
+                const status = getResultStatus(item);
+
+                return `
+                    <div class="rna-leg">
+                        <strong>${escapeHTML(item.matchName)}</strong>
+                        <small>
+                            ${escapeHTML(item.marketLabel)} · Oran ${item.oddKey}<br>
+                            Geçmiş: ${formatPercent(item.success)} ·
+                            ${item.sample} maç (${item.wins} başarılı / ${item.losses} başarısız)
+                        </small>
+                        <span class="rna-status ${status}">${statusLabel(status)}</span>
+                    </div>
+                `;
+            }).join("")
+            : `<div class="rna-empty">Bu eşikte kupon oluşturacak yeterli eşleşme bulunamadı.</div>`;
+
+        return `
+            <article class="rna-coupon">
+                <h3>${escapeHTML(coupon.title)} (%${coupon.threshold}+)</h3>
+                <div class="rna-total">Toplam oran: ${coupon.totalOdds.toFixed(2)}</div>
+                <div class="rna-muted">${coupon.items.length} / ${CONFIG.MAX_MATCHES} maç</div>
+                ${body}
+            </article>
+        `;
     }
-    #mk-coupon-root .mk-won { color: #54e08a; }
-    #mk-coupon-root .mk-lost { color: #ff7373; }
-    #mk-coupon-root .mk-pending { color: #f6ca61; }
-    #mk-coupon-root .mk-empty {
-      padding: 18px 14px;
-      color: #b3c1d5;
-      font-size: 13px;
-      line-height: 1.6;
+
+    function render() {
+        ensureUI();
+
+        const dateInput = document.getElementById("rnaDate");
+        if (dateInput && dateInput.value !== state.selectedDate) {
+            dateInput.value = state.selectedDate;
+        }
+
+        const targetMatches = state.matches.filter(match =>
+            getMatchDate(match) === state.selectedDate && !isPlayed(match)
+        );
+
+        const history = buildHistoryIndex(state.selectedDate);
+        const candidates = targetMatches.flatMap(match => analyzeMatch(match, history));
+
+        // Aynı maçtan birden fazla market gelirse en güçlü eşleşmeyi kullan.
+        const bestByMatch = new Map();
+
+        for (const candidate of candidates) {
+            const previous = bestByMatch.get(candidate.matchId);
+
+            if (
+                !previous ||
+                candidate.success > previous.success ||
+                (candidate.success === previous.success && candidate.sample > previous.sample)
+            ) {
+                bestByMatch.set(candidate.matchId, candidate);
+            }
+        }
+
+        const uniqueCandidates = [...bestByMatch.values()].sort((a, b) =>
+            b.success - a.success ||
+            b.sample - a.sample ||
+            b.odd - a.odd
+        );
+
+        const coupons = getCoupons(uniqueCandidates);
+
+        const summary = document.getElementById("rnaSummary");
+        if (summary) {
+            summary.textContent =
+                `${state.selectedDate} · ${targetMatches.length} maç · ` +
+                `${uniqueCandidates.length} uygun eşleşme · ` +
+                `${history.size} market/oran grubu`;
+        }
+
+        const couponContainer = document.getElementById("rnaCoupons");
+        if (couponContainer) {
+            couponContainer.innerHTML = coupons.map(renderCoupon).join("");
+        }
+
+        const diagnostics = document.getElementById("rnaDiagnostics");
+        if (diagnostics) {
+            const grouped = [...history.values()]
+                .sort((a, b) => b.success - a.success || b.sample - a.sample);
+
+            diagnostics.innerHTML = `
+                <p>Veri kaynağı: ${escapeHTML(CONFIG.DATA_URL)}</p>
+                <p>Geçmiş aralığı: ${CONFIG.HISTORY_DAYS} gün</p>
+                <p>Seçili market sayısı: ${state.selectedMarkets.size}</p>
+                <p>Minimum örnek: ${CONFIG.MIN_SAMPLE}</p>
+                <p>Minimum başarı: %${CONFIG.MIN_SUCCESS}</p>
+                <p>Eşleştirme anahtarı: market anahtarı + iki ondalıklı oran</p>
+                <p>Market sonucu, aynı marketin kendi sonuç fonksiyonuyla değerlendirilir.</p>
+                <p>Uygun geçmiş grubu: ${grouped.filter(group =>
+                    group.sample >= CONFIG.MIN_SAMPLE &&
+                    group.success >= CONFIG.MIN_SUCCESS
+                ).length}</p>
+            `;
+        }
     }
-    #mk-coupon-root .mk-footnote {
-      margin-top: 15px;
-      color: #8ea2bd;
-      font-size: 11px;
-      line-height: 1.7;
+
+    function init() {
+        ensureUI();
+        renderMarketFilters();
+        loadData();
     }
-    #mk-coupon-root .mk-diagnostic {
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid #263950;
-      border-radius: 10px;
-      background: #0b1727;
-      color: #b8c7dc;
-      font-size: 12px;
-      line-height: 1.7;
-    }
-    #mk-coupon-root .mk-diagnostic summary {
-      cursor: pointer;
-      color: #dbe8fa;
-      font-weight: 800;
-    }
-    #mk-coupon-root .mk-diagnostic-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 6px 12px;
-      margin-top: 10px;
-    }
-    @media (max-width: 480px) {
-      #mk-coupon-root { padding: 11px; }
-      #mk-coupon-root .mk-title { font-size: 18px; }
-      #mk-coupon-root .mk-summary { grid-template-columns: 1fr; }
-      #mk-coupon-root .mk-stat { padding: 10px; }
-      #mk-coupon-root .mk-stat-value { font-size: 17px; }
-      #mk-coupon-root .mk-leg { padding: 11px; }
-      #mk-coupon-root .mk-diagnostic-grid { grid-template-columns: 1fr; }
-    }
-  `;
-  document.head.appendChild(style);
-}
-/* =========================================================
-   ANA ARAYÜZ
-   ========================================================= */
-function ensureRoot() {
-  let root = document.getElementById("mk-coupon-root");
-  if (root) return root;
-  root = document.createElement("section");
-  root.id = "mk-coupon-root";
-  const host =
-    document.querySelector("#coupon-root") ||
-    document.querySelector("#kupon-root") ||
-    document.querySelector("[data-coupon-root]") ||
-    document.querySelector("main") ||
-    document.body;
-  host.appendChild(root);
-  return root;
-}
-function renderShell() {
-  const root = ensureRoot();
-  root.innerHTML = `
-    <div class="mk-head">
-      <div>
-        <h2 class="mk-title">Otomatik Kupon</h2>
-        <div class="mk-subtitle">
-          DNA sonuçtan oran analizi · ${HISTORY_DAYS} günlük geçmiş
-        </div>
-      </div>
-      <div class="mk-controls">
-        <input
-          id="mk-coupon-date"
-          type="date"
-          value="${escapeHtml(selectedDate)}"
-          aria-label="Maç tarihi"
-        >
-        <select id="mk-result-select" aria-label="DNA sonuç grubu">
-          ${Object.entries(DNA_RESULTS).map(([id, result]) => `
-            <option value="${escapeHtml(id)}"
-              ${id === selectedResultId ? "selected" : ""}>
-              Sonuç: ${escapeHtml(result.label)}
-            </option>
-          `).join("")}
-        </select>
-        <button id="mk-coupon-refresh" type="button">Yenile</button>
-      </div>
-    </div>
-    <section class="mk-market-filter">
-      <div class="mk-market-filter-title">Analiz edilecek marketler</div>
-      <div class="mk-market-options">
-        ${SELECTABLE_MARKETS.map(market => `
-          <label class="mk-market-option">
-            <input
-              type="checkbox"
-              data-market-key="${escapeHtml(market.key)}"
-              ${selectedMarketKeys.has(market.key) ? "checked" : ""}
-            >
-            <span>${escapeHtml(market.label)}</span>
-          </label>
-        `).join("")}
-      </div>
-    </section>
-    <div id="mk-coupon-message" class="mk-message">
-      Veriler hazırlanıyor...
-    </div>
-    <div id="mk-coupon-content"></div>
-  `;
-  root.querySelector("#mk-coupon-date").addEventListener("change", event => {
-    if (!event.target.value) return;
-    selectedDate = event.target.value;
-    renderCouponsForDate(selectedDate);
-  });
-  root.querySelector("#mk-result-select").addEventListener("change", event => {
-    if (!DNA_RESULTS[event.target.value]) return;
-    selectedResultId = event.target.value;
-    historyCache.clear();
-    renderCouponsForDate(selectedDate);
-  });
-  root.querySelector("#mk-coupon-refresh").addEventListener("click", () => {
-    loadCouponData(true);
-  });
-  root.querySelectorAll("[data-market-key]").forEach(input => {
-    input.addEventListener("change", () => {
-      const key = input.dataset.marketKey;
-      if (input.checked) selectedMarketKeys.add(key);
-      else selectedMarketKeys.delete(key);
-      activeMarkets = detectActiveMarkets(allMatches);
-      historyCache.clear();
-      if (allMatches.length) renderCouponsForDate(selectedDate);
-      else setMessage("Market seçimin kaydedildi. Veriler yükleniyor...");
+
+    // Mevcut sayfada başka scriptlerin kullanabilmesi için API.
+    window.RNA = Object.freeze({
+        config: CONFIG,
+        markets: MARKETS,
+        reload: loadData,
+        render,
+        getOdd,
+        oddKey,
+        getMarketOutcome,
+        buildHistoryIndex
     });
-  });
-  return root;
-}
-function setMessage(message) {
-  const element = document.getElementById("mk-coupon-message");
-  if (element) element.textContent = message;
-}
-/* =========================================================
-   KUPON KARTI
-   ========================================================= */
-function renderCouponCard(coupon, title, description) {
-  if (!coupon.items.length) {
-    return `
-      <article class="mk-coupon-card">
-        <div class="mk-coupon-head">
-          <div>
-            <div class="mk-coupon-title">${escapeHtml(title)}</div>
-            <div class="mk-coupon-description">${escapeHtml(description)}</div>
-          </div>
-        </div>
-        <div class="mk-empty">${escapeHtml(coupon.message)}</div>
-      </article>
-    `;
-  }
-  const status = couponStatus(coupon);
-  const statusClass = {
-    won: "mk-won",
-    lost: "mk-lost",
-    pending: "mk-pending"
-  }[status] || "mk-pending";
-  const legs = coupon.items.map(item => {
-    const result = dnaResult(item.match, item.resultId || selectedResultId);
-    let resultText = "Bekliyor";
-    let resultClass = "mk-pending";
-    let scoreText = "-";
-    const definition = DNA_RESULTS[item.resultId || selectedResultId];
-    const score = definition?.type === "ht"
-      ? halfScore(item.match)
-      : fullScore(item.match);
-    if (score) scoreText = `${score.home} - ${score.away}`;
-    if (result === true) {
-      resultText = "Başarılı";
-      resultClass = "mk-won";
-    } else if (result === false) {
-      resultText = "Başarısız";
-      resultClass = "mk-lost";
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init, { once: true });
+    } else {
+        init();
     }
-    return `
-      <div class="mk-leg">
-        <div>
-          <div class="mk-match-name">${escapeHtml(item.matchName)}</div>
-          <div class="mk-match-meta">
-            ${escapeHtml(item.time || "Saat belirtilmemiş")}
-            ${item.league ? ` · ${escapeHtml(item.league)}` : ""}
-            · Skor: ${escapeHtml(scoreText)}
-          </div>
-          <div class="mk-market">${escapeHtml(item.marketLabel)}</div>
-          <div class="mk-match-meta">
-            Ölçülen sonuç: ${escapeHtml(item.resultLabel)} ·
-            Başarı: ${Math.round(item.success)}% ·
-            Başarılı geçmiş: ${item.wins}/${item.sample}
-          </div>
-          <div class="mk-result ${resultClass}">${resultText}</div>
-        </div>
-        <div class="mk-odd">${formatOdd(item.odd)}</div>
-      </div>
-    `;
-  }).join("");
-  return `
-    <article class="mk-coupon-card">
-      <div class="mk-coupon-head">
-        <div>
-          <div class="mk-coupon-title">${escapeHtml(title)}</div>
-          <div class="mk-coupon-description">
-            ${escapeHtml(description)} · ${coupon.items.length} maç ·
-            <span class="${statusClass}">${couponStatusLabel(status)}</span>
-          </div>
-        </div>
-        <div class="mk-total">${formatOdd(coupon.totalOdd)}</div>
-      </div>
-      ${legs}
-    </article>
-  `;
-}
-/* =========================================================
-   TANI BÖLÜMÜ
-   ========================================================= */
-function renderDiagnostics(d) {
-  if (!d) return "";
-  const entries = [
-    ["Seçilen gündeki maç", d.dayMatches],
-    ["Seçilen ve veride bulunan market", d.activeMarketCount],
-    ["Seçili listede bulunmayan market", d.ignoredMarketCount],
-    ["Oranı bulunan market", d.oddsAccepted],
-    ["Oranı eksik market", d.noOdd],
-    ["1,35 altı oran", d.lowOdd],
-    ["Geçmiş eşleşmesi olmayan", d.noHistoryGroup],
-    [`${MIN_SAMPLE} örnekten az`, d.lowSample],
-    ["Örnek şartını geçen", d.sampleAccepted],
-    [`%${MIN_SUCCESS} başarı altı`, d.lowSuccess],
-    ["Başarı şartını geçen", d.successAccepted]
-  ];
-  return `
-    <details class="mk-diagnostic">
-      <summary>Uygun maç bulunmama nedenlerini göster</summary>
-      <div class="mk-diagnostic-grid">
-        ${entries.map(([label, value]) => `
-          <div>${escapeHtml(label)}: <strong>${Number(value) || 0}</strong></div>
-        `).join("")}
-      </div>
-      <div style="margin-top:10px">
-        Ölçülen sonuç grubu: <strong>${escapeHtml(DNA_RESULTS[selectedResultId].label)}</strong>.
-        Bu sonuç, bütün seçili marketlerin geçmiş oran gruplarına uygulanır.
-        Gruplama aynı market ve aynı iki ondalıklı açılış oranıyla yapılır.
-        İ14 kuponlara eklenmez.
-      </div>
-    </details>
-  `;
-}
-/* =========================================================
-   TARİHİN KUPONLARINI GÖSTER
-   ========================================================= */
-function renderCouponsForDate(dateValue = selectedDate) {
-  selectedDate = dateKey(dateValue) || localDateValue(new Date());
-  const dateInput = document.getElementById("mk-coupon-date");
-  if (dateInput) dateInput.value = selectedDate;
-  const resultSelect = document.getElementById("mk-result-select");
-  if (resultSelect) resultSelect.value = selectedResultId;
-  const content = document.getElementById("mk-coupon-content");
-  if (!content) return [];
-  if (loadError) {
-    setMessage(loadError);
-    content.innerHTML = "";
-    return [];
-  }
-  if (!allMatches.length) {
-    setMessage("Veri bulunamadı. Veri dosyasını kontrol et.");
-    content.innerHTML = "";
-    return [];
-  }
-  if (!activeMarkets.length) {
-    setMessage(
-      "Seçtiğin marketlerde kullanılabilir oran bulunamadı. " +
-      "Market seçimini ve veri dosyasını kontrol et."
-    );
-    content.innerHTML = "";
-    return [];
-  }
-  const dayMatches = matchesByDate.get(selectedDate) || [];
-  const candidates = getCandidatesForDate(selectedDate);
-  const diagnostics = getCandidatesForDate.lastDiagnostics;
-  const coupons = buildAllCoupons(candidates);
-  const { safe, medium, risk } = coupons;
-  const playedCount = dayMatches.filter(isPlayed).length;
-  const pendingCount = dayMatches.length - playedCount;
-  const selectedLabels = SELECTABLE_MARKETS
-    .filter(market => selectedMarketKeys.has(market.key))
-    .map(market => market.label);
-  setMessage(
-    `${formatDate(selectedDate)} · ${dayMatches.length} maç · ` +
-    `${playedCount} sonuçlanmış · ${pendingCount} bekleyen · ` +
-    `${candidates.length} uygun tahmin · ` +
-    `Ölçülen sonuç: ${DNA_RESULTS[selectedResultId].label} · ` +
-    `Marketler: ${selectedLabels.join(", ") || "Seçilmedi"}`
-  );
-  content.innerHTML = `
-    <div class="mk-summary">
-      <div class="mk-stat">
-        <div class="mk-stat-label">Günün maçları</div>
-        <div class="mk-stat-value">${dayMatches.length}</div>
-      </div>
-      <div class="mk-stat">
-        <div class="mk-stat-label">Uygun tahmin</div>
-        <div class="mk-stat-value">${candidates.length}</div>
-      </div>
-      <div class="mk-stat">
-        <div class="mk-stat-label">Geçmiş başarı şartı</div>
-        <div class="mk-stat-value">%${MIN_SUCCESS}</div>
-      </div>
-    </div>
-    ${renderCouponCard(safe, "Kupon 1", "%90 ve üzeri geçmiş başarı")}
-    ${renderCouponCard(medium, "Kupon 2", "%85 ve üzeri geçmiş başarı")}
-    ${renderCouponCard(risk, "Kupon 3", `%${MIN_SUCCESS} ve üzeri geçmiş başarı`)}
-    ${renderDiagnostics(diagnostics)}
-    <div class="mk-footnote">
-      DNA sonuçtan oran analizi · Ölçülen sonuç: ${escapeHtml(DNA_RESULTS[selectedResultId].label)}.
-      Son ${HISTORY_DAYS} gün · En az ${MIN_SAMPLE} geçmiş maç.
-      Aynı market + aynı iki ondalıklı oran.
-      Minimum tekli oran ${formatOdd(MIN_ODD)}.
-      Minimum kupon oranı ${formatOdd(MIN_TOTAL_ODDS)}.
-      En fazla ${MAX_MATCHES} maç.
-      Aynı maç farklı kuponlarda tekrarlanmaz.
-      İ14 kuponlara alınmaz.
-    </div>
-  `;
-  return candidates;
-}
-/* =========================================================
-   VERİYİ YÜKLE
-   ========================================================= */
-async function loadCouponData(force = false) {
-  if (isLoading) return;
-  isLoading = true;
-  loadError = "";
-  const root = renderShell();
-  const refreshButton = root.querySelector("#mk-coupon-refresh");
-  if (refreshButton) refreshButton.disabled = true;
-  setMessage("Veriler yükleniyor...");
-  try {
-    const url = force
-      ? `${DATA_URL}${DATA_URL.includes("?") ? "&" : "?"}_=${Date.now()}`
-      : DATA_URL;
-    const response = await fetch(url, {
-      cache: force ? "no-store" : "default"
-    });
-    if (!response.ok) {
-      throw new Error(`Veri dosyası yüklenemedi (HTTP ${response.status}).`);
-    }
-    const data = await response.json();
-    const records = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.matches)
-        ? data.matches
-        : Array.isArray(data?.data)
-          ? data.data
-          : [];
-    allMatches = records.filter(match =>
-      match &&
-      typeof match === "object" &&
-      Boolean(getMatchDate(match))
-    );
-    buildDateIndex();
-    activeMarkets = detectActiveMarkets(allMatches);
-    if (!allMatches.length) {
-      setMessage("Veri dosyası açıldı ancak geçerli tarihli maç bulunamadı.");
-      document.getElementById("mk-coupon-content").innerHTML = "";
-      return;
-    }
-    if (!activeMarkets.length) {
-      setMessage("Maçlar yüklendi ancak seçili marketlerde geçerli oran bulunamadı.");
-      document.getElementById("mk-coupon-content").innerHTML = "";
-      return;
-    }
-    renderCouponsForDate(selectedDate);
-  } catch (error) {
-    loadError = error?.message || "Veriler yüklenirken hata oluştu.";
-    setMessage(loadError);
-    const content = document.getElementById("mk-coupon-content");
-    if (content) content.innerHTML = "";
-  } finally {
-    isLoading = false;
-    const button = document.getElementById("mk-coupon-refresh");
-    if (button) button.disabled = false;
-  }
-}
-/* =========================================================
-   DIŞARIDAN ERİŞİM
-   ========================================================= */
-window.getCouponsForDate = function(date) {
-  const candidates = getCandidatesForDate(date);
-  const coupons = buildAllCoupons(candidates);
-  return {
-    candidates,
-    diagnostics: getCandidatesForDate.lastDiagnostics,
-    selectedResultId,
-    selectedResultLabel: DNA_RESULTS[selectedResultId].label,
-    safe: coupons.safe,
-    medium: coupons.medium,
-    risk: coupons.risk
-  };
-};
-window.renderCouponsForDate = renderCouponsForDate;
-window.reloadCouponData = function() {
-  return loadCouponData(true);
-};
-window.getSelectedMarkets = function() {
-  return [...selectedMarketKeys];
-};
-window.getSelectedDNAResult = function() {
-  return selectedResultId;
-};
-/* =========================================================
-   BAŞLAT
-   ========================================================= */
-function initializeCouponEngine() {
-  installStyles();
-  renderShell();
-  loadCouponData();
-}
-if (document.readyState === "loading") {
-  document.addEventListener(
-    "DOMContentLoaded",
-    initializeCouponEngine,
-    { once: true }
-  );
-} else {
-  initializeCouponEngine();
-}
+})();
