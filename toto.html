@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -33,7 +32,6 @@ header{
 .container{max-width:1100px;margin:auto;padding:16px}
 h1{font-size:23px;margin:0 0 8px}
 h2{font-size:17px;margin:0 0 12px}
-h3{font-size:14px;margin:0}
 .subtitle{color:var(--muted);font-size:12px;line-height:1.6}
 .toolbar{
   display:flex;gap:10px;flex-wrap:wrap;align-items:center;
@@ -44,6 +42,7 @@ select,button{
   padding:10px 12px;background:var(--panel2);color:var(--text)
 }
 button{cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
 button:active{transform:scale(.98)}
 button.primary{background:#1d4ed8;border-color:#2563eb}
 .stats{
@@ -87,13 +86,19 @@ button.primary{background:#1d4ed8;border-color:#2563eb}
   gap:10px;padding:13px 13px 10px
 }
 .match-no{color:var(--muted);font-size:11px;margin-bottom:5px}
-.teams{font-weight:bold;font-size:14px;line-height:1.5}
+.teams{font-weight:bold;font-size:14px;line-height:1.5;overflow-wrap:anywhere}
 .prediction{
-  min-width:65px;text-align:center;padding:9px 8px;
+  min-width:75px;text-align:center;padding:9px 8px;
   background:#20324b;border:1px solid #354b69;
-  border-radius:9px;font-weight:bold;font-size:16px
+  border-radius:9px;font-weight:bold;font-size:18px
 }
-.prediction small{display:block;font-size:9px;color:var(--muted);font-weight:normal;margin-top:4px}
+.prediction small{
+  display:block;font-size:9px;color:var(--muted);
+  font-weight:normal;margin-top:4px
+}
+.prediction.high{border-color:#15803d;background:#123c29}
+.prediction.medium{border-color:#a16207;background:#443914}
+.prediction.low{border-color:#354b69}
 .match-info{
   display:flex;flex-wrap:wrap;gap:7px;
   padding:0 13px 12px
@@ -134,24 +139,20 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
 </style>
 </head>
 <body>
-
 <header>
   <div class="container" style="padding:0 4px">
     <h1>⚽ Spor Toto Analiz</h1>
     <div class="subtitle">
-      Mackolik açılış oranları · Birebir oran eşleşmesi · 60 günlük geçmiş analiz
+      Mackolik açılış oranları · Tüm marketler · MS1 / MS X / MS2 tahmini
     </div>
   </div>
 </header>
-
 <main class="container">
   <div class="toolbar">
     <select id="weekSelect" aria-label="Hafta seç"></select>
     <button id="refreshBtn" class="primary">Verileri yenile</button>
   </div>
-
   <div id="message" class="notice">Veriler yükleniyor...</div>
-
   <section class="stats">
     <div class="stat">
       <div class="stat-label">Haftadaki maç</div>
@@ -170,78 +171,87 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
       <div id="statAccuracy" class="stat-value">—</div>
     </div>
   </section>
-
   <section class="panel">
     <div class="section-head">
       <h2>Hafta analizi</h2>
       <span id="weekBadge" class="badge">Hafta —</span>
     </div>
     <div class="small">
-      Tahminler yalnızca aynı marketteki aynı açılış oranına sahip geçmiş
-      maçlar üzerinden değerlendirilir. Oran toleransı kullanılmaz.
-      En az 5 geçmiş örneği gerekir. İstatistiksel örnek yetersizse sistem
-      kesin bir sonuç tahmini üretmez.
+      Motor, eşleşen maçların tüm ortak açılış oranı marketlerini otomatik
+      tarar. Her markette aynı sayısal oranı taşıyan geçmiş maçların MS1,
+      MS X ve MS2 sonuç dağılımlarını hesaplar. Market sonuçlarını birleştirir
+      ve en yüksek olasılık puanına sahip tek sonucu seçer. Oran toleransı
+      uygulanmaz. Geçmiş örnek bulunamadığında, mevcut MS1/MS X/MS2 oranlarından
+      hesaplanan piyasa olasılığı yedek yöntem olarak kullanılır.
     </div>
   </section>
-
   <section id="matchList" class="match-list">
     <div class="panel empty">Veriler bekleniyor...</div>
   </section>
-
   <section class="panel">
     <h2>Hesaplama bilgileri</h2>
     <div class="small">
-      Geçmiş örnekler, maç sonuçları bulunan ve tarih bilgisi son 60 gün
-      içerisinde olan Mackolik kayıtlarından alınır. Başarı yüzdesi,
-      eşleşen oran örnekleri içindeki ilgili sonucun gerçekleşme oranıdır.
-      Bu oran gelecekteki sonucun garantisi değildir.
+      Geçmiş analiz penceresi son 60 gündür. Sonucu ve tarihi bulunan geçmiş
+      maçlar kullanılır. Oran eşleşmesi aynı markette birebir sayısal eşleşmedir;
+      yakın oranlar eşleşmiş sayılmaz. Bir marketin tek başına yeterli örneği
+      yoksa örnek sayısı ayrıca gösterilir. İstatistikler tahmin veya garanti
+      değildir. Geçmiş veri yetersizse tahmin güveni düşük olabilir.
     </div>
   </section>
 </main>
-
 <footer>Spor Toto Analiz · Veriler bağlı JSON dosyalarından okunur.</footer>
-
 <script src="./data/spor-toto-data.js"></script>
 <script>
 "use strict";
-
 const CONFIG = {
   DATA_URL: "./data/matches.json",
   HISTORY_DAYS: 60,
   MIN_SAMPLE: 5,
-  MIN_SUCCESS: 70
+  MIN_CONFIDENCE: 55
 };
-
-const MARKET_DEFINITIONS = [
-  { key:"ms1", label:"MS 1", outcomes:["1"] },
-  { key:"msX", label:"MS X", outcomes:["X"] },
-  { key:"ms2", label:"MS 2", outcomes:["2"] },
-  { key:"cs1X", label:"Çifte şans 1X", outcomes:["1","X"] },
-  { key:"cs12", label:"Çifte şans 12", outcomes:["1","2"] },
-  { key:"csX2", label:"Çifte şans X2", outcomes:["X","2"] }
-];
-
-const MARKET_ALIASES = {
-  ms1:["ms1","MS1","1","home","homeWin","home_win"],
-  msX:["msX","msx","MSX","X","draw","drawWin","draw_win"],
-  ms2:["ms2","MS2","2","away","awayWin","away_win"],
-  cs1X:["cs1X","cs1x","CS1X","1X","doubleChance1X"],
-  cs12:["cs12","CS12","12","doubleChance12"],
-  csX2:["csX2","csx2","CSX2","X2","doubleChanceX2"]
+const MARKET_LABELS = {
+  ms1: "MS 1",
+  msX: "MS X",
+  ms2: "MS 2",
+  cs1X: "Çifte şans 1X",
+  cs12: "Çifte şans 12",
+  csX2: "Çifte şans X2",
+  au15Alt: "1,5 Alt",
+  au15Ust: "1,5 Üst",
+  au25Alt: "2,5 Alt",
+  au25Ust: "2,5 Üst",
+  au35Alt: "3,5 Alt",
+  au35Ust: "3,5 Üst",
+  kgVar: "KG Var",
+  kgYok: "KG Yok",
+  iy15Alt: "İY 1,5 Alt",
+  iy15Ust: "İY 1,5 Üst",
+  iy1: "İY 1",
+  iyX: "İY X",
+  iy2: "İY 2",
+  gol01: "Toplam gol 0-1",
+  gol23: "Toplam gol 2-3",
+  gol46: "Toplam gol 4-6",
+  gol7: "Toplam gol 7+",
+  handicap: "Handikap",
+  handicap1: "Handikap 1",
+  handicapX: "Handikap X",
+  handicap2: "Handikap 2"
 };
-
+const RESULT_NAMES = {
+  "1": "MS 1",
+  "X": "MS X",
+  "2": "MS 2"
+};
 let allMatches = [];
 let totoData = null;
 let activeWeek = null;
-
 const $ = id => document.getElementById(id);
-
-function showMessage(text, type="") {
+function showMessage(text, type = "") {
   const el = $("message");
   el.textContent = text;
   el.className = "notice" + (type ? " " + type : "");
 }
-
 function normalize(value) {
   return String(value ?? "")
     .toLocaleLowerCase("tr-TR")
@@ -255,11 +265,10 @@ function normalize(value) {
     .replace(/ç/g, "c")
     .replace(/[^a-z0-9]/g, "");
 }
-
 function parseNumber(value) {
   if (value === null || value === undefined || value === "") return null;
   if (typeof value === "object") {
-    for (const key of ["opening","open","openingOdds","odd","odds","price","value"]) {
+    for (const key of ["opening", "open", "odd", "odds", "price", "value"]) {
       if (value[key] !== undefined) {
         const parsed = parseNumber(value[key]);
         if (parsed !== null) return parsed;
@@ -268,92 +277,119 @@ function parseNumber(value) {
     return null;
   }
   const cleaned = String(value).trim().replace(",", ".");
-  const match = cleaned.match(/\d+(?:\.\d+)?/);
-  if (!match) return null;
-  const n = Number(match[0]);
+  if (!/^\d+(?:\.\d+)?$/.test(cleaned)) return null;
+  const n = Number(cleaned);
   return Number.isFinite(n) && n > 1 ? n : null;
 }
-
 function formatOdd(value) {
-  return value === null ? "—" : value.toFixed(2);
+  return value === null || value === undefined ? "—" : Number(value).toFixed(2);
 }
-
 function parseDate(value) {
   if (!value) return null;
   if (typeof value === "number") {
     const d = new Date(value > 1e12 ? value : value * 1000);
     return Number.isNaN(d.getTime()) ? null : d;
   }
-
   const s = String(value).trim();
-  let m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+  const m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
   if (m) {
-    const d = new Date(Number(m[3]), Number(m[2])-1, Number(m[1]));
+    const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
     return Number.isNaN(d.getTime()) ? null : d;
   }
-
   const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d;
 }
-
 function getDate(match) {
   return parseDate(
-    match.date ?? match.matchDate ?? match.tarih ??
-    match.datetime ?? match.kickoff ?? match.startTime ??
-    match.fixtureDate ?? match.time
+    match.date ??
+    match.matchDate ??
+    match.tarih ??
+    match.datetime ??
+    match.kickoff ??
+    match.startTime ??
+    match.fixtureDate
   );
 }
-
 function getHome(match) {
   return String(
-    match.home ?? match.homeTeam ?? match.home_team ??
-    match.evSahibi ?? match.ev ?? match.team1 ?? ""
+    match.home ??
+    match.homeTeam ??
+    match.home_team ??
+    match.evSahibi ??
+    match.ev ??
+    match.team1 ??
+    ""
   ).trim();
 }
-
 function getAway(match) {
   return String(
-    match.away ?? match.awayTeam ?? match.away_team ??
-    match.deplasman ?? match.team2 ?? ""
+    match.away ??
+    match.awayTeam ??
+    match.away_team ??
+    match.deplasman ??
+    match.team2 ??
+    ""
   ).trim();
 }
-
+/*
+  Önemli düzeltme:
+  Mackolik JSON dosyasında skor şu şekildedir:
+  score: { home: "2", away: "0" }
+  Eski kod bu nesneyi okuyamadığı için geçmiş maçların sonuçlarını
+  tanıyamıyor ve örnek sayısı sıfır kalabiliyordu.
+*/
 function getScorePair(match) {
-  const possibleHome = match.homeScore ?? match.home_score ??
-    match.scoreHome ?? match.goalsHome ?? match.goals_home;
-  const possibleAway = match.awayScore ?? match.away_score ??
-    match.scoreAway ?? match.goalsAway ?? match.goals_away;
-
-  if (possibleHome !== undefined && possibleAway !== undefined &&
-      possibleHome !== null && possibleAway !== null &&
-      possibleHome !== "" && possibleAway !== "") {
-    const h = Number(possibleHome);
-    const a = Number(possibleAway);
-    if (Number.isFinite(h) && Number.isFinite(a) && h >= 0 && a >= 0) {
-      return [h,a];
+  const scoreObjects = [
+    match.score,
+    match.fullTimeScore,
+    match.full_time_score,
+    match.resultScore
+  ];
+  for (const obj of scoreObjects) {
+    if (obj && typeof obj === "object" && !Array.isArray(obj)) {
+      const h = obj.home ?? obj.homeScore ?? obj.home_score;
+      const a = obj.away ?? obj.awayScore ?? obj.away_score;
+      if (h !== null && h !== undefined && h !== "" &&
+          a !== null && a !== undefined && a !== "") {
+        const home = Number(h);
+        const away = Number(a);
+        if (Number.isFinite(home) && Number.isFinite(away) &&
+            home >= 0 && away >= 0) {
+          return [home, away];
+        }
+      }
     }
   }
-
-  const score = String(
-    match.score ?? match.resultScore ?? match.fullTimeScore ??
-    match.full_time_score ?? match.skor ?? ""
-  ).trim();
-
-  const m = score.match(/(?:^|\s)(\d{1,2})\s*[-:]\s*(\d{1,2})(?:\s|$)/);
+  const directHome =
+    match.homeScore ?? match.home_score ?? match.goalsHome ?? match.goals_home;
+  const directAway =
+    match.awayScore ?? match.away_score ?? match.goalsAway ?? match.goals_away;
+  if (directHome !== null && directHome !== undefined && directHome !== "" &&
+      directAway !== null && directAway !== undefined && directAway !== "") {
+    const home = Number(directHome);
+    const away = Number(directAway);
+    if (Number.isFinite(home) && Number.isFinite(away) &&
+        home >= 0 && away >= 0) {
+      return [home, away];
+    }
+  }
+  const scoreText = [
+    typeof match.score === "string" ? match.score : "",
+    match.resultScore,
+    match.skor
+  ].filter(Boolean).join(" ");
+  const m = scoreText.match(/(?:^|\s)(\d{1,2})\s*[-:]\s*(\d{1,2})(?:\s|$)/);
   if (m) return [Number(m[1]), Number(m[2])];
-
   return null;
 }
-
 function normalizeOutcome(value) {
   if (value === null || value === undefined) return null;
   const s = String(value).trim().toUpperCase();
-  if (["1","MS1","HOME"].includes(s)) return "1";
-  if (["X","MSX","DRAW","0"].includes(s)) return "X";
-  if (["2","MS2","AWAY"].includes(s)) return "2";
+  if (["1", "MS1", "HOME"].includes(s)) return "1";
+  if (["X", "MSX", "MS X", "DRAW", "0"].includes(s)) return "X";
+  if (["2", "MS2", "AWAY"].includes(s)) return "2";
   return null;
 }
-
 function getOutcome(match) {
   const pair = getScorePair(match);
   if (pair) {
@@ -361,255 +397,326 @@ function getOutcome(match) {
     if (pair[0] < pair[1]) return "2";
     return "X";
   }
-
   return normalizeOutcome(
-    match.outcome ?? match.result1X2 ?? match.msResult ??
-    match.matchResult ?? match.sonuc ?? match.result
+    match.outcome ??
+    match.result1X2 ??
+    match.msResult ??
+    match.matchResult ??
+    match.sonuc ??
+    match.result
   );
 }
-
-function getMarketContainers(match) {
-  return [
-    match.openingOdds,
-    match.opening_odds,
-    match.openOdds,
-    match.open_odds,
-    match.odds,
-    match.markets,
-    match.marketOdds,
-    match.market_odds,
-    match.opening,
-    match
-  ].filter(x => x && typeof x === "object");
+function getOpeningOdds(match) {
+  if (!match || typeof match !== "object") return {};
+  const odds =
+    match.openingOdds ??
+    match.opening_odds ??
+    match.openOdds ??
+    match.open_odds ??
+    {};
+  return odds && typeof odds === "object" ? odds : {};
 }
-
+function getMarketKeys(match) {
+  const odds = getOpeningOdds(match);
+  return Object.keys(odds).filter(key => parseNumber(odds[key]) !== null);
+}
 function getOdd(match, marketKey) {
-  const aliases = MARKET_ALIASES[marketKey] || [marketKey];
-  const containers = getMarketContainers(match);
-
-  for (const container of containers) {
-    for (const alias of aliases) {
-      if (container[alias] !== undefined) {
-        const n = parseNumber(container[alias]);
-        if (n !== null) return n;
-      }
-    }
-  }
-
-  return null;
+  const odds = getOpeningOdds(match);
+  return parseNumber(odds[marketKey]);
 }
-
+function marketLabel(key) {
+  return MARKET_LABELS[key] || key;
+}
 function getWeeks() {
   const weeks = totoData?.weeks;
   if (!weeks || typeof weeks !== "object") return [];
-
   return Object.keys(weeks)
-    .filter(k => Array.isArray(weeks[k]))
-    .sort((a,b) => Number(a)-Number(b));
+    .filter(key => Array.isArray(weeks[key]))
+    .sort((a, b) => Number(a) - Number(b));
 }
-
 function getTotoGames(week) {
   const games = totoData?.weeks?.[week];
   return Array.isArray(games) ? games : [];
 }
-
-function getMatchingTeamRecord(home, away, requireUnplayed=false) {
+function getMatchingTeamRecord(home, away, requireUnplayed = false) {
   const h = normalize(home);
   const a = normalize(away);
   if (!h || !a) return null;
-
   const candidates = allMatches.filter(match => {
-    const mh = normalize(getHome(match));
-    const ma = normalize(getAway(match));
-    if (mh !== h || ma !== a) return false;
+    if (normalize(getHome(match)) !== h) return false;
+    if (normalize(getAway(match)) !== a) return false;
     if (requireUnplayed && getOutcome(match) !== null) return false;
     return true;
   });
-
   if (!candidates.length) return null;
-
   const now = Date.now();
-  candidates.sort((x,y) => {
+  candidates.sort((x, y) => {
     const dx = getDate(x)?.getTime() ?? 0;
     const dy = getDate(y)?.getTime() ?? 0;
     const xFuture = getOutcome(x) === null && dx >= now;
     const yFuture = getOutcome(y) === null && dy >= now;
-
     if (xFuture !== yFuture) return xFuture ? -1 : 1;
     if (xFuture && yFuture) return dx - dy;
     return dy - dx;
   });
-
   return candidates[0];
 }
-
 function getHistoricalMatches() {
-  const cutoff = new Date();
+  const now = new Date();
+  const cutoff = new Date(now);
   cutoff.setDate(cutoff.getDate() - CONFIG.HISTORY_DAYS);
-
   return allMatches.filter(match => {
     const date = getDate(match);
     const outcome = getOutcome(match);
-    return date && date >= cutoff && date <= new Date() && outcome !== null;
+    return date &&
+      date >= cutoff &&
+      date <= now &&
+      outcome !== null;
   });
 }
-
-function analyzeMarket(targetMatch, market, history) {
-  const targetOdd = getOdd(targetMatch, market.key);
-  if (targetOdd === null) {
+/*
+  Her market ayrı ayrı taranır.
+  Bir hedef oran, yalnızca aynı marketteki aynı sayısal oranla eşleşir.
+  Geçmiş maçların MS1 / X / MS2 dağılımı hesaplanır.
+*/
+function analyzeMarket(targetMatch, marketKey, history) {
+  const targetOdd = getOdd(targetMatch, marketKey);
+  const result = {
+    key: marketKey,
+    label: marketLabel(marketKey),
+    targetOdd,
+    sample: 0,
+    counts: { "1": 0, "X": 0, "2": 0 },
+    rates: { "1": null, "X": null, "2": null }
+  };
+  if (targetOdd === null) return result;
+  for (const oldMatch of history) {
+    const oldOdd = getOdd(oldMatch, marketKey);
+    if (oldOdd === null) continue;
+    // Bilerek tolerans kullanılmıyor.
+    if (oldOdd !== targetOdd) continue;
+    const outcome = getOutcome(oldMatch);
+    if (!outcome) continue;
+    result.counts[outcome]++;
+    result.sample++;
+  }
+  if (result.sample > 0) {
+    for (const outcome of ["1", "X", "2"]) {
+      result.rates[outcome] =
+        result.counts[outcome] / result.sample * 100;
+    }
+  }
+  return result;
+}
+function getMarketAnalyses(targetMatch, history) {
+  if (!targetMatch) return [];
+  return getMarketKeys(targetMatch)
+    .map(key => analyzeMarket(targetMatch, key, history))
+    .filter(m => m.targetOdd !== null);
+}
+/*
+  Her marketin MS1 / X / MS2 dağılımı birleştirilir.
+  Örnek sayısı arttıkça markete verilen ağırlık artar;
+  ancak tek bir marketin tüm tahmini kontrol etmemesi için ağırlık
+  karekök ile sınırlandırılmış biçimde kullanılır.
+*/
+function combineMarketProbabilities(markets, minimumSampleOnly = true) {
+  const totals = { "1": 0, "X": 0, "2": 0 };
+  let totalWeight = 0;
+  let usedMarkets = 0;
+  let totalSamples = 0;
+  for (const market of markets) {
+    if (!market.sample) continue;
+    if (minimumSampleOnly && market.sample < CONFIG.MIN_SAMPLE) continue;
+    const weight = Math.sqrt(market.sample);
+    totalWeight += weight;
+    usedMarkets++;
+    totalSamples += market.sample;
+    for (const outcome of ["1", "X", "2"]) {
+      const rate = market.rates[outcome];
+      if (rate !== null) totals[outcome] += rate * weight;
+    }
+  }
+  if (!totalWeight) {
     return {
-      ...market, targetOdd:null, sample:0, successes:0, rate:null
+      probabilities: null,
+      usedMarkets: 0,
+      totalSamples: 0
     };
   }
-
-  const samples = [];
-
-  for (const oldMatch of history) {
-    const oldOdd = getOdd(oldMatch, market.key);
-    if (oldOdd === null) continue;
-
-    // Tolerans yok: aynı market ve birebir aynı sayısal oran.
-    if (oldOdd !== targetOdd) continue;
-
-    const outcome = getOutcome(oldMatch);
-    if (outcome === null) continue;
-
-    samples.push({
-      outcome,
-      success:market.outcomes.includes(outcome)
-    });
+  const probabilities = {};
+  for (const outcome of ["1", "X", "2"]) {
+    probabilities[outcome] = totals[outcome] / totalWeight;
   }
-
-  const successes = samples.filter(x => x.success).length;
-
-  return {
-    ...market,
-    targetOdd,
-    sample:samples.length,
-    successes,
-    rate:samples.length ? successes / samples.length * 100 : null
-  };
+  const sum = Object.values(probabilities).reduce((a, b) => a + b, 0);
+  if (sum > 0) {
+    for (const outcome of ["1", "X", "2"]) {
+      probabilities[outcome] = probabilities[outcome] / sum * 100;
+    }
+  }
+  return { probabilities, usedMarkets, totalSamples };
 }
-
+/*
+  Yedek yöntem:
+  Eşleşen geçmiş örnek yoksa, Mackolik MS oranlarının tersleri
+  normalize edilerek piyasa olasılıkları elde edilir.
+*/
+function getImpliedProbabilities(targetMatch) {
+  const odds = {
+    "1": getOdd(targetMatch, "ms1"),
+    "X": getOdd(targetMatch, "msX"),
+    "2": getOdd(targetMatch, "ms2")
+  };
+  const inverse = {};
+  for (const outcome of ["1", "X", "2"]) {
+    if (odds[outcome] !== null) {
+      inverse[outcome] = 1 / odds[outcome];
+    }
+  }
+  const sum = Object.values(inverse).reduce((a, b) => a + b, 0);
+  if (!sum) return null;
+  const probabilities = { "1": 0, "X": 0, "2": 0 };
+  for (const outcome of ["1", "X", "2"]) {
+    if (inverse[outcome] !== undefined) {
+      probabilities[outcome] = inverse[outcome] / sum * 100;
+    }
+  }
+  return probabilities;
+}
+function selectBestOutcome(probabilities) {
+  if (!probabilities) return null;
+  return ["1", "X", "2"].sort((a, b) =>
+    probabilities[b] - probabilities[a]
+  )[0];
+}
 function choosePrediction(targetMatch, history) {
   if (!targetMatch) {
     return {
-      selection:"—",
-      reason:"Mackolik'te eşleşen fikstür bulunamadı.",
-      best:null,
-      markets:[]
+      selection: "—",
+      confidence: null,
+      probabilities: null,
+      markets: [],
+      usedMarkets: 0,
+      totalSamples: 0,
+      method: "missing",
+      reason: "Mackolik'te eşleşen oynanmamış fikstür bulunamadı."
     };
   }
-
-  const markets = MARKET_DEFINITIONS
-    .map(market => analyzeMarket(targetMatch, market, history))
-    .filter(x => x.targetOdd !== null)
-    .sort((a,b) => {
-      const ar = a.rate ?? -1;
-      const br = b.rate ?? -1;
-      if (br !== ar) return br - ar;
-      if (b.sample !== a.sample) return b.sample - a.sample;
-      return a.outcomes.length - b.outcomes.length;
-    });
-
-  const eligible = markets.filter(m =>
-    m.sample >= CONFIG.MIN_SAMPLE && m.rate !== null
-  );
-
-  if (!eligible.length) {
+  const markets = getMarketAnalyses(targetMatch, history);
+  // Önce yeterli örneği olan tüm marketlerin dağılımını birleştir.
+  let combined = combineMarketProbabilities(markets, true);
+  let method = "history";
+  // Beş örnekli market bulunmadıysa, mevcut örnekleri de değerlendir.
+  if (!combined.probabilities) {
+    combined = combineMarketProbabilities(markets, false);
+    method = "limited-history";
+  }
+  let probabilities = combined.probabilities;
+  // Hiç geçmiş eşleşmesi yoksa doğrudan MS oranlarını kullan.
+  if (!probabilities) {
+    probabilities = getImpliedProbabilities(targetMatch);
+    method = probabilities ? "market-odds" : "missing-odds";
+  }
+  const selection = selectBestOutcome(probabilities);
+  if (!selection) {
     return {
-      selection:"—",
-      reason:"Aynı oran için yeterli geçmiş örneği yok.",
-      best:null,
-      markets
+      selection: "—",
+      confidence: null,
+      probabilities: null,
+      markets,
+      usedMarkets: 0,
+      totalSamples: 0,
+      method,
+      reason: "Bu fikstürde analiz edilebilecek açılış oranı bulunamadı."
     };
   }
-
-  const best = eligible[0];
-
-  if (best.rate < CONFIG.MIN_SUCCESS) {
-    return {
-      selection:"—",
-      reason:`En iyi eşleşme %${best.rate.toFixed(1)}; %${CONFIG.MIN_SUCCESS} eşiğinin altında.`,
-      best,
-      markets
-    };
+  const confidence = probabilities[selection];
+  let reason;
+  if (method === "history") {
+    reason =
+      `${combined.usedMarkets} market birleştirildi; ` +
+      `${combined.totalSamples} market-oran örneği kullanıldı.`;
+  } else if (method === "limited-history") {
+    reason =
+      "Beş veya daha fazla örneği olan market bulunamadı; " +
+      "mevcut geçmiş eşleşmeleri kullanıldı.";
+  } else {
+    reason =
+      "Geçmiş oran eşleşmesi bulunamadı; MS1/MS X/MS2 açılış " +
+      "oranlarından piyasa olasılığı hesaplandı.";
   }
-
   return {
-    selection:best.label.replace("MS ",""),
-    reason:`${best.label} · ${best.sample} örnek · %${best.rate.toFixed(1)} başarı`,
-    best,
-    markets
+    selection,
+    confidence,
+    probabilities,
+    markets,
+    usedMarkets: combined.usedMarkets,
+    totalSamples: combined.totalSamples,
+    method,
+    reason
   };
 }
-
-function getStatus(game, selection) {
-  const result = normalizeOutcome(game.result);
-  if (!result) return {label:"Bekliyor",className:"yellow",icon:"●"};
-
-  if (selection === "—") {
-    return {label:"Tahmin yok",className:"yellow",icon:"●"};
-  }
-
-  if (selection === "1X2") {
-    return {label:"Kapsandı",className:"green",icon:"✓"};
-  }
-
-  const covered = selection.split("").includes(result);
-  return covered
-    ? {label:"Başarılı",className:"green",icon:"✓"}
-    : {label:"Başarısız",className:"red",icon:"✕"};
-}
-
-function getStatusForSelection(game, selection) {
-  const result = normalizeOutcome(game.result);
-  if (!result) return {label:"Bekliyor",className:"yellow",icon:"●"};
-  if (!selection || selection === "—") {
-    return {label:"Tahmin yok",className:"yellow",icon:"●"};
-  }
-  if (selection === "1X2") {
-    return {label:"Kapsandı",className:"green",icon:"✓"};
-  }
-  return selection.includes(result)
-    ? {label:"Başarılı",className:"green",icon:"✓"}
-    : {label:"Başarısız",className:"red",icon:"✕"};
-}
-
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, ch => ({
-    "&":"&amp;",
-    "<":"&lt;",
-    ">":"&gt;",
-    '"':"&quot;",
-    "'":"&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
   })[ch]);
 }
-
 function rateClass(rate) {
   if (rate === null || rate === undefined) return "";
   if (rate >= 70) return "high";
-  if (rate >= 55) return "mid";
+  if (rate >= CONFIG.MIN_CONFIDENCE) return "mid";
   return "low";
 }
-
+function predictionClass(rate) {
+  if (rate === null || rate === undefined) return "low";
+  if (rate >= 65) return "high";
+  if (rate >= CONFIG.MIN_CONFIDENCE) return "medium";
+  return "low";
+}
 function renderDetails(analysis) {
   if (!analysis.markets.length) {
-    return '<div class="empty">Bu maç için okunabilir açılış oranı bulunamadı.</div>';
+    return `
+      <div class="empty">
+        Bu fikstür için okunabilir açılış oranı bulunamadı.
+      </div>
+    `;
   }
-
-  const rows = analysis.markets.map(m => `
+  const sortedMarkets = [...analysis.markets].sort((a, b) => {
+    if (b.sample !== a.sample) return b.sample - a.sample;
+    return a.label.localeCompare(b.label, "tr");
+  });
+  const rows = sortedMarkets.map(m => `
     <tr>
       <td>${escapeHTML(m.label)}</td>
       <td>${formatOdd(m.targetOdd)}</td>
       <td>${m.sample}</td>
-      <td>${m.sample ? m.successes : "—"}</td>
-      <td class="rate ${rateClass(m.rate)}">
-        ${m.rate === null ? "—" : "%" + m.rate.toFixed(1)}
+      <td>${m.counts["1"]}</td>
+      <td>${m.counts["X"]}</td>
+      <td>${m.counts["2"]}</td>
+      <td class="rate ${rateClass(m.rates["1"])}">
+        ${m.rates["1"] === null ? "—" : "%" + m.rates["1"].toFixed(1)}
+      </td>
+      <td class="rate ${rateClass(m.rates["X"])}">
+        ${m.rates["X"] === null ? "—" : "%" + m.rates["X"].toFixed(1)}
+      </td>
+      <td class="rate ${rateClass(m.rates["2"])}">
+        ${m.rates["2"] === null ? "—" : "%" + m.rates["2"].toFixed(1)}
       </td>
     </tr>
   `).join("");
-
+  const p = analysis.probabilities;
+  const summary = p ? `
+    <div class="notice" style="margin-top:12px;margin-bottom:0">
+      <strong>Birleştirilmiş sonuç dağılımı:</strong>
+      MS1 %${p["1"].toFixed(1)} ·
+      MS X %${p["X"].toFixed(1)} ·
+      MS2 %${p["2"].toFixed(1)}
+    </div>
+  ` : "";
   return `
     <div class="details-content">
       <div class="table-wrap">
@@ -619,83 +726,102 @@ function renderDetails(analysis) {
               <th>Market</th>
               <th>Açılış oranı</th>
               <th>Örnek</th>
-              <th>Başarı</th>
-              <th>Başarı %</th>
+              <th>MS1</th>
+              <th>MS X</th>
+              <th>MS2</th>
+              <th>MS1 %</th>
+              <th>MS X %</th>
+              <th>MS2 %</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
+      ${summary}
       <p class="small">
-        Eşleşme: aynı market + aynı oran. Minimum örnek: ${CONFIG.MIN_SAMPLE}.
-        Eşik: %${CONFIG.MIN_SUCCESS}.
+        Aynı market + birebir aynı açılış oranı kullanılır.
+        Minimum güvenilir örnek eşiği: ${CONFIG.MIN_SAMPLE}.
+        Sıfır örnekli marketler tahmin hesabına katılmaz.
       </p>
     </div>
   `;
 }
-
+function normalizeTotoResult(game) {
+  return normalizeOutcome(game.result ?? game.outcome ?? game.sonuc);
+}
+function getStatus(game, selection) {
+  const result = normalizeTotoResult(game);
+  if (!result) {
+    return { label: "Bekliyor", className: "yellow", icon: "●" };
+  }
+  if (!selection || selection === "—") {
+    return { label: "Tahmin yok", className: "yellow", icon: "●" };
+  }
+  return result === selection
+    ? { label: "Başarılı", className: "green", icon: "✓" }
+    : { label: "Başarısız", className: "red", icon: "✕" };
+}
 function renderWeek() {
   const games = getTotoGames(activeWeek);
   const history = getHistoricalMatches();
-
   $("weekBadge").textContent = `${activeWeek}. Hafta`;
   $("statMatches").textContent = games.length;
-
   let analyzed = 0;
   let settled = 0;
   let won = 0;
-  let lost = 0;
-
   const html = games.map((game, index) => {
     const home = game.home ?? game.evSahibi ?? "Ev sahibi bilinmiyor";
     const away = game.away ?? game.deplasman ?? "Deplasman bilinmiyor";
-
-    // Yalnızca oynanmamış Mackolik fikstürü güncel oran kaynağı olabilir.
     const target = getMatchingTeamRecord(home, away, true);
     const analysis = choosePrediction(target, history);
     const selection = analysis.selection;
-    const status = getStatusForSelection(game, selection);
-    const result = normalizeOutcome(game.result);
-
-    if (analysis.best && analysis.best.sample >= CONFIG.MIN_SAMPLE) analyzed++;
-
-    // 1X2 ya da tahminsiz maçlar başarı oranına dahil edilmez.
-    if (result && selection !== "—" && selection !== "1X2") {
+    const status = getStatus(game, selection);
+    const result = normalizeTotoResult(game);
+    if (analysis.probabilities) analyzed++;
+    if (result && selection !== "—") {
       settled++;
-      if (status.className === "green") won++;
-      else lost++;
+      if (result === selection) won++;
     }
-
-    const score = game.score ? `Skor: ${escapeHTML(game.score)}` : "";
-    const best = analysis.best;
-    const confidence = best && best.rate !== null
-      ? `%${best.rate.toFixed(1)}`
-      : "—";
-    const sample = best ? `${best.sample} örnek` : "Örnek yok";
-
+    const confidence = analysis.confidence === null
+      ? "—"
+      : `%${analysis.confidence.toFixed(1)}`;
+    const predictionClassName = predictionClass(analysis.confidence);
+    const sampleText = analysis.totalSamples
+      ? `${analysis.totalSamples} örnek`
+      : "Geçmiş örnek yok";
+    const marketText = analysis.usedMarkets
+      ? `${analysis.usedMarkets} market`
+      : "Oran yedeği";
+    const score = game.score !== undefined && game.score !== null
+      ? `Skor: ${escapeHTML(game.score)}`
+      : "";
     return `
       <article class="match">
         <div class="match-top">
           <div>
-            <div class="match-no">Maç ${game.number ?? index + 1}</div>
-            <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
+            <div class="match-no">Maç ${escapeHTML(game.number ?? index + 1)}</div>
+            <div class="teams">
+              ${escapeHTML(home)} – ${escapeHTML(away)}
+            </div>
           </div>
-          <div class="prediction">
+          <div class="prediction ${predictionClassName}">
             ${escapeHTML(selection)}
-            <small>Tahmin</small>
+            <small>${escapeHTML(confidence)} tahmin puanı</small>
           </div>
         </div>
         <div class="match-info">
           <span class="badge ${status.className}">
             ${status.icon} ${status.label}
           </span>
-          <span class="tag">İstatistik: <strong>${confidence}</strong></span>
-          <span class="tag"><strong>${sample}</strong></span>
-          ${result ? `<span class="tag">Sonuç: <strong>${escapeHTML(result)}</strong></span>` : ""}
+          <span class="tag">Örnek: <strong>${escapeHTML(sampleText)}</strong></span>
+          <span class="tag">Analiz: <strong>${escapeHTML(marketText)}</strong></span>
+          ${result ? `
+            <span class="tag">Gerçek sonuç: <strong>${escapeHTML(RESULT_NAMES[result])}</strong></span>
+          ` : ""}
           ${score ? `<span class="tag">${score}</span>` : ""}
         </div>
         <details class="details">
-          <summary>Oranlar ve geçmiş analiz</summary>
+          <summary>Tüm marketler ve geçmiş sonuç dağılımı</summary>
           ${renderDetails(analysis)}
           <div class="small" style="padding-top:10px">
             ${escapeHTML(analysis.reason)}
@@ -704,32 +830,27 @@ function renderWeek() {
       </article>
     `;
   }).join("");
-
   $("matchList").innerHTML = html ||
     '<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
-
   $("statAnalyzed").textContent = `${analyzed}/${games.length}`;
   $("statSettled").textContent = settled;
-
-  const accuracy = settled ? won / settled * 100 : null;
-  $("statAccuracy").textContent =
-    accuracy === null ? "—" : `%${accuracy.toFixed(1)}`;
+  $("statAccuracy").textContent = settled
+    ? `%${(won / settled * 100).toFixed(1)}`
+    : "—";
 }
-
 function renderWeekOptions() {
   const weeks = getWeeks();
   const select = $("weekSelect");
   select.innerHTML = "";
-
   if (!weeks.length) {
     select.innerHTML = '<option value="">Hafta bulunamadı</option>';
     activeWeek = null;
     return;
   }
-
-  const preferred = String(totoData.currentWeek ?? weeks[weeks.length-1]);
-  activeWeek = weeks.includes(preferred) ? preferred : weeks[weeks.length-1];
-
+  const preferred = String(totoData.currentWeek ?? weeks[weeks.length - 1]);
+  activeWeek = weeks.includes(preferred)
+    ? preferred
+    : weeks[weeks.length - 1];
   for (const week of weeks) {
     const option = document.createElement("option");
     option.value = week;
@@ -738,55 +859,48 @@ function renderWeekOptions() {
     select.appendChild(option);
   }
 }
-
 async function loadData() {
   $("refreshBtn").disabled = true;
   showMessage("Spor Toto ve Mackolik verileri yükleniyor...");
-
   try {
-    // Önce Spor Toto dosyasının yüklenmiş olduğunu kontrol et.
     if (!window.SPORT_TOTO_DATA ||
         !window.SPORT_TOTO_DATA.weeks) {
       throw new Error(
         "data/spor-toto-data.js yüklenemedi veya SPORT_TOTO_DATA bulunamadı."
       );
     }
-
     totoData = window.SPORT_TOTO_DATA;
-
     const response = await fetch(
       CONFIG.DATA_URL + "?t=" + Date.now(),
-      {cache:"no-store"}
+      { cache: "no-store" }
     );
-
     if (!response.ok) {
       throw new Error(
-        `Mackolik verisi alınamadı. HTTP ${response.status}: ${CONFIG.DATA_URL}`
+        `Mackolik verisi alınamadı. HTTP ${response.status}.`
       );
     }
-
     const json = await response.json();
-    allMatches = Array.isArray(json) ? json :
-      Array.isArray(json.matches) ? json.matches :
-      Array.isArray(json.data) ? json.data : [];
-
+    allMatches = Array.isArray(json)
+      ? json
+      : Array.isArray(json.matches)
+        ? json.matches
+        : Array.isArray(json.data)
+          ? json.data
+          : [];
     if (!allMatches.length) {
-      throw new Error(
-        "matches.json yüklendi ancak maç listesi bulunamadı."
-      );
+      throw new Error("matches.json yüklendi ancak maç listesi bulunamadı.");
     }
-
     renderWeekOptions();
-
     if (!activeWeek) {
       throw new Error("Spor Toto haftaları bulunamadı.");
     }
-
     renderWeek();
+    const history = getHistoricalMatches();
+    const finishedWithScores = allMatches.filter(m => getOutcome(m) !== null).length;
     showMessage(
-      `Veriler yüklendi. ${getWeeks().length} Spor Toto haftası, ` +
-      `${allMatches.length} Mackolik maçı bulundu. ` +
-      `Geçmiş analiz penceresi: son ${CONFIG.HISTORY_DAYS} gün.`,
+      `Veriler yüklendi: ${getWeeks().length} Spor Toto haftası, ` +
+      `${allMatches.length} Mackolik maçı, ${finishedWithScores} sonuçlu maç. ` +
+      `Son ${CONFIG.HISTORY_DAYS} günlük geçmişte ${history.length} maç analiz edilebilir durumda.`,
       "good"
     );
   } catch (error) {
@@ -802,14 +916,11 @@ async function loadData() {
     $("refreshBtn").disabled = false;
   }
 }
-
 $("weekSelect").addEventListener("change", event => {
   activeWeek = event.target.value;
   renderWeek();
 });
-
 $("refreshBtn").addEventListener("click", loadData);
-
 loadData();
 </script>
 </body>
