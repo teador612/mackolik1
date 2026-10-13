@@ -95,6 +95,24 @@ tbody tr.result-row:hover{background:#ffffff08}
  .daily-chip strong{font-size:18px}
  .daily-chip small{font-size:9px}
 }
+  
+/* Telefon menü butonu: ortalı ve kolay basılır */
+@media (max-width: 850px) {
+  .mobile-menu {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(100%, 320px);
+    min-height: 52px;
+    margin: 0 auto 16px;
+    padding: 12px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 60;
+    touch-action: manipulation;
+  }
+}
+
 </style>
 </head>
 <body>
