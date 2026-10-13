@@ -1,742 +1,491 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07130f">
-<title>DNA | Hızlı Skor ve Oran Analizi</title>
+<meta name="description" content="DNA futbol skor ve açılış oranı analiz sistemi">
+<title>DNA | Skor ve Açılış Oranı Analizi</title>
+
 <style>
 :root {
   color-scheme: dark;
   --bg: #07130f;
-  --panel: #0d2119;
-  --panel2: #122a20;
-  --border: #284637;
-  --text: #e8f5ec;
-  --muted: #9bb5a4;
-  --accent: #84cc16;
-  --accent-dark: #3f6212;
-  --green: #4ade80;
-  --yellow: #facc15;
-  --red: #fb7185;
-  --field: #091a13;
-  --hover: #173628;
+  --panel: #0e2119;
+  --panel-hover: #18372a;
+  --panel2: #132c20;
+  --border: #244536;
+  --text: #f2f8f3;
+  --muted: #a1b8a8;
+  --green: #62e58b;
+  --yellow: #ffd166;
+  --red: #ff7777;
+  --radius: 14px;
 }
-* {
-  box-sizing: border-box;
-}
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { background: var(--bg); scroll-behavior: smooth; }
 body {
   margin: 0;
   padding: 16px;
-  background:
-    radial-gradient(ellipse at top left, rgba(34, 197, 94, .09), transparent 38%),
-    var(--bg);
+  background: radial-gradient(ellipse at top right,rgba(32,115,66,.13),transparent 42%),var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  line-height: 1.45;
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
-button,
-input,
-select {
-  font: inherit;
-}
-button,
-select {
-  -webkit-tap-highlight-color: transparent;
-}
-.container {
-  width: 100%;
-  max-width: 1450px;
-  margin: 0 auto;
-}
-header {
-  position: relative;
-  overflow: hidden;
-  padding: 19px 20px;
-  margin-bottom: 15px;
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  background:
-    linear-gradient(115deg, rgba(34, 197, 94, .13), transparent 58%),
-    var(--panel);
-}
-header::after {
-  content: "";
-  position: absolute;
-  right: -28px;
-  top: -48px;
-  width: 170px;
-  height: 170px;
-  border: 1px solid rgba(132, 204, 22, .12);
-  border-radius: 50%;
-  box-shadow:
-    0 0 0 22px rgba(132, 204, 22, .025),
-    0 0 0 44px rgba(132, 204, 22, .02);
-  pointer-events: none;
-}
-h1 {
-  position: relative;
-  z-index: 1;
-  margin: 0 0 9px;
-  font-size: clamp(22px, 4vw, 32px);
-  line-height: 1.25;
-  letter-spacing: -.5px;
-  color: #c8f7a5;
-}
-header p {
-  position: relative;
-  z-index: 1;
-  max-width: 1000px;
-}
-p {
-  color: var(--muted);
-  line-height: 1.65;
-  margin: 0;
-}
-.panel {
-  min-width: 0;
-  padding: 17px;
-  margin-bottom: 14px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: linear-gradient(145deg, rgba(255,255,255,.012), transparent 60%), var(--panel);
-  box-shadow: 0 7px 22px rgba(0,0,0,.12);
-}
-h2 {
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.4;
-}
-h3 {
-  color: #c8f7a5;
-}
-.filters {
+button,input,select { font: inherit; }
+button { touch-action: manipulation; }
+.app-layout {
+  max-width: 1600px;
+  margin: auto;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 16px;
+  grid-template-columns: 235px minmax(0,1fr);
+  gap: 18px;
+  align-items: start;
 }
-.field {
-  min-width: 0;
+.sidebar {
+  position: sticky;
+  top: 14px;
+  background: linear-gradient(180deg,#10271c,#0c1d15);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 11px;
 }
-label {
-  display: block;
-  margin-bottom: 7px;
+.brand { padding: 5px 10px 18px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+.brand-title {
+  font-size: 21px;
+  font-weight: 900;
+  color: #79f09b;
+  background: linear-gradient(120deg,#a2f5b6,#3bc96d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brand small { display: block; margin-top: 6px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.menu-label {
   color: var(--muted);
-  font-size: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin: 16px 0 8px;
+}
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  text-align: left;
+  padding: 10px;
+  margin: 4px 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
   font-weight: 650;
 }
-select,
-input {
-  display: block;
-  width: 100%;
+.nav-btn:hover { color: var(--text); background: var(--panel-hover); }
+.nav-btn.active { color: #fff; background: rgba(42,169,89,.16); border-color: rgba(98,229,139,.3); }
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
+  background: rgba(148,163,184,.1);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.nav-btn.active .nav-icon { background: #16834a; }
+.sidebar-note {
+  margin: 20px 8px 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.main-content { min-width: 0; width: 100%; }
+.mobile-menu-btn { display: none; margin-bottom: 12px; }
+.container { max-width: 1400px; margin: auto; min-width: 0; }
+header { padding: 2px 3px 18px; margin-bottom: 6px; }
+h1 {
+  font-size: clamp(23px,3vw,32px);
+  font-weight: 850;
+  line-height: 1.2;
+  margin: 0 0 9px;
+  letter-spacing: -.65px;
+  color: #80efa0;
+  background: linear-gradient(120deg,#b3f8c3,#50d47b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  overflow-wrap: anywhere;
+}
+p { color: var(--muted); line-height: 1.65; margin: 0; font-size: 13px; }
+.panel {
+  background: linear-gradient(145deg,rgba(17,43,29,.98),rgba(11,29,21,.98));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 21px;
+  margin-bottom: 17px;
   min-width: 0;
+}
+.panel:hover { border-color: rgba(98,229,139,.25); }
+h2 { font-size: 17px; font-weight: 750; line-height: 1.4; margin: 0 0 4px; }
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.field { min-width: 0; }
+label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 7px; line-height: 1.4; }
+select,input {
+  width: 100%;
   height: 44px;
+  min-width: 0;
   padding: 0 11px;
   border: 1px solid var(--border);
   border-radius: 9px;
-  outline: none;
-  background: var(--field);
+  background: #091910;
   color: var(--text);
+  outline: none;
 }
-select:focus,
-input:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(132, 204, 22, .12);
-}
-.actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 9px;
-  margin-top: 15px;
-}
+select:focus,input:focus { border-color: #65d98b; box-shadow: 0 0 0 3px rgba(101,217,139,.12); }
+.actions { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 18px; }
 .btn {
-  min-height: 42px;
+  min-height: 43px;
   padding: 10px 15px;
   border: 1px solid var(--border);
   border-radius: 9px;
   background: var(--panel2);
   color: var(--text);
-  font-weight: 750;
+  font-weight: 650;
+  font-size: 13px;
   cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, transform .15s ease;
 }
-.btn:hover:not(:disabled) {
-  background: var(--hover);
-  border-color: #527a5f;
-}
-.btn:active:not(:disabled) {
-  transform: scale(.98);
-}
-.btn.primary {
-  background: linear-gradient(135deg, #65a30d, #4d7c0f);
-  border-color: #84cc16;
-  color: #f7fee7;
-}
-.btn.primary:hover:not(:disabled) {
-  background: linear-gradient(135deg, #75b918, #5a8d12);
-}
-.btn:disabled {
-  opacity: .55;
-  cursor: wait;
-}
+.btn:hover { background: var(--panel-hover); border-color: #477458; }
+.btn.primary { background: linear-gradient(135deg,#16834a,#20a45b); border-color: #37bd70; color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
 .status {
-  margin-top: 11px;
-  color: var(--muted);
   font-size: 12px;
   line-height: 1.65;
+  color: var(--muted);
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #091910;
+  border-radius: 9px;
+  border: 1px solid var(--border);
   overflow-wrap: anywhere;
 }
-.status.error {
-  color: var(--red);
-}
-.status.success {
-  color: var(--green);
-}
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 11px;
-  margin-bottom: 14px;
-}
+.status.error { color: var(--red); border-color: rgba(255,90,90,.25); }
+.status.success { color: var(--green); border-color: rgba(98,229,139,.25); }
+.stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; margin-bottom: 17px; }
 .stat {
-  position: relative;
-  min-width: 0;
-  overflow: hidden;
-  padding: 14px;
+  padding: 17px 16px;
+  background: linear-gradient(145deg,#112b1d,#0c2016);
   border: 1px solid var(--border);
   border-radius: 12px;
-  background: var(--panel);
+  min-width: 0;
 }
-.stat::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), transparent 80%);
-  opacity: .8;
-}
-.stat small {
-  display: block;
-  margin-bottom: 7px;
-  color: var(--muted);
-  font-size: 11px;
-  line-height: 1.5;
-}
-.stat strong {
-  display: block;
-  font-size: clamp(19px, 3vw, 26px);
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  color: #d9f99d;
-}
-.heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 13px;
-}
+.stat small { display: block; color: var(--muted); font-size: 10px; font-weight: 750; text-transform: uppercase; line-height: 1.5; margin-bottom: 7px; }
+.stat strong { display: block; font-size: clamp(19px,2.5vw,27px); font-weight: 850; overflow-wrap: anywhere; color: #e9ffef; }
+.heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
 .badge {
-  display: inline-block;
-  padding: 5px 9px;
-  border: 1px solid #385b36;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #183326;
+  color: var(--muted);
   border-radius: 7px;
-  background: #172e20;
-  color: #c8f7a5;
-  font-size: 12px;
+  padding: 5px 9px;
+  font-size: 11px;
   font-weight: 700;
-  white-space: nowrap;
+  border: 1px solid #2b4d39;
+  line-height: 1.4;
 }
-.pending {
-  color: var(--yellow);
-  background: #453719;
-}
+.pending { color: var(--yellow); background: rgba(255,209,102,.12); }
 .table-wrap {
-  width: 100%;
-  max-width: 100%;
   overflow: auto;
   overscroll-behavior-x: contain;
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--border);
   border-radius: 10px;
   max-height: 65vh;
-  scrollbar-width: thin;
-  scrollbar-color: #45664d var(--panel);
-}
-table {
+  background: #091910;
   width: 100%;
-  min-width: 690px;
-  border-collapse: separate;
-  border-spacing: 0;
 }
-th,
-td {
-  padding: 11px 10px;
-  border-bottom: 1px solid rgba(55, 87, 65, .65);
-  font-size: 12px;
-  text-align: left;
-  white-space: nowrap;
-}
-th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: #12291e;
-  color: #b4cbb9;
-  font-weight: 750;
-}
-tbody tr {
-  background: rgba(7, 19, 15, .22);
-}
-tbody tr:nth-child(even) {
-  background: rgba(24, 56, 38, .2);
-}
-tbody tr:last-child td {
-  border-bottom: 0;
-}
-tbody tr.result-row {
-  cursor: pointer;
-  transition: background .12s ease;
-}
-tbody tr.result-row:hover,
-tbody tr.result-row:focus {
-  background: #1a3b29;
-  outline: none;
-}
-tbody tr.result-row:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--accent);
-}
-.rate {
-  font-weight: 850;
-}
-.high {
-  color: var(--green);
-}
-.medium {
-  color: var(--yellow);
-}
-.low {
-  color: var(--red);
-}
-.bar {
-  min-width: 65px;
-  height: 5px;
-  margin-top: 6px;
-  overflow: hidden;
-  border-radius: 9px;
-  background: #294333;
-}
-.bar span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #65a30d, #4ade80);
-}
-.empty {
-  padding: 24px 16px;
-  color: var(--muted);
-  text-align: center;
-  white-space: normal;
-  line-height: 1.7;
-}
-.note {
-  margin-top: 11px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.7;
-}
+table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 680px; }
+th,td { padding: 12px 13px; border-bottom: 1px solid rgba(50,83,62,.65); font-size: 12px; text-align: left; white-space: nowrap; }
+th { position: sticky; top: 0; background: #142d20; color: #b5cabb; font-weight: 750; z-index: 2; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr.result-row { cursor: pointer; }
+tbody tr.result-row:hover { background: rgba(67,160,96,.12); }
+.rate { font-weight: 850; font-size: 13px; }
+.high { color: var(--green); }
+.medium { color: var(--yellow); }
+.low { color: var(--red); }
+.bar { height: 5px; background: #244131; border-radius: 99px; overflow: hidden; margin-top: 6px; min-width: 55px; }
+.bar span { height: 100%; display: block; background: linear-gradient(90deg,#1d9d56,#70efa0); border-radius: 99px; }
+.empty { text-align: center; white-space: normal; color: var(--muted); padding: 30px 15px; line-height: 1.7; }
+.note { font-size: 12px; color: var(--muted); line-height: 1.65; margin-top: 12px; }
 .detail-title {
-  margin: 12px 0;
-  padding: 12px;
-  border: 1px solid #34573b;
-  border-radius: 9px;
-  background: #12291e;
-  color: #d9f99d;
   font-size: 13px;
   font-weight: 750;
   line-height: 1.7;
+  margin: 14px 0;
+  color: var(--text);
+  background: #091910;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
   overflow-wrap: anywhere;
 }
-.detail-section-title {
-  margin: 19px 0 10px;
-  font-size: 14px;
-  font-weight: 800;
+.detail-section { margin-top: 22px; min-width: 0; }
+.detail-section h3 { font-size: 14px; line-height: 1.5; margin: 0 0 11px; font-weight: 750; }
+.section-count { color: var(--muted); font-size: 12px; font-weight: 500; margin-left: 4px; }
+[hidden] { display: none !important; }
+
+@media (min-width:761px) and (max-width:1100px) {
+  body { padding: 12px; }
+  .app-layout { grid-template-columns: 195px minmax(0,1fr); gap: 12px; }
+  .panel { padding: 16px; }
+  .filters,.stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
-.future-row {
-  background: #132d20 !important;
-}
-footer {
-  padding: 15px 10px;
-  color: var(--muted);
-  font-size: 11px;
-  text-align: center;
-}
-[hidden] {
-  display: none !important;
-}
-@media (max-width: 900px) {
-  body {
-    padding: 12px;
-  }
-  .filters {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-@media (max-width: 600px) {
-  body {
-    padding: 8px;
-  }
-  header {
-    padding: 16px 13px;
-    margin-bottom: 10px;
-    border-radius: 12px;
-  }
-  header::after {
-    right: -80px;
-    opacity: .55;
-  }
-  h1 {
-    font-size: 22px;
-    padding-right: 3px;
-  }
-  header p {
-    font-size: 12px;
-    line-height: 1.6;
-  }
-  .panel {
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 12px;
-  }
-  h2 {
-    font-size: 15px;
-  }
-  .filters {
-    gap: 10px 8px;
-    margin-top: 13px;
-  }
-  label {
-    font-size: 11px;
-    line-height: 1.4;
-    min-height: 30px;
-    margin-bottom: 5px;
-  }
-  select,
-  input {
-    height: 43px;
-    padding: 0 8px;
-    font-size: 13px;
-  }
-  .actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-  }
-  .actions .btn {
+@media (max-width:760px) {
+  body { padding: max(9px,env(safe-area-inset-top)) 9px max(14px,env(safe-area-inset-bottom)); }
+  .app-layout { display: block; width: 100%; }
+  .sidebar { display: none; position: static; margin-bottom: 12px; padding: 13px 10px; }
+  .sidebar.open { display: block; }
+  .mobile-menu-btn {
+    display: flex;
     width: 100%;
-    min-width: 0;
-    padding: 10px 7px;
-    font-size: 12px;
+    align-items: center;
+    justify-content: center;
+    min-height: 45px;
+    margin-bottom: 14px;
+    background: #10291c;
+    border-color: #315b40;
   }
-  .btn {
-    min-height: 42px;
-  }
-  .status,
-  .note {
-    font-size: 11px;
-    line-height: 1.65;
-  }
-  .stats {
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .stat {
-    padding: 11px 10px;
-    border-radius: 10px;
-  }
-  .stat small {
-    min-height: 31px;
-    margin-bottom: 5px;
-    font-size: 10px;
-  }
-  .stat strong {
-    font-size: 21px;
-  }
-  .heading {
-    align-items: flex-start;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-  .heading .badge {
-    max-width: 100%;
-    white-space: normal;
-    font-size: 10px;
-  }
-  .table-wrap {
-    max-height: 60vh;
-    border-radius: 8px;
-  }
-  table {
-    min-width: 650px;
-  }
-  th,
-  td {
-    padding: 10px 8px;
-    font-size: 11px;
-  }
-  .empty {
-    padding: 20px 12px;
-    white-space: normal;
-  }
-  .detail-title {
-    padding: 10px;
-    font-size: 12px;
-  }
-  .detail-section-title {
-    margin-top: 16px;
-    font-size: 13px;
-  }
-  #closeDetailBtn {
-    min-height: 36px;
-    padding: 7px 12px;
-  }
-  footer {
-    padding: 12px 5px;
-  }
+  header { padding: 0 2px 14px; }
+  h1 { font-size: clamp(22px,6vw,28px); line-height: 1.25; }
+  p { font-size: 12px; line-height: 1.6; }
+  .panel { padding: 13px; margin-bottom: 12px; border-radius: 12px; }
+  h2 { font-size: 15px; }
+  .filters { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px 9px; margin-top: 14px; }
+  label { font-size: 11px; min-height: 29px; margin-bottom: 5px; }
+  select,input { height: 43px; padding: 0 9px; font-size: 13px; }
+  .actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-top: 14px; }
+  .actions .btn { width: 100%; min-width: 0; padding: 10px 7px; font-size: 12px; }
+  .actions .btn.primary { grid-column: 1 / -1; }
+  .status { font-size: 11px; padding: 10px; margin-top: 11px; }
+  .note { font-size: 11px; }
+  .stats { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; margin-bottom: 12px; }
+  .stat { padding: 12px 11px; border-radius: 10px; }
+  .stat small { font-size: 9px; min-height: 25px; margin-bottom: 4px; }
+  .stat strong { font-size: clamp(19px,5vw,24px); }
+  .heading { align-items: flex-start; gap: 8px; margin-bottom: 12px; }
+  .table-wrap { max-height: 60vh; border-radius: 8px; }
+  table { min-width: 650px; }
+  th,td { padding: 10px 9px; font-size: 11px; }
+  .badge { padding: 4px 7px; font-size: 10px; }
+  .rate { font-size: 12px; }
 }
-@media (max-width: 360px) {
-  body {
-    padding: 6px;
-  }
-  header,
-  .panel {
-    padding: 10px;
-  }
-  h1 {
-    font-size: 20px;
-  }
-  .filters {
-    gap: 8px 6px;
-  }
-  select,
-  input {
-    font-size: 12px;
-  }
-  .stat {
-    padding: 9px 8px;
-  }
-  .stat strong {
-    font-size: 19px;
-  }
-  .actions .btn {
-    font-size: 11px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition: none !important;
-  }
+@media (prefers-reduced-motion:reduce) {
+  *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
 </style>
 </head>
+
 <body>
-<div class="container">
-<header>
-  <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
-  <p>Skoru seç, bütün marketleri otomatik tara. Bir sonuca dokunarak eşleşen geçmiş maçları ve varsa gelecek maçları aynı detay ekranında incele. Yalnızca hedef skor sıklığı en az %70 olan grupları göster.</p>
-</header>
-<section class="panel">
-  <h2>Analiz ayarları</h2>
-  <div class="filters">
-    <div class="field">
-      <label for="homeScore">Ev sahibi skoru</label>
-      <select id="homeScore"></select>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-title">DNA ANALİZ</div>
+      <small>Skor ve açılış oranı analiz merkezi</small>
     </div>
-    <div class="field">
-      <label for="awayScore">Deplasman skoru</label>
-      <select id="awayScore"></select>
+
+    <div class="menu-label">Analiz menüsü</div>
+    <button class="nav-btn active" id="navScore">
+      <span class="nav-icon">📊</span><span>Skor ve Oran Analizi</span>
+    </button>
+    <a class="nav-btn" href="./index.html" style="text-decoration:none">
+      <span class="nav-icon">🏠</span><span>Ana Sayfa</span>
+    </a>
+    <a class="nav-btn" href="./rnaskor.html" style="text-decoration:none">
+      <span class="nav-icon">🧬</span><span>RNA Skor</span>
+    </a>
+    <a class="nav-btn" href="./dna-kupon.html" style="text-decoration:none">
+      <span class="nav-icon">🎟️</span><span>DNA Kupon</span>
+    </a>
+    <a class="nav-btn" href="./rna-kupon.html" style="text-decoration:none">
+      <span class="nav-icon">📈</span><span>RNA Kupon</span>
+    </a>
+
+    <div class="sidebar-note">
+      Veri kaynağı<br>
+      <strong>./data/v2-data.json</strong><br><br>
+      Marketler ve açılış oranları otomatik taranır. Başarı filtresi isteğe bağlıdır.
     </div>
-    <div class="field">
-      <label for="dateRange">Geçmiş aralığı</label>
-      <select id="dateRange">
-        <option value="30">Son 30 gün</option>
-        <option value="60">Son 60 gün</option>
-        <option value="90">Son 90 gün</option>
-        <option value="180">Son 180 gün</option>
-        <option value="365">Son 365 gün</option>
-        <option value="all">Tüm geçmiş</option>
-      </select>
+  </aside>
+
+  <main class="main-content">
+    <button class="btn mobile-menu-btn" id="mobileMenuBtn">☰ Menü</button>
+
+    <div class="container">
+      <header>
+        <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
+        <p>Hedef skoru seç. Sistem tüm marketleri ve açılış oranlarını otomatik tarasın. Başarı eşiğini istersen kendin belirle; boş bırakırsan başarı yüzdesine göre eleme yapılmaz. Sonuç satırına dokunarak geçmiş maçları ve eşleşen gelecek maçları incele.</p>
+      </header>
+
+      <section class="panel">
+        <h2>Analiz ayarları</h2>
+        <div class="filters">
+          <div class="field">
+            <label for="homeScore">Ev sahibi skoru</label>
+            <select id="homeScore"></select>
+          </div>
+          <div class="field">
+            <label for="awayScore">Deplasman skoru</label>
+            <select id="awayScore"></select>
+          </div>
+          <div class="field">
+            <label for="dateRange">Geçmiş aralığı</label>
+            <select id="dateRange">
+              <option value="30">Son 30 gün</option>
+              <option value="60">Son 60 gün</option>
+              <option value="90">Son 90 gün</option>
+              <option value="180">Son 180 gün</option>
+              <option value="365">Son 365 gün</option>
+              <option value="all">Tüm geçmiş</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="minSample">Minimum geçmiş maç</label>
+            <select id="minSample">
+              <option value="3">En az 3 maç</option>
+              <option value="5">En az 5 maç</option>
+              <option value="8" selected>En az 8 maç</option>
+              <option value="10">En az 10 maç</option>
+              <option value="20">En az 20 maç</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="minRate">Minimum başarı (%) — isteğe bağlı</label>
+            <input id="minRate" type="number" min="0" max="100" step="1" placeholder="Boş = filtre yok">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button class="btn primary" id="analyzeBtn">Analiz et</button>
+          <button class="btn" id="reloadBtn">Veriyi yenile</button>
+          <button class="btn" id="clearRateBtn">Başarı filtresini temizle</button>
+        </div>
+
+        <div id="status" class="status">Veri yükleniyor...</div>
+        <div class="note">
+          Veri kaynağı: ./data/v2-data.json. Oranlar iki ondalık basamağa yuvarlanarak eşleştirilir. Başarı alanını boş bırakmak bütün grupların listelenmesini sağlar.
+        </div>
+      </section>
+
+      <section class="stats">
+        <div class="stat"><small>Tamamlanmış maç</small><strong id="playedCount">—</strong></div>
+        <div class="stat"><small>Yeterli örnekli grup</small><strong id="groupCount">—</strong></div>
+        <div class="stat"><small>Gösterilen grup</small><strong id="shownCount">—</strong></div>
+        <div class="stat"><small>Hedef skor</small><strong id="targetScore">2-1</strong></div>
+      </section>
+
+      <section class="panel">
+        <div class="heading">
+          <h2>Otomatik oran analizi</h2>
+          <span class="badge" id="filterBadge">Başarı filtresi kapalı</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Market</th><th>Açılış oranı</th>
+                <th>Geçmiş maç</th><th>Hedef skor</th><th>Skor sıklığı</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <tr><td colspan="6" class="empty">Veri bekleniyor...</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="note">Başarı oranı, seçilen hedef skorla biten geçmiş maçların aynı market ve aynı açılış oranındaki toplam maçlara oranıdır.</div>
+      </section>
+
+      <section class="panel" id="detailPanel" hidden>
+        <div class="heading">
+          <h2>Maç detayları</h2>
+          <button class="btn" id="closeDetailBtn">Kapat</button>
+        </div>
+        <div id="detailSummary" class="detail-title"></div>
+
+        <div class="detail-section">
+          <h3>Geçmiş maçlar <span class="section-count" id="historyCount"></span></h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tarih</th><th>Lig</th><th>Ev sahibi</th>
+                  <th>Skor</th><th>Deplasman</th><th>Oran</th><th>Hedef</th>
+                </tr>
+              </thead>
+              <tbody id="detailBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Bugünkü ve gelecek maçlar <span class="section-count" id="futureCount"></span></h3>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tarih</th><th>Saat</th><th>Lig</th>
+                  <th>Ev sahibi</th><th>Deplasman</th><th>Oran</th><th>Durum</th>
+                </tr>
+              </thead>
+              <tbody id="futureDetailBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <footer class="note" style="text-align:center;padding-bottom:10px">
+        Veri kaynağı: ./data/v2-data.json
+      </footer>
     </div>
-    <div class="field">
-      <label for="minSample">Minimum geçmiş maç</label>
-      <select id="minSample">
-        <option value="3" selected>En az 3 maç</option>
-        <option value="5">En az 5 maç</option>
-        <option value="8">En az 8 maç</option>
-        <option value="10">En az 10 maç</option>
-        <option value="20">En az 20 maç</option>
-      </select>
-    </div>
-  </div>
-  <div class="actions">
-    <button class="btn primary" id="analyzeBtn">Analiz et</button>
-    <button class="btn" id="reloadBtn">Veriyi yenile</button>
-  </div>
-  <div id="status" class="status">Veri yükleniyor...</div>
-  <div class="note">
-    Oranlar iki ondalık basamakla tam eşleştirilir. Bütün marketler otomatik taranır. Detaylarda geçmiş maçların yanında, aynı market ve aynı açılış oranına sahip bugünkü ve gelecekteki maçlar da gösterilir.
-  </div>
-</section>
-<section class="stats">
-  <div class="stat">
-    <small>Tamamlanmış maç</small>
-    <strong id="playedCount">—</strong>
-  </div>
-  <div class="stat">
-    <small>Market-oran grubu</small>
-    <strong id="groupCount">—</strong>
-  </div>
-  <div class="stat">
-    <small>%70+ gösterilen grup</small>
-    <strong id="shownCount">—</strong>
-  </div>
-  <div class="stat">
-    <small>Hedef skor</small>
-    <strong id="targetScore">2-1</strong>
-  </div>
-</section>
-<section class="panel">
-  <div class="heading">
-    <h2>Otomatik oran analizi</h2>
-    <span class="badge">En az %70 · Başarı sıralı</span>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Market</th>
-          <th>Açılış oranı</th>
-          <th>Geçmiş maç</th>
-          <th>Hedef skor</th>
-          <th>Skor sıklığı</th>
-        </tr>
-      </thead>
-      <tbody id="resultsBody">
-        <tr>
-          <td colspan="6" class="empty">Veri bekleniyor...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div class="note">
-    Satıra dokunarak aynı market ve açılış oranı grubunun geçmiş ve gelecek maçlarını açabilirsin.
-  </div>
-</section>
-<section class="panel" id="detailPanel" hidden>
-  <div class="heading">
-    <h2>Market-oran maç detayları</h2>
-    <button class="btn" id="closeDetailBtn">Kapat</button>
-  </div>
-  <div id="detailSummary" class="detail-title"></div>
-  <h3 class="detail-section-title">Geçmiş maçlar</h3>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Tarih</th>
-          <th>Lig</th>
-          <th>Ev sahibi</th>
-          <th>Skor</th>
-          <th>Deplasman</th>
-          <th>Oran</th>
-          <th>Hedef</th>
-        </tr>
-      </thead>
-      <tbody id="detailBody"></tbody>
-    </table>
-  </div>
-  <h3 class="detail-section-title">Bugünkü ve gelecek maçlar</h3>
-  <div class="note">
-    Bu liste aynı market ve aynı açılış oranına sahip, henüz skoru oluşmamış maçları gösterir. Geçmiş başarı oranı yalnızca tamamlanmış maçlardan hesaplanır.
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Tarih</th>
-          <th>Saat</th>
-          <th>Lig</th>
-          <th>Ev sahibi</th>
-          <th>Deplasman</th>
-          <th>Market</th>
-          <th>Oran</th>
-          <th>Geçmiş sıklık</th>
-        </tr>
-      </thead>
-      <tbody id="futureDetailBody"></tbody>
-    </table>
-  </div>
-  <div id="futureDetailStatus" class="status"></div>
-</section>
-<footer>Veri kaynağı: ./data/v2-data.json</footer>
+  </main>
 </div>
+
 <script>
 "use strict";
+
 (()=>{
 const DATA_URL="./data/v2-data.json";
-const MIN_RATE=70;
+
 const MARKETS=[
-["ms1","MS 1"],["msX","MS X"],["ms2","MS 2"],
-["h12","H12"],["h0","H0"],["h23","H23"],["i14","İ14"],["olmaz","OLMAZ"],["i25","İ25"],
-["ms1Alt","MS 1 ve Alt"],["msXAlt","MS X ve Alt"],["ms2Alt","MS 2 ve Alt"],
-["ms1Ust","MS 1 ve Üst"],["msXUst","MS X ve Üst"],["ms2Ust","MS 2 ve Üst"],
-["iy1","İY 1"],["iyX","İY X"],["iy2","İY 2"],
-["iy15Ust","İY 1,5 Üst"],["iy15Alt","İY 1,5 Alt"],
-["au15Ust","MS 1,5 Üst"],["au15Alt","MS 1,5 Alt"],
-["au25Ust","MS 2,5 Üst"],["au25Alt","MS 2,5 Alt"],
-["au35Ust","MS 3,5 Üst"],["au35Alt","MS 3,5 Alt"],
-["kgVar","KG Var"],["kgYok","KG Yok"],["iyKgVar","İY KG Var"],["iyKgYok","İY KG Yok"],
-["gol01","0-1 Gol"],["gol23","2-3 Gol"],["gol45","4-5 Gol"],["gol6plus","6+ Gol"],["gol46","4-6 Gol"],["gol7","7+ Gol"],
-["cs1X","Çifte Şans 1X"],["cs12","Çifte Şans 12"],["csX2","Çifte Şans X2"],
-["iyms11","İY/MS 1/1"],["iyms10","İY/MS 1/0"],["iyms12","İY/MS 1/2"],
-["iyms01","İY/MS 0/1"],["iyms00","İY/MS 0/0"],["iyms02","İY/MS 0/2"],
-["iyms21","İY/MS 2/1"],["iyms20","İY/MS 2/0"],["iyms22","İY/MS 2/2"]
+ ["ms1","MS 1"],["msX","MS X"],["ms2","MS 2"],
+ ["iy1","İY 1"],["iyX","İY X"],["iy2","İY 2"],
+ ["cs1X","Çifte Şans 1X"],["cs12","Çifte Şans 12"],["csX2","Çifte Şans X2"],
+ ["au25Alt","MS 2,5 Alt"],["au25Ust","MS 2,5 Üst"],
+ ["au15Alt","MS 1,5 Alt"],["au15Ust","MS 1,5 Üst"],
+ ["au35Alt","MS 3,5 Alt"],["au35Ust","MS 3,5 Üst"],
+ ["iy15Alt","İY 1,5 Alt"],["iy15Ust","İY 1,5 Üst"],
+ ["kgVar","KG Var"],["kgYok","KG Yok"],
+ ["gol01","0-1 Gol"],["gol23","2-3 Gol"],["gol46","4-6 Gol"],["gol7","7+ Gol"],
+ ["h12","İY/MS 1/2"],["h0","İY/MS X/X"],["h23","İY/MS 2/3"],
+ ["i14","İlk Yarı 1-4 Gol"],["i25","İlk Yarı 2,5 Üst"],
+ ["handicap1","Handikap 1"],["handicapX","Handikap X"],["handicap2","Handikap 2"]
 ].map(([key,name])=>({key,name}));
-const ALIASES={
-ms1:["MS1","MS 1","1"],
-msX:["msx","MSX","MS0","ms0","0"],
-ms2:["MS2","MS 2","2"],
-h12:["H12"],h0:["H0"],h23:["H23"],i14:["İ14","I14"],olmaz:["OLMAZ"],i25:["İ25","I25"],
-ms1Alt:["1VEALT"],msXAlt:["0VEALT"],ms2Alt:["2VEALT"],
-ms1Ust:["1VEÜST","1VEUST"],msXUst:["0VEÜST","0VEUST"],ms2Ust:["2VEÜST","2VEUST"],
-iy1:["IY1","İY1","İY 1"],iyX:["iyx","IYX","İYX","iy0","İY 0"],iy2:["IY2","İY2","İY 2"],
-iy15Alt:["IY15_ALT","İY 1,5 A"],iy15Ust:["IY15_UST","İY 1,5 Ü"],
-au15Alt:["ms15Alt","15_ALT","ms15alt"],au15Ust:["ms15Ust","15_UST","ms15ust"],
-au25Alt:["25_ALT","2,5 A"],au25Ust:["25_UST","2,5 Ü"],
-au35Alt:["35_ALT","3,5 A"],au35Ust:["35_UST","3,5 Ü"],
-kgVar:["KGVar","KG_VAR","VAR"],kgYok:["KGYok","KG_YOK","YOK"],
-iyKgVar:["iyKGVar","IYKG_VAR","İY KG VAR"],iyKgYok:["iyKGYok","IYKG_YOK","İY KG YOK"],
-gol01:["gol0_1","0-1"],gol23:["gol2_3","2-3"],gol45:["gol4_5","4-5"],
-gol46:["gol4_6"],gol6plus:["6+"],gol7:["gol7plus"],
-cs1X:["CS1X","1X"],cs12:["CS12","12"],csX2:["CSX2","X2"],
-iyms11:["1/1"],iyms10:["1/0"],iyms12:["1/2"],iyms01:["0/1"],iyms00:["0/0"],
-iyms02:["0/2"],iyms21:["2/1"],iyms20:["2/0"],iyms22:["2/2"]
-};
+
 const $=id=>document.getElementById(id);
 let allMatches=[];
 let played=[];
@@ -744,16 +493,23 @@ let prepared=[];
 let loaded=false;
 let busy=false;
 let cache=new Map();
-let activeGroups=new Map();
 let shownGroups=[];
+
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
+
 function num(v){
  if(v===null||v===undefined||v==="")return null;
  const n=Number(String(v).trim().replace(",","."));
  return Number.isFinite(n)?n:null;
 }
+
+function validScore(h,a){
+ return h!==null&&a!==null&&h>=0&&a>=0&&Number.isInteger(h)&&Number.isInteger(a)
+  ?{home:h,away:a}:null;
+}
+
 function scoreValue(v){
  if(v&&typeof v==="object"){
   const h=num(v.home??v.homeScore??v.homeGoals??v.h??v.ev);
@@ -764,10 +520,7 @@ function scoreValue(v){
  const m=String(v).trim().match(/^(\d+)\s*[-:]\s*(\d+)$/);
  return m?validScore(Number(m[1]),Number(m[2])):null;
 }
-function validScore(h,a){
- return h!==null&&a!==null&&h>=0&&a>=0&&Number.isInteger(h)&&Number.isInteger(a)
- ?{home:h,away:a}:null;
-}
+
 function getScore(m){
  for(const v of [
   m.score,m.fullTimeScore,m.full_time_score,m.ftScore,m.ms,
@@ -777,15 +530,22 @@ function getScore(m){
   if(s)return s;
  }
  return validScore(
-  num(m.homeScore??m.homeGoals??m.goalsHome??m.ftHome??m.score?.home),
-  num(m.awayScore??m.awayGoals??m.goalsAway??m.ftAway??m.score?.away)
+  num(m.homeScore??m.homeGoals??m.goalsHome??m.ftHome),
+  num(m.awayScore??m.awayGoals??m.goalsAway??m.ftAway)
  );
 }
+
+function getHalfTimeScore(m){
+ for(const v of [m.halfTimeScore,m.half_time_score,m.htScore,m.halftime,m.halfTime]){
+  const s=scoreValue(v);
+  if(s)return s;
+ }
+ return null;
+}
+
 function parseDate(v){
  if(!v)return null;
- if(v instanceof Date){
-  return Number.isNaN(v.getTime())?null:new Date(v.getFullYear(),v.getMonth(),v.getDate());
- }
+ if(v instanceof Date)return Number.isNaN(v.getTime())?null:new Date(v.getFullYear(),v.getMonth(),v.getDate());
  const s=String(v).trim();
  let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
  if(m)return makeDate(+m[3],+m[2],+m[1]);
@@ -794,65 +554,111 @@ function parseDate(v){
  const d=new Date(s);
  return Number.isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
 }
+
 function makeDate(y,m,d){
  const x=new Date(y,m-1,d);
  return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d?x:null;
 }
+
 function dateOf(m){
  return m.date??m.matchDate??m.gameDate??m.tarih??m.datetime??m.dateTime??"";
 }
+
 function dateKey(v){
  const d=parseDate(v);
  return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`:"";
 }
+
 function dateLabel(v){
  const d=parseDate(v);
  return d?`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`:String(v||"—");
 }
+
 function timeOf(m){
  const v=m.time??m.matchTime??m.hour??m.saat??m.datetime??m.dateTime??"";
  return String(v).match(/\b([01]?\d|2[0-3]):[0-5]\d\b/)?.[0]||"—";
 }
-function leagueOf(m){
- return m.league??m.leagueName??m.competition??m.tournament??m.lig??"—";
-}
-function homeOf(m){
- return m.home??m.homeTeam??m.homeName??m.team1??m.evSahibi??"Ev sahibi";
-}
-function awayOf(m){
- return m.away??m.awayTeam??m.awayName??m.team2??m.deplasman??"Deplasman";
-}
+
+function leagueOf(m){return m.league??m.leagueName??m.competition??m.tournament??m.lig??"—";}
+function homeOf(m){return m.home??m.homeTeam??m.homeName??m.team1??m.evSahibi??"Ev sahibi";}
+function awayOf(m){return m.away??m.awayTeam??m.awayName??m.team2??m.deplasman??"Deplasman";}
+
 function oddText(v){
  if(v&&typeof v==="object")v=v.opening??v.open??v.odd??v.odds??v.value;
  const n=num(v);
  return n!==null&&n>0?n.toFixed(2):null;
 }
-function getOdd(m,key){
- const containers=[
-  m,m.openingOdds,m.opening_odds,m.openOdds,m.opening,
-  m.odds,m.Odds,m.oranlar,m.Oranlar,m.markets,m.marketOdds
- ];
- const keys=[key,...(ALIASES[key]||[])];
- for(const c of containers){
-  if(!c||typeof c!=="object")continue;
-  for(const k of keys){
-   if(!Object.prototype.hasOwnProperty.call(c,k))continue;
-   const o=oddText(c[k]);
-   if(o!==null)return o;
+
+const MARKET_ALIASES={
+ ms1:["ms1","MS1","MS 1","1","match1","homeWin","home_win"],
+ msX:["msX","msx","MSX","MS X","X","draw"],
+ ms2:["ms2","MS2","MS 2","2","match2","awayWin","away_win"],
+ iy1:["iy1","İY1","IY1","İY 1","IY 1"],
+ iyX:["iyX","iyx","İYX","IYX","İY X","IY X"],
+ iy2:["iy2","İY2","IY2","İY 2","IY 2"],
+ cs1X:["cs1X","CS1X","1X","cs1x"],
+ cs12:["cs12","CS12","12"],
+ csX2:["csX2","CSX2","X2","csx2"],
+ au25Alt:["au25Alt","au25alt","alt25","under25","MS2.5Alt","2.5Alt"],
+ au25Ust:["au25Ust","au25Ust","ust25","over25","MS2.5Ust","2.5Ust"],
+ au15Alt:["au15Alt","alt15","under15","1.5Alt"],
+ au15Ust:["au15Ust","ust15","over15","1.5Ust"],
+ au35Alt:["au35Alt","alt35","under35","3.5Alt"],
+ au35Ust:["au35Ust","ust35","over35","3.5Ust"],
+ iy15Alt:["iy15Alt","iy15alt","IY15Alt"],
+ iy15Ust:["iy15Ust","iy15ust","IY15Ust"],
+ kgVar:["kgVar","KGVar","kgvar","bttsYes","KG Var"],
+ kgYok:["kgYok","KGYok","kgyok","bttsNo","KG Yok"],
+ gol01:["gol01","Gol01","0-1"],
+ gol23:["gol23","Gol23","2-3"],
+ gol46:["gol46","Gol46","4-6"],
+ gol7:["gol7","Gol7","7+"],
+ h12:["h12","H12","1/2"],
+ h0:["h0","H0","X/X"],
+ h23:["h23","H23","2/3"],
+ i14:["i14","İ14","I14"],
+ i25:["i25","İ25","I25"],
+ handicap1:["handicap1","Handikap1","hcp1"],
+ handicapX:["handicapX","HandikapX","hcpx"],
+ handicap2:["handicap2","Handikap2","hcp2"]
+};
+
+function findMarketValue(container,key){
+ if(!container||typeof container!=="object")return null;
+ const aliases=MARKET_ALIASES[key]||[key];
+ for(const alias of aliases){
+  if(Object.prototype.hasOwnProperty.call(container,alias)){
+   const odd=oddText(container[alias]);
+   if(odd!==null)return odd;
   }
  }
  return null;
 }
+
+function getOdd(m,key){
+ const containers=[
+  m.openingOdds,m.opening_odds,m.openOdds,m.opening,
+  m.odds,m.Odds,m.oranlar,m.Oranlar,m.markets,m.marketOdds,m
+ ];
+ for(const c of containers){
+  const odd=findMarketValue(c,key);
+  if(odd!==null)return odd;
+ }
+ return null;
+}
+
 function normalize(payload){
  if(Array.isArray(payload))return payload;
  if(Array.isArray(payload?.matches))return payload.matches;
  if(Array.isArray(payload?.data))return payload.data;
  return [];
 }
-function status(msg,type=""){
- $("status").textContent=msg;
+
+function setStatus(message,type=""){
+ $("status").textContent=message;
  $("status").className="status "+type;
 }
+
 function populateScores(){
  for(const id of ["homeScore","awayScore"]){
   $(id).innerHTML=Array.from({length:11},(_,i)=>`<option value="${i}">${i}</option>`).join("");
@@ -860,40 +666,44 @@ function populateScores(){
  $("homeScore").value="2";
  $("awayScore").value="1";
 }
+
 function prepareData(){
  prepared=allMatches.map((m,index)=>{
-  const score=getScore(m);
   const odds=Object.create(null);
   for(const market of MARKETS)odds[market.key]=getOdd(m,market.key);
   const date=dateOf(m);
   return {
-   raw:m,index,score,date,dateKey:dateKey(date),
-   time:timeOf(m),league:leagueOf(m),
-   home:homeOf(m),away:awayOf(m),odds
+   raw:m,index,score:getScore(m),halfTimeScore:getHalfTimeScore(m),
+   date,dateKey:dateKey(date),time:timeOf(m),
+   league:leagueOf(m),home:homeOf(m),away:awayOf(m),odds
   };
  });
  played=prepared.filter(m=>m.score);
  cache.clear();
 }
+
 function filteredPlayed(){
  const range=$("dateRange").value;
  if(range==="all")return played;
  const days=Number(range);
  const today=new Date();
- today.setHours(0,0,0,0);
- const start=new Date(today);
+ today.setHours(23,59,59,999);
+ const start=new Date();
+ start.setHours(0,0,0,0);
  start.setDate(start.getDate()-days+1);
  const startKey=dateKey(start);
  const endKey=dateKey(today);
  return played.filter(m=>m.dateKey&&m.dateKey>=startKey&&m.dateKey<=endKey);
 }
+
 function pct(n){
  return Number(n).toLocaleString("tr-TR",{maximumFractionDigits:2})+"%";
 }
+
 function getGroups(matches,target,minSample){
- const range=$("dateRange").value;
- const cacheKey=range+"|"+minSample;
+ const cacheKey=$("dateRange").value+"|"+minSample;
  let base=cache.get(cacheKey);
+
  if(!base){
   const map=new Map();
   for(const m of matches){
@@ -901,198 +711,248 @@ function getGroups(matches,target,minSample){
     const odds=m.odds[market.key];
     if(!odds)continue;
     const key=market.key+"|"+odds;
-    let g=map.get(key);
-    if(!g){
-     g={key,marketKey:market.key,marketName:market.name,odds,total:0,matches:[]};
-     map.set(key,g);
+    let group=map.get(key);
+    if(!group){
+     group={key,marketKey:market.key,marketName:market.name,odds,total:0,matches:[]};
+     map.set(key,group);
     }
-    g.total++;
-    g.matches.push(m);
+    group.total++;
+    group.matches.push(m);
    }
   }
   base=Array.from(map.values());
   cache.set(cacheKey,base);
  }
- return base.filter(b=>b.total>=minSample).map(b=>{
+
+ const result=[];
+ for(const group of base){
+  if(group.total<minSample)continue;
   let targetCount=0;
-  for(const m of b.matches){
-   if(m.score.home===target.home&&m.score.away===target.away)targetCount++;
+  for(const match of group.matches){
+   if(match.score.home===target.home&&match.score.away===target.away)targetCount++;
   }
-  return {
-   key:b.key,marketKey:b.marketKey,marketName:b.marketName,
-   odds:b.odds,total:b.total,targetCount,
-   rate:targetCount/b.total*100,matches:b.matches
-  };
- });
+  result.push({
+   key:group.key,marketKey:group.marketKey,marketName:group.marketName,
+   odds:group.odds,total:group.total,targetCount,
+   rate:group.total?targetCount/group.total*100:0,
+   matches:group.matches
+  });
+ }
+ return result;
 }
+
+function getManualMinRate(){
+ const raw=$("minRate").value.trim();
+ if(raw==="")return null;
+ const value=Number(raw);
+ if(!Number.isFinite(value)||value<0||value>100)return NaN;
+ return value;
+}
+
 function renderResults(groups){
  const body=$("resultsBody");
  if(!groups.length){
-  body.innerHTML='<tr><td colspan="6" class="empty">Bu filtrelerde minimum maç ve %70 skor sıklığı şartlarını karşılayan grup bulunamadı.</td></tr>';
+  body.innerHTML='<tr><td colspan="6" class="empty">Seçtiğin ayarlara uygun grup bulunamadı. Minimum geçmiş maç sayısını azaltabilir veya başarı filtresini temizleyebilirsin.</td></tr>';
   return;
  }
- body.innerHTML=groups.map((g,i)=>`
-  <tr class="result-row" data-key="${escapeHTML(g.key)}" tabindex="0">
-   <td>${i+1}</td>
-   <td><strong>${escapeHTML(g.marketName)}</strong></td>
-   <td><span class="badge">${g.odds}</span></td>
-   <td>${g.total}</td>
-   <td>${g.targetCount}</td>
-   <td>
-    <span class="rate high">${pct(g.rate)}</span>
-    <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
-   </td>
-  </tr>
- `).join("");
-}
-function getUpcomingForGroup(g){
- const today=new Date();
- today.setHours(0,0,0,0);
- const todayKey=dateKey(today);
- return prepared.filter(m=>{
-  if(m.score||!m.dateKey||m.dateKey<todayKey)return false;
-  return m.odds[g.marketKey]===g.odds;
- }).sort((a,b)=>{
-  const dc=a.dateKey.localeCompare(b.dateKey);
-  if(dc!==0)return dc;
-  return (a.time==="—"?"99:99":a.time).localeCompare(b.time==="—"?"99:99":b.time);
- });
-}
-function showDetails(key){
- const g=shownGroups.find(x=>x.key===key);
- if(!g)return;
- const target={
-  home:+$("homeScore").value,
-  away:+$("awayScore").value
- };
- $("detailPanel").hidden=false;
- $("detailSummary").textContent=
-  `${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} geçmiş maç hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
- const sorted=g.matches.slice().sort((a,b)=>(b.dateKey||"").localeCompare(a.dateKey||""));
- $("detailBody").innerHTML=sorted.map(m=>{
-  const hit=m.score.home===target.home&&m.score.away===target.away;
+
+ body.innerHTML=groups.map((g,i)=>{
+  const rateClass=g.rate>=70?"high":g.rate>=40?"medium":"low";
   return `
-   <tr>
-    <td>${escapeHTML(dateLabel(m.date))}</td>
-    <td>${escapeHTML(m.league)}</td>
-    <td>${escapeHTML(m.home)}</td>
-    <td><strong>${m.score.home}-${m.score.away}</strong></td>
-    <td>${escapeHTML(m.away)}</td>
-    <td>${g.odds}</td>
-    <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
+   <tr class="result-row" data-key="${escapeHTML(g.key)}" tabindex="0">
+    <td>${i+1}</td>
+    <td><strong>${escapeHTML(g.marketName)}</strong></td>
+    <td><span class="badge">${g.odds}</span></td>
+    <td>${g.total}</td>
+    <td>${g.targetCount}/${g.total}</td>
+    <td>
+     <span class="rate ${rateClass}">${pct(g.rate)}</span>
+     <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
+    </td>
    </tr>`;
  }).join("");
- const future=getUpcomingForGroup(g);
- const futureBody=$("futureDetailBody");
- if(!future.length){
-  futureBody.innerHTML='<tr><td colspan="8" class="empty">Bu market ve açılış oranıyla bugünkü veya gelecek maç bulunamadı.</td></tr>';
- }else{
-  futureBody.innerHTML=future.map(m=>`
-   <tr class="future-row">
-    <td>${escapeHTML(dateLabel(m.date))}</td>
-    <td>${escapeHTML(m.time)}</td>
-    <td>${escapeHTML(m.league)}</td>
-    <td>${escapeHTML(m.home)}</td>
-    <td>${escapeHTML(m.away)}</td>
-    <td>${escapeHTML(g.marketName)}</td>
-    <td><span class="badge">${g.odds}</span></td>
-    <td>
-     <span class="rate high">${pct(g.rate)}</span>
-     <div class="note">${g.targetCount}/${g.total} geçmiş maçta hedef skor</div>
-    </td>
-   </tr>
-  `).join("");
- }
- $("futureDetailStatus").textContent=
-  `${future.length} oynanmamış maç bulundu. Geçmiş başarı oranı ${pct(g.rate)} (${g.targetCount}/${g.total}).`;
+}
+
+function getUpcomingForGroup(group){
+ const todayKey=dateKey(new Date());
+ return prepared.filter(m=>
+  !m.score&&m.dateKey&&m.dateKey>=todayKey&&m.odds[group.marketKey]===group.odds
+ ).sort((a,b)=>
+  a.dateKey.localeCompare(b.dateKey)||
+  (a.time==="—"?"99:99":a.time).localeCompare(b.time==="—"?"99:99":b.time)
+ );
+}
+
+function showDetails(key){
+ const group=shownGroups.find(g=>g.key===key);
+ if(!group)return;
+ const target={home:+$("homeScore").value,away:+$("awayScore").value};
+ const history=group.matches.slice().sort((a,b)=>(b.dateKey||"").localeCompare(a.dateKey||""));
+ const upcoming=getUpcomingForGroup(group);
+
+ $("detailPanel").hidden=false;
+ $("detailSummary").textContent=
+  `${group.marketName} · Açılış oranı ${group.odds} · `+
+  `${group.targetCount}/${group.total} maç hedef skor ${target.home}-${target.away} · `+
+  `Sıklık ${pct(group.rate)}`;
+ $("historyCount").textContent=`(${history.length} maç)`;
+ $("futureCount").textContent=`(${upcoming.length} maç)`;
+
+ $("detailBody").innerHTML=history.length?history.map(m=>{
+  const hit=m.score.home===target.home&&m.score.away===target.away;
+  return `<tr>
+   <td>${escapeHTML(dateLabel(m.date))}</td>
+   <td>${escapeHTML(m.league)}</td>
+   <td>${escapeHTML(m.home)}</td>
+   <td><strong>${m.score.home}-${m.score.away}</strong></td>
+   <td>${escapeHTML(m.away)}</td>
+   <td>${group.odds}</td>
+   <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
+  </tr>`;
+ }).join(""):'<tr><td colspan="7" class="empty">Bu grupta geçmiş maç bulunamadı.</td></tr>';
+
+ $("futureDetailBody").innerHTML=upcoming.length?upcoming.map(m=>`
+  <tr>
+   <td>${escapeHTML(dateLabel(m.date))}</td>
+   <td>${escapeHTML(m.time)}</td>
+   <td>${escapeHTML(m.league)}</td>
+   <td><strong>${escapeHTML(m.home)}</strong></td>
+   <td><strong>${escapeHTML(m.away)}</strong></td>
+   <td><span class="badge">${group.odds}</span></td>
+   <td><span class="badge pending">Bekliyor</span></td>
+  </tr>`).join(""):'<tr><td colspan="7" class="empty">Bu market ve açılış oranıyla eşleşen bugünkü veya gelecekteki maç bulunamadı.</td></tr>';
+
  $("detailPanel").scrollIntoView({behavior:"auto",block:"start"});
 }
+
 function analyze(){
  if(!loaded)return;
+
  const target={home:+$("homeScore").value,away:+$("awayScore").value};
+ const minRate=getManualMinRate();
+
+ if(Number.isNaN(minRate)){
+  setStatus("Minimum başarı alanına 0 ile 100 arasında bir değer gir veya alanı boş bırak.","error");
+  $("minRate").focus();
+  return;
+ }
+
  const matches=filteredPlayed();
  const minSample=+$("minSample").value;
  $("targetScore").textContent=target.home+"-"+target.away;
  $("playedCount").textContent=matches.length.toLocaleString("tr-TR");
+
  const groups=getGroups(matches,target,minSample);
- shownGroups=groups.filter(g=>g.rate>=MIN_RATE).sort((a,b)=>
-  b.rate-a.rate||
-  b.total-a.total||
-  b.targetCount-a.targetCount||
+ $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
+
+ shownGroups=groups.filter(g=>minRate===null||g.rate>=minRate).sort((a,b)=>
+  b.rate-a.rate||b.total-a.total||b.targetCount-a.targetCount||
   a.marketName.localeCompare(b.marketName,"tr")
  );
- activeGroups=new Map(groups.map(g=>[g.key,g]));
- $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
+
  $("shownCount").textContent=shownGroups.length.toLocaleString("tr-TR");
+ $("filterBadge").textContent=minRate===null
+  ?"Başarı filtresi kapalı"
+  :"Minimum başarı: %"+String(minRate).replace(".",",");
+
  renderResults(shownGroups);
  $("detailPanel").hidden=true;
- status(
-  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. ${groups.length.toLocaleString("tr-TR")} yeterli örnekli grup incelendi. %70 ve üzeri ${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`,
+
+ setStatus(
+  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. `+
+  `${groups.length.toLocaleString("tr-TR")} yeterli örnekli grup bulundu. `+
+  `${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`+
+  (minRate===null?" Başarı eşiği uygulanmadı.":` Minimum başarı eşiği: %${minRate}.`),
   "success"
  );
 }
+
 async function loadData(){
  if(busy)return;
  busy=true;
  $("reloadBtn").disabled=true;
  $("analyzeBtn").disabled=true;
- status("Veri yükleniyor...");
+ setStatus("Veri yükleniyor...");
+
  try{
   const response=await fetch(DATA_URL+"?v="+Date.now(),{cache:"no-store"});
   if(!response.ok)throw new Error("HTTP "+response.status);
   const payload=await response.json();
   allMatches=normalize(payload).filter(m=>m&&typeof m==="object");
   if(!allMatches.length)throw new Error("JSON içinde dolu matches veya data dizisi bulunamadı.");
+
   prepareData();
   if(!played.length)throw new Error("Veri geldi fakat tamamlanmış maç skorları tanınamadı.");
+
   loaded=true;
   analyze();
- }catch(e){
+ }catch(error){
   loaded=false;
   allMatches=[];
   played=[];
   prepared=[];
   cache.clear();
-  activeGroups.clear();
+  shownGroups=[];
   $("playedCount").textContent="0";
   $("groupCount").textContent="0";
   $("shownCount").textContent="0";
-  $("resultsBody").innerHTML=`
-   <tr><td colspan="6" class="empty">
-    Veri yüklenemedi: ${escapeHTML(e.message)}
-    <br>./data/v2-data.json dosyasını ve skor alanlarını kontrol et.
-   </td></tr>`;
-  $("detailBody").innerHTML="";
-  $("futureDetailBody").innerHTML="";
-  $("futureDetailStatus").textContent="";
-  status("Veri yüklenemedi: "+e.message,"error");
+  $("resultsBody").innerHTML=`<tr><td colspan="6" class="empty">Veri yüklenemedi: ${escapeHTML(error.message)}<br>./data/v2-data.json dosyasını ve skor/oran alanlarını kontrol et.</td></tr>`;
+  $("detailPanel").hidden=true;
+  setStatus("Veri yüklenemedi: "+error.message,"error");
  }finally{
   busy=false;
   $("reloadBtn").disabled=false;
   $("analyzeBtn").disabled=false;
  }
 }
+
+$("mobileMenuBtn").addEventListener("click",()=>{
+ const sidebar=$("sidebar");
+ sidebar.classList.toggle("open");
+ $("mobileMenuBtn").textContent=sidebar.classList.contains("open")?"✕ Menüyü kapat":"☰ Menü";
+});
+
 $("analyzeBtn").addEventListener("click",analyze);
 $("reloadBtn").addEventListener("click",loadData);
-$("closeDetailBtn").addEventListener("click",()=>{
- $("detailPanel").hidden=true;
+$("closeDetailBtn").addEventListener("click",()=>$("detailPanel").hidden=true);
+
+$("clearRateBtn").addEventListener("click",()=>{
+ $("minRate").value="";
+ analyze();
 });
+
 $("homeScore").addEventListener("change",analyze);
 $("awayScore").addEventListener("change",analyze);
-$("dateRange").addEventListener("change",analyze);
-$("minSample").addEventListener("change",analyze);
-$("resultsBody").addEventListener("click",e=>{
- const row=e.target.closest("[data-key]");
+
+$("dateRange").addEventListener("change",()=>{
+ cache.clear();
+ analyze();
+});
+
+$("minSample").addEventListener("change",()=>{
+ cache.clear();
+ analyze();
+});
+
+$("minRate").addEventListener("input",()=>{
+ const raw=$("minRate").value.trim();
+ if(raw===""||(Number(raw)>=0&&Number(raw)<=100))analyze();
+});
+
+$("resultsBody").addEventListener("click",event=>{
+ const row=event.target.closest("[data-key]");
  if(row)showDetails(row.dataset.key);
 });
-$("resultsBody").addEventListener("keydown",e=>{
- if(e.key!=="Enter"&&e.key!==" ")return;
- const row=e.target.closest("[data-key]");
+
+$("resultsBody").addEventListener("keydown",event=>{
+ if(event.key!=="Enter"&&event.key!==" ")return;
+ const row=event.target.closest("[data-key]");
  if(row){
-  e.preventDefault();
+  event.preventDefault();
   showDetails(row.dataset.key);
  }
 });
+
 populateScores();
 loadData();
 })();
