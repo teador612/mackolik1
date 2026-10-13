@@ -1,132 +1,656 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#07130f">
-<title>DNA | Skor ve Oran Analizi</title>
+<meta name="description" content="RNA Mackolik futbol skor ve açılış oranı analiz merkezi">
+<title>RNA | Skor ve Açılış Oranı Analizi</title>
 <style>
 :root {
   color-scheme: dark;
-  --bg:#07130f;--panel:#0e2119;--panel2:#132c20;--border:#244536;
-  --text:#f2f8f3;--muted:#a1b8a8;--green:#62e58b;
-  --yellow:#ffd166;--red:#ff7777;--blue:#83b9ff;
-}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;padding:14px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif}
-button,input,select{font:inherit}
-button{cursor:pointer;touch-action:manipulation}
-.app{max-width:1600px;margin:auto;display:grid;grid-template-columns:235px minmax(0,1fr);gap:16px;align-items:start}
-.sidebar{position:sticky;top:12px;background:linear-gradient(180deg,#10271c,#0c1d15);border:1px solid var(--border);border-radius:14px;padding:15px 10px}
-.brand{padding:5px 10px 17px;border-bottom:1px solid var(--border);margin-bottom:14px}
-.brand-title{font-size:21px;font-weight:900;color:var(--green)}
-.brand small{display:block;margin-top:5px;color:var(--muted);font-size:11px}
-.menu-label{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:1px;padding:0 10px;margin:15px 0 8px}
-.nav-btn{width:100%;display:flex;align-items:center;gap:10px;min-height:46px;text-align:left;padding:9px 10px;margin:4px 0;border:1px solid transparent;border-radius:10px;background:transparent;color:var(--muted);font-size:13px;font-weight:700}
-.nav-btn.active{color:white;background:#16834a2b;border-color:#62e58b55}
-.nav-icon{display:grid;place-items:center;width:29px;height:29px;border-radius:8px;background:#ffffff12;font-size:16px;flex-shrink:0}
-.nav-btn.active .nav-icon{background:#16834a}
-.sidebar-note{margin:20px 8px 4px;padding-top:13px;border-top:1px solid var(--border);font-size:11px;line-height:1.7;color:var(--muted);overflow-wrap:anywhere}
-.main{min-width:0}
-.mobile-menu{display:none;margin-bottom:12px}
-header{padding:4px 3px 17px}
-h1{font-size:clamp(22px,3vw,31px);line-height:1.2;margin:0 0 8px;color:#80efa0}
-h2{font-size:17px;margin:0 0 5px}
-h3{font-size:14px;margin:0 0 10px}
-p{font-size:13px;color:var(--muted);line-height:1.6;margin:0}
-.panel{background:linear-gradient(145deg,#112b1d,#0b1d15);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:15px;min-width:0}
-.filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:16px}
-.field{min-width:0}
-label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:650}
-input,select{width:100%;height:43px;min-width:0;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:#091910;color:var(--text)}
-.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
-.btn{min-height:41px;padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:var(--panel2);color:var(--text);font-size:13px;font-weight:700}
-.btn.primary{background:linear-gradient(135deg,#16834a,#20a45b);border-color:#37bd70}
-.btn:disabled{opacity:.55}
-.status{padding:11px 13px;margin:12px 0;background:#091910;border:1px solid var(--border);border-radius:9px;font-size:12px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
-.status.error{color:var(--red)}.status.success{color:var(--green)}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
-.stat{background:var(--panel);border:1px solid var(--border);border-radius:11px;padding:13px;min-width:0}
-.stat small{display:block;color:var(--muted);font-size:10px;font-weight:750;margin-bottom:6px}
-.stat strong{font-size:23px;overflow-wrap:anywhere}
-.table-wrap{width:100%;overflow:auto;border:1px solid var(--border);border-radius:10px;-webkit-overflow-scrolling:touch}
-table{width:100%;border-collapse:collapse;min-width:660px;font-size:12px}
-th,td{padding:11px 10px;text-align:left;border-bottom:1px solid #24453688;vertical-align:middle}
-th{position:sticky;top:0;background:#132c20;color:var(--muted);font-size:11px}
-tr:last-child td{border-bottom:0}
-tbody tr.result-row{cursor:pointer}
-tbody tr.result-row:hover{background:#ffffff08}
-.badge{display:inline-block;padding:4px 7px;border:1px solid var(--border);border-radius:7px;background:#183326;color:var(--muted);font-size:11px}
-.high{color:var(--green);font-weight:850}.medium{color:var(--yellow);font-weight:850}.low{color:var(--red);font-weight:850}
-.bar{height:5px;background:#ffffff12;border-radius:8px;overflow:hidden;margin-top:5px;min-width:45px}
-.bar span{display:block;height:100%;background:var(--green)}
-.heading{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:13px}
-.empty{text-align:center;padding:24px;color:var(--muted)}
-.detail{margin-top:14px}
-.detail-card{padding:12px;margin-top:8px;border:1px solid var(--border);border-radius:10px;background:#091910}
-.detail-title{font-size:13px;font-weight:800;margin-bottom:6px}
-.detail-meta{font-size:12px;color:var(--muted);line-height:1.7}
-.daily-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
-.daily-chip{padding:13px;background:#091910;border:1px solid var(--border);border-radius:10px}
-.daily-chip small{display:block;color:var(--muted);font-size:10px;font-weight:750;margin-bottom:5px}
-.daily-chip strong{font-size:21px}
-.note{font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px}
-[hidden]{display:none!important}
-@media(max-width:850px){
- body{padding:10px}
- .app{grid-template-columns:1fr;gap:0}
- .sidebar{display:none;position:fixed;z-index:50;top:8px;left:8px;right:8px;max-height:calc(100dvh - 16px);overflow:auto;box-shadow:0 15px 50px #000b}
- .sidebar.open{display:block}
- .mobile-menu{display:inline-flex}
- .filters{grid-template-columns:repeat(2,minmax(0,1fr))}
- .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
- .panel{padding:13px}
-}
-@media(max-width:420px){
- body{padding:7px}
- .filters{gap:10px 8px}
- .filters label{font-size:11px}
- .stats{gap:7px}
- .stat{padding:10px}
- .stat strong{font-size:20px}
- .daily-summary{gap:6px}
- .daily-chip{padding:9px 7px}
- .daily-chip strong{font-size:18px}
- .daily-chip small{font-size:9px}
-}
-  
-/* Telefon menü butonu: ortalı ve kolay basılır */
-@media (max-width: 850px) {
-  .mobile-menu {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: min(100%, 320px);
-    min-height: 52px;
-    margin: 0 auto 16px;
-    padding: 12px 20px;
-    text-align: center;
-    position: relative;
-    z-index: 60;
-    touch-action: manipulation;
-  }
+  --bg: #07130f;
+  --panel: #0e2119;
+  --panel-hover: #18372a;
+  --panel2: #132c20;
+  --border: #244536;
+  --border-focus: #65d98b;
+  --text: #f2f8f3;
+  --muted: #a1b8a8;
+  --primary: #16834a;
+  --primary-hover: #1da45b;
+  --green: #62e58b;
+  --green-bg: rgba(46,204,113,.12);
+  --yellow: #ffd166;
+  --yellow-bg: rgba(255,209,102,.12);
+  --red: #ff7777;
+  --red-bg: rgba(255,90,90,.12);
+  --shadow: 0 8px 24px rgba(0,0,0,.2);
+  --radius: 14px;
 }
 
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  background:
+    radial-gradient(ellipse at top right, rgba(32,115,66,.13), transparent 42%),
+    var(--bg);
+  color: var(--text);
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select {
+  font: inherit;
+}
+
+button {
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.app-layout {
+  max-width: 1600px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: 235px minmax(0,1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.sidebar {
+  position: sticky;
+  top: 14px;
+  background: linear-gradient(180deg,#10271c,#0c1d15);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 11px;
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  padding: 5px 10px 18px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.brand-title {
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: -.6px;
+  color: #79f09b;
+  background: linear-gradient(120deg,#a2f5b6,#3bc96d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand small {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.menu-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin: 16px 0 8px;
+}
+
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  text-align: left;
+  padding: 10px;
+  margin: 4px 0;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.nav-btn:hover {
+  color: var(--text);
+  background: var(--panel-hover);
+}
+
+.nav-btn.active {
+  color: #fff;
+  background: rgba(42,169,89,.16);
+  border-color: rgba(98,229,139,.3);
+}
+
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 29px;
+  height: 29px;
+  border-radius: 8px;
+  background: rgba(148,163,184,.1);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.nav-btn.active .nav-icon {
+  background: var(--primary);
+}
+
+.sidebar-note {
+  margin: 20px 8px 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.main-content {
+  min-width: 0;
+  width: 100%;
+}
+
+.mobile-menu-btn {
+  display: none;
+  margin-bottom: 12px;
+}
+
+.container {
+  max-width: 1400px;
+  margin: auto;
+  min-width: 0;
+}
+
+header {
+  padding: 2px 3px 18px;
+  margin-bottom: 6px;
+}
+
+h1 {
+  font-size: clamp(23px,3vw,32px);
+  font-weight: 850;
+  line-height: 1.2;
+  margin: 0 0 9px;
+  letter-spacing: -.65px;
+  color: #80efa0;
+  background: linear-gradient(120deg,#b3f8c3,#50d47b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  overflow-wrap: anywhere;
+}
+
+p {
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0;
+  font-size: 13px;
+}
+
+.panel {
+  background: linear-gradient(145deg,rgba(17,43,29,.98),rgba(11,29,21,.98));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 21px;
+  margin-bottom: 17px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+}
+
+.panel:hover {
+  border-color: rgba(98,229,139,.25);
+}
+
+h2 {
+  font-size: 17px;
+  font-weight: 750;
+  line-height: 1.4;
+  margin: 0 0 4px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.field {
+  min-width: 0;
+}
+
+label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 7px;
+  line-height: 1.4;
+}
+
+select, input {
+  width: 100%;
+  height: 44px;
+  min-width: 0;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: #091910;
+  color: var(--text);
+  outline: none;
+  transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+select:hover, input:hover {
+  border-color: #3b6950;
+}
+
+select:focus, input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(101,217,139,.12);
+}
+
+.actions {
+  display: flex;
+  gap: 9px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.btn {
+  min-height: 43px;
+  padding: 10px 15px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--panel2);
+  color: var(--text);
+  font-weight: 650;
+  font-size: 13px;
+  transition: background .18s ease, border-color .18s ease;
+}
+
+.btn:hover {
+  background: var(--panel-hover);
+  border-color: #477458;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg,#16834a,#20a45b);
+  border-color: #37bd70;
+  color: #fff;
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg,#1b9855,#28b768);
+}
+
+.btn:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+.status {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #091910;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.status.error {
+  color: var(--red);
+  background: var(--red-bg);
+  border-color: rgba(255,90,90,.25);
+}
+
+.status.success {
+  color: var(--green);
+  background: var(--green-bg);
+  border-color: rgba(98,229,139,.25);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4,minmax(0,1fr));
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.stat {
+  padding: 17px 16px;
+  background: linear-gradient(145deg,#112b1d,#0c2016);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  min-width: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--green);
+}
+
+.stat small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  line-height: 1.5;
+  margin-bottom: 7px;
+}
+
+.stat strong {
+  display: block;
+  font-size: clamp(19px,2.5vw,27px);
+  font-weight: 850;
+  overflow-wrap: anywhere;
+  color: #e9ffef;
+}
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 15px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #183326;
+  color: var(--muted);
+  border-radius: 7px;
+  padding: 5px 9px;
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #2b4d39;
+  line-height: 1.4;
+}
+
+.table-wrap {
+  overflow: auto;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  max-height: 65vh;
+  background: #091910;
+  width: 100%;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 680px;
+}
+
+th, td {
+  padding: 12px 13px;
+  border-bottom: 1px solid rgba(50,83,62,.65);
+  font-size: 12px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #142d20;
+  color: #b5cabb;
+  font-weight: 750;
+  z-index: 2;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+tbody tr.result-row {
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
+tbody tr.result-row:hover {
+  background: rgba(67,160,96,.12);
+}
+
+.rate {
+  font-weight: 850;
+  font-size: 13px;
+}
+
+.high { color: var(--green); }
+.medium { color: var(--yellow); }
+.low { color: var(--red); }
+
+.bar {
+  height: 5px;
+  background: #244131;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 6px;
+  min-width: 55px;
+}
+
+.bar span {
+  height: 100%;
+  display: block;
+  background: linear-gradient(90deg,#1d9d56,#70efa0);
+  border-radius: 99px;
+}
+
+.empty {
+  text-align: center;
+  white-space: normal;
+  color: var(--muted);
+  padding: 30px 15px;
+  line-height: 1.7;
+}
+
+.note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-top: 12px;
+}
+
+.detail-title {
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.7;
+  margin: 14px 0;
+  color: var(--text);
+  background: #091910;
+  padding: 12px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+
+.detail-section {
+  margin-top: 22px;
+  min-width: 0;
+}
+
+.detail-section h3 {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 11px;
+  font-weight: 750;
+}
+
+.section-count {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.daily-summary {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 17px;
+}
+
+.daily-chip {
+  background: linear-gradient(145deg,#112b1d,#0c2016);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 14px;
+  min-width: 0;
+}
+
+.daily-chip small {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  font-weight: 750;
+  line-height: 1.5;
+  margin-bottom: 7px;
+}
+
+.daily-chip strong {
+  font-size: 23px;
+  font-weight: 850;
+  color: #e9ffef;
+  overflow-wrap: anywhere;
+}
+
+.analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analysis-item {
+  display: grid;
+  grid-template-columns: minmax(120px,1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #091910;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  min-width: 0;
+}
+
+.analysis-item .market-name {
+  font-size: 12px;
+  font-weight: 750;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.analysis-item .market-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+.analysis-item .score-info {
+  text-align: right;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.analysis-item .score-info strong {
+  display: block;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.analysis-item .rate-info {
+  text-align: right;
+  min-width: 70px;
+}
+
+.analysis-item .rate-info strong {
+  display: block;
+  font-size: 16px;
+}
+
+.analysis-item .rate-info small {
+  color: var(--muted);
+  font-size: 10px;
+}
+
+[hidden] { display: none !important; }
+
+@media (max-width: 850px) {
+  body { padding: 10px; }
+  .app-layout { grid-template-columns: 1fr; gap: 0; }
+  .sidebar {
+    display: none;
+    position: fixed;
+    z-index: 50;
+    top: 8px; left: 8px; right: 8px;
+    max-height: calc(100dvh - 16px);
+    overflow: auto;
+    box-shadow: 0 15px 50px #000b;
+  }
+  .sidebar.open { display: block; }
+  .mobile-menu-btn { display: flex; align-items: center; justify-content: center; }
+  .filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .panel { padding: 13px; }
+}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="app-layout">
   <aside class="sidebar" id="sidebar">
     <div class="brand">
-      <div class="brand-title">DNA MACKOLİK</div>
+      <div class="brand-title">RNA MACKOLİK</div>
       <small>Skor ve açılış oranı analiz merkezi</small>
     </div>
     <div class="menu-label">ANALİZ MENÜSÜ</div>
-    <button class="nav-btn active" data-view="scoreView" type="button">
+    <button class="nav-btn active" data-view="scoreView" id="navScore" type="button">
       <span class="nav-icon">📊</span><span>Skor ve Oran Analizi</span>
     </button>
-    <button class="nav-btn" data-view="dailyView" type="button">
+    <button class="nav-btn" data-view="dailyView" id="navDaily" type="button">
       <span class="nav-icon">📅</span><span>Günün Maçları</span>
     </button>
     <div class="sidebar-note">
@@ -135,111 +659,121 @@ tbody tr.result-row:hover{background:#ffffff08}
     </div>
   </aside>
 
-  <main class="main">
-    <button class="btn mobile-menu" id="mobileMenuBtn" type="button">☰ Menü</button>
+  <main class="main-content">
+    <button class="btn mobile-menu-btn" id="mobileMenuBtn" type="button">☰ Menü</button>
 
-    <section id="scoreView">
-      <header>
-        <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
-        <p>Hedef skoru seç. Sistem geçmiş maçlardaki marketleri ve aynı açılış oranlarını tarasın. Başarı filtresini boş bırakarak tüm sonuçları görebilirsin.</p>
-      </header>
+    <div id="scoreView">
+      <div class="container">
+        <header>
+          <h1>RNA | Skor ve Açılış Oranı Analizi</h1>
+          <p>Hedef skoru seç. Sistem geçmiş maçlardaki marketleri ve aynı açılış oranlarını tarasın. Başarı filtresini boş bırakarak tüm sonuçları görebilirsin.</p>
+        </header>
 
-      <section class="panel">
-        <h2>Analiz ayarları</h2>
-        <div class="filters">
-          <div class="field"><label for="homeScore">Ev sahibi skoru</label><select id="homeScore"></select></div>
-          <div class="field"><label for="awayScore">Deplasman skoru</label><select id="awayScore"></select></div>
-          <div class="field"><label for="dateRange">Geçmiş aralığı</label>
-            <select id="dateRange">
-              <option value="7">Son 7 gün</option><option value="15">Son 15 gün</option>
-              <option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option>
-              <option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option>
-            </select>
+        <section class="panel">
+          <h2>Analiz ayarları</h2>
+          <div class="filters">
+            <div class="field"><label for="homeScore">Ev sahibi skoru</label><select id="homeScore"></select></div>
+            <div class="field"><label for="awayScore">Deplasman skoru</label><select id="awayScore"></select></div>
+            <div class="field"><label for="dateRange">Geçmiş aralığı</label>
+              <select id="dateRange">
+                <option value="7">Son 7 gün</option><option value="15">Son 15 gün</option>
+                <option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option>
+                <option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option>
+              </select>
+            </div>
+            <div class="field"><label for="minSample">Minimum geçmiş maç</label>
+              <select id="minSample"><option>3</option><option>5</option><option value="8" selected>8</option><option>10</option><option>20</option></select>
+            </div>
+            <div class="field" style="grid-column: span 2;"><label for="minRate">Minimum başarı (%) — boş = filtre yok</label><input id="minRate" type="number" min="0" max="100" placeholder="Filtre uygulama"></div>
           </div>
-          <div class="field"><label for="minSample">Minimum geçmiş maç</label>
-            <select id="minSample"><option>3</option><option>5</option><option value="8" selected>8</option><option>10</option><option>20</option></select>
+          <div class="actions">
+            <button class="btn primary" id="analyzeBtn" type="button">🔎 Analiz et</button>
+            <button class="btn" id="reloadBtn" type="button">↻ Veriyi yenile</button>
           </div>
-          <div class="field"><label for="minRate">Minimum başarı (%) — boş = filtre yok</label><input id="minRate" type="number" min="0" max="100" placeholder="Filtre uygulama"></div>
-        </div>
-        <div class="actions">
-          <button class="btn primary" id="analyzeBtn" type="button">🔎 Analiz et</button>
-          <button class="btn" id="reloadBtn" type="button">↻ Veriyi yenile</button>
-        </div>
-        <div class="status" id="scoreStatus">Veriler yükleniyor...</div>
-      </section>
+          <div class="status" id="scoreStatus">Veriler yükleniyor...</div>
+        </section>
 
-      <div class="stats">
-        <div class="stat"><small>GEÇMİŞ MAÇ</small><strong id="playedCount">0</strong></div>
-        <div class="stat"><small>ORAN GRUBU</small><strong id="groupCount">0</strong></div>
-        <div class="stat"><small>GÖSTERİLEN</small><strong id="shownCount">0</strong></div>
-        <div class="stat"><small>HEDEF SKOR</small><strong id="targetScore">2-1</strong></div>
+        <div class="stats">
+          <div class="stat"><small>GEÇMİŞ MAÇ</small><strong id="playedCount">0</strong></div>
+          <div class="stat"><small>ORAN GRUBU</small><strong id="groupCount">0</strong></div>
+          <div class="stat"><small>GÖSTERİLEN</small><strong id="shownCount">0</strong></div>
+          <div class="stat"><small>HEDEF SKOR</small><strong id="targetScore">2-1</strong></div>
+        </div>
+
+        <section class="panel">
+          <div class="heading"><h2>Market ve oran sonuçları</h2><span class="badge" id="filterBadge">Başarı filtresi kapalı</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Market</th><th>Açılış oranı</th><th>Örnek</th><th>Hedef skor</th><th>Skor sıklığı</th></tr></thead>
+              <tbody id="resultsBody"><tr><td colspan="6" class="empty">Veriler yükleniyor...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="note">Skor sıklığı, aynı market ve aynı açılış oranına sahip geçmiş maçlarda seçilen skorun görülme yüzdesidir. Geçmiş sonuçlar geleceği garanti etmez.</div>
+        </section>
+
+        <section class="panel detail" id="detailPanel" hidden>
+          <div class="heading"><h2>Oran grubu ayrıntısı</h2><button class="btn" id="closeDetailBtn" type="button">Kapat</button></div>
+          <div class="detail-title" id="detailSummary"></div>
+          <div class="detail-section">
+            <h3>Geçmiş maçlar <span class="section-count" id="historyCount"></span></h3>
+            <div class="table-wrap">
+              <table><thead><tr><th>Tarih</th><th>Lig</th><th>Ev sahibi</th><th>Skor</th><th>Deplasman</th><th>Oran</th><th>Hedef</th></tr></thead><tbody id="detailBody"></tbody></table>
+            </div>
+          </div>
+        </section>
       </div>
+    </div>
 
-      <section class="panel">
-        <div class="heading"><h2>Market ve oran sonuçları</h2><span class="badge" id="filterBadge">Başarı filtresi kapalı</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Market</th><th>Açılış oranı</th><th>Örnek</th><th>Hedef skor</th><th>Skor sıklığı</th></tr></thead>
-            <tbody id="resultsBody"><tr><td colspan="6" class="empty">Veriler yükleniyor...</td></tr></tbody>
-          </table>
-        </div>
-        <div class="note">Skor sıklığı, aynı market ve aynı açılış oranına sahip geçmiş maçlarda seçilen skorun görülme yüzdesidir. Geçmiş sonuçlar geleceği garanti etmez.</div>
-      </section>
-
-      <section class="panel detail" id="detailPanel" hidden>
-        <div class="heading"><h2>Oran grubu ayrıntısı</h2><button class="btn" id="closeDetailBtn" type="button">Kapat</button></div>
-        <div class="detail-meta" id="detailSummary"></div>
-        <div class="table-wrap" style="margin-top:12px">
-          <table><thead><tr><th>Tarih</th><th>Lig</th><th>Ev sahibi</th><th>Skor</th><th>Deplasman</th><th>Oran</th></tr></thead><tbody id="detailBody"></tbody></table>
-        </div>
-      </section>
-    </section>
-
-    <section id="dailyView" hidden>
-      <header>
-        <h1>DNA | Günün Maçları</h1>
-        <p>Bugünkü maçlar, seçili geçmiş aralığında aynı market ve aynı açılış oranına sahip tamamlanmış maçlarla karşılaştırılır. Analizi olan maçlar listenin üstünde gösterilir.</p>
-      </header>
-      <section class="panel">
-        <div class="heading">
-          <h2>Günlük maç analizi</h2>
-          <span class="badge" id="dailyDateBadge">Bugün</span>
-        </div>
-        <div class="filters">
-          <div class="field"><label for="dailyRange">Geçmiş aralığı</label>
-            <select id="dailyRange"><option value="7">Son 7 gün</option><option value="15">Son 15 gün</option><option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option><option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option></select>
+    <div id="dailyView" hidden>
+      <div class="container">
+        <header>
+          <h1>RNA | Günün Maçları</h1>
+          <p>Bugünkü maçlar, seçili geçmiş aralığında aynı market ve aynı açılış oranına sahip tamamlanmış maçlarla karşılaştırılır. Analizi olan maçlar listenin üstünde gösterilir.</p>
+        </header>
+        <section class="panel">
+          <div class="heading">
+            <h2>Günlük maç analizi</h2>
+            <span class="badge" id="dailyDateBadge">Bugün</span>
           </div>
-          <div class="field"><label for="dailyMinSample">Minimum eşleşen geçmiş maç</label>
-            <select id="dailyMinSample"><option>3</option><option>5</option><option value="8" selected>8</option><option>10</option><option>20</option></select>
+          <div class="filters">
+            <div class="field"><label for="dailyRange">Geçmiş aralığı</label>
+              <select id="dailyRange"><option value="7">Son 7 gün</option><option value="15">Son 15 gün</option><option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option><option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option></select>
+            </div>
+            <div class="field"><label for="dailyMinSample">Minimum eşleşen geçmiş maç</label>
+              <select id="dailyMinSample"><option>3</option><option>5</option><option value="8" selected>8</option><option>10</option><option>20</option></select>
+            </div>
           </div>
-        </div>
-        <div class="actions"><button class="btn primary" id="dailyReloadBtn" type="button">↻ Maçları yenile ve tara</button></div>
-        <div class="status" id="dailyStatus">Maç verileri yükleniyor...</div>
-      </section>
+          <div class="actions"><button class="btn primary" id="dailyReloadBtn" type="button">↻ Maçları yenile ve tara</button></div>
+          <div class="status" id="dailyStatus">Maç verileri yükleniyor...</div>
+        </section>
 
-      <div class="daily-summary">
-        <div class="daily-chip"><small>BUGÜNKÜ MAÇ</small><strong id="dailyMatchCount">0</strong></div>
-        <div class="daily-chip"><small>ANALİZ BULUNAN</small><strong id="dailyAnalyzedCount">0</strong></div>
-        <div class="daily-chip"><small>ANALİZ BULUNAMAYAN</small><strong id="dailyNoAnalysisCount">0</strong></div>
+        <div class="daily-summary">
+          <div class="daily-chip"><small>BUGÜNKÜ MAÇ</small><strong id="dailyMatchCount">0</strong></div>
+          <div class="daily-chip"><small>ANALİZ BULUNAN</small><strong id="dailyAnalyzedCount">0</strong></div>
+          <div class="daily-chip"><small>ANALİZ BULUNAMAYAN</small><strong id="dailyNoAnalysisCount">0</strong></div>
+        </div>
+
+        <section class="panel">
+          <div class="heading"><h2>Bugünkü maçlar</h2><span class="badge">En iyi eşleşme üstte</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Saat</th><th>Lig</th><th>Maç</th><th>En iyi market</th><th>Oran</th><th>Geçmiş</th><th>En sık skor</th><th>Sıklık</th><th>Detay</th></tr></thead>
+              <tbody id="dailyResultsBody"><tr><td colspan="10" class="empty">Maçlar yükleniyor...</td></tr></tbody>
+            </table>
+          </div>
+          <div class="note">Bir maça dokunarak market bazında geçmiş eşleşmeleri ve skor sıklıklarını görebilirsin. Yeterli geçmiş eşleşmesi bulunmayan maçlar da listede kalır.</div>
+        </section>
+
+        <section class="panel detail" id="dailyDetailPanel" hidden>
+          <div class="heading"><h2 id="dailyDetailTitle">Maç analizi</h2><button class="btn" id="closeDailyDetailBtn" type="button">Kapat</button></div>
+          <div class="detail-title" id="dailyDetailSummary"></div>
+          <div class="detail-section">
+            <h3>Market bazında geçmiş analizler <span class="section-count" id="dailyDetailCount"></span></h3>
+            <div id="dailyAnalysisList" class="analysis-list"></div>
+          </div>
+        </section>
       </div>
-
-      <section class="panel">
-        <div class="heading"><h2>Bugünkü maçlar</h2><span class="badge">En iyi eşleşme üstte</span></div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>#</th><th>Saat</th><th>Lig</th><th>Maç</th><th>En iyi market</th><th>Oran</th><th>Geçmiş</th><th>En sık skor</th><th>Sıklık</th><th>Detay</th></tr></thead>
-            <tbody id="dailyResultsBody"><tr><td colspan="10" class="empty">Maçlar yükleniyor...</td></tr></tbody>
-          </table>
-        </div>
-        <div class="note">Bir maça dokunarak market bazında geçmiş eşleşmeleri ve skor sıklıklarını görebilirsin. Yeterli geçmiş eşleşmesi bulunmayan maçlar da listede kalır.</div>
-      </section>
-
-      <section class="panel detail" id="dailyDetailPanel" hidden>
-        <div class="heading"><h2 id="dailyDetailTitle">Maç analizi</h2><button class="btn" id="closeDailyDetailBtn" type="button">Kapat</button></div>
-        <div class="detail-meta" id="dailyDetailSummary"></div>
-        <div id="dailyAnalysisList"></div>
-      </section>
-    </section>
+    </div>
   </main>
 </div>
 
@@ -502,7 +1036,7 @@ tbody tr.result-row:hover{background:#ffffff08}
         return `<tr class="result-row" data-group="${i}" tabindex="0">
           <td>${i+1}</td><td><strong>${esc(g.marketName)}</strong></td>
           <td><span class="badge">${g.odds}</span></td><td>${g.total}</td>
-          <td>${g.targetCount}/${g.total}</td><td><span class="${cls}">${pct(g.rate)}</span><div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div></td>
+          <td>${g.targetCount}/${g.total}</td><td><span class="${cls} rate">${pct(g.rate)}</span><div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div></td>
         </tr>`;
       }).join("");
     }
@@ -513,12 +1047,17 @@ tbody tr.result-row:hover{background:#ffffff08}
     const target={home:+$("homeScore").value,away:+$("awayScore").value};
     $("detailPanel").hidden=false;
     $("detailSummary").textContent=`${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} maçta hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
+    $("historyCount").textContent=`(${g.matches.length} maç)`;
     const sorted=[...g.matches].sort((a,b)=>b.dateKey.localeCompare(a.dateKey));
-    $("detailBody").innerHTML=sorted.map(m=>`<tr>
-      <td>${esc(m.dateLabel)}</td><td>${esc(m.league)}</td><td>${esc(m.home)}</td>
-      <td class="${m.score.home===target.home&&m.score.away===target.away?"high":""}"><strong>${m.score.home}-${m.score.away}</strong></td>
-      <td>${esc(m.away)}</td><td>${g.odds}</td>
-    </tr>`).join("");
+    $("detailBody").innerHTML=sorted.map(m=>{
+      const hit=m.score.home===target.home&&m.score.away===target.away;
+      return `<tr>
+        <td>${esc(m.dateLabel)}</td><td>${esc(m.league)}</td><td>${esc(m.home)}</td>
+        <td><strong>${m.score.home}-${m.score.away}</strong></td>
+        <td>${esc(m.away)}</td><td>${g.odds}</td>
+        <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
+      </tr>`;
+    }).join("");
     $("detailPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
   function scoreFrequency(matches) {
@@ -580,7 +1119,7 @@ tbody tr.result-row:hover{background:#ffffff08}
         <td>${i+1}</td><td>${esc(m.time)}</td><td>${esc(m.league)}</td>
         <td><strong>${esc(m.home)} - ${esc(m.away)}</strong>${m.score?`<br><span class="badge">${m.score.home}-${m.score.away} tamamlandı</span>`:""}</td>
         <td>${g?esc(g.marketName):"—"}</td><td>${g?g.odds:"—"}</td><td>${g?g.total:"—"}</td>
-        <td>${g?esc(g.topScore):"—"}</td><td>${g?`<span class="${g.rate>=70?"high":g.rate>=40?"medium":"low"}">${pct(g.rate)}</span>`:"—"}</td>
+        <td>${g?esc(g.topScore):"—"}</td><td>${g?`<span class="${g.rate>=70?"high":g.rate>=40?"medium":"low"} rate">${pct(g.rate)}</span><div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>`:"—"}</td>
         <td>${g?'<span class="badge">Detay</span>':'<span class="badge">Analiz yok</span>'}</td>
       </tr>`;
     }).join("");
@@ -591,15 +1130,28 @@ tbody tr.result-row:hover{background:#ffffff08}
     $("dailyDetailPanel").hidden=false;
     $("dailyDetailTitle").textContent=m.home+" - "+m.away;
     $("dailyDetailSummary").textContent=`${m.dateLabel} · ${m.time} · ${m.league} · ${m.score?`Skor: ${m.score.home}-${m.score.away}`:"Henüz tamamlanmadı"} · ${analyses.length} market analizi`;
+    $("dailyDetailCount").textContent=`(${analyses.length} market)`;
     if(!analyses.length) {
       $("dailyAnalysisList").innerHTML='<div class="empty">Bu maç için seçilen geçmiş aralığında yeterli sayıda aynı market ve açılış oranı eşleşmesi bulunamadı. Minimum örnek sayısını azaltabilir veya geçmiş aralığını genişletebilirsin.</div>';
     } else {
-      $("dailyAnalysisList").innerHTML=analyses.map((g,i)=>`
-        <div class="detail-card">
-          <div class="detail-title">${i+1}. ${esc(g.marketName)} · Açılış oranı ${g.odds}</div>
-          <div class="detail-meta">En sık skor: <strong>${esc(g.topScore)}</strong> · ${g.targetCount}/${g.total} maç · Sıklık: <strong class="${g.rate>=70?"high":g.rate>=40?"medium":"low"}">${pct(g.rate)}</strong></div>
-          <div class="detail-meta" style="margin-top:8px">Geçmiş skor dağılımı: ${g.frequencies.slice(0,8).map(x=>`${esc(x.score)} (${x.count}, ${pct(x.rate)})`).join(" · ")}</div>
-        </div>`).join("");
+      $("dailyAnalysisList").innerHTML=analyses.map((g,i)=>{
+        const rateClass=g.rate>=70?"high":g.rate>=40?"medium":"low";
+        return `
+        <div class="analysis-item">
+          <div>
+            <div class="market-name">${i+1}. ${esc(g.marketName)}</div>
+            <div class="market-meta">Açılış oranı: <strong>${g.odds}</strong></div>
+          </div>
+          <div class="score-info">
+            <strong>${esc(g.topScore)}</strong>
+            En sık skor · ${g.targetCount}/${g.total}
+          </div>
+          <div class="rate-info">
+            <strong class="${rateClass}">${pct(g.rate)}</strong>
+            <small>${g.total} geçmiş maç</small>
+          </div>
+        </div>`;
+      }).join("");
     }
     $("dailyDetailPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
@@ -634,18 +1186,21 @@ tbody tr.result-row:hover{background:#ffffff08}
   fillScoreSelect("homeScore");
   fillScoreSelect("awayScore");
 
-  document.querySelectorAll(".nav-btn").forEach(btn=>{
-    btn.addEventListener("click",()=>{
-      document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b===btn));
-      const view=btn.dataset.view;
-      $("scoreView").hidden=view!=="scoreView";
-      $("dailyView").hidden=view!=="dailyView";
-      $("sidebar").classList.remove("open");
-      $("mobileMenuBtn").textContent="☰ Menü";
-      if(view==="dailyView"&&loaded)runDailyAnalysis();
-      window.scrollTo({top:0,behavior:"auto"});
-    });
-  });
+  function switchView(viewId){
+    const isDaily = viewId === "dailyView";
+    $("scoreView").hidden = isDaily;
+    $("dailyView").hidden = !isDaily;
+    $("navScore").classList.toggle("active", !isDaily);
+    $("navDaily").classList.toggle("active", isDaily);
+    $("sidebar").classList.remove("open");
+    $("mobileMenuBtn").textContent = "☰ Menü";
+    if(isDaily && loaded) runDailyAnalysis();
+    window.scrollTo({top:0,behavior:"auto"});
+  }
+
+  $("navScore").addEventListener("click", () => switchView("scoreView"));
+  $("navDaily").addEventListener("click", () => switchView("dailyView"));
+
   $("mobileMenuBtn").addEventListener("click",()=>{
     const open=$("sidebar").classList.toggle("open");
     $("mobileMenuBtn").textContent=open?"✕ Menüyü kapat":"☰ Menü";
