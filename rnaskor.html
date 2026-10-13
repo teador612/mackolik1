@@ -188,6 +188,12 @@ tbody tr.result-row:hover{background:#14263d}
   font-weight:700;
   margin:12px 0
 }
+.detail-section-title{
+  font-size:14px;
+  font-weight:800;
+  margin:18px 0 10px
+}
+.future-row{background:#101f32}
 footer{
   text-align:center;
   color:var(--muted);
@@ -211,7 +217,7 @@ footer{
 <div class="container">
 <header>
   <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
-  <p>Skoru seç, bütün marketleri otomatik tara. Aynı market ve açılış oranındaki geçmiş maçları incele. Yalnızca hedef skor sıklığı en az %70 olan grupları göster.</p>
+  <p>Skoru seç, bütün marketleri otomatik tara. Bir sonuca dokunarak eşleşen geçmiş maçları ve varsa gelecek maçları aynı detay ekranında incele. Yalnızca hedef skor sıklığı en az %70 olan grupları göster.</p>
 </header>
 <section class="panel">
   <h2>Analiz ayarları</h2>
@@ -252,7 +258,7 @@ footer{
   </div>
   <div id="status" class="status">Veri yükleniyor...</div>
   <div class="note">
-    Oranlar iki ondalık basamakla tam eşleştirilir. Örneğin İY 1 oranı 2.00 grubunda 10 geçmiş maçtan 7'si hedef skorla bittiyse sıklık %70 olur. Market seçimi yoktur. Bütün marketler otomatik taranır.
+    Oranlar iki ondalık basamakla tam eşleştirilir. Bütün marketler otomatik taranır. Detaylarda geçmiş maçların yanında, aynı market ve aynı açılış oranına sahip bugünkü ve gelecekteki maçlar da gösterilir.
   </div>
 </section>
 <section class="stats">
@@ -291,53 +297,21 @@ footer{
         </tr>
       </thead>
       <tbody id="resultsBody">
-        <tr>
-          <td colspan="6" class="empty">Veri bekleniyor...</td>
-        </tr>
+        <tr><td colspan="6" class="empty">Veri bekleniyor...</td></tr>
       </tbody>
     </table>
   </div>
   <div class="note">
-    Satıra dokunarak o market ve oran grubunun geçmiş maçlarını açabilirsin.
+    Satıra dokunarak aynı market ve açılış oranı grubunun geçmiş ve gelecek maçlarını açabilirsin.
   </div>
-</section>
-<section class="panel">
-  <div class="heading">
-    <h2>Oynanmamış maçlar</h2>
-    <span class="badge pending">Bekliyor</span>
-  </div>
-  <div class="note">
-    Geçmiş tarihli ve skoru olmayan maçlar listelenmez. Bugünkü ve gelecekteki maçlar tarih ve saate göre sıralanır. Burada %70 filtresi yoktur; minimum geçmiş maç sayısı şartı korunur.
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Tarih</th>
-          <th>Saat</th>
-          <th>Lig</th>
-          <th>Maç</th>
-          <th>Market</th>
-          <th>Oran</th>
-          <th>Geçmiş</th>
-          <th>Hedef skor sıklığı</th>
-        </tr>
-      </thead>
-      <tbody id="upcomingBody">
-        <tr>
-          <td colspan="8" class="empty">Veri bekleniyor...</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <div id="upcomingStatus" class="status"></div>
 </section>
 <section class="panel" id="detailPanel" hidden>
   <div class="heading">
-    <h2>Geçmiş maç detayları</h2>
+    <h2>Market-oran maç detayları</h2>
     <button class="btn" id="closeDetailBtn">Kapat</button>
   </div>
   <div id="detailSummary" class="detail-title"></div>
+  <h3 class="detail-section-title">Geçmiş maçlar</h3>
   <div class="table-wrap">
     <table>
       <thead>
@@ -354,6 +328,28 @@ footer{
       <tbody id="detailBody"></tbody>
     </table>
   </div>
+  <h3 class="detail-section-title">Bugünkü ve gelecek maçlar</h3>
+  <div class="note">
+    Bu liste aynı market ve aynı açılış oranına sahip, henüz skoru oluşmamış maçları gösterir. Geçmiş başarı oranı yalnızca tamamlanmış maçlardan hesaplanır.
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Saat</th>
+          <th>Lig</th>
+          <th>Ev sahibi</th>
+          <th>Deplasman</th>
+          <th>Market</th>
+          <th>Oran</th>
+          <th>Geçmiş sıklık</th>
+        </tr>
+      </thead>
+      <tbody id="futureDetailBody"></tbody>
+    </table>
+  </div>
+  <div id="futureDetailStatus" class="status"></div>
 </section>
 <footer>Veri kaynağı: ./data/v2-data.json</footer>
 </div>
@@ -409,11 +405,7 @@ let cache=new Map();
 let activeGroups=new Map();
 let shownGroups=[];
 const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;",
-"<":"&lt;",
-">":"&gt;",
-'"':"&quot;",
-"'":"&#39;"
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
 }[c]));
 function num(v){
  if(v===null||v===undefined||v==="")return null;
@@ -450,9 +442,7 @@ function getScore(m){
 function parseDate(v){
  if(!v)return null;
  if(v instanceof Date){
-  return Number.isNaN(v.getTime())
-   ?null
-   :new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  return Number.isNaN(v.getTime())?null:new Date(v.getFullYear(),v.getMonth(),v.getDate());
  }
  const s=String(v).trim();
  let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
@@ -460,30 +450,22 @@ function parseDate(v){
  m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
  if(m)return makeDate(+m[1],+m[2],+m[3]);
  const d=new Date(s);
- return Number.isNaN(d.getTime())
-  ?null
-  :new Date(d.getFullYear(),d.getMonth(),d.getDate());
+ return Number.isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
 }
 function makeDate(y,m,d){
  const x=new Date(y,m-1,d);
- return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d
-  ?x
-  :null;
+ return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d?x:null;
 }
 function dateOf(m){
  return m.date??m.matchDate??m.gameDate??m.tarih??m.datetime??m.dateTime??"";
 }
 function dateKey(v){
  const d=parseDate(v);
- return d
-  ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
-  :"";
+ return d?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`:"";
 }
 function dateLabel(v){
  const d=parseDate(v);
- return d
-  ?`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`
-  :String(v||"—");
+ return d?`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`:String(v||"—");
 }
 function timeOf(m){
  const v=m.time??m.matchTime??m.hour??m.saat??m.datetime??m.dateTime??"";
@@ -499,9 +481,7 @@ function awayOf(m){
  return m.away??m.awayTeam??m.awayName??m.team2??m.deplasman??"Deplasman";
 }
 function oddText(v){
- if(v&&typeof v==="object"){
-  v=v.opening??v.open??v.odd??v.odds??v.value;
- }
+ if(v&&typeof v==="object")v=v.opening??v.open??v.odd??v.odds??v.value;
  const n=num(v);
  return n!==null&&n>0?n.toFixed(2):null;
 }
@@ -533,11 +513,7 @@ function status(msg,type=""){
 }
 function populateScores(){
  for(const id of ["homeScore","awayScore"]){
-  const el=$(id);
-  el.innerHTML=Array.from(
-   {length:11},
-   (_,i)=>`<option value="${i}">${i}</option>`
-  ).join("");
+  $(id).innerHTML=Array.from({length:11},(_,i)=>`<option value="${i}">${i}</option>`).join("");
  }
  $("homeScore").value="2";
  $("awayScore").value="1";
@@ -546,21 +522,12 @@ function prepareData(){
  prepared=allMatches.map((m,index)=>{
   const score=getScore(m);
   const odds=Object.create(null);
-  for(const market of MARKETS){
-   odds[market.key]=getOdd(m,market.key);
-  }
+  for(const market of MARKETS)odds[market.key]=getOdd(m,market.key);
   const date=dateOf(m);
   return {
-   raw:m,
-   index,
-   score,
-   date,
-   dateKey:dateKey(date),
-   time:timeOf(m),
-   league:leagueOf(m),
-   home:homeOf(m),
-   away:awayOf(m),
-   odds
+   raw:m,index,score,date,dateKey:dateKey(date),
+   time:timeOf(m),league:leagueOf(m),
+   home:homeOf(m),away:awayOf(m),odds
   };
  });
  played=prepared.filter(m=>m.score);
@@ -571,15 +538,12 @@ function filteredPlayed(){
  if(range==="all")return played;
  const days=Number(range);
  const today=new Date();
- today.setHours(23,59,59,999);
- const start=new Date();
- start.setHours(0,0,0,0);
+ today.setHours(0,0,0,0);
+ const start=new Date(today);
  start.setDate(start.getDate()-days+1);
  const startKey=dateKey(start);
  const endKey=dateKey(today);
- return played.filter(m=>
-  m.dateKey&&m.dateKey>=startKey&&m.dateKey<=endKey
- );
+ return played.filter(m=>m.dateKey&&m.dateKey>=startKey&&m.dateKey<=endKey);
 }
 function pct(n){
  return Number(n).toLocaleString("tr-TR",{maximumFractionDigits:2})+"%";
@@ -597,14 +561,7 @@ function getGroups(matches,target,minSample){
     const key=market.key+"|"+odds;
     let g=map.get(key);
     if(!g){
-     g={
-      key,
-      marketKey:market.key,
-      marketName:market.name,
-      odds,
-      total:0,
-      matches:[]
-     };
+     g={key,marketKey:market.key,marketName:market.name,odds,total:0,matches:[]};
      map.set(key,g);
     }
     g.total++;
@@ -614,33 +571,22 @@ function getGroups(matches,target,minSample){
   base=Array.from(map.values());
   cache.set(cacheKey,base);
  }
- const all=[];
- for(const b of base){
-  if(b.total<minSample)continue;
+ return base.filter(b=>b.total>=minSample).map(b=>{
   let targetCount=0;
   for(const m of b.matches){
-   if(m.score.home===target.home&&m.score.away===target.away){
-    targetCount++;
-   }
+   if(m.score.home===target.home&&m.score.away===target.away)targetCount++;
   }
-  all.push({
-   key:b.key,
-   marketKey:b.marketKey,
-   marketName:b.marketName,
-   odds:b.odds,
-   total:b.total,
-   targetCount,
-   rate:targetCount/b.total*100,
-   matches:b.matches
-  });
- }
- return all;
+  return {
+   key:b.key,marketKey:b.marketKey,marketName:b.marketName,
+   odds:b.odds,total:b.total,targetCount,
+   rate:targetCount/b.total*100,matches:b.matches
+  };
+ });
 }
 function renderResults(groups){
  const body=$("resultsBody");
  if(!groups.length){
-  body.innerHTML=
-   '<tr><td colspan="6" class="empty">Bu filtrelerde minimum maç ve %70 skor sıklığı şartlarını karşılayan grup bulunamadı.</td></tr>';
+  body.innerHTML='<tr><td colspan="6" class="empty">Bu filtrelerde minimum maç ve %70 skor sıklığı şartlarını karşılayan grup bulunamadı.</td></tr>';
   return;
  }
  body.innerHTML=groups.map((g,i)=>`
@@ -652,97 +598,23 @@ function renderResults(groups){
    <td>${g.targetCount}</td>
    <td>
     <span class="rate high">${pct(g.rate)}</span>
-    <div class="bar">
-     <span style="width:${Math.min(100,g.rate)}%"></span>
-    </div>
+    <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
    </td>
   </tr>
  `).join("");
 }
-/*
- * OYNANMAMIŞ MAÇLAR
- * 1. Skoru olan maçlar çıkarılır.
- * 2. Tarihi geçersiz maçlar çıkarılır.
- * 3. Bugünden önceki maçlar çıkarılır.
- * 4. Kalan maçlar tarih ve saate göre sıralanır.
- * 5. Başarı oranı sıralaması yerine kronolojik sıra korunur.
- */
-function renderUpcoming(target,minSample){
- const body=$("upcomingBody");
- const statusEl=$("upcomingStatus");
- const rows=[];
+function getUpcomingForGroup(g){
  const today=new Date();
  today.setHours(0,0,0,0);
  const todayKey=dateKey(today);
- function sortTime(time){
-  return time&&time!=="—"?time:"99:99";
- }
- const upcoming=prepared
-  .filter(m=>{
-   if(m.score)return false;
-   if(!m.dateKey)return false;
-   if(m.dateKey<todayKey)return false;
-   return true;
-  })
-  .sort((a,b)=>{
-   const dateCompare=a.dateKey.localeCompare(b.dateKey);
-   if(dateCompare!==0)return dateCompare;
-   return sortTime(a.time).localeCompare(sortTime(b.time));
-  });
- const groupsByKey=activeGroups;
- for(const m of upcoming){
-  for(const market of MARKETS){
-   const odds=m.odds[market.key];
-   if(!odds)continue;
-   const g=groupsByKey.get(market.key+"|"+odds);
-   if(!g||g.total<minSample)continue;
-   rows.push({m,market,odds,g});
-  }
- }
- // Satırların kronolojik sıralaması:
- // tarih → saat → ev sahibi takım.
- // Başarı yüzdesi tarih sıralamasını değiştirmez.
- rows.sort((a,b)=>{
-  const dateCompare=a.m.dateKey.localeCompare(b.m.dateKey);
-  if(dateCompare!==0)return dateCompare;
-  const timeA=sortTime(a.m.time);
-  const timeB=sortTime(b.m.time);
-  if(timeA!==timeB){
-   return timeA.localeCompare(timeB);
-  }
-  const matchA=a.m.home+" - "+a.m.away;
-  const matchB=b.m.home+" - "+b.m.away;
-  return matchA.localeCompare(matchB,"tr");
+ return prepared.filter(m=>{
+  if(m.score||!m.dateKey||m.dateKey<todayKey)return false;
+  return m.odds[g.marketKey]===g.odds;
+ }).sort((a,b)=>{
+  const dc=a.dateKey.localeCompare(b.dateKey);
+  if(dc!==0)return dc;
+  return (a.time==="—"?"99:99":a.time).localeCompare(b.time==="—"?"99:99":b.time);
  });
- if(!rows.length){
-  body.innerHTML=
-   '<tr><td colspan="8" class="empty">Bugün veya gelecekte minimum geçmiş maç sayısını karşılayan oran eşleşmesi bulunamadı.</td></tr>';
-  statusEl.textContent=
-   `Taranan bugünkü ve gelecekteki maç: ${upcoming.length}. Uygun eşleşme: 0.`;
-  return;
- }
- body.innerHTML=rows.map(({m,market,odds,g})=>`
-  <tr>
-   <td>${escapeHTML(dateLabel(m.date))}</td>
-   <td>${escapeHTML(m.time)}</td>
-   <td>${escapeHTML(m.league)}</td>
-   <td><strong>${escapeHTML(m.home+" - "+m.away)}</strong></td>
-   <td>${escapeHTML(market.name)}</td>
-   <td><span class="badge">${odds}</span></td>
-   <td>${g.total}</td>
-   <td>
-    <span class="rate ${g.rate>=70?"high":g.rate>=50?"medium":"low"}">
-     ${pct(g.rate)}
-    </span>
-    <div class="bar">
-     <span style="width:${Math.min(100,g.rate)}%"></span>
-    </div>
-    <div class="note">${g.targetCount}/${g.total} hedef skor</div>
-   </td>
-  </tr>
- `).join("");
- statusEl.textContent=
-  `Taranan bugünkü ve gelecekteki maç: ${upcoming.length}. Eşleşen satır: ${rows.length}. Bu bölümde %70 filtresi uygulanmadı.`;
 }
 function showDetails(key){
  const g=shownGroups.find(x=>x.key===key);
@@ -753,13 +625,10 @@ function showDetails(key){
  };
  $("detailPanel").hidden=false;
  $("detailSummary").textContent=
-  `${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} maç hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
- const sorted=g.matches.slice().sort((a,b)=>
-  (b.dateKey||"").localeCompare(a.dateKey||"")
- );
+  `${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} geçmiş maç hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
+ const sorted=g.matches.slice().sort((a,b)=>(b.dateKey||"").localeCompare(a.dateKey||""));
  $("detailBody").innerHTML=sorted.map(m=>{
-  const hit=
-   m.score.home===target.home&&m.score.away===target.away;
+  const hit=m.score.home===target.home&&m.score.away===target.away;
   return `
    <tr>
     <td>${escapeHTML(dateLabel(m.date))}</td>
@@ -769,42 +638,54 @@ function showDetails(key){
     <td>${escapeHTML(m.away)}</td>
     <td>${g.odds}</td>
     <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
-   </tr>
-  `;
+   </tr>`;
  }).join("");
- $("detailPanel").scrollIntoView({
-  behavior:"auto",
-  block:"start"
- });
+ const future=getUpcomingForGroup(g);
+ const futureBody=$("futureDetailBody");
+ if(!future.length){
+  futureBody.innerHTML='<tr><td colspan="8" class="empty">Bu market ve açılış oranıyla bugünkü veya gelecek maç bulunamadı.</td></tr>';
+ }else{
+  futureBody.innerHTML=future.map(m=>`
+   <tr class="future-row">
+    <td>${escapeHTML(dateLabel(m.date))}</td>
+    <td>${escapeHTML(m.time)}</td>
+    <td>${escapeHTML(m.league)}</td>
+    <td>${escapeHTML(m.home)}</td>
+    <td>${escapeHTML(m.away)}</td>
+    <td>${escapeHTML(g.marketName)}</td>
+    <td><span class="badge">${g.odds}</span></td>
+    <td>
+     <span class="rate high">${pct(g.rate)}</span>
+     <div class="note">${g.targetCount}/${g.total} geçmiş maçta hedef skor</div>
+    </td>
+   </tr>
+  `).join("");
+ }
+ $("futureDetailStatus").textContent=
+  `${future.length} oynanmamış maç bulundu. Geçmiş başarı oranı ${pct(g.rate)} (${g.targetCount}/${g.total}).`;
+ $("detailPanel").scrollIntoView({behavior:"auto",block:"start"});
 }
 function analyze(){
  if(!loaded)return;
- const target={
-  home:+$("homeScore").value,
-  away:+$("awayScore").value
- };
+ const target={home:+$("homeScore").value,away:+$("awayScore").value};
  const matches=filteredPlayed();
  const minSample=+$("minSample").value;
  $("targetScore").textContent=target.home+"-"+target.away;
  $("playedCount").textContent=matches.length.toLocaleString("tr-TR");
  const groups=getGroups(matches,target,minSample);
- const allEligible=groups;
- shownGroups=allEligible
-  .filter(g=>g.rate>=MIN_RATE)
-  .sort((a,b)=>
-   b.rate-a.rate||
-   b.total-a.total||
-   b.targetCount-a.targetCount||
-   a.marketName.localeCompare(b.marketName,"tr")
-  );
- activeGroups=new Map(allEligible.map(g=>[g.key,g]));
- $("groupCount").textContent=allEligible.length.toLocaleString("tr-TR");
+ shownGroups=groups.filter(g=>g.rate>=MIN_RATE).sort((a,b)=>
+  b.rate-a.rate||
+  b.total-a.total||
+  b.targetCount-a.targetCount||
+  a.marketName.localeCompare(b.marketName,"tr")
+ );
+ activeGroups=new Map(groups.map(g=>[g.key,g]));
+ $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
  $("shownCount").textContent=shownGroups.length.toLocaleString("tr-TR");
  renderResults(shownGroups);
- renderUpcoming(target,minSample);
  $("detailPanel").hidden=true;
  status(
-  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. ${allEligible.length.toLocaleString("tr-TR")} yeterli örnekli grup incelendi. %70 ve üzeri ${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`,
+  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. ${groups.length.toLocaleString("tr-TR")} yeterli örnekli grup incelendi. %70 ve üzeri ${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`,
   "success"
  );
 }
@@ -815,23 +696,13 @@ async function loadData(){
  $("analyzeBtn").disabled=true;
  status("Veri yükleniyor...");
  try{
-  const response=await fetch(DATA_URL+"?v="+Date.now(),{
-   cache:"no-store"
-  });
-  if(!response.ok){
-   throw new Error("HTTP "+response.status);
-  }
+  const response=await fetch(DATA_URL+"?v="+Date.now(),{cache:"no-store"});
+  if(!response.ok)throw new Error("HTTP "+response.status);
   const payload=await response.json();
-  allMatches=normalize(payload).filter(
-   m=>m&&typeof m==="object"
-  );
-  if(!allMatches.length){
-   throw new Error("JSON içinde dolu matches veya data dizisi bulunamadı.");
-  }
+  allMatches=normalize(payload).filter(m=>m&&typeof m==="object");
+  if(!allMatches.length)throw new Error("JSON içinde dolu matches veya data dizisi bulunamadı.");
   prepareData();
-  if(!played.length){
-   throw new Error("Veri geldi fakat tamamlanmış maç skorları tanınamadı.");
-  }
+  if(!played.length)throw new Error("Veri geldi fakat tamamlanmış maç skorları tanınamadı.");
   loaded=true;
   analyze();
  }catch(e){
@@ -845,17 +716,13 @@ async function loadData(){
   $("groupCount").textContent="0";
   $("shownCount").textContent="0";
   $("resultsBody").innerHTML=`
-   <tr>
-    <td colspan="6" class="empty">
-     Veri yüklenemedi: ${escapeHTML(e.message)}
-     <br>
-     ./data/v2-data.json dosyasını ve skor alanlarını kontrol et.
-    </td>
-   </tr>
-  `;
-  $("upcomingBody").innerHTML=
-   '<tr><td colspan="8" class="empty">Veri yüklenemedi.</td></tr>';
-  $("upcomingStatus").textContent="";
+   <tr><td colspan="6" class="empty">
+    Veri yüklenemedi: ${escapeHTML(e.message)}
+    <br>./data/v2-data.json dosyasını ve skor alanlarını kontrol et.
+   </td></tr>`;
+  $("detailBody").innerHTML="";
+  $("futureDetailBody").innerHTML="";
+  $("futureDetailStatus").textContent="";
   status("Veri yüklenemedi: "+e.message,"error");
  }finally{
   busy=false;
@@ -874,9 +741,7 @@ $("dateRange").addEventListener("change",analyze);
 $("minSample").addEventListener("change",analyze);
 $("resultsBody").addEventListener("click",e=>{
  const row=e.target.closest("[data-key]");
- if(row){
-  showDetails(row.dataset.key);
- }
+ if(row)showDetails(row.dataset.key);
 });
 $("resultsBody").addEventListener("keydown",e=>{
  if(e.key!=="Enter"&&e.key!==" ")return;
