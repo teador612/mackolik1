@@ -737,4 +737,984 @@ tbody tr.result-row:hover { background: #162035; }
               <table>
                 <thead>
                   <tr>
-                    <th>Tarih</th><th>Saat</th><
+                    <th>Tarih</th><th>Saat</th><th>Lig</th>
+                    <th>Ev sahibi</th><th>Deplasman</th><th>Oran</th><th>Durum</th>
+                  </tr>
+                </thead>
+                <tbody id="futureDetailBody"></tbody>
+              </table>
+            </div>
+            <div class="note">Yalnızca seçilen market ve açılış oranıyla eşleşen, tarihi bugün veya ileride olan ve henüz skoru bulunmayan maçlar listelenir.</div>
+          </div>
+        </section>
+
+        <footer class="note" style="text-align:center;padding-bottom:10px">
+          Veri kaynağı: ./data/matches.json
+        </footer>
+      </div>
+    </div>
+
+    <!-- YENİ GÜNÜN MAÇLARI MENÜSÜ -->
+    <div id="dailyView" hidden>
+      <div class="container">
+        <header>
+          <h1>DNA | Günün Maçları</h1>
+          <p>Bugünün maçlarını otomatik tarar. Açılış oranlarını geçmiş maçlarla birebir eşleştirir ve analiz bulunan maçları en üstte gösterir.</p>
+        </header>
+
+        <section class="panel">
+          <div class="heading">
+            <div>
+              <h2>Otomatik maç taraması</h2>
+              <p style="margin-top:6px">Başarı filtresi kapalıdır. Geçmişte en sık görülen skorlar market bazında listelenir.</p>
+            </div>
+            <span class="badge" id="dailyDateBadge">Bugün</span>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="dailyReloadBtn">Maçları yenile ve tara</button>
+          </div>
+
+          <div id="dailyStatus" class="status">Veri bekleniyor...</div>
+
+          <div class="note">
+            Analiz, mevcut geçmiş aralığı ve minimum geçmiş maç ayarlarını kullanır. Yeterli sayıda eşleşen geçmiş maç bulunmayan marketler analiz sonucu sayılmaz; maç yine de listede kalır.
+          </div>
+        </section>
+
+        <section class="daily-summary">
+          <div class="daily-chip">
+            <small>Bugünkü maç</small>
+            <strong id="dailyMatchCount">0</strong>
+          </div>
+          <div class="daily-chip">
+            <small>Analiz bulunan</small>
+            <strong id="dailyAnalyzedCount">0</strong>
+          </div>
+          <div class="daily-chip">
+            <small>Analiz bulunmayan</small>
+            <strong id="dailyNoAnalysisCount">0</strong>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="heading">
+            <h2>Bugünün maç listesi</h2>
+            <span class="badge">Analiz bulunanlar üstte</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Saat</th>
+                  <th>Lig</th>
+                  <th>Maç</th>
+                  <th>En iyi eşleşme</th>
+                  <th>Geçmiş maç</th>
+                  <th>En sık skor</th>
+                  <th>Skor sıklığı</th>
+                  <th>Analiz</th>
+                </tr>
+              </thead>
+              <tbody id="dailyResultsBody">
+                <tr><td colspan="9" class="empty">Maçlar yükleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="note">
+            Skor sıklığı, aynı market ve aynı açılış oranıyla eşleşen geçmiş maçlar içinde en sık gerçekleşen skorun oranıdır. Bu oran bir garanti veya kesin tahmin değildir.
+          </div>
+        </section>
+
+        <section class="panel" id="dailyDetailPanel" hidden>
+          <div class="heading">
+            <h2 id="dailyDetailTitle">Maç analizi</h2>
+            <button class="btn" id="closeDailyDetailBtn">Kapat</button>
+          </div>
+
+          <div id="dailyDetailSummary" class="detail-title"></div>
+
+          <div class="detail-section">
+            <h3>Market bazında geçmiş analizler <span class="section-count" id="dailyDetailCount"></span></h3>
+            <div id="dailyAnalysisList" class="analysis-list"></div>
+          </div>
+        </section>
+
+        <footer class="note" style="text-align:center;padding-bottom:10px">
+          Veri kaynağı: ./data/matches.json
+        </footer>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+"use strict";
+
+(()=>{
+const DATA_URL="./data/matches.json";
+
+const MARKETS=[
+ ["ms1","MS 1"],["msX","MS X"],["ms2","MS 2"],
+ ["cs1X","Çifte Şans 1X"],["cs12","Çifte Şans 12"],["csX2","Çifte Şans X2"],
+ ["au25Alt","MS 2,5 Alt"],["au25Ust","MS 2,5 Üst"],
+ ["handicap1","Handikap 1"],["handicapX","Handikap X"],["handicap2","Handikap 2"],
+ ["kgVar","KG Var"],["kgYok","KG Yok"],
+ ["iy15Alt","İY 1,5 Alt"],["iy15Ust","İY 1,5 Üst"],
+ ["au15Alt","MS 1,5 Alt"],["au15Ust","MS 1,5 Üst"],
+ ["au35Alt","MS 3,5 Alt"],["au35Ust","MS 3,5 Üst"],
+ ["gol01","0-1 Gol"],["gol23","2-3 Gol"],["gol46","4-6 Gol"],["gol7","7+ Gol"],
+ ["iy1","İY 1"],["iyX","İY X"],["iy2","İY 2"]
+].map(([key,name])=>({key,name}));
+
+const $=id=>document.getElementById(id);
+
+let allMatches=[];
+let played=[];
+let prepared=[];
+let loaded=false;
+let busy=false;
+let cache=new Map();
+let shownGroups=[];
+let dailyMatches=[];
+
+const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
+ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+
+function num(v){
+ if(v===null||v===undefined||v==="")return null;
+ const n=Number(String(v).trim().replace(",","."));
+ return Number.isFinite(n)?n:null;
+}
+
+function validScore(h,a){
+ return h!==null&&a!==null&&h>=0&&a>=0&&Number.isInteger(h)&&Number.isInteger(a)
+  ?{home:h,away:a}:null;
+}
+
+function scoreValue(v){
+ if(v&&typeof v==="object"){
+  const h=num(v.home??v.homeScore??v.homeGoals??v.h??v.ev);
+  const a=num(v.away??v.awayScore??v.awayGoals??v.a??v.dep);
+  return validScore(h,a);
+ }
+ if(v===null||v===undefined)return null;
+ const m=String(v).trim().match(/^(\d+)\s*[-:]\s*(\d+)$/);
+ return m?validScore(Number(m[1]),Number(m[2])):null;
+}
+
+function getScore(m){
+ const candidates=[
+  m.score,m.fullTimeScore,m.full_time_score,m.ftScore,m.ms,
+  m.result?.fullTime,m.result?.ft,
+  m.scores?.fullTime,m.scores?.full_time,m.scores?.ft
+ ];
+ for(const v of candidates){
+  const s=scoreValue(v);
+  if(s)return s;
+ }
+ return validScore(
+  num(m.homeScore??m.homeGoals??m.goalsHome??m.ftHome),
+  num(m.awayScore??m.awayGoals??m.goalsAway??m.ftAway)
+ );
+}
+
+function getHalfTimeScore(m){
+ for(const v of [m.halfTimeScore,m.half_time_score,m.htScore,m.halftime,m.halfTime]){
+  const s=scoreValue(v);
+  if(s)return s;
+ }
+ return null;
+}
+
+function makeDate(y,m,d){
+ const x=new Date(y,m-1,d);
+ return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d?x:null;
+}
+
+function parseDate(v){
+ if(!v)return null;
+ if(v instanceof Date){
+  return Number.isNaN(v.getTime())?null:new Date(v.getFullYear(),v.getMonth(),v.getDate());
+ }
+ const s=String(v).trim();
+ let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+ if(m)return makeDate(+m[3],+m[2],+m[1]);
+ m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+ if(m)return makeDate(+m[1],+m[2],+m[3]);
+ const d=new Date(s);
+ return Number.isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
+}
+
+function dateOf(m){
+ return m.date??m.matchDate??m.gameDate??m.tarih??m.datetime??m.dateTime??"";
+}
+
+function dateKey(v){
+ const d=parseDate(v);
+ return d
+  ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+  :"";
+}
+
+function dateLabel(v){
+ const d=parseDate(v);
+ return d
+  ?`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`
+  :String(v||"—");
+}
+
+function timeOf(m){
+ const v=m.time??m.matchTime??m.hour??m.saat??m.datetime??m.dateTime??"";
+ return String(v).match(/\b([01]?\d|2[0-3]):[0-5]\d\b/)?.[0]||"—";
+}
+
+function leagueOf(m){
+ return m.league??m.leagueName??m.competition??m.tournament??m.lig??"—";
+}
+
+function homeOf(m){
+ return m.home??m.homeTeam??m.homeName??m.team1??m.evSahibi??"Ev sahibi";
+}
+
+function awayOf(m){
+ return m.away??m.awayTeam??m.awayName??m.team2??m.deplasman??"Deplasman";
+}
+
+function oddText(v){
+ if(v&&typeof v==="object"){
+  v=v.opening??v.open??v.odd??v.odds??v.value;
+ }
+ const n=num(v);
+ return n!==null&&n>0?n.toFixed(2):null;
+}
+
+function getOdd(m,key){
+ const containers=[
+  m.openingOdds,m.opening_odds,m.openOdds,m.opening,
+  m.odds,m.Odds,m.oranlar,m.Oranlar,m.markets,m.marketOdds,m
+ ];
+ for(const c of containers){
+  if(!c||typeof c!=="object")continue;
+  if(!Object.prototype.hasOwnProperty.call(c,key))continue;
+  const o=oddText(c[key]);
+  if(o!==null)return o;
+ }
+ return null;
+}
+
+function normalize(payload){
+ if(Array.isArray(payload))return payload;
+ if(Array.isArray(payload?.matches))return payload.matches;
+ if(Array.isArray(payload?.data))return payload.data;
+ return [];
+}
+
+function setStatus(msg,type=""){
+ $("status").textContent=msg;
+ $("status").className="status "+type;
+}
+
+function setDailyStatus(msg,type=""){
+ $("dailyStatus").textContent=msg;
+ $("dailyStatus").className="status "+type;
+}
+
+function populateScores(){
+ for(const id of ["homeScore","awayScore"]){
+  $(id).innerHTML=Array.from({length:11},(_,i)=>
+   `<option value="${i}">${i}</option>`
+  ).join("");
+ }
+ $("homeScore").value="2";
+ $("awayScore").value="1";
+}
+
+function prepareData(){
+ prepared=allMatches.map((m,index)=>{
+  const score=getScore(m);
+  const halfTimeScore=getHalfTimeScore(m);
+  const odds=Object.create(null);
+  for(const market of MARKETS)odds[market.key]=getOdd(m,market.key);
+  const date=dateOf(m);
+  return {
+   raw:m,index,score,halfTimeScore,date,
+   dateKey:dateKey(date),time:timeOf(m),
+   league:leagueOf(m),home:homeOf(m),away:awayOf(m),odds
+  };
+ });
+ played=prepared.filter(m=>m.score);
+ cache.clear();
+}
+
+function filteredPlayed(){
+ const range=$("dateRange").value;
+ if(range==="all")return played;
+
+ const days=Number(range);
+ const today=new Date();
+ today.setHours(23,59,59,999);
+
+ const start=new Date();
+ start.setHours(0,0,0,0);
+ start.setDate(start.getDate()-days+1);
+
+ const startKey=dateKey(start);
+ const endKey=dateKey(today);
+
+ return played.filter(m=>m.dateKey&&m.dateKey>=startKey&&m.dateKey<=endKey);
+}
+
+function pct(n){
+ return Number(n).toLocaleString("tr-TR",{maximumFractionDigits:2})+"%";
+}
+
+function getGroups(matches,target,minSample){
+ const range=$("dateRange").value;
+ const cacheKey=range+"|"+minSample;
+ let base=cache.get(cacheKey);
+
+ if(!base){
+  const map=new Map();
+
+  for(const m of matches){
+   for(const market of MARKETS){
+    const odds=m.odds[market.key];
+    if(!odds)continue;
+
+    const key=market.key+"|"+odds;
+    let g=map.get(key);
+
+    if(!g){
+     g={key,marketKey:market.key,marketName:market.name,odds,total:0,matches:[]};
+     map.set(key,g);
+    }
+
+    g.total++;
+    g.matches.push(m);
+   }
+  }
+
+  base=Array.from(map.values());
+  cache.set(cacheKey,base);
+ }
+
+ const all=[];
+
+ for(const b of base){
+  if(b.total<minSample)continue;
+
+  let targetCount=0;
+
+  for(const m of b.matches){
+   if(m.score.home===target.home&&m.score.away===target.away)targetCount++;
+  }
+
+  all.push({
+   key:b.key,marketKey:b.marketKey,marketName:b.marketName,
+   odds:b.odds,total:b.total,targetCount,
+   rate:targetCount/b.total*100,matches:b.matches
+  });
+ }
+
+ return all;
+}
+
+function getManualMinRate(){
+ const raw=$("minRate").value.trim();
+ if(raw==="")return null;
+ const value=Number(raw);
+ if(!Number.isFinite(value)||value<0||value>100)return NaN;
+ return value;
+}
+
+function renderResults(groups){
+ const body=$("resultsBody");
+
+ if(!groups.length){
+  body.innerHTML='<tr><td colspan="6" class="empty">Seçtiğin ayarlara uygun grup bulunamadı. Minimum geçmiş maç sayısını azaltabilir veya başarı eşiğini temizleyebilirsin.</td></tr>';
+  return;
+ }
+
+ body.innerHTML=groups.map((g,i)=>{
+  const rateClass=g.rate>=70?"high":g.rate>=40?"medium":"low";
+
+  return `
+   <tr class="result-row" data-key="${escapeHTML(g.key)}" tabindex="0">
+    <td>${i+1}</td>
+    <td><strong>${escapeHTML(g.marketName)}</strong></td>
+    <td><span class="badge">${g.odds}</span></td>
+    <td>${g.total}</td>
+    <td>${g.targetCount}/${g.total}</td>
+    <td>
+     <span class="rate ${rateClass}">${pct(g.rate)}</span>
+     <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
+    </td>
+   </tr>
+  `;
+ }).join("");
+}
+
+function getUpcomingForGroup(g){
+ const today=new Date();
+ today.setHours(0,0,0,0);
+ const todayKey=dateKey(today);
+
+ return prepared.filter(m=>
+  !m.score&&m.dateKey&&m.dateKey>=todayKey&&m.odds[g.marketKey]===g.odds
+ ).sort((a,b)=>
+  a.dateKey.localeCompare(b.dateKey)||
+  ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
+   ((b.time&&b.time!=="—")?b.time:"99:99")
+  )||
+  (a.home+" - "+a.away).localeCompare(b.home+" - "+b.away,"tr")
+ );
+}
+
+function showDetails(key){
+ const g=shownGroups.find(x=>x.key===key);
+ if(!g)return;
+
+ const target={home:+$("homeScore").value,away:+$("awayScore").value};
+
+ const history=g.matches.slice().sort((a,b)=>
+  (b.dateKey||"").localeCompare(a.dateKey||"")||
+  ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
+   ((b.time&&b.time!=="—")?b.time:"99:99")
+  )
+ );
+
+ const upcoming=getUpcomingForGroup(g);
+
+ $("detailPanel").hidden=false;
+
+ $("detailSummary").textContent=
+  `${g.marketName} · Açılış oranı ${g.odds} · `+
+  `${g.targetCount}/${g.total} maç hedef skor ${target.home}-${target.away} · `+
+  `Sıklık ${pct(g.rate)}`;
+
+ $("historyCount").textContent=`(${history.length} maç)`;
+ $("futureCount").textContent=`(${upcoming.length} maç)`;
+
+ if(!history.length){
+  $("detailBody").innerHTML='<tr><td colspan="7" class="empty">Bu grupta geçmiş maç bulunamadı.</td></tr>';
+ }else{
+  $("detailBody").innerHTML=history.map(m=>{
+   const hit=m.score.home===target.home&&m.score.away===target.away;
+
+   return `
+    <tr>
+     <td>${escapeHTML(dateLabel(m.date))}</td>
+     <td>${escapeHTML(m.league)}</td>
+     <td>${escapeHTML(m.home)}</td>
+     <td><strong>${m.score.home}-${m.score.away}</strong></td>
+     <td>${escapeHTML(m.away)}</td>
+     <td>${g.odds}</td>
+     <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
+    </tr>
+   `;
+  }).join("");
+ }
+
+ if(!upcoming.length){
+  $("futureDetailBody").innerHTML='<tr><td colspan="7" class="empty">Bu market ve açılış oranıyla eşleşen bugünkü veya gelecekteki maç bulunamadı.</td></tr>';
+ }else{
+  $("futureDetailBody").innerHTML=upcoming.map(m=>`
+   <tr>
+    <td>${escapeHTML(dateLabel(m.date))}</td>
+    <td>${escapeHTML(m.time)}</td>
+    <td>${escapeHTML(m.league)}</td>
+    <td><strong>${escapeHTML(m.home)}</strong></td>
+    <td><strong>${escapeHTML(m.away)}</strong></td>
+    <td><span class="badge">${g.odds}</span></td>
+    <td><span class="badge pending">Bekliyor</span></td>
+   </tr>
+  `).join("");
+ }
+
+ $("detailPanel").scrollIntoView({behavior:"auto",block:"start"});
+}
+
+function analyze(){
+ if(!loaded)return;
+
+ const target={home:+$("homeScore").value,away:+$("awayScore").value};
+ const minRate=getManualMinRate();
+
+ if(Number.isNaN(minRate)){
+  setStatus("Minimum başarı alanına 0 ile 100 arasında bir değer gir veya alanı boş bırak.","error");
+  $("minRate").focus();
+  return;
+ }
+
+ const matches=filteredPlayed();
+ const minSample=+$("minSample").value;
+
+ $("targetScore").textContent=target.home+"-"+target.away;
+ $("playedCount").textContent=matches.length.toLocaleString("tr-TR");
+
+ const groups=getGroups(matches,target,minSample);
+
+ $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
+
+ shownGroups=groups.filter(g=>minRate===null||g.rate>=minRate).sort((a,b)=>
+  b.rate-a.rate||b.total-a.total||b.targetCount-a.targetCount||
+  a.marketName.localeCompare(b.marketName,"tr")
+ );
+
+ $("shownCount").textContent=shownGroups.length.toLocaleString("tr-TR");
+
+ $("filterBadge").textContent=minRate===null
+  ?"Başarı filtresi kapalı"
+  :"Minimum başarı: %"+String(minRate).replace(".",",");
+
+ renderResults(shownGroups);
+ $("detailPanel").hidden=true;
+
+ setStatus(
+  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. `+
+  `${groups.length.toLocaleString("tr-TR")} yeterli örnekli grup bulundu. `+
+  `${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`+
+  (minRate===null?" Başarı eşiği uygulanmadı.":` Minimum başarı eşiği: %${minRate}.`),
+  "success"
+ );
+}
+
+/* =========================================================
+   GÜNÜN MAÇLARI
+   - Bugünün tüm maçları listelenir.
+   - Geçmiş aralığı ve minimum örnek ayarları kullanılır.
+   - Market ve açılış oranı birebir eşleşir.
+   - Her market için geçmişte en sık görülen skor bulunur.
+   - Başarı eşiği uygulanmaz.
+========================================================= */
+
+function getScoreFrequency(matches){
+ const scoreMap=new Map();
+
+ for(const m of matches){
+  if(!m.score)continue;
+
+  const score=m.score.home+"-"+m.score.away;
+  scoreMap.set(score,(scoreMap.get(score)||0)+1);
+ }
+
+ return Array.from(scoreMap.entries())
+  .map(([score,count])=>({score,count,rate:count/matches.length*100}))
+  .sort((a,b)=>
+   b.count-a.count||
+   a.score.localeCompare(b.score,"tr",{numeric:true})
+  );
+}
+
+function buildDailyHistoryMap(history){
+ const map=new Map();
+
+ for(const m of history){
+  for(const market of MARKETS){
+   const odds=m.odds[market.key];
+   if(!odds)continue;
+
+   const key=market.key+"|"+odds;
+
+   if(!map.has(key)){
+    map.set(key,{
+     key,
+     marketKey:market.key,
+     marketName:market.name,
+     odds,
+     matches:[]
+    });
+   }
+
+   map.get(key).matches.push(m);
+  }
+ }
+
+ return map;
+}
+
+function getDailyAnalysisForMatch(match,historyMap,minSample){
+ const results=[];
+
+ for(const market of MARKETS){
+  const odds=match.odds[market.key];
+  if(!odds)continue;
+
+  const key=market.key+"|"+odds;
+  const group=historyMap.get(key);
+
+  if(!group||group.matches.length<minSample)continue;
+
+  const frequencies=getScoreFrequency(group.matches);
+  if(!frequencies.length)continue;
+
+  const best=frequencies[0];
+
+  results.push({
+   key,
+   marketKey:market.key,
+   marketName:market.name,
+   odds,
+   total:group.matches.length,
+   topScore:best.score,
+   targetCount:best.count,
+   rate:best.rate,
+   matches:group.matches,
+   scoreFrequencies:frequencies
+  });
+ }
+
+ results.sort((a,b)=>
+  b.rate-a.rate||
+  b.total-a.total||
+  b.targetCount-a.targetCount||
+  a.marketName.localeCompare(b.marketName,"tr")
+ );
+
+ return results;
+}
+
+function getTodayMatches(){
+ const todayKey=dateKey(new Date());
+
+ return prepared.filter(m=>m.dateKey===todayKey).sort((a,b)=>
+  ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
+   ((b.time&&b.time!=="—")?b.time:"99:99")
+  )||
+  a.home.localeCompare(b.home,"tr")
+ );
+}
+
+function runDailyAnalysis(){
+ if(!loaded){
+  setDailyStatus("Önce maç verilerinin yüklenmesini bekle.","error");
+  return;
+ }
+
+ const todayKey=dateKey(new Date());
+ $("dailyDateBadge").textContent=dateLabel(todayKey);
+
+ const todaysMatches=getTodayMatches();
+ const history=filteredPlayed();
+ const minSample=+$("minSample").value;
+ const historyMap=buildDailyHistoryMap(history);
+
+ dailyMatches=todaysMatches.map(match=>({
+  match,
+  analyses:getDailyAnalysisForMatch(match,historyMap,minSample)
+ }));
+
+ dailyMatches.sort((a,b)=>{
+  const aHas=a.analyses.length>0;
+  const bHas=b.analyses.length>0;
+
+  if(aHas!==bHas)return aHas?-1:1;
+
+  const aRate=a.analyses[0]?.rate??-1;
+  const bRate=b.analyses[0]?.rate??-1;
+
+  if(aRate!==bRate)return bRate-aRate;
+
+  const aTotal=a.analyses[0]?.total??0;
+  const bTotal=b.analyses[0]?.total??0;
+
+  if(aTotal!==bTotal)return bTotal-aTotal;
+
+  return ((a.match.time&&a.match.time!=="—")?a.match.time:"99:99")
+   .localeCompare(((b.match.time&&b.match.time!=="—")?b.match.time:"99:99"));
+ });
+
+ const analyzed=dailyMatches.filter(x=>x.analyses.length>0).length;
+ const noAnalysis=dailyMatches.length-analyzed;
+
+ $("dailyMatchCount").textContent=dailyMatches.length.toLocaleString("tr-TR");
+ $("dailyAnalyzedCount").textContent=analyzed.toLocaleString("tr-TR");
+ $("dailyNoAnalysisCount").textContent=noAnalysis.toLocaleString("tr-TR");
+
+ renderDailyMatches();
+
+ if(!todaysMatches.length){
+  setDailyStatus(
+   "Veri dosyasında bugünün tarihine ait maç bulunamadı. matches.json dosyasının güncel olduğunu kontrol et.",
+   ""
+  );
+ }else{
+  setDailyStatus(
+   `${todaysMatches.length} bugünkü maç bulundu. ${analyzed} maçta en az bir market için yeterli geçmiş eşleşmesi var. Başarı filtresi uygulanmadı.`,
+   "success"
+  );
+ }
+}
+
+function renderDailyMatches(){
+ const body=$("dailyResultsBody");
+
+ if(!dailyMatches.length){
+  body.innerHTML='<tr><td colspan="9" class="empty">Bugün için maç bulunamadı.</td></tr>';
+  $("dailyDetailPanel").hidden=true;
+  return;
+ }
+
+ body.innerHTML=dailyMatches.map((item,index)=>{
+  const m=item.match;
+  const analyses=item.analyses;
+  const best=analyses[0];
+
+  const matchLabel=escapeHTML(m.home)+" - "+escapeHTML(m.away);
+
+  let bestCell="—";
+  let sampleCell="—";
+  let scoreCell="—";
+  let rateCell="—";
+  let statusCell='<span class="badge">Analiz yok</span>';
+
+  if(best){
+   bestCell=`<strong>${escapeHTML(best.marketName)}</strong><br><span class="badge">${best.odds}</span>`;
+   sampleCell=String(best.total);
+   scoreCell=`<strong>${escapeHTML(best.topScore)}</strong>`;
+   const rateClass=best.rate>=70?"high":best.rate>=40?"medium":"low";
+   rateCell=`<span class="rate ${rateClass}">${pct(best.rate)}</span><div class="bar"><span style="width:${Math.min(100,best.rate)}%"></span></div>`;
+   statusCell=`<span class="badge" style="color:var(--green)">${analyses.length} market</span>`;
+  }
+
+  return `
+   <tr class="result-row" data-daily-index="${index}" tabindex="0">
+    <td>${index+1}</td>
+    <td>${escapeHTML(m.time)}</td>
+    <td>${escapeHTML(m.league)}</td>
+    <td><strong>${matchLabel}</strong>${m.score?`<br><span class="badge">${m.score.home}-${m.score.away} tamamlandı</span>`:""}</td>
+    <td>${bestCell}</td>
+    <td>${sampleCell}</td>
+    <td>${scoreCell}</td>
+    <td>${rateCell}</td>
+    <td>${statusCell}</td>
+   </tr>
+  `;
+ }).join("");
+}
+
+function showDailyDetails(index){
+ const item=dailyMatches[index];
+ if(!item)return;
+
+ const m=item.match;
+ const analyses=item.analyses;
+
+ $("dailyDetailPanel").hidden=false;
+ $("dailyDetailTitle").textContent=m.home+" - "+m.away;
+
+ $("dailyDetailSummary").textContent=
+  `${dateLabel(m.date)} · ${m.time} · ${m.league} · `+
+  (m.score?`Tamamlanan skor: ${m.score.home}-${m.score.away}`:"Henüz tamamlanmadı")+
+  ` · ${analyses.length} market analizi`;
+
+ $("dailyDetailCount").textContent=`(${analyses.length} market)`;
+
+ if(!analyses.length){
+  $("dailyAnalysisList").innerHTML=
+   '<div class="empty">Bu maçın açılış oranlarında, seçili geçmiş aralığında ve minimum örnek sayısında eşleşen bir market bulunamadı. Maç listede kalır; analiz filtresi uygulanmadığı için gizlenmez.</div>';
+ }else{
+  $("dailyAnalysisList").innerHTML=analyses.map((g,i)=>{
+   const rateClass=g.rate>=70?"high":g.rate>=40?"medium":"low";
+
+   return `
+    <div class="analysis-item">
+     <div>
+      <div class="market-name">${i+1}. ${escapeHTML(g.marketName)}</div>
+      <div class="market-meta">Açılış oranı: <strong>${g.odds}</strong></div>
+     </div>
+     <div class="score-info">
+      <strong>${escapeHTML(g.topScore)}</strong>
+      En sık skor · ${g.targetCount}/${g.total}
+     </div>
+     <div class="rate-info">
+      <strong class="${rateClass}">${pct(g.rate)}</strong>
+      <small>${g.total} geçmiş maç</small>
+     </div>
+    </div>
+   `;
+  }).join("");
+ }
+
+ $("dailyDetailPanel").scrollIntoView({behavior:"auto",block:"start"});
+}
+
+async function loadData(){
+ if(busy)return;
+
+ busy=true;
+
+ $("reloadBtn").disabled=true;
+ $("analyzeBtn").disabled=true;
+ $("dailyReloadBtn").disabled=true;
+
+ setStatus("Veri yükleniyor...");
+ setDailyStatus("Veri yükleniyor...");
+
+ try{
+  const response=await fetch(DATA_URL+"?v="+Date.now(),{cache:"no-store"});
+
+  if(!response.ok)throw new Error("HTTP "+response.status);
+
+  const payload=await response.json();
+
+  allMatches=normalize(payload).filter(m=>m&&typeof m==="object");
+
+  if(!allMatches.length){
+   throw new Error("JSON içinde dolu matches veya data dizisi bulunamadı.");
+  }
+
+  prepareData();
+
+  if(!played.length){
+   throw new Error("Veri geldi fakat tamamlanmış maç skorları tanınamadı.");
+  }
+
+  loaded=true;
+
+  analyze();
+  runDailyAnalysis();
+
+ }catch(e){
+  loaded=false;
+  allMatches=[];
+  played=[];
+  prepared=[];
+  cache.clear();
+  dailyMatches=[];
+
+  $("playedCount").textContent="0";
+  $("groupCount").textContent="0";
+  $("shownCount").textContent="0";
+
+  $("resultsBody").innerHTML=`
+   <tr><td colspan="6" class="empty">
+    Veri yüklenemedi: ${escapeHTML(e.message)}<br>
+    ./data/matches.json dosyasını ve skor alanlarını kontrol et.
+   </td></tr>`;
+
+  $("dailyResultsBody").innerHTML=`
+   <tr><td colspan="9" class="empty">
+    Veri yüklenemedi: ${escapeHTML(e.message)}
+   </td></tr>`;
+
+  $("dailyMatchCount").textContent="0";
+  $("dailyAnalyzedCount").textContent="0";
+  $("dailyNoAnalysisCount").textContent="0";
+
+  $("detailPanel").hidden=true;
+  $("dailyDetailPanel").hidden=true;
+
+  setStatus("Veri yüklenemedi: "+e.message,"error");
+  setDailyStatus("Veri yüklenemedi: "+e.message,"error");
+
+ }finally{
+  busy=false;
+  $("reloadBtn").disabled=false;
+  $("analyzeBtn").disabled=false;
+  $("dailyReloadBtn").disabled=false;
+ }
+}
+
+function switchView(viewId){
+ const isDaily=viewId==="dailyView";
+
+ $("scoreView").hidden=isDaily;
+ $("dailyView").hidden=!isDaily;
+
+ $("navScore").classList.toggle("active",!isDaily);
+ $("navDaily").classList.toggle("active",isDaily);
+
+ $("sidebar").classList.remove("open");
+ $("mobileMenuBtn").textContent="☰ Menü";
+
+ if(isDaily&&loaded)runDailyAnalysis();
+
+ window.scrollTo({top:0,behavior:"auto"});
+}
+
+$("navScore").addEventListener("click",()=>switchView("scoreView"));
+$("navDaily").addEventListener("click",()=>switchView("dailyView"));
+
+$("mobileMenuBtn").addEventListener("click",()=>{
+ const sidebar=$("sidebar");
+ sidebar.classList.toggle("open");
+ $("mobileMenuBtn").textContent=sidebar.classList.contains("open")
+  ?"✕ Menüyü kapat"
+  :"☰ Menü";
+});
+
+$("analyzeBtn").addEventListener("click",analyze);
+$("reloadBtn").addEventListener("click",loadData);
+$("dailyReloadBtn").addEventListener("click",loadData);
+
+$("closeDetailBtn").addEventListener("click",()=>$("detailPanel").hidden=true);
+$("closeDailyDetailBtn").addEventListener("click",()=>$("dailyDetailPanel").hidden=true);
+
+$("clearRateBtn").addEventListener("click",()=>{
+ $("minRate").value="";
+ analyze();
+});
+
+$("homeScore").addEventListener("change",analyze);
+$("awayScore").addEventListener("change",analyze);
+
+$("dateRange").addEventListener("change",()=>{
+ cache.clear();
+ analyze();
+ if(loaded)runDailyAnalysis();
+});
+
+$("minSample").addEventListener("change",()=>{
+ cache.clear();
+ analyze();
+ if(loaded)runDailyAnalysis();
+});
+
+$("minRate").addEventListener("input",()=>{
+ if($("minRate").value.trim()===""||
+   (Number($("minRate").value)>=0&&Number($("minRate").value)<=100)){
+  analyze();
+ }
+});
+
+$("resultsBody").addEventListener("click",e=>{
+ const row=e.target.closest("[data-key]");
+ if(row)showDetails(row.dataset.key);
+});
+
+$("resultsBody").addEventListener("keydown",e=>{
+ if(e.key!=="Enter"&&e.key!==" ")return;
+ const row=e.target.closest("[data-key]");
+ if(row){
+  e.preventDefault();
+  showDetails(row.dataset.key);
+ }
+});
+
+$("dailyResultsBody").addEventListener("click",e=>{
+ const row=e.target.closest("[data-daily-index]");
+ if(row)showDailyDetails(Number(row.dataset.dailyIndex));
+});
+
+$("dailyResultsBody").addEventListener("keydown",e=>{
+ if(e.key!=="Enter"&&e.key!==" ")return;
+ const row=e.target.closest("[data-daily-index]");
+ if(row){
+  e.preventDefault();
+  showDailyDetails(Number(row.dataset.dailyIndex));
+ }
+});
+
+populateScores();
+loadData();
+
+})();
+</script>
+</body>
+</html>
