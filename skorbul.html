@@ -587,6 +587,729 @@ tbody tr.result-row:hover { background: #162035; }
   .analysis-item .score-info { text-align: left; }
   .analysis-item .rate-info { grid-column: 2; grid-row: 1 / span 2; }
 }
+  
+/* =========================================================
+   DNA MACKOLİK — FUTBOL ANALİZ TEMASI + MOBİL UYUM
+   Mevcut CSS'in en sonuna, </style> satırından önce ekle.
+   JavaScript ve hesaplama motoruna dokunmaz.
+========================================================= */
+
+:root {
+  color-scheme: dark;
+  --bg: #07130f;
+  --panel: #0e2119;
+  --panel-hover: #193629;
+  --panel2: #142b20;
+  --border: #254635;
+  --border-focus: #84cc16;
+  --text: #f0f8f1;
+  --muted: #a3b9a9;
+  --primary: #16a34a;
+  --primary-hover: #15803d;
+  --green: #84cc16;
+  --green-bg: rgba(132,204,22,.12);
+  --yellow: #facc15;
+  --yellow-bg: rgba(250,204,21,.1);
+  --red: #fb7185;
+  --red-bg: rgba(251,113,133,.1);
+  --shadow: 0 8px 24px rgba(0,0,0,.22);
+  --radius: 15px;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(22,163,74,.12), transparent 38%),
+    linear-gradient(180deg, #07130f 0%, #091811 55%, #07120e 100%);
+  color: var(--text);
+  padding: 14px;
+}
+
+button,
+input,
+select {
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  touch-action: manipulation;
+}
+
+.app-layout {
+  max-width: 1700px;
+  gap: 16px;
+}
+
+.sidebar {
+  background:
+    linear-gradient(160deg, rgba(22,163,74,.09), transparent 45%),
+    #0e2119;
+  border-color: #254635;
+}
+
+.brand-title,
+h1 {
+  background: linear-gradient(110deg, #bef264 0%, #4ade80 45%, #22c55e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.nav-btn {
+  min-height: 48px;
+  border-radius: 10px;
+}
+
+.nav-btn:hover {
+  background: #193629;
+}
+
+.nav-btn.active {
+  color: #f0fdf4;
+  background: linear-gradient(100deg, rgba(22,163,74,.23), rgba(132,204,22,.08));
+  border-color: rgba(132,204,22,.38);
+}
+
+.nav-btn.active .nav-icon {
+  background: #15803d;
+  color: white;
+}
+
+.panel,
+.stat {
+  background:
+    linear-gradient(145deg, rgba(34,197,94,.035), transparent 55%),
+    var(--panel);
+  border-color: #254635;
+  box-shadow: var(--shadow);
+}
+
+.panel:hover {
+  border-color: rgba(132,204,22,.35);
+}
+
+.stat::after {
+  background: linear-gradient(180deg, #a3e635, #16a34a);
+}
+
+select,
+input {
+  background-color: #091811;
+  border-color: #2a4a37;
+  color: #f0f8f1;
+  min-height: 44px;
+}
+
+select:focus,
+input:focus {
+  border-color: #84cc16;
+  box-shadow: 0 0 0 3px rgba(132,204,22,.13);
+}
+
+select option {
+  background: #0e2119;
+  color: #f0f8f1;
+}
+
+.btn {
+  min-height: 44px;
+  border-color: #2a4a37;
+  background: #142b20;
+  transition: background .15s ease, border-color .15s ease;
+}
+
+.btn:hover {
+  background: #1b3a2a;
+  border-color: #477052;
+  transform: none;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  border-color: #4ade80;
+  color: #fff;
+  font-weight: 750;
+}
+
+.btn.primary:hover {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.status {
+  background: #091811;
+  border-color: #254635;
+}
+
+.status.success {
+  color: #bef264;
+  background: rgba(22,163,74,.11);
+  border-color: rgba(132,204,22,.25);
+}
+
+.status.error {
+  color: #fda4af;
+}
+
+.badge {
+  background: #193629;
+  color: #d1e7d5;
+  border-color: #2a4a37;
+}
+
+.pending {
+  color: #fde047;
+  background: rgba(250,204,21,.1);
+  border-color: rgba(250,204,21,.25);
+}
+
+.table-wrap {
+  background: #091811;
+  border-color: #254635;
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #3c6749 #091811;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrap::-webkit-scrollbar {
+  height: 7px;
+  width: 7px;
+}
+
+.table-wrap::-webkit-scrollbar-track {
+  background: #091811;
+}
+
+.table-wrap::-webkit-scrollbar-thumb {
+  background: #3c6749;
+  border-radius: 10px;
+}
+
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th {
+  background: #142b20;
+  color: #b8cdbd;
+}
+
+td {
+  border-bottom-color: #203b2b;
+}
+
+tbody tr.result-row:hover {
+  background: rgba(34,197,94,.08);
+}
+
+tbody tr.result-row:active {
+  background: rgba(34,197,94,.14);
+}
+
+.rate.high,
+.high {
+  color: #a3e635;
+}
+
+.rate.medium,
+.medium {
+  color: #facc15;
+}
+
+.rate.low,
+.low {
+  color: #fb7185;
+}
+
+.bar {
+  background: #203b2b;
+}
+
+.bar span {
+  background: linear-gradient(90deg, #16a34a, #a3e635);
+}
+
+.daily-chip {
+  background: linear-gradient(145deg, rgba(22,163,74,.08), transparent), #091811;
+  border-color: #254635;
+}
+
+.daily-chip strong {
+  color: #bef264;
+}
+
+.analysis-item {
+  background: #091811;
+  border-color: #254635;
+}
+
+.analysis-item .score-info strong {
+  color: #bef264;
+}
+
+.detail-title {
+  background: #091811;
+  border-color: #254635;
+}
+
+.empty {
+  color: #a3b9a9;
+}
+
+.sidebar-note {
+  border-top-color: #254635;
+}
+
+/* Tablet */
+@media (max-width: 1000px) {
+  body {
+    padding: 10px;
+  }
+
+  .app-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .sidebar {
+    padding: 14px 9px;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .stats {
+    gap: 10px;
+  }
+
+  .stat {
+    padding: 15px;
+  }
+}
+
+/* iPhone ve küçük ekranlar */
+@media (max-width: 760px) {
+  body {
+    padding: 9px;
+    overflow-x: hidden;
+  }
+
+  .app-layout {
+    display: block;
+    width: 100%;
+  }
+
+  .main-content,
+  .container,
+  #scoreView,
+  #dailyView {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    margin-bottom: 10px;
+    border-color: #315c3d;
+    background: linear-gradient(100deg, #142b20, #0e2119);
+    color: #bef264;
+    font-weight: 750;
+  }
+
+  .sidebar {
+    display: none;
+    position: relative;
+    top: auto;
+    width: 100%;
+    margin: 0 0 12px;
+    padding: 13px;
+    border-radius: 13px;
+  }
+
+  .sidebar.open {
+    display: block;
+    animation: dnaMenuIn .16s ease-out;
+  }
+
+  .brand {
+    padding: 4px 8px 13px;
+    margin-bottom: 12px;
+  }
+
+  .brand-title {
+    font-size: 20px;
+  }
+
+  .menu-label {
+    margin-top: 13px;
+  }
+
+  .nav-btn {
+    min-height: 46px;
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  header {
+    padding: 4px 3px 15px;
+    margin-bottom: 4px;
+  }
+
+  h1 {
+    font-size: clamp(22px, 6vw, 28px);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  p {
+    font-size: 13px;
+    line-height: 1.55;
+  }
+
+  .panel {
+    padding: 14px;
+    margin-bottom: 12px;
+    border-radius: 13px;
+  }
+
+  h2 {
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 9px;
+    margin-top: 15px;
+  }
+
+  .field {
+    min-width: 0;
+  }
+
+  label {
+    min-height: 30px;
+    margin-bottom: 5px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  select,
+  input {
+    width: 100%;
+    height: 44px;
+    min-height: 44px;
+    padding: 0 9px;
+    border-radius: 9px;
+    font-size: 14px;
+  }
+
+  .actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 15px;
+  }
+
+  .actions .btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 43px;
+    padding: 9px 7px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  #analyzeBtn,
+  #dailyReloadBtn {
+    grid-column: 1 / -1;
+  }
+
+  .status {
+    margin-top: 12px;
+    padding: 11px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .note {
+    font-size: 11px;
+    line-height: 1.55;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+    margin-bottom: 12px;
+  }
+
+  .stat {
+    padding: 13px;
+    border-radius: 12px;
+  }
+
+  .stat small {
+    font-size: 10px;
+    line-height: 1.35;
+    letter-spacing: .25px;
+  }
+
+  .stat strong {
+    font-size: 23px;
+  }
+
+  .heading {
+    align-items: flex-start;
+    gap: 9px;
+    margin-bottom: 13px;
+  }
+
+  .heading > .badge {
+    max-width: 48%;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.35;
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  .table-wrap {
+    max-width: 100%;
+    max-height: 58vh;
+    border-radius: 9px;
+    overflow-x: auto;
+    overflow-y: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  table {
+    min-width: 640px;
+  }
+
+  th,
+  td {
+    padding: 10px 11px;
+    font-size: 12px;
+  }
+
+  th {
+    position: sticky;
+    top: 0;
+  }
+
+  .badge {
+    padding: 5px 8px;
+    font-size: 10px;
+  }
+
+  .rate {
+    font-size: 13px;
+  }
+
+  .bar {
+    min-width: 55px;
+    height: 5px;
+  }
+
+  .daily-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .daily-chip {
+    min-width: 0;
+    padding: 10px 7px;
+    border-radius: 10px;
+  }
+
+  .daily-chip small {
+    font-size: 9px;
+    line-height: 1.35;
+    letter-spacing: 0;
+  }
+
+  .daily-chip strong {
+    font-size: 20px;
+    overflow-wrap: anywhere;
+  }
+
+  /* Günün maçları tablosunda telefonda daha önemli alanlara yer aç. */
+  #dailyResultsBody {
+    min-width: 0;
+  }
+
+  #dailyResultsBody tr > :nth-child(1),
+  #dailyResultsBody tr > :nth-child(3),
+  #dailyResultsBody tr > :nth-child(6) {
+    display: none;
+  }
+
+  #dailyResultsBody tr > :nth-child(2) {
+    min-width: 55px;
+  }
+
+  #dailyResultsBody tr > :nth-child(4) {
+    min-width: 145px;
+    white-space: normal;
+    line-height: 1.45;
+  }
+
+  #dailyResultsBody tr > :nth-child(5) {
+    min-width: 105px;
+    white-space: normal;
+  }
+
+  #dailyResultsBody tr > :nth-child(7) {
+    min-width: 85px;
+  }
+
+  #dailyResultsBody tr > :nth-child(8) {
+    min-width: 85px;
+  }
+
+  #dailyResultsBody tr > :nth-child(9) {
+    min-width: 80px;
+  }
+
+  .analysis-list {
+    gap: 8px;
+  }
+
+  .analysis-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    padding: 11px;
+  }
+
+  .analysis-item .market-name {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .analysis-item .market-meta {
+    font-size: 11px;
+  }
+
+  .analysis-item .score-info {
+    grid-column: 1;
+    grid-row: 2;
+    text-align: left;
+    font-size: 11px;
+  }
+
+  .analysis-item .score-info strong {
+    display: inline;
+    font-size: 14px;
+    margin-right: 4px;
+  }
+
+  .analysis-item .rate-info {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    min-width: 70px;
+    align-self: center;
+  }
+
+  .analysis-item .rate-info strong {
+    font-size: 16px;
+  }
+
+  .analysis-item .rate-info small {
+    font-size: 10px;
+  }
+
+  .detail-section {
+    margin-top: 18px;
+  }
+
+  .detail-section h3 {
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .detail-title {
+    padding: 11px;
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .empty {
+    padding: 25px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  body {
+    padding: 7px;
+  }
+
+  .panel {
+    padding: 11px;
+  }
+
+  .filters {
+    gap: 10px 7px;
+  }
+
+  .actions .btn {
+    font-size: 11px;
+  }
+
+  .daily-chip {
+    padding: 9px 5px;
+  }
+
+  .daily-chip strong {
+    font-size: 18px;
+  }
+
+  .analysis-item {
+    padding: 9px;
+  }
+}
+
+@keyframes dnaMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+}
+
 </style>
 </head>
 
