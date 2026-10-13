@@ -638,6 +638,16 @@ tbody tr.result-row:active {
   font-size: 10px;
 }
 
+.daily-date-filter {
+  grid-template-columns: minmax(0, 300px);
+  margin-top: 14px;
+}
+
+.daily-date-filter input[type="date"] {
+  min-height: 46px;
+  color-scheme: dark;
+}
+
 [hidden] {
   display: none !important;
 }
@@ -739,6 +749,10 @@ tbody tr.result-row:active {
     grid-template-columns: repeat(2,minmax(0,1fr));
     gap: 12px 9px;
     margin-top: 14px;
+  }
+
+  .daily-date-filter {
+    grid-template-columns: minmax(0,1fr);
   }
 
   label {
@@ -1131,7 +1145,7 @@ tbody tr.result-row:active {
       <div class="container">
         <header>
           <h1>DNA | Günün Maçları</h1>
-          <p>Bugünün maçlarını otomatik tarar. Açılış oranlarını geçmiş maçlarla birebir eşleştirir ve analiz bulunan maçları en üstte gösterir.</p>
+          <p>Takvimden bir tarih seç. Seçilen tarihin maçlarını otomatik tarar, açılış oranlarını geçmiş maçlarla birebir eşleştirir ve analiz bulunan maçları en üstte gösterir.</p>
         </header>
 
         <section class="panel">
@@ -1140,11 +1154,19 @@ tbody tr.result-row:active {
               <h2>Otomatik maç taraması</h2>
               <p style="margin-top:6px">Başarı filtresi kapalıdır. Geçmişte en sık görülen skorlar market bazında listelenir.</p>
             </div>
-            <span class="badge" id="dailyDateBadge">Bugün</span>
+            <span class="badge" id="dailyDateBadge">—</span>
+          </div>
+
+          <div class="filters daily-date-filter">
+            <div class="field">
+              <label for="dailyDatePicker">Maç tarihi</label>
+              <input type="date" id="dailyDatePicker">
+            </div>
           </div>
 
           <div class="actions">
-            <button class="btn primary" id="dailyReloadBtn">Maçları yenile ve tara</button>
+            <button class="btn primary" id="dailyReloadBtn">Seçilen Tarihi Tara</button>
+            <button class="btn" id="dailyTodayBtn">Bugüne Dön</button>
           </div>
 
           <div id="dailyStatus" class="status">Veri bekleniyor...</div>
@@ -1156,7 +1178,7 @@ tbody tr.result-row:active {
 
         <section class="daily-summary">
           <div class="daily-chip">
-            <small>Bugünkü maç</small>
+            <small>Seçilen tarihin maçları</small>
             <strong id="dailyMatchCount">0</strong>
           </div>
           <div class="daily-chip">
@@ -1171,7 +1193,7 @@ tbody tr.result-row:active {
 
         <section class="panel">
           <div class="heading">
-            <h2>Bugünün maç listesi</h2>
+            <h2>Seçilen tarihin maç listesi</h2>
             <span class="badge">Analiz bulunanlar üstte</span>
           </div>
 
@@ -1743,9 +1765,9 @@ function getDailyAnalysisForMatch(match,historyMap,minSample){
 }
 
 function getTodayMatches(){
- const todayKey=dateKey(new Date());
+ const selectedDate=$("dailyDatePicker").value||dateKey(new Date());
 
- return prepared.filter(m=>m.dateKey===todayKey).sort((a,b)=>
+ return prepared.filter(m=>m.dateKey===selectedDate).sort((a,b)=>
   ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
    ((b.time&&b.time!=="—")?b.time:"99:99")
   )||
@@ -1759,15 +1781,17 @@ function runDailyAnalysis(){
   return;
  }
 
- const todayKey=dateKey(new Date());
- $("dailyDateBadge").textContent=dateLabel(todayKey);
+ const selectedKey=$("dailyDatePicker").value||dateKey(new Date());
+ const selectedLabel=dateLabel(selectedKey);
 
- const todaysMatches=getTodayMatches();
+ $("dailyDateBadge").textContent=selectedLabel;
+
+ const selectedMatches=getTodayMatches();
  const history=filteredPlayed();
  const minSample=+$("minSample").value;
  const historyMap=buildDailyHistoryMap(history);
 
- dailyMatches=todaysMatches.map(match=>({
+ dailyMatches=selectedMatches.map(match=>({
   match,
   analyses:getDailyAnalysisForMatch(match,historyMap,minSample)
  }));
@@ -1801,14 +1825,14 @@ function runDailyAnalysis(){
 
  renderDailyMatches();
 
- if(!todaysMatches.length){
+ if(!selectedMatches.length){
   setDailyStatus(
-   "Veri dosyasında bugünün tarihine ait maç bulunamadı. matches.json dosyasının güncel olduğunu kontrol et.",
+   `Veri dosyasında ${selectedLabel} tarihine ait maç bulunamadı. matches.json dosyasının güncel olduğunu kontrol et.`,
    ""
   );
  }else{
   setDailyStatus(
-   `${todaysMatches.length} bugünkü maç bulundu. ${analyzed} maçta en az bir market için yeterli geçmiş eşleşmesi var. Başarı filtresi uygulanmadı.`,
+   `${selectedLabel} tarihine ait ${selectedMatches.length} maç bulundu. ${analyzed} maçta en az bir market için yeterli geçmiş eşleşmesi var. Başarı filtresi uygulanmadı.`,
    "success"
   );
  }
@@ -1818,7 +1842,7 @@ function renderDailyMatches(){
  const body=$("dailyResultsBody");
 
  if(!dailyMatches.length){
-  body.innerHTML='<tr><td colspan="9" class="empty">Bugün için maç bulunamadı.</td></tr>';
+  body.innerHTML='<tr><td colspan="9" class="empty">Seçilen tarih için maç bulunamadı.</td></tr>';
   $("dailyDetailPanel").hidden=true;
   return;
  }
@@ -2014,7 +2038,22 @@ $("mobileMenuBtn").addEventListener("click",()=>{
 
 $("analyzeBtn").addEventListener("click",analyze);
 $("reloadBtn").addEventListener("click",loadData);
-$("dailyReloadBtn").addEventListener("click",loadData);
+
+/* Seçilen tarihi yalnızca mevcut verilerle tekrar analiz et. */
+$("dailyReloadBtn").addEventListener("click",runDailyAnalysis);
+
+/* Takvim değiştiğinde seçilen tarihin maçlarını otomatik tara. */
+$("dailyDatePicker").addEventListener("change",()=>{
+ $("dailyDetailPanel").hidden=true;
+ if(loaded)runDailyAnalysis();
+});
+
+/* Takvimi yerel tarihe göre bugüne getir. */
+$("dailyTodayBtn").addEventListener("click",()=>{
+ $("dailyDatePicker").value=dateKey(new Date());
+ $("dailyDetailPanel").hidden=true;
+ if(loaded)runDailyAnalysis();
+});
 
 $("closeDetailBtn").addEventListener("click",()=>$("detailPanel").hidden=true);
 $("closeDailyDetailBtn").addEventListener("click",()=>$("dailyDetailPanel").hidden=true);
@@ -2073,6 +2112,9 @@ $("dailyResultsBody").addEventListener("keydown",e=>{
   showDailyDetails(Number(row.dataset.dailyIndex));
  }
 });
+
+/* Sayfa açıldığında takvim bugünün yerel tarihini gösterir. */
+$("dailyDatePicker").value=dateKey(new Date());
 
 populateScores();
 loadData();
