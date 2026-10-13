@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#090d16">
 <title>DNA Mackolik | Skor ve Açılış Oranı Analizi</title>
+
 <style>
 :root {
   color-scheme: dark;
@@ -19,12 +20,12 @@
   --primary: #3b82f6;
   --primary-hover: #2563eb;
   --green: #10b981;
-  --green-bg: rgba(16, 185, 129, 0.1);
+  --green-bg: rgba(16,185,129,.1);
   --yellow: #f59e0b;
-  --yellow-bg: rgba(245, 158, 11, 0.1);
+  --yellow-bg: rgba(245,158,11,.1);
   --red: #ef4444;
-  --red-bg: rgba(239, 68, 68, 0.1);
-  --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+  --red-bg: rgba(239,68,68,.1);
+  --shadow: 0 10px 25px -5px rgba(0,0,0,.3),0 8px 10px -6px rgba(0,0,0,.3);
   --radius: 16px;
 }
 
@@ -32,19 +33,129 @@
 
 body {
   margin: 0;
-  padding: 24px;
+  padding: 18px;
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-family: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
-button, input, select { font: inherit; }
+button,input,select { font: inherit; }
 
-.container {
-  max-width: 1400px;
+.app-layout {
+  max-width: 1600px;
   margin: auto;
+  display: grid;
+  grid-template-columns: 245px minmax(0,1fr);
+  gap: 20px;
+  align-items: start;
 }
+
+.sidebar {
+  position: sticky;
+  top: 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 12px;
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  padding: 5px 10px 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 18px;
+}
+
+.brand-title {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.5px;
+  background: linear-gradient(135deg,#60a5fa,#3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand small {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.menu-label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 10px;
+  margin: 18px 0 8px;
+}
+
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 48px;
+  text-align: left;
+  padding: 11px 12px;
+  margin: 4px 0;
+  border: 1px solid transparent;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 650;
+  transition: .2s ease;
+}
+
+.nav-btn:hover {
+  color: var(--text);
+  background: var(--panel-hover);
+}
+
+.nav-btn.active {
+  color: #fff;
+  background: rgba(59,130,246,.15);
+  border-color: rgba(59,130,246,.35);
+}
+
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 27px;
+  height: 27px;
+  border-radius: 8px;
+  background: rgba(148,163,184,.1);
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.nav-btn.active .nav-icon {
+  background: var(--primary);
+}
+
+.sidebar-note {
+  margin: 22px 8px 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.main-content { min-width: 0; }
+
+.mobile-menu-btn {
+  display: none;
+  margin-bottom: 14px;
+}
+
+.container { max-width: 1400px; margin: auto; }
 
 header {
   padding: 0 4px 20px;
@@ -52,11 +163,11 @@ header {
 }
 
 h1 {
-  font-size: clamp(24px, 4vw, 32px);
+  font-size: clamp(24px,4vw,32px);
   font-weight: 800;
   margin: 0 0 8px;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  letter-spacing: -.5px;
+  background: linear-gradient(135deg,#60a5fa,#3b82f6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -76,23 +187,20 @@ p {
   margin-bottom: 20px;
   box-shadow: var(--shadow);
   min-width: 0;
-  transition: border-color 0.2s ease;
+  transition: border-color .2s ease;
 }
 
-.panel:hover {
-  border-color: rgba(59, 130, 246, 0.3);
-}
+.panel:hover { border-color: rgba(59,130,246,.3); }
 
 h2 {
   font-size: 18px;
   font-weight: 700;
   margin: 0 0 4px;
-  color: var(--text);
 }
 
 .filters {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
   gap: 16px;
   margin-top: 18px;
 }
@@ -107,7 +215,7 @@ label {
   margin-bottom: 8px;
 }
 
-select, input {
+select,input {
   width: 100%;
   height: 46px;
   min-width: 0;
@@ -117,16 +225,14 @@ select, input {
   background: #0d1322;
   color: var(--text);
   outline: none;
-  transition: all 0.2s ease;
+  transition: all .2s ease;
 }
 
-select:hover, input:hover {
-  border-color: #334155;
-}
+select:hover,input:hover { border-color: #334155; }
 
-select:focus, input:focus {
+select:focus,input:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
 }
 
 .actions {
@@ -146,8 +252,7 @@ select:focus, input:focus {
   font-weight: 600;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all .2s ease;
 }
 
 .btn:hover {
@@ -156,19 +261,13 @@ select:focus, input:focus {
   transform: translateY(-1px);
 }
 
-.btn:active {
-  transform: translateY(0);
-}
-
 .btn.primary {
   background: var(--primary);
   border-color: #60a5fa;
   color: white;
 }
 
-.btn.primary:hover {
-  background: var(--primary-hover);
-}
+.btn.primary:hover { background: var(--primary-hover); }
 
 .btn:disabled {
   opacity: .5;
@@ -188,12 +287,21 @@ select:focus, input:focus {
   overflow-wrap: anywhere;
 }
 
-.status.error { color: var(--red); background: var(--red-bg); border-color: rgba(239,68,68,0.2); }
-.status.success { color: var(--green); background: var(--green-bg); border-color: rgba(16,185,129,0.2); }
+.status.error {
+  color: var(--red);
+  background: var(--red-bg);
+  border-color: rgba(239,68,68,.2);
+}
+
+.status.success {
+  color: var(--green);
+  background: var(--green-bg);
+  border-color: rgba(16,185,129,.2);
+}
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4,minmax(0,1fr));
   gap: 16px;
   margin-bottom: 20px;
 }
@@ -212,7 +320,10 @@ select:focus, input:focus {
 .stat::after {
   content: '';
   position: absolute;
-  top: 0; left: 0; width: 4px; height: 100%;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
   background: var(--primary);
 }
 
@@ -222,12 +333,12 @@ select:focus, input:focus {
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: .5px;
   margin-bottom: 8px;
 }
 
 .stat strong {
-  font-size: clamp(20px, 3vw, 28px);
+  font-size: clamp(20px,3vw,28px);
   font-weight: 800;
   overflow-wrap: anywhere;
 }
@@ -256,7 +367,7 @@ select:focus, input:focus {
 .pending {
   color: var(--yellow);
   background: var(--yellow-bg);
-  border-color: rgba(245,158,11,0.2);
+  border-color: rgba(245,158,11,.2);
 }
 
 .table-wrap {
@@ -273,7 +384,7 @@ table {
   min-width: 720px;
 }
 
-th, td {
+th,td {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   font-size: 13px;
@@ -292,7 +403,12 @@ th {
 }
 
 tbody tr:last-child td { border-bottom: 0; }
-tbody tr.result-row { cursor: pointer; transition: background 0.15s ease; }
+
+tbody tr.result-row {
+  cursor: pointer;
+  transition: background .15s ease;
+}
+
 tbody tr.result-row:hover { background: #162035; }
 
 .rate { font-weight: 800; font-size: 14px; }
@@ -346,559 +462,279 @@ tbody tr.result-row:hover { background: #162035; }
 .detail-section h3 { font-size: 15px; margin: 0 0 12px; font-weight: 700; }
 .section-count { color: var(--muted); font-size: 13px; font-weight: 500; margin-left: 6px; }
 
-[hidden] { display: none !important; }
-
-@media(max-width: 1024px) {
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.daily-summary {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+  margin-bottom: 18px;
 }
 
-@media(max-width: 760px) {
-  body { padding: 12px; }
+.daily-chip {
+  background: #0d1322;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 15px;
+}
+
+.daily-chip small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.daily-chip strong {
+  font-size: 23px;
+  font-weight: 850;
+}
+
+.analysis-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analysis-item {
+  display: grid;
+  grid-template-columns: minmax(120px,1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #0d1322;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.analysis-item .market-name {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: normal;
+}
+
+.analysis-item .market-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.analysis-item .score-info {
+  text-align: right;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.analysis-item .score-info strong {
+  display: block;
+  font-size: 15px;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.analysis-item .rate-info {
+  text-align: right;
+  min-width: 78px;
+}
+
+.analysis-item .rate-info strong {
+  display: block;
+  font-size: 17px;
+}
+
+.analysis-item .rate-info small {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+[hidden] { display: none !important; }
+
+@media(max-width:1100px) {
+  .app-layout { grid-template-columns: 210px minmax(0,1fr); gap: 14px; }
+  .stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+
+@media(max-width:760px) {
+  body { padding: 10px; }
+
+  .app-layout {
+    display: block;
+  }
+
+  .sidebar {
+    display: none;
+    position: static;
+    margin-bottom: 14px;
+  }
+
+  .sidebar.open { display: block; }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+    width: 100%;
+    justify-content: center;
+  }
+
   .panel { padding: 16px; }
-  .filters { grid-template-columns: repeat(1, minmax(0, 1fr)); }
-  .stats { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .filters { grid-template-columns: minmax(0,1fr); }
+  .stats { grid-template-columns: minmax(0,1fr); }
+  .daily-summary { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 7px; }
+  .daily-chip { padding: 10px; }
+  .daily-chip strong { font-size: 19px; }
+  .daily-chip small { font-size: 9px; }
   .actions .btn { flex: 1; }
+  .analysis-item { grid-template-columns: minmax(0,1fr) auto; }
+  .analysis-item .score-info { text-align: left; }
+  .analysis-item .rate-info { grid-column: 2; grid-row: 1 / span 2; }
 }
 </style>
 </head>
+
 <body>
-<div class="container">
-<header>
-<h1>DNA Mackolik | Skor ve Açılış Oranı Analizi</h1>
-<p>Skoru seç, bütün marketleri otomatik tara. Başarı eşiğini istersen kendin belirle. Bir market ve oran grubuna dokunarak geçmiş sonuçları ve aynı oranla eşleşen bugünkü/gelecekteki maçları incele.</p>
-</header>
+<div class="app-layout">
 
-<section class="panel">
-<h2>Analiz ayarları</h2>
-<div class="filters">
- <div class="field">
-  <label for="homeScore">Ev sahibi skoru</label>
-  <select id="homeScore"></select>
- </div>
- <div class="field">
-  <label for="awayScore">Deplasman skoru</label>
-  <select id="awayScore"></select>
- </div>
- <div class="field">
-  <label for="dateRange">Geçmiş aralığı</label>
-  <select id="dateRange">
-   <option value="30">Son 30 gün</option>
-   <option value="60">Son 60 gün</option>
-   <option value="90">Son 90 gün</option>
-   <option value="180">Son 180 gün</option>
-   <option value="365">Son 365 gün</option>
-   <option value="all">Tüm geçmiş</option>
-  </select>
- </div>
- <div class="field">
-  <label for="minSample">Minimum geçmiş maç</label>
-  <select id="minSample">
-   <option value="3">En az 3 maç</option>
-   <option value="5">En az 5 maç</option>
-   <option value="8" selected>En az 8 maç</option>
-   <option value="10">En az 10 maç</option>
-   <option value="20">En az 20 maç</option>
-  </select>
- </div>
- <div class="field">
-  <label for="minRate">Minimum başarı (%) — isteğe bağlı</label>
-  <input id="minRate" type="number" min="0" max="100" step="1" placeholder="Boş = filtre yok">
- </div>
-</div>
-<div class="actions">
- <button class="btn primary" id="analyzeBtn">Analiz et</button>
- <button class="btn" id="reloadBtn">Veriyi yenile</button>
- <button class="btn" id="clearRateBtn">Başarı filtresini temizle</button>
-</div>
-<div id="status" class="status">Veri yükleniyor...</div>
-<div class="note">
-Veri kaynağı: ./data/matches.json. Oranlar iki ondalık basamağa yuvarlanarak eşleştirilir. Minimum başarı alanını boş bırakırsan başarı yüzdesine göre eleme yapılmaz; gruplar en yüksek başarıdan en düşüğe sıralanır.
-</div>
-</section>
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-title">DNA MACKOLİK</div>
+      <small>Skor ve açılış oranı analiz merkezi</small>
+    </div>
 
-<section class="stats">
- <div class="stat"><small>Tamamlanmış maç</small><strong id="playedCount">—</strong></div>
- <div class="stat"><small>Yeterli örnekli grup</small><strong id="groupCount">—</strong></div>
- <div class="stat"><small>Gösterilen grup</small><strong id="shownCount">—</strong></div>
- <div class="stat"><small>Hedef skor</small><strong id="targetScore">2-1</strong></div>
-</section>
+    <div class="menu-label">Analiz menüsü</div>
 
-<section class="panel">
-<div class="heading">
- <h2>Otomatik oran analizi</h2>
- <span class="badge" id="filterBadge">Başarı filtresi kapalı</span>
-</div>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
- <th>#</th><th>Market</th><th>Açılış oranı</th>
- <th>Geçmiş maç</th><th>Hedef skor</th><th>Skor sıklığı</th>
-</tr>
-</thead>
-<tbody id="resultsBody">
-<tr><td colspan="6" class="empty">Veri bekleniyor...</td></tr>
-</tbody>
-</table>
-</div>
-<div class="note">Başarı oranı, seçilen hedef skorla biten geçmiş maçların aynı market ve açılış oranındaki toplam maçlara oranıdır. Satıra dokununca geçmiş maçlar ve eşleşen bugünkü/gelecekteki maçlar birlikte açılır.</div>
-</section>
+    <button class="nav-btn active" id="navScore" data-view="scoreView">
+      <span class="nav-icon">📊</span>
+      <span>Skor ve Oran Analizi</span>
+    </button>
 
-<section class="panel" id="detailPanel" hidden>
-<div class="heading">
- <h2>Maç detayları</h2>
- <button class="btn" id="closeDetailBtn">Kapat</button>
-</div>
-<div id="detailSummary" class="detail-title"></div>
-<div class="detail-section">
- <h3>Geçmiş maçlar <span class="section-count" id="historyCount"></span></h3>
- <div class="table-wrap">
-  <table>
-   <thead><tr>
-    <th>Tarih</th><th>Lig</th><th>Ev sahibi</th>
-    <th>Skor</th><th>Deplasman</th><th>Oran</th><th>Hedef</th>
-   </tr></thead>
-   <tbody id="detailBody"></tbody>
-  </table>
- </div>
-</div>
-<div class="detail-section">
- <h3>Bugünkü ve gelecek maçlar <span class="section-count" id="futureCount"></span></h3>
- <div class="table-wrap">
-  <table>
-   <thead><tr>
-    <th>Tarih</th><th>Saat</th><th>Lig</th>
-    <th>Ev sahibi</th><th>Deplasman</th><th>Oran</th><th>Durum</th>
-   </tr></thead>
-   <tbody id="futureDetailBody"></tbody>
-  </table>
- </div>
- <div class="note">Yalnızca seçilen market ve açılış oranıyla eşleşen, tarihi bugün veya ileride olan ve henüz skoru bulunmayan maçlar listelenir. Başarı filtresi gelecek maç listesini etkilemez.</div>
-</div>
-</section>
+    <button class="nav-btn" id="navDaily" data-view="dailyView">
+      <span class="nav-icon">📅</span>
+      <span>Günün Maçları</span>
+    </button>
 
-<footer class="note" style="text-align: center; padding-bottom: 10px;">Veri kaynağı: ./data/matches.json</footer>
-</div>
+    <div class="sidebar-note">
+      Veri kaynağı<br>
+      <strong>./data/matches.json</strong><br><br>
+      Günün maçları, geçmiş maçların açılış oranlarıyla birebir karşılaştırılır.
+    </div>
+  </aside>
 
-<script>
-"use strict";
-(()=>{
-const DATA_URL="./data/matches.json";
-const MARKETS=[
- ["ms1","MS 1"],["msX","MS X"],["ms2","MS 2"],
- ["cs1X","Çifte Şans 1X"],["cs12","Çifte Şans 12"],["csX2","Çifte Şans X2"],
- ["au25Alt","MS 2,5 Alt"],["au25Ust","MS 2,5 Üst"],
- ["handicap1","Handikap 1"],["handicapX","Handikap X"],["handicap2","Handikap 2"],
- ["kgVar","KG Var"],["kgYok","KG Yok"],
- ["iy15Alt","İY 1,5 Alt"],["iy15Ust","İY 1,5 Üst"],
- ["au15Alt","MS 1,5 Alt"],["au15Ust","MS 1,5 Üst"],
- ["au35Alt","MS 3,5 Alt"],["au35Ust","MS 3,5 Üst"],
- ["gol01","0-1 Gol"],["gol23","2-3 Gol"],["gol46","4-6 Gol"],["gol7","7+ Gol"],
- ["iy1","İY 1"],["iyX","İY X"],["iy2","İY 2"]
-].map(([key,name])=>({key,name}));
-const $=id=>document.getElementById(id);
-let allMatches=[];
-let played=[];
-let prepared=[];
-let loaded=false;
-let busy=false;
-let cache=new Map();
-let shownGroups=[];
-const escapeHTML=v=>String(v??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-}[c]));
-function num(v){
- if(v===null||v===undefined||v==="")return null;
- const n=Number(String(v).trim().replace(",","."));
- return Number.isFinite(n)?n:null;
-}
-function validScore(h,a){
- return h!==null&&a!==null&&h>=0&&a>=0&&Number.isInteger(h)&&Number.isInteger(a)
-  ?{home:h,away:a}:null;
-}
-function scoreValue(v){
- if(v&&typeof v==="object"){
-  const h=num(v.home??v.homeScore??v.homeGoals??v.h??v.ev);
-  const a=num(v.away??v.awayScore??v.awayGoals??v.a??v.dep);
-  return validScore(h,a);
- }
- if(v===null||v===undefined)return null;
- const m=String(v).trim().match(/^(\d+)\s*[-:]\s*(\d+)$/);
- return m?validScore(Number(m[1]),Number(m[2])):null;
-}
-function getScore(m){
- const candidates=[
-  m.score,m.fullTimeScore,m.full_time_score,m.ftScore,m.ms,
-  m.result?.fullTime,m.result?.ft,
-  m.scores?.fullTime,m.scores?.full_time,m.scores?.ft
- ];
- for(const v of candidates){
-  const s=scoreValue(v);
-  if(s)return s;
- }
- return validScore(
-  num(m.homeScore??m.homeGoals??m.goalsHome??m.ftHome),
-  num(m.awayScore??m.awayGoals??m.goalsAway??m.ftAway)
- );
-}
-function getHalfTimeScore(m){
- for(const v of [m.halfTimeScore,m.half_time_score,m.htScore,m.halftime,m.halfTime]){
-  const s=scoreValue(v);
-  if(s)return s;
- }
- return null;
-}
-function makeDate(y,m,d){
- const x=new Date(y,m-1,d);
- return x.getFullYear()===y&&x.getMonth()===m-1&&x.getDate()===d?x:null;
-}
-function parseDate(v){
- if(!v)return null;
- if(v instanceof Date){
-  return Number.isNaN(v.getTime())?null:new Date(v.getFullYear(),v.getMonth(),v.getDate());
- }
- const s=String(v).trim();
- let m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
- if(m)return makeDate(+m[3],+m[2],+m[1]);
- m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
- if(m)return makeDate(+m[1],+m[2],+m[3]);
- const d=new Date(s);
- return Number.isNaN(d.getTime())?null:new Date(d.getFullYear(),d.getMonth(),d.getDate());
-}
-function dateOf(m){
- return m.date??m.matchDate??m.gameDate??m.tarih??m.datetime??m.dateTime??"";
-}
-function dateKey(v){
- const d=parseDate(v);
- return d
-  ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
-  :"";
-}
-function dateLabel(v){
- const d=parseDate(v);
- return d
-  ?`${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`
-  :String(v||"—");
-}
-function timeOf(m){
- const v=m.time??m.matchTime??m.hour??m.saat??m.datetime??m.dateTime??"";
- return String(v).match(/\b([01]?\d|2[0-3]):[0-5]\d\b/)?.[0]||"—";
-}
-function leagueOf(m){
- return m.league??m.leagueName??m.competition??m.tournament??m.lig??"—";
-}
-function homeOf(m){
- return m.home??m.homeTeam??m.homeName??m.team1??m.evSahibi??"Ev sahibi";
-}
-function awayOf(m){
- return m.away??m.awayTeam??m.awayName??m.team2??m.deplasman??"Deplasman";
-}
-function oddText(v){
- if(v&&typeof v==="object"){
-  v=v.opening??v.open??v.odd??v.odds??v.value;
- }
- const n=num(v);
- return n!==null&&n>0?n.toFixed(2):null;
-}
-function getOdd(m,key){
- const containers=[
-  m.openingOdds,m.opening_odds,m.openOdds,m.opening,
-  m.odds,m.Odds,m.oranlar,m.Oranlar,m.markets,m.marketOdds,m
- ];
- for(const c of containers){
-  if(!c||typeof c!=="object")continue;
-  if(!Object.prototype.hasOwnProperty.call(c,key))continue;
-  const o=oddText(c[key]);
-  if(o!==null)return o;
- }
- return null;
-}
-function normalize(payload){
- if(Array.isArray(payload))return payload;
- if(Array.isArray(payload?.matches))return payload.matches;
- if(Array.isArray(payload?.data))return payload.data;
- return [];
-}
-function setStatus(msg,type=""){
- $("status").textContent=msg;
- $("status").className="status "+type;
-}
-function populateScores(){
- for(const id of ["homeScore","awayScore"]){
-  $(id).innerHTML=Array.from({length:11},(_,i)=>
-   `<option value="${i}">${i}</option>`
-  ).join("");
- }
- $("homeScore").value="2";
- $("awayScore").value="1";
-}
-function prepareData(){
- prepared=allMatches.map((m,index)=>{
-  const score=getScore(m);
-  const halfTimeScore=getHalfTimeScore(m);
-  const odds=Object.create(null);
-  for(const market of MARKETS)odds[market.key]=getOdd(m,market.key);
-  const date=dateOf(m);
-  return {
-   raw:m,index,score,halfTimeScore,date,
-   dateKey:dateKey(date),time:timeOf(m),
-   league:leagueOf(m),home:homeOf(m),away:awayOf(m),odds
-  };
- });
- played=prepared.filter(m=>m.score);
- cache.clear();
-}
-function filteredPlayed(){
- const range=$("dateRange").value;
- if(range==="all")return played;
- const days=Number(range);
- const today=new Date();
- today.setHours(23,59,59,999);
- const start=new Date();
- start.setHours(0,0,0,0);
- start.setDate(start.getDate()-days+1);
- const startKey=dateKey(start);
- const endKey=dateKey(today);
- return played.filter(m=>m.dateKey&&m.dateKey>=startKey&&m.dateKey<=endKey);
-}
-function pct(n){
- return Number(n).toLocaleString("tr-TR",{maximumFractionDigits:2})+"%";
-}
-function getGroups(matches,target,minSample){
- const range=$("dateRange").value;
- const cacheKey=range+"|"+minSample;
- let base=cache.get(cacheKey);
- if(!base){
-  const map=new Map();
-  for(const m of matches){
-   for(const market of MARKETS){
-    const odds=m.odds[market.key];
-    if(!odds)continue;
-    const key=market.key+"|"+odds;
-    let g=map.get(key);
-    if(!g){
-     g={key,marketKey:market.key,marketName:market.name,odds,total:0,matches:[]};
-     map.set(key,g);
-    }
-    g.total++;
-    g.matches.push(m);
-   }
-  }
-  base=Array.from(map.values());
-  cache.set(cacheKey,base);
- }
- const all=[];
- for(const b of base){
-  if(b.total<minSample)continue;
-  let targetCount=0;
-  for(const m of b.matches){
-   if(m.score.home===target.home&&m.score.away===target.away)targetCount++;
-  }
-  all.push({
-   key:b.key,marketKey:b.marketKey,marketName:b.marketName,
-   odds:b.odds,total:b.total,targetCount,
-   rate:targetCount/b.total*100,matches:b.matches
-  });
- }
- return all;
-}
-function getManualMinRate(){
- const raw=$("minRate").value.trim();
- if(raw==="")return null;
- const value=Number(raw);
- if(!Number.isFinite(value)||value<0||value>100)return NaN;
- return value;
-}
-function renderResults(groups){
- const body=$("resultsBody");
- if(!groups.length){
-  body.innerHTML='<tr><td colspan="6" class="empty">Seçtiğin ayarlara uygun grup bulunamadı. Minimum geçmiş maç sayısını azaltabilir veya başarı eşiğini temizleyebilirsin.</td></tr>';
-  return;
- }
- body.innerHTML=groups.map((g,i)=>{
-  const rateClass=g.rate>=70?"high":g.rate>=40?"medium":"low";
-  return `
-   <tr class="result-row" data-key="${escapeHTML(g.key)}" tabindex="0">
-    <td>${i+1}</td>
-    <td><strong>${escapeHTML(g.marketName)}</strong></td>
-    <td><span class="badge">${g.odds}</span></td>
-    <td>${g.total}</td>
-    <td>${g.targetCount}/${g.total}</td>
-    <td>
-     <span class="rate ${rateClass}">${pct(g.rate)}</span>
-     <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
-    </td>
-   </tr>
-  `;
- }).join("");
-}
-function getUpcomingForGroup(g){
- const today=new Date();
- today.setHours(0,0,0,0);
- const todayKey=dateKey(today);
- return prepared.filter(m=>
-  !m.score&&m.dateKey&&m.dateKey>=todayKey&&m.odds[g.marketKey]===g.odds
- ).sort((a,b)=>
-  a.dateKey.localeCompare(b.dateKey)||
-  ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
-   ((b.time&&b.time!=="—")?b.time:"99:99")
-  )||
-  (a.home+" - "+a.away).localeCompare(b.home+" - "+b.away,"tr")
- );
-}
-function showDetails(key){
- const g=shownGroups.find(x=>x.key===key);
- if(!g)return;
- const target={home:+$("homeScore").value,away:+$("awayScore").value};
- const history=g.matches.slice().sort((a,b)=>
-  (b.dateKey||"").localeCompare(a.dateKey||"")||
-  ((a.time&&a.time!=="—")?a.time:"99:99").localeCompare(
-   ((b.time&&b.time!=="—")?b.time:"99:99")
-  )
- );
- const upcoming=getUpcomingForGroup(g);
- $("detailPanel").hidden=false;
- $("detailSummary").textContent=
-  `${g.marketName} · Açılış oranı ${g.odds} · `+
-  `${g.targetCount}/${g.total} maç hedef skor ${target.home}-${target.away} · `+
-  `Sıklık ${pct(g.rate)}`;
- $("historyCount").textContent=`(${history.length} maç)`;
- $("futureCount").textContent=`(${upcoming.length} maç)`;
- if(!history.length){
-  $("detailBody").innerHTML='<tr><td colspan="7" class="empty">Bu grupta geçmiş maç bulunamadı.</td></tr>';
- }else{
-  $("detailBody").innerHTML=history.map(m=>{
-   const hit=m.score.home===target.home&&m.score.away===target.away;
-   return `
-    <tr>
-     <td>${escapeHTML(dateLabel(m.date))}</td>
-     <td>${escapeHTML(m.league)}</td>
-     <td>${escapeHTML(m.home)}</td>
-     <td><strong>${m.score.home}-${m.score.away}</strong></td>
-     <td>${escapeHTML(m.away)}</td>
-     <td>${g.odds}</td>
-     <td class="${hit?"high":""}">${hit?"✓ Eşleşti":"—"}</td>
-    </tr>
-   `;
-  }).join("");
- }
- if(!upcoming.length){
-  $("futureDetailBody").innerHTML='<tr><td colspan="7" class="empty">Bu market ve açılış oranıyla eşleşen bugünkü veya gelecekteki maç bulunamadı.</td></tr>';
- }else{
-  $("futureDetailBody").innerHTML=upcoming.map(m=>`
-   <tr>
-    <td>${escapeHTML(dateLabel(m.date))}</td>
-    <td>${escapeHTML(m.time)}</td>
-    <td>${escapeHTML(m.league)}</td>
-    <td><strong>${escapeHTML(m.home)}</strong></td>
-    <td><strong>${escapeHTML(m.away)}</strong></td>
-    <td><span class="badge">${g.odds}</span></td>
-    <td><span class="badge pending">Bekliyor</span></td>
-   </tr>
-  `).join("");
- }
- $("detailPanel").scrollIntoView({behavior:"auto",block:"start"});
-}
-function analyze(){
- if(!loaded)return;
- const target={home:+$("homeScore").value,away:+$("awayScore").value};
- const minRate=getManualMinRate();
- if(Number.isNaN(minRate)){
-  setStatus("Minimum başarı alanına 0 ile 100 arasında bir değer gir veya alanı boş bırak.","error");
-  $("minRate").focus();
-  return;
- }
- const matches=filteredPlayed();
- const minSample=+$("minSample").value;
- $("targetScore").textContent=target.home+"-"+target.away;
- $("playedCount").textContent=matches.length.toLocaleString("tr-TR");
- const groups=getGroups(matches,target,minSample);
- $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
- shownGroups=groups.filter(g=>minRate===null||g.rate>=minRate).sort((a,b)=>
-  b.rate-a.rate||b.total-a.total||b.targetCount-a.targetCount||
-  a.marketName.localeCompare(b.marketName,"tr")
- );
- $("shownCount").textContent=shownGroups.length.toLocaleString("tr-TR");
- $("filterBadge").textContent=minRate===null
-  ?"Başarı filtresi kapalı"
-  :"Minimum başarı: %"+String(minRate).replace(".",",");
- renderResults(shownGroups);
- $("detailPanel").hidden=true;
- setStatus(
-  `${matches.length.toLocaleString("tr-TR")} tamamlanmış maç tarandı. `+
-  `${groups.length.toLocaleString("tr-TR")} yeterli örnekli grup bulundu. `+
-  `${shownGroups.length.toLocaleString("tr-TR")} grup gösteriliyor.`+
-  (minRate===null?" Başarı eşiği uygulanmadı.":` Minimum başarı eşiği: %${minRate}.`),
-  "success"
- );
-}
-async function loadData(){
- if(busy)return;
- busy=true;
- $("reloadBtn").disabled=true;
- $("analyzeBtn").disabled=true;
- setStatus("Veri yükleniyor...");
- try{
-  const response=await fetch(DATA_URL+"?v="+Date.now(),{cache:"no-store"});
-  if(!response.ok)throw new Error("HTTP "+response.status);
-  const payload=await response.json();
-  allMatches=normalize(payload).filter(m=>m&&typeof m==="object");
-  if(!allMatches.length)throw new Error("JSON içinde dolu matches veya data dizisi bulunamadı.");
-  prepareData();
-  if(!played.length)throw new Error("Veri geldi fakat tamamlanmış maç skorları tanınamadı.");
-  loaded=true;
-  analyze();
- }catch(e){
-  loaded=false;
-  allMatches=[];
-  played=[];
-  prepared=[];
-  cache.clear();
-  $("playedCount").textContent="0";
-  $("groupCount").textContent="0";
-  $("shownCount").textContent="0";
-  $("resultsBody").innerHTML=`
-   <tr><td colspan="6" class="empty">
-    Veri yüklenemedi: ${escapeHTML(e.message)}<br>
-    ./data/matches.json dosyasını ve skor alanlarını kontrol et.
-   </td></tr>`;
-  $("detailPanel").hidden=true;
-  setStatus("Veri yüklenemedi: "+e.message,"error");
- }finally{
-  busy=false;
-  $("reloadBtn").disabled=false;
-  $("analyzeBtn").disabled=false;
- }
-}
-$("analyzeBtn").addEventListener("click",analyze);
-$("reloadBtn").addEventListener("click",loadData);
-$("closeDetailBtn").addEventListener("click",()=>$("detailPanel").hidden=true);
-$("clearRateBtn").addEventListener("click",()=>{
- $("minRate").value="";
- analyze();
-});
-$("homeScore").addEventListener("change",analyze);
-$("awayScore").addEventListener("change",analyze);
-$("dateRange").addEventListener("change",analyze);
-$("minSample").addEventListener("change",analyze);
-$("minRate").addEventListener("input",()=>{
- if($("minRate").value.trim()===""||
-   (Number($("minRate").value)>=0&&Number($("minRate").value)<=100)){
-  analyze();
- }
-});
-$("resultsBody").addEventListener("click",e=>{
- const row=e.target.closest("[data-key]");
- if(row)showDetails(row.dataset.key);
-});
-$("resultsBody").addEventListener("keydown",e=>{
- if(e.key!=="Enter"&&e.key!==" ")return;
- const row=e.target.closest("[data-key]");
- if(row){e.preventDefault();showDetails(row.dataset.key);}
-});
-populateScores();
-loadData();
-})();
-</script>
-</body>
-</html>
+  <main class="main-content">
+    <button class="btn mobile-menu-btn" id="mobileMenuBtn">☰ Menü</button>
+
+    <!-- MEVCUT SKOR ANALİZİ -->
+    <div id="scoreView">
+      <div class="container">
+        <header>
+          <h1>DNA Mackolik | Skor ve Açılış Oranı Analizi</h1>
+          <p>Skoru seç, bütün marketleri otomatik tara. Başarı eşiğini istersen kendin belirle. Bir market ve oran grubuna dokunarak geçmiş sonuçları ve aynı oranla eşleşen bugünkü/gelecekteki maçları incele.</p>
+        </header>
+
+        <section class="panel">
+          <h2>Analiz ayarları</h2>
+          <div class="filters">
+            <div class="field">
+              <label for="homeScore">Ev sahibi skoru</label>
+              <select id="homeScore"></select>
+            </div>
+            <div class="field">
+              <label for="awayScore">Deplasman skoru</label>
+              <select id="awayScore"></select>
+            </div>
+            <div class="field">
+              <label for="dateRange">Geçmiş aralığı</label>
+              <select id="dateRange">
+                <option value="30">Son 30 gün</option>
+                <option value="60">Son 60 gün</option>
+                <option value="90">Son 90 gün</option>
+                <option value="180">Son 180 gün</option>
+                <option value="365">Son 365 gün</option>
+                <option value="all">Tüm geçmiş</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="minSample">Minimum geçmiş maç</label>
+              <select id="minSample">
+                <option value="3">En az 3 maç</option>
+                <option value="5">En az 5 maç</option>
+                <option value="8" selected>En az 8 maç</option>
+                <option value="10">En az 10 maç</option>
+                <option value="20">En az 20 maç</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="minRate">Minimum başarı (%) — isteğe bağlı</label>
+              <input id="minRate" type="number" min="0" max="100" step="1" placeholder="Boş = filtre yok">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn primary" id="analyzeBtn">Analiz et</button>
+            <button class="btn" id="reloadBtn">Veriyi yenile</button>
+            <button class="btn" id="clearRateBtn">Başarı filtresini temizle</button>
+          </div>
+
+          <div id="status" class="status">Veri yükleniyor...</div>
+          <div class="note">
+            Veri kaynağı: ./data/matches.json. Oranlar iki ondalık basamağa yuvarlanarak eşleştirilir. Minimum başarı alanını boş bırakırsan başarı yüzdesine göre eleme yapılmaz.
+          </div>
+        </section>
+
+        <section class="stats">
+          <div class="stat"><small>Tamamlanmış maç</small><strong id="playedCount">—</strong></div>
+          <div class="stat"><small>Yeterli örnekli grup</small><strong id="groupCount">—</strong></div>
+          <div class="stat"><small>Gösterilen grup</small><strong id="shownCount">—</strong></div>
+          <div class="stat"><small>Hedef skor</small><strong id="targetScore">2-1</strong></div>
+        </section>
+
+        <section class="panel">
+          <div class="heading">
+            <h2>Otomatik oran analizi</h2>
+            <span class="badge" id="filterBadge">Başarı filtresi kapalı</span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th><th>Market</th><th>Açılış oranı</th>
+                  <th>Geçmiş maç</th><th>Hedef skor</th><th>Skor sıklığı</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody">
+                <tr><td colspan="6" class="empty">Veri bekleniyor...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="note">Başarı oranı, seçilen hedef skorla biten geçmiş maçların aynı market ve açılış oranındaki toplam maçlara oranıdır. Satıra dokununca geçmiş maçlar ve eşleşen bugünkü/gelecekteki maçlar açılır.</div>
+        </section>
+
+        <section class="panel" id="detailPanel" hidden>
+          <div class="heading">
+            <h2>Maç detayları</h2>
+            <button class="btn" id="closeDetailBtn">Kapat</button>
+          </div>
+
+          <div id="detailSummary" class="detail-title"></div>
+
+          <div class="detail-section">
+            <h3>Geçmiş maçlar <span class="section-count" id="historyCount"></span></h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th><th>Lig</th><th>Ev sahibi</th>
+                    <th>Skor</th><th>Deplasman</th><th>Oran</th><th>Hedef</th>
+                  </tr>
+                </thead>
+                <tbody id="detailBody"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="detail-section">
+            <h3>Bugünkü ve gelecek maçlar <span class="section-count" id="futureCount"></span></h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Tarih</th><th>Saat</th><
