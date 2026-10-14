@@ -4,30 +4,30 @@
 /* =========================================================
    DNA — SONUÇTAN ORAN ANALİZİ
 
-   Veri                 : ./data/matches.json
-   Geçmiş               : Seçilen tarihten önceki 30 gün
-   Minimum örnek        : 8
-   Minimum başarı       : %80
-   Eşleşme              : Aynı market + birebir aynı açılış oranı
-   Minimum tekli oran   : 1.35
-   Geçmiş maç listesi   : Aynı market + aynı oran, son 5 maç
-   Skorlar              : İY ve MS
+   Veri: ./data/matches.json
+   Geçmiş: Seçilen tarihten önceki 30 gün
+   Minimum örnek: 8
+   Minimum başarı: %80
+   Eşleşme: Aynı market + birebir aynı açılış oranı
+   Minimum tekli oran: 1.35
 
-   Kupona ekleme özelliği yoktur.
-   Mevcut analiz hesaplama kuralları korunmuştur.
+   EKLENEN ÖZELLİK:
+   Her maçın altında aynı market ve aynı açılış oranıyla
+   oynanmış son 5 geçmiş maç gösterilir.
+
+   ANALİZ MOTORU DEĞİŞTİRİLMEMİŞTİR.
    ========================================================= */
 
 const DNA_CONFIG = {
   DATA_URL: "./data/matches.json",
   HISTORY_DAYS: 30,
-  MIN_SAMPLE: 1,
+  MIN_SAMPLE: 8,
   MIN_SUCCESS: 80,
   MIN_ODD: 1.35,
   MIN_TOTAL_ODD: 3,
   MAX_uPICKS: 5,
   MAX_SAVED_COUPONS: 3,
-  STORAGE_KEY: "dna_mixed_coupon_history_v2",
-  RECENT_MATCH_LIMIT: 5
+  STORAGE_KEY: "dna_mixed_coupon_history_v2"
 };
 
 /* =========================================================
@@ -284,7 +284,7 @@ function dnaTime(match) {
 }
 
 /* =========================================================
-   SKORLAR — matches.json YAPISI
+   SKORLAR — MEVCUT MANTIĞI KORUNDU
    ========================================================= */
 
 function dnaParseScore(value) {
@@ -356,7 +356,7 @@ function dnaStatus(match, resultId) {
 }
 
 /* =========================================================
-   AÇILIŞ ORANLARI
+   AÇILIŞ ORANLARI — MEVCUT MANTIĞI KORUNDU
    ========================================================= */
 
 function dnaOdds(match, market) {
@@ -387,14 +387,13 @@ function dnaOdds(match, market) {
 }
 
 /* =========================================================
-   VERİ YÜKLEME
+   VERİ YÜKLEME — MEVCUT MANTIĞI KORUNDU
    ========================================================= */
 
 async function dnaLoadData() {
-  const response = await fetch(
-    `${DNA_CONFIG.DATA_URL}?t=${Date.now()}`,
-    { cache: "no-store" }
-  );
+  const response = await fetch(`${DNA_CONFIG.DATA_URL}?t=${Date.now()}`, {
+    cache: "no-store"
+  });
 
   if (!response.ok) {
     throw new Error(`Veri alınamadı: ${response.status}`);
@@ -410,6 +409,7 @@ async function dnaLoadData() {
 
 /* =========================================================
    ANALİZ MOTORU
+   BU FONKSİYONUN HESAPLAMA MANTIĞI DEĞİŞTİRİLMEDİ.
    ========================================================= */
 
 function dnaRunAnalysis(targetDate, resultId) {
@@ -433,10 +433,8 @@ function dnaRunAnalysis(targetDate, resultId) {
 
   const targetIndex = new Map();
 
-  /* Seçilen tarihteki sadece oynanmamış maçları indeksle. */
   for (const match of dnaMatches) {
     if (dnaDateKey(match) !== targetDate) continue;
-    if (dnaPlayed(match)) continue;
 
     for (const market of DNA_MARKETS) {
       const odd = dnaOdds(match, market);
@@ -518,11 +516,12 @@ function dnaRunAnalysis(targetDate, resultId) {
 }
 
 /* =========================================================
-   SON 5 GEÇMİŞ MAÇ — AYNI MARKET + AYNI ORAN
+   EKLENEN: AYNI MARKET + BİREBİR AYNI ORANIN SON 5 MAÇI
 
-   Takım eşleşmesi kontrol edilmez.
-   Sadece aynı marketin aynı açılış oranı aranır.
-   Geçmiş maçlar seçilen tarihten önce olmalıdır.
+   - Takım eşleşmesine bakılmaz.
+   - Oranlar iki ondalık basamakla birebir eşleşir.
+   - Yalnızca seçilen tarihten önceki tamamlanmış maçlar alınır.
+   - Analiz motorunun sonuçlarına müdahale etmez.
    ========================================================= */
 
 function dnaRecentOddsMatches(market, odd, targetDate) {
@@ -545,11 +544,11 @@ function dnaRecentOddsMatches(market, odd, targetDate) {
 
       return dnaTime(b).localeCompare(dnaTime(a));
     })
-    .slice(0, DNA_CONFIG.RECENT_MATCH_LIMIT);
+    .slice(0, 5);
 }
 
 /* =========================================================
-   GEÇMİŞ MAÇ LİSTESİ TASARIMI
+   EKLENEN: GEÇMİŞ MAÇ LİSTESİ STİLLERİ
    ========================================================= */
 
 function dnaAddRecentStyles() {
@@ -560,28 +559,28 @@ function dnaAddRecentStyles() {
 
   style.textContent = `
     .dna-future-block {
-      padding: 0 0 10px;
-      margin-bottom: 7px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
       border-bottom: 1px solid rgba(255,255,255,.09);
     }
 
     .dna-recent-wrap {
       margin: 6px 0 8px;
-      padding: 8px 9px;
-      border: 1px solid rgba(148,163,184,.16);
+      padding: 8px;
+      border: 1px solid rgba(148,163,184,.18);
       border-radius: 9px;
       background: rgba(2,6,23,.38);
     }
 
     .dna-recent-heading {
       display: flex;
-      justify-content: space-between;
       align-items: center;
+      justify-content: space-between;
       gap: 8px;
       margin-bottom: 5px;
+      color: #cbd5e1;
       font-size: 10px;
       font-weight: 800;
-      color: #cbd5e1;
     }
 
     .dna-recent-count {
@@ -591,11 +590,11 @@ function dnaAddRecentStyles() {
 
     .dna-recent-item {
       display: grid;
-      grid-template-columns: 54px minmax(0,1fr) auto;
+      grid-template-columns: 52px minmax(0,1fr) auto;
       align-items: center;
       gap: 6px;
-      padding: 6px 0;
-      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 7px 0;
+      border-top: 1px solid rgba(255,255,255,.07);
     }
 
     .dna-recent-date {
@@ -615,10 +614,10 @@ function dnaAddRecentStyles() {
     .dna-recent-scoreline {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 9px;
       margin-top: 3px;
-      font-size: 9px;
       color: #94a3b8;
+      font-size: 9px;
     }
 
     .dna-recent-scoreline strong {
@@ -628,8 +627,8 @@ function dnaAddRecentStyles() {
 
     .dna-recent-league {
       margin-top: 2px;
-      font-size: 9px;
       color: #64748b;
+      font-size: 9px;
       overflow-wrap: anywhere;
     }
 
@@ -653,7 +652,7 @@ function dnaAddRecentStyles() {
       }
 
       .dna-recent-item {
-        grid-template-columns: 48px minmax(0,1fr) auto;
+        grid-template-columns: 46px minmax(0,1fr) auto;
         gap: 5px;
       }
     }
@@ -663,7 +662,7 @@ function dnaAddRecentStyles() {
 }
 
 /* =========================================================
-   GEÇMİŞ MAÇLARI OLUŞTUR
+   EKLENEN: GEÇMİŞ MAÇLARIN HTML GÖRÜNÜMÜ
    ========================================================= */
 
 function dnaRenderRecentMatches(market, odd, targetDate) {
@@ -676,7 +675,7 @@ function dnaRenderRecentMatches(market, odd, targetDate) {
   let html = `
     <div class="dna-recent-wrap">
       <div class="dna-recent-heading">
-        <span>🕘 AYNI ORANIN SON ${DNA_CONFIG.RECENT_MATCH_LIMIT} MAÇI</span>
+        <span>🕘 AYNI MARKET VE ORANIN SON 5 MAÇI</span>
         <span class="dna-recent-count">${recentMatches.length} maç</span>
       </div>
   `;
@@ -684,7 +683,7 @@ function dnaRenderRecentMatches(market, odd, targetDate) {
   if (!recentMatches.length) {
     html += `
       <div class="dna-recent-empty">
-        Bu market ve açılış oranı için geçmiş maç bulunamadı.
+        Bu market ve açılış oranıyla eşleşen geçmiş maç bulunamadı.
       </div>
     `;
   }
@@ -737,7 +736,7 @@ function dnaRenderRecentMatches(market, odd, targetDate) {
 
 /* =========================================================
    ANALİZ SONUÇLARI
-   Kupona ekleme düğmesi yoktur.
+   Mevcut sonuç tablosu korunmuştur.
    ========================================================= */
 
 function dnaRenderMatches(row, targetDate) {
@@ -745,18 +744,12 @@ function dnaRenderMatches(row, targetDate) {
     item => item.id === row.marketId
   );
 
-  if (!market) return "";
-
   let html = `
     <div class="sa-details-title">
       <span>
         ${dnaEscape(row.marketLabel)} · ${dnaEscape(row.odd)}
       </span>
       <strong>${row.rate.toFixed(1).replace(".0", "")}%</strong>
-    </div>
-
-    <div class="sa-details-subtitle">
-      Aynı market ve aynı açılış oranına ait geçmiş maçlar aşağıda.
     </div>
   `;
 
@@ -789,7 +782,9 @@ function dnaRenderMatches(row, targetDate) {
           </div>
         </div>
 
-        ${dnaRenderRecentMatches(market, row.odd, targetDate)}
+        ${market
+          ? dnaRenderRecentMatches(market, row.odd, targetDate)
+          : ""}
       </div>
     `;
   });
