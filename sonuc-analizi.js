@@ -1,15 +1,16 @@
+
 "use strict";
 
 /* =========================================================
    SONUÇTAN ORAN ANALİZİ
 
-   - Son 30 günlük geçmiş
+   - Son 30 günlük oran analizi
    - Birebir açılış oranı eşleştirmesi
    - Oran toleransı ve kombinasyonu yok
    - Minimum örnek: 8
    - Minimum başarı: %80
-   - Oynanmamış maçı olmayan oran grupları gösterilmez
-   - Yeni marketler eklendi
+   - Oynanmamış maçın altında son 5 ikili rekabet
+   - Mevcut hesaplama motoru korunmuştur
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -17,333 +18,91 @@ const DATA_URL = "./data/v2-data.json";
 const HISTORY_DAYS = 30;
 const MIN_SAMPLE = 8;
 const MIN_SUCCESS = 80;
+const RECENT_MATCH_LIMIT = 5;
 
 /* =========================================================
    MARKETLER
-   Alan adları v2-data.json içindeki market anahtarlarıdır.
    ========================================================= */
 
 const MARKETS = [
-  // İlk yarı
-  {
-    id: "iy15Alt",
-    label: "İY 1.5 Alt",
-    fields: ["iy15Alt", "iy15A", "iy_15_alt", "IY15Alt"]
-  },
-  {
-    id: "iy15Ust",
-    label: "İY 1.5 Üst",
-    fields: ["iy15Ust", "iy15U", "iy_15_ust", "IY15Ust"]
-  },
-  {
-    id: "iy1",
-    label: "İY 1",
-    fields: ["iy1", "IY1"]
-  },
-  {
-    id: "iyX",
-    label: "İY X",
-    fields: ["iyX", "iyx", "IYX"]
-  },
-  {
-    id: "iy2",
-    label: "İY 2",
-    fields: ["iy2", "IY2"]
-  },
-  {
-    id: "iyKgVar",
-    label: "İY KG Var",
-    fields: ["iyKgVar", "iyKGVar", "iykgVar", "IYKGVar"]
-  },
-  {
-    id: "iyKgYok",
-    label: "İY KG Yok",
-    fields: ["iyKgYok", "iyKGYok", "iykgYok", "IYKGYok"]
-  },
+  { id: "iy15Alt", label: "İY 1.5 Alt", fields: ["iy15Alt", "iy15A", "iy_15_alt", "IY15Alt"] },
+  { id: "iy15Ust", label: "İY 1.5 Üst", fields: ["iy15Ust", "iy15U", "iy_15_ust", "IY15Ust"] },
+  { id: "iy1", label: "İY 1", fields: ["iy1", "IY1"] },
+  { id: "iyX", label: "İY X", fields: ["iyX", "iyx", "IYX"] },
+  { id: "iy2", label: "İY 2", fields: ["iy2", "IY2"] },
+  { id: "iyKgVar", label: "İY KG Var", fields: ["iyKgVar", "iyKGVar", "iykgVar", "IYKGVar"] },
+  { id: "iyKgYok", label: "İY KG Yok", fields: ["iyKgYok", "iyKGYok", "iykgYok", "IYKGYok"] },
 
-  // Maç sonu gol marketleri
-  {
-    id: "ms15Alt",
-    label: "MS 1.5 Alt",
-    fields: ["au15Alt", "ms15Alt", "15_ALT", "ms15alt"]
-  },
-  {
-    id: "ms15Ust",
-    label: "MS 1.5 Üst",
-    fields: ["au15Ust", "ms15Ust", "15_UST", "ms15ust"]
-  },
-  {
-    id: "ms25Alt",
-    label: "MS 2.5 Alt",
-    fields: ["au25Alt", "ms25Alt", "25_ALT", "ms25alt"]
-  },
-  {
-    id: "ms25Ust",
-    label: "MS 2.5 Üst",
-    fields: ["au25Ust", "ms25Ust", "25_UST", "ms25ust"]
-  },
-  {
-    id: "ms35Alt",
-    label: "MS 3.5 Alt",
-    fields: ["au35Alt", "ms35Alt", "35_ALT", "ms35alt"]
-  },
-  {
-    id: "ms35Ust",
-    label: "MS 3.5 Üst",
-    fields: ["au35Ust", "ms35Ust", "35_UST", "ms35ust"]
-  },
+  { id: "ms15Alt", label: "MS 1.5 Alt", fields: ["au15Alt", "ms15Alt", "15_ALT", "ms15alt"] },
+  { id: "ms15Ust", label: "MS 1.5 Üst", fields: ["au15Ust", "ms15Ust", "15_UST", "ms15ust"] },
+  { id: "ms25Alt", label: "MS 2.5 Alt", fields: ["au25Alt", "ms25Alt", "25_ALT", "ms25alt"] },
+  { id: "ms25Ust", label: "MS 2.5 Üst", fields: ["au25Ust", "ms25Ust", "25_UST", "ms25ust"] },
+  { id: "ms35Alt", label: "MS 3.5 Alt", fields: ["au35Alt", "ms35Alt", "35_ALT", "ms35alt"] },
+  { id: "ms35Ust", label: "MS 3.5 Üst", fields: ["au35Ust", "ms35Ust", "35_UST", "ms35ust"] },
 
-  // Karşılıklı gol
-  {
-    id: "kgVar",
-    label: "KG Var",
-    fields: ["kgVar", "kgvar", "KGVar"]
-  },
-  {
-    id: "kgYok",
-    label: "KG Yok",
-    fields: ["kgYok", "kgyok", "KGYok"]
-  },
+  { id: "kgVar", label: "KG Var", fields: ["kgVar", "kgvar", "KGVar"] },
+  { id: "kgYok", label: "KG Yok", fields: ["kgYok", "kgyok", "KGYok"] },
 
-  // Maç sonucu
-  {
-    id: "ms1",
-    label: "MS 1",
-    fields: ["ms1", "MS1"]
-  },
-  {
-    id: "msX",
-    label: "MS X",
-    fields: ["msX", "msx", "MSX", "MS0", "ms0"]
-  },
-  {
-    id: "ms2",
-    label: "MS 2",
-    fields: ["ms2", "MS2"]
-  },
+  { id: "ms1", label: "MS 1", fields: ["ms1", "MS1"] },
+  { id: "msX", label: "MS X", fields: ["msX", "msx", "MSX", "MS0", "ms0"] },
+  { id: "ms2", label: "MS 2", fields: ["ms2", "MS2"] },
 
-  // Çifte şans
-  {
-    id: "h12",
-    label: "Çifte Şans 12",
-    fields: ["h12", "H12"]
-  },
-  {
-    id: "h0",
-    label: "Çifte Şans 1X",
-    fields: ["h0", "H0"]
-  },
-  {
-    id: "h23",
-    label: "Çifte Şans X2",
-    fields: ["h23", "H23"]
-  },
+  { id: "h12", label: "Çifte Şans 12", fields: ["h12", "H12"] },
+  { id: "h0", label: "Çifte Şans 1X", fields: ["h0", "H0"] },
+  { id: "h23", label: "Çifte Şans X2", fields: ["h23", "H23"] },
 
-  // İlk yarı gol aralıkları
-  {
-    id: "i14",
-    label: "İY 1-4 Gol",
-    fields: ["i14", "I14"]
-  },
-  {
-    id: "olmaz",
-    label: "İY Gol Olmaz",
-    fields: ["olmaz", "OLMAZ"]
-  },
-  {
-    id: "i25",
-    label: "İY 2-5 Gol",
-    fields: ["i25", "I25"]
-  },
+  { id: "i14", label: "İY 1-4 Gol", fields: ["i14", "I14"] },
+  { id: "olmaz", label: "İY Gol Olmaz", fields: ["olmaz", "OLMAZ"] },
+  { id: "i25", label: "İY 2-5 Gol", fields: ["i25", "I25"] },
 
-  // Maç sonucu + alt/üst kombinasyonları
-  {
-    id: "ms1Alt",
-    label: "MS 1 ve Alt",
-    fields: ["ms1Alt", "MS1Alt", "1VEALT"]
-  },
-  {
-    id: "msXAlt",
-    label: "MS X ve Alt",
-    fields: ["msXAlt", "MSXAlt", "XVEALT"]
-  },
-  {
-    id: "ms2Alt",
-    label: "MS 2 ve Alt",
-    fields: ["ms2Alt", "MS2Alt", "2VEALT"]
-  },
-  {
-    id: "ms1Ust",
-    label: "MS 1 ve Üst",
-    fields: ["ms1Ust", "MS1Ust", "1VEUST"]
-  },
-  {
-    id: "msXUst",
-    label: "MS X ve Üst",
-    fields: ["msXUst", "MSXUst", "XVEUST"]
-  },
-  {
-    id: "ms2Ust",
-    label: "MS 2 ve Üst",
-    fields: ["ms2Ust", "MS2Ust", "2VEUST"]
-  },
+  { id: "ms1Alt", label: "MS 1 ve Alt", fields: ["ms1Alt", "MS1Alt", "1VEALT"] },
+  { id: "msXAlt", label: "MS X ve Alt", fields: ["msXAlt", "MSXAlt", "XVEALT"] },
+  { id: "ms2Alt", label: "MS 2 ve Alt", fields: ["ms2Alt", "MS2Alt", "2VEALT"] },
+  { id: "ms1Ust", label: "MS 1 ve Üst", fields: ["ms1Ust", "MS1Ust", "1VEUST"] },
+  { id: "msXUst", label: "MS X ve Üst", fields: ["msXUst", "MSXUst", "XVEUST"] },
+  { id: "ms2Ust", label: "MS 2 ve Üst", fields: ["ms2Ust", "MS2Ust", "2VEUST"] },
 
-  // Toplam gol aralıkları
-  {
-    id: "gol01",
-    label: "0-1 Gol",
-    fields: ["gol01", "GOL01"]
-  },
-  {
-    id: "gol23",
-    label: "2-3 Gol",
-    fields: ["gol23", "GOL23"]
-  },
-  {
-    id: "gol45",
-    label: "4-5 Gol",
-    fields: ["gol45", "GOL45"]
-  },
-  {
-    id: "gol6plus",
-    label: "6+ Gol",
-    fields: ["gol6plus", "GOL6PLUS", "gol6Plus"]
-  },
+  { id: "gol01", label: "0-1 Gol", fields: ["gol01", "GOL01"] },
+  { id: "gol23", label: "2-3 Gol", fields: ["gol23", "GOL23"] },
+  { id: "gol45", label: "4-5 Gol", fields: ["gol45", "GOL45"] },
+  { id: "gol6plus", label: "6+ Gol", fields: ["gol6plus", "GOL6PLUS", "gol6Plus"] },
 
-  // İY/MS kombinasyonları
-  {
-    id: "iyms11",
-    label: "İY/MS 1/1",
-    fields: ["iyms11", "IYMS11"]
-  },
-  {
-    id: "iyms10",
-    label: "İY/MS 1/X",
-    fields: ["iyms10", "IYMS10"]
-  },
-  {
-    id: "iyms12",
-    label: "İY/MS 1/2",
-    fields: ["iyms12", "IYMS12"]
-  },
-  {
-    id: "iyms01",
-    label: "İY/MS X/1",
-    fields: ["iyms01", "IYMS01"]
-  },
-  {
-    id: "iyms00",
-    label: "İY/MS X/X",
-    fields: ["iyms00", "IYMS00"]
-  },
-  {
-    id: "iyms02",
-    label: "İY/MS X/2",
-    fields: ["iyms02", "IYMS02"]
-  },
-  {
-    id: "iyms21",
-    label: "İY/MS 2/1",
-    fields: ["iyms21", "IYMS21"]
-  },
-  {
-    id: "iyms20",
-    label: "İY/MS 2/X",
-    fields: ["iyms20", "IYMS20"]
-  },
-  {
-    id: "iyms22",
-    label: "İY/MS 2/2",
-    fields: ["iyms22", "IYMS22"]
-  }
+  { id: "iyms11", label: "İY/MS 1/1", fields: ["iyms11", "IYMS11"] },
+  { id: "iyms10", label: "İY/MS 1/X", fields: ["iyms10", "IYMS10"] },
+  { id: "iyms12", label: "İY/MS 1/2", fields: ["iyms12", "IYMS12"] },
+  { id: "iyms01", label: "İY/MS X/1", fields: ["iyms01", "IYMS01"] },
+  { id: "iyms00", label: "İY/MS X/X", fields: ["iyms00", "IYMS00"] },
+  { id: "iyms02", label: "İY/MS X/2", fields: ["iyms02", "IYMS02"] },
+  { id: "iyms21", label: "İY/MS 2/1", fields: ["iyms21", "IYMS21"] },
+  { id: "iyms20", label: "İY/MS 2/X", fields: ["iyms20", "IYMS20"] },
+  { id: "iyms22", label: "İY/MS 2/2", fields: ["iyms22", "IYMS22"] }
 ];
 
 /* =========================================================
    SONUÇ TANIMLARI
-   Seçilen sonuç, geçmiş maçların gerçek skorundan hesaplanır.
    ========================================================= */
 
 const RESULTS = {
-  MS1: {
-    label: "MS 1",
-    type: "ft",
-    test: s => s.home > s.away
-  },
-  MSX: {
-    label: "MS X",
-    type: "ft",
-    test: s => s.home === s.away
-  },
-  MS2: {
-    label: "MS 2",
-    type: "ft",
-    test: s => s.away > s.home
-  },
+  MS1: { label: "MS 1", type: "ft", test: s => s.home > s.away },
+  MSX: { label: "MS X", type: "ft", test: s => s.home === s.away },
+  MS2: { label: "MS 2", type: "ft", test: s => s.away > s.home },
 
-  IY1: {
-    label: "İY 1",
-    type: "ht",
-    test: s => s.home > s.away
-  },
-  IYX: {
-    label: "İY X",
-    type: "ht",
-    test: s => s.home === s.away
-  },
-  IY2: {
-    label: "İY 2",
-    type: "ht",
-    test: s => s.away > s.home
-  },
+  IY1: { label: "İY 1", type: "ht", test: s => s.home > s.away },
+  IYX: { label: "İY X", type: "ht", test: s => s.home === s.away },
+  IY2: { label: "İY 2", type: "ht", test: s => s.away > s.home },
 
-  KG_VAR: {
-    label: "KG Var",
-    type: "ft",
-    test: s => s.home > 0 && s.away > 0
-  },
-  KG_YOK: {
-    label: "KG Yok",
-    type: "ft",
-    test: s => s.home === 0 || s.away === 0
-  },
+  KG_VAR: { label: "KG Var", type: "ft", test: s => s.home > 0 && s.away > 0 },
+  KG_YOK: { label: "KG Yok", type: "ft", test: s => s.home === 0 || s.away === 0 },
 
-  IY_KG_VAR: {
-    label: "İY KG Var",
-    type: "ht",
-    test: s => s.home > 0 && s.away > 0
-  },
-  IY_KG_YOK: {
-    label: "İY KG Yok",
-    type: "ht",
-    test: s => s.home === 0 || s.away === 0
-  },
+  IY_KG_VAR: { label: "İY KG Var", type: "ht", test: s => s.home > 0 && s.away > 0 },
+  IY_KG_YOK: { label: "İY KG Yok", type: "ht", test: s => s.home === 0 || s.away === 0 },
 
-  IY15_ALT: {
-    label: "İY 1.5 Alt",
-    type: "ht",
-    test: s => s.home + s.away <= 1
-  },
-  IY15_UST: {
-    label: "İY 1.5 Üst",
-    type: "ht",
-    test: s => s.home + s.away >= 2
-  },
+  IY15_ALT: { label: "İY 1.5 Alt", type: "ht", test: s => s.home + s.away <= 1 },
+  IY15_UST: { label: "İY 1.5 Üst", type: "ht", test: s => s.home + s.away >= 2 },
 
-  "15_ALT": {
-    label: "MS 1.5 Alt",
-    type: "ft",
-    test: s => s.home + s.away <= 1
-  },
-  "15_UST": {
-    label: "MS 1.5 Üst",
-    type: "ft",
-    test: s => s.home + s.away >= 2
-  },
-  "25_UST": {
-    label: "MS 2.5 Üst",
-    type: "ft",
-    test: s => s.home + s.away >= 3
-  }
+  "15_ALT": { label: "MS 1.5 Alt", type: "ft", test: s => s.home + s.away <= 1 },
+  "15_UST": { label: "MS 1.5 Üst", type: "ft", test: s => s.home + s.away >= 2 },
+  "25_UST": { label: "MS 2.5 Üst", type: "ft", test: s => s.home + s.away >= 3 }
 };
 
 /* =========================================================
@@ -360,9 +119,7 @@ function escapeHtml(value) {
 }
 
 function normalizeOdd(value) {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
+  if (value === null || value === undefined || value === "") return null;
 
   const number = Number(String(value).trim().replace(",", "."));
 
@@ -501,9 +258,7 @@ function getTime(match) {
    ========================================================= */
 
 function parseScore(value) {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
+  if (value === null || value === undefined || value === "") return null;
 
   if (typeof value === "object") {
     const home = value.home ?? value.homeScore ?? value.ev;
@@ -515,10 +270,7 @@ function parseScore(value) {
       Number.isFinite(Number(home)) &&
       Number.isFinite(Number(away))
     ) {
-      return {
-        home: Number(home),
-        away: Number(away)
-      };
+      return { home: Number(home), away: Number(away) };
     }
 
     return null;
@@ -528,10 +280,7 @@ function parseScore(value) {
 
   if (!match) return null;
 
-  return {
-    home: Number(match[1]),
-    away: Number(match[2])
-  };
+  return { home: Number(match[1]), away: Number(match[2]) };
 }
 
 function getScore(match, type) {
@@ -569,7 +318,6 @@ function isPlayed(match) {
 
 /* =========================================================
    AÇILIŞ ORANLARI
-   Flattened alanlar ve farklı oran nesneleri desteklenir.
    ========================================================= */
 
 function getOddsContainers(match) {
@@ -597,9 +345,7 @@ function getOdds(match, market) {
 
   for (const container of containers) {
     for (const field of market.fields) {
-      if (!Object.prototype.hasOwnProperty.call(container, field)) {
-        continue;
-      }
+      if (!Object.prototype.hasOwnProperty.call(container, field)) continue;
 
       const odd = normalizeOdd(container[field]);
 
@@ -611,7 +357,7 @@ function getOdds(match, market) {
 }
 
 /* =========================================================
-   SONUÇ KONTROLÜ
+   SEÇİLEN SONUCU KONTROL ET
    ========================================================= */
 
 function getTargetResult(match, resultId) {
@@ -624,6 +370,63 @@ function getTargetResult(match, resultId) {
   if (!score) return null;
 
   return definition.test(score);
+}
+
+/* =========================================================
+   TAKIM ADI NORMALİZASYONU
+   ========================================================= */
+
+function normalizeTeamName(value) {
+  return String(value ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g, "i")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+/* =========================================================
+   SON 5 İKİLİ REKABET
+
+   - Oynanmamış maçın iki takımı aranır.
+   - Ev sahibi/deplasman sırası fark etmez.
+   - Yalnızca hedef maç tarihinden önceki tamamlanmış
+     karşılaşmalar alınır.
+   - En yeni 5 maç gösterilir.
+   ========================================================= */
+
+function getRecentHeadToHead(futureMatch, targetDate) {
+  const homeKey = normalizeTeamName(getTeamName(futureMatch, "home"));
+  const awayKey = normalizeTeamName(getTeamName(futureMatch, "away"));
+
+  if (!homeKey || !awayKey || homeKey === "-" || awayKey === "-") {
+    return [];
+  }
+
+  return allMatches
+    .filter(match => {
+      const date = getDateKey(match);
+
+      if (!date || date >= targetDate) return false;
+      if (!isPlayed(match)) return false;
+
+      const oldHome = normalizeTeamName(getTeamName(match, "home"));
+      const oldAway = normalizeTeamName(getTeamName(match, "away"));
+
+      const sameOrder = oldHome === homeKey && oldAway === awayKey;
+      const reverseOrder = oldHome === awayKey && oldAway === homeKey;
+
+      return sameOrder || reverseOrder;
+    })
+    .sort((a, b) => {
+      const dateA = getDateKey(a) || "";
+      const dateB = getDateKey(b) || "";
+
+      if (dateA !== dateB) return dateB.localeCompare(dateA);
+
+      return getTime(b).localeCompare(getTime(a));
+    })
+    .slice(0, RECENT_MATCH_LIMIT);
 }
 
 /* =========================================================
@@ -645,9 +448,7 @@ async function loadData() {
 
   if (Array.isArray(json)) return json;
 
-  if (json && Array.isArray(json.matches)) {
-    return json.matches;
-  }
+  if (json && Array.isArray(json.matches)) return json.matches;
 
   return [];
 }
@@ -670,9 +471,7 @@ function buildFutureIndex(matches, targetDate) {
 
       const key = `${market.id}|${odd}`;
 
-      if (!index.has(key)) {
-        index.set(key, []);
-      }
+      if (!index.has(key)) index.set(key, []);
 
       index.get(key).push(match);
     }
@@ -682,7 +481,7 @@ function buildFutureIndex(matches, targetDate) {
 }
 
 /* =========================================================
-   ANALİZ
+   ANALİZ MOTORU
    ========================================================= */
 
 function runAnalysis(targetDate, resultId) {
@@ -712,7 +511,6 @@ function runAnalysis(targetDate, resultId) {
 
       if (!odd) continue;
 
-      // Aynı market ve aynı iki ondalıklı oran birebir eşleşir.
       const key = `${market.id}|${odd}`;
 
       if (!groups.has(key)) {
@@ -729,9 +527,7 @@ function runAnalysis(targetDate, resultId) {
 
       group.total++;
 
-      if (result) {
-        group.success++;
-      }
+      if (result) group.success++;
     }
   }
 
@@ -744,7 +540,6 @@ function runAnalysis(targetDate, resultId) {
 
       if (rate < MIN_SUCCESS) return false;
 
-      // Seçilen tarihte aynı market ve aynı oran bulunmalı.
       const futureKey = `${item.marketId}|${item.odd}`;
       const futureMatches = futureIndex.get(futureKey) || [];
 
@@ -763,19 +558,207 @@ function runAnalysis(targetDate, resultId) {
     Number(a.odd) - Number(b.odd)
   );
 
-  return {
-    history,
-    rows
-  };
+  return { history, rows };
 }
 
 /* =========================================================
-   GÖRÜNÜM
+   GÖRÜNÜM YARDIMCILARI
    ========================================================= */
 
 function formatPercent(value) {
   return `${Number(value).toFixed(1).replace(".0", "")}%`;
 }
+
+/* =========================================================
+   GEÇMİŞ MAÇLAR İÇİN KÜÇÜK TASARIM
+   HTML DOSYASINI DEĞİŞTİRMEK GEREKMEZ.
+   ========================================================= */
+
+function addRecentMatchStyles() {
+  if (document.getElementById("saRecentMatchStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "saRecentMatchStyles";
+
+  style.textContent = `
+    .sa-recent-wrap {
+      margin: 5px 0 12px 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(148, 163, 184, .14);
+      border-radius: 9px;
+      background: rgba(2, 6, 23, .42);
+    }
+
+    .sa-recent-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+
+    .sa-recent-count {
+      color: #93c5fd;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .sa-recent-item {
+      display: grid;
+      grid-template-columns: 64px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 0;
+      border-top: 1px solid rgba(255, 255, 255, .055);
+      font-size: 10px;
+      line-height: 1.35;
+    }
+
+    .sa-recent-date {
+      color: #94a3b8;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .sa-recent-teams {
+      min-width: 0;
+      color: #cbd5e1;
+      overflow-wrap: anywhere;
+    }
+
+    .sa-recent-score {
+      display: inline-block;
+      margin: 0 3px;
+      color: #4ade80;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .sa-recent-meta {
+      margin-top: 2px;
+      color: #64748b;
+      font-size: 9px;
+      overflow-wrap: anywhere;
+    }
+
+    .sa-recent-result {
+      min-width: 30px;
+      text-align: right;
+      color: #93c5fd;
+      font-size: 10px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .sa-recent-empty {
+      padding: 7px 0 2px;
+      color: #94a3b8;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .sa-future-block {
+      padding-bottom: 7px;
+      border-bottom: 1px solid rgba(255, 255, 255, .08);
+    }
+
+    .sa-future-block:last-child {
+      border-bottom: 0;
+    }
+
+    @media (max-width: 420px) {
+      .sa-recent-wrap {
+        padding: 8px;
+      }
+
+      .sa-recent-item {
+        grid-template-columns: 54px minmax(0, 1fr) auto;
+        gap: 5px;
+      }
+
+      .sa-recent-date {
+        font-size: 9px;
+      }
+
+      .sa-recent-teams {
+        font-size: 10px;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+/* =========================================================
+   GEÇMİŞ MAÇ SATIRLARI
+   ========================================================= */
+
+function renderRecentMatches(futureMatch, targetDate) {
+  const recentMatches = getRecentHeadToHead(futureMatch, targetDate);
+
+  let html = `
+    <div class="sa-recent-wrap">
+      <div class="sa-recent-heading">
+        <span>🕘 SON ${RECENT_MATCH_LIMIT} GEÇMİŞ KARŞILAŞMA</span>
+        <span class="sa-recent-count">${recentMatches.length} maç</span>
+      </div>
+  `;
+
+  if (!recentMatches.length) {
+    html += `
+      <div class="sa-recent-empty">
+        Bu iki takım arasında seçilen tarihten önce tamamlanmış
+        karşılaşma bulunamadı.
+      </div>
+    `;
+  } else {
+    for (const match of recentMatches) {
+      const score = getScore(match, "ft");
+      const date = getDateKey(match);
+      const home = getTeamName(match, "home");
+      const away = getTeamName(match, "away");
+
+      let outcome = "X";
+
+      if (score.home > score.away) outcome = "1";
+      else if (score.away > score.home) outcome = "2";
+
+      html += `
+        <div class="sa-recent-item">
+          <div class="sa-recent-date">${escapeHtml(formatDate(date))}</div>
+
+          <div class="sa-recent-teams">
+            <div>
+              ${escapeHtml(home)}
+              <span class="sa-recent-score">
+                ${escapeHtml(score.home)}-${escapeHtml(score.away)}
+              </span>
+              ${escapeHtml(away)}
+            </div>
+            <div class="sa-recent-meta">
+              ${escapeHtml(getLeague(match))}
+            </div>
+          </div>
+
+          <div class="sa-recent-result">MS ${outcome}</div>
+        </div>
+      `;
+    }
+  }
+
+  html += `</div>`;
+
+  return html;
+}
+
+/* =========================================================
+   ANA ANALİZ GÖRÜNÜMÜ
+   ========================================================= */
 
 function renderAnalysis(resultId, targetDate, analysis) {
   const content = document.getElementById("saContent");
@@ -788,6 +771,8 @@ function renderAnalysis(resultId, targetDate, analysis) {
     console.error("Sonuçtan oran analizi görünüm elemanları bulunamadı.");
     return;
   }
+
+  addRecentMatchStyles();
 
   const result = RESULTS[resultId];
 
@@ -871,7 +856,7 @@ function renderAnalysis(resultId, targetDate, analysis) {
         </div>
 
         <div id="${rowId}" class="sa-details">
-          ${renderFutureMatches(row)}
+          ${renderFutureMatches(row, targetDate)}
         </div>
       `;
     });
@@ -885,10 +870,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
 }
 
 /* =========================================================
-   OYNANMAMIŞ MAÇ DETAYLARI
+   OYNANMAMIŞ MAÇLAR VE ALTINDA SON 5 GEÇMİŞ MAÇ
    ========================================================= */
 
-function renderFutureMatches(row) {
+function renderFutureMatches(row, targetDate) {
   if (!row.future.length) return "";
 
   let html = `
@@ -906,27 +891,31 @@ function renderFutureMatches(row) {
 
   for (const match of row.future) {
     html += `
-      <div class="sa-match">
-        <div class="sa-match-time">
-          ${escapeHtml(getTime(match))}
-        </div>
-
-        <div class="sa-match-main">
-          <div class="sa-match-teams">
-            ${escapeHtml(getTeamName(match, "home"))}
-            <span>vs</span>
-            ${escapeHtml(getTeamName(match, "away"))}
+      <div class="sa-future-block">
+        <div class="sa-match">
+          <div class="sa-match-time">
+            ${escapeHtml(getTime(match))}
           </div>
 
-          <div class="sa-match-meta">
-            ${escapeHtml(getLeague(match))}
+          <div class="sa-match-main">
+            <div class="sa-match-teams">
+              ${escapeHtml(getTeamName(match, "home"))}
+              <span>vs</span>
+              ${escapeHtml(getTeamName(match, "away"))}
+            </div>
+
+            <div class="sa-match-meta">
+              ${escapeHtml(getLeague(match))}
+            </div>
+          </div>
+
+          <div class="sa-match-odd">
+            ${escapeHtml(row.marketLabel)}
+            <strong>${escapeHtml(row.odd)}</strong>
           </div>
         </div>
 
-        <div class="sa-match-odd">
-          ${escapeHtml(row.marketLabel)}
-          <strong>${escapeHtml(row.odd)}</strong>
-        </div>
+        ${renderRecentMatches(match, targetDate)}
       </div>
     `;
   }
