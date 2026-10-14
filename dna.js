@@ -1,16 +1,22 @@
+
 "use strict";
+
 /* =========================================================
    DNA — SONUÇTAN ORAN ANALİZİ
-   Veri: ./data/matches.json
-   Geçmiş: Seçilen tarihten önceki 30 gün
-   Minimum örnek: 8
-   Minimum başarı: %80
-   Eşleşme: Aynı market + birebir aynı açılış oranı
-   Minimum tekli oran: 1.35
-   Not:
-   Kupona ekleme özelliği kaldırılmıştır.
-   Analiz ve başarı hesaplama mantığı korunmuştur.
+
+   Veri                 : ./data/matches.json
+   Geçmiş               : Seçilen tarihten önceki 30 gün
+   Minimum örnek        : 8
+   Minimum başarı       : %80
+   Eşleşme              : Aynı market + birebir aynı açılış oranı
+   Minimum tekli oran   : 1.35
+   Geçmiş maç listesi   : Aynı market + aynı oran, son 5 maç
+   Skorlar              : İY ve MS
+
+   Kupona ekleme özelliği yoktur.
+   Mevcut analiz hesaplama kuralları korunmuştur.
    ========================================================= */
+
 const DNA_CONFIG = {
   DATA_URL: "./data/matches.json",
   HISTORY_DAYS: 30,
@@ -20,9 +26,14 @@ const DNA_CONFIG = {
   MIN_TOTAL_ODD: 3,
   MAX_uPICKS: 5,
   MAX_SAVED_COUPONS: 3,
-  STORAGE_KEY: "dna_mixed_coupon_history_v2"
+  STORAGE_KEY: "dna_mixed_coupon_history_v2",
+  RECENT_MATCH_LIMIT: 5
 };
-/* JSON'daki açılış oranlarıyla eşleştirilmiş marketler. */
+
+/* =========================================================
+   MARKETLER
+   ========================================================= */
+
 const DNA_MARKETS = [
   { id: "ms1", label: "MS1", fields: ["ms1", "MS1"] },
   { id: "msX", label: "MSX", fields: ["msX", "msx", "MSX"] },
@@ -51,6 +62,11 @@ const DNA_MARKETS = [
   { id: "handicapX", label: "Handikap X", fields: ["handicapX"] },
   { id: "handicap2", label: "Handikap 2", fields: ["handicap2"] }
 ];
+
+/* =========================================================
+   SONUÇ TANIMLARI
+   ========================================================= */
+
 const DNA_RESULTS = {
   MS1: {
     label: "MS1",
@@ -153,12 +169,16 @@ const DNA_RESULTS = {
     test: s => s.home + s.away >= 7
   }
 };
+
 let dnaMatches = [];
 let dnaAnalysisRows = [];
+
 const $ = id => document.getElementById(id);
+
 /* =========================================================
    GENEL YARDIMCILAR
    ========================================================= */
+
 function dnaEscape(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -167,28 +187,39 @@ function dnaEscape(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
 function dnaNormalizeOdd(value) {
   if (value === null || value === undefined || value === "") {
     return null;
   }
+
   const number = Number(String(value).trim().replace(",", "."));
+
   return Number.isFinite(number) && number > 0
     ? number.toFixed(2)
     : null;
 }
+
 function dnaParseDate(value) {
   if (!value) return null;
+
   const text = String(value).trim();
+
   let match = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+
   if (match) {
     return `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
   }
+
   match = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+
   if (match) {
     return `${match[1]}-${match[2].padStart(2, "0")}-${match[3].padStart(2, "0")}`;
   }
+
   return null;
 }
+
 function dnaDateKey(match) {
   return dnaParseDate(
     match?.date ??
@@ -199,53 +230,69 @@ function dnaDateKey(match) {
     match?.dateTime
   );
 }
+
 function dnaTodayKey() {
   const now = new Date();
+
   return [
     now.getFullYear(),
     String(now.getMonth() + 1).padStart(2, "0"),
     String(now.getDate()).padStart(2, "0")
   ].join("-");
 }
+
 function dnaAddDays(dateKey, days) {
   const [year, month, day] = dateKey.split("-").map(Number);
   const date = new Date(Date.UTC(year, month - 1, day));
+
   date.setUTCDate(date.getUTCDate() + days);
+
   return [
     date.getUTCFullYear(),
     String(date.getUTCMonth() + 1).padStart(2, "0"),
     String(date.getUTCDate()).padStart(2, "0")
   ].join("-");
 }
+
 function dnaFormatDate(dateKey) {
   if (!dateKey) return "-";
+
   const parts = dateKey.split("-");
+
   return parts.length === 3
     ? `${parts[2]}.${parts[1]}.${parts[0]}`
     : dateKey;
 }
+
 function dnaTeam(match, side) {
   return side === "home"
     ? match?.home ?? match?.homeTeam ?? match?.homeName ?? "-"
     : match?.away ?? match?.awayTeam ?? match?.awayName ?? "-";
 }
+
 function dnaLeague(match) {
   return match?.league ?? match?.leagueName ?? match?.competition ?? "-";
 }
+
 function dnaTime(match) {
   const value = match?.time ?? match?.matchTime ?? match?.startTime ?? "";
   const found = String(value).match(/(\d{1,2}):(\d{2})/);
+
   return found
     ? `${found[1].padStart(2, "0")}:${found[2]}`
     : "--:--";
 }
+
 /* =========================================================
-   SKORLAR — matches.json YAPISINA GÖRE
+   SKORLAR — matches.json YAPISI
    ========================================================= */
+
 function dnaParseScore(value) {
   if (!value || typeof value !== "object") return null;
+
   const home = value.home;
   const away = value.away;
+
   if (
     home === null ||
     home === undefined ||
@@ -258,29 +305,39 @@ function dnaParseScore(value) {
   ) {
     return null;
   }
+
   return {
     home: Number(home),
     away: Number(away)
   };
 }
+
 function dnaScore(match, type) {
   return type === "ht"
     ? dnaParseScore(match?.halfTimeScore)
     : dnaParseScore(match?.score);
 }
+
 function dnaPlayed(match) {
   return dnaScore(match, "ft") !== null;
 }
+
 function dnaResult(match, resultId) {
   const definition = DNA_RESULTS[resultId];
+
   if (!definition) return null;
+
   const score = dnaScore(match, definition.type);
+
   if (!score) return null;
+
   return definition.test(score);
 }
+
 function dnaStatus(match, resultId) {
   const definition = DNA_RESULTS[resultId];
   const score = definition ? dnaScore(match, definition.type) : null;
+
   if (!definition || !score) {
     return {
       text: "Bekliyor",
@@ -288,16 +345,20 @@ function dnaStatus(match, resultId) {
       score: "-"
     };
   }
+
   const success = definition.test(score);
+
   return {
     text: success ? "Başarılı" : "Başarısız",
     className: success ? "sa-status-success" : "sa-status-failed",
     score: `${score.home}-${score.away}`
   };
 }
+
 /* =========================================================
-   ORANLAR — ÖNCELİK openingOdds
+   AÇILIŞ ORANLARI
    ========================================================= */
+
 function dnaOdds(match, market) {
   const containers = [
     match?.openingOdds,
@@ -307,71 +368,106 @@ function dnaOdds(match, market) {
     match?.oranlar,
     match
   ];
+
   for (const container of containers) {
     if (!container || typeof container !== "object") continue;
+
     for (const field of market.fields) {
       if (!Object.prototype.hasOwnProperty.call(container, field)) {
         continue;
       }
+
       const odd = dnaNormalizeOdd(container[field]);
+
       if (odd !== null) return odd;
     }
   }
+
   return null;
 }
+
 /* =========================================================
    VERİ YÜKLEME
    ========================================================= */
+
 async function dnaLoadData() {
-  const response = await fetch(`${DNA_CONFIG.DATA_URL}?t=${Date.now()}`, {
-    cache: "no-store"
-  });
+  const response = await fetch(
+    `${DNA_CONFIG.DATA_URL}?t=${Date.now()}`,
+    { cache: "no-store" }
+  );
+
   if (!response.ok) {
     throw new Error(`Veri alınamadı: ${response.status}`);
   }
+
   const json = await response.json();
+
   if (Array.isArray(json)) return json;
   if (Array.isArray(json?.matches)) return json.matches;
+
   throw new Error("JSON içinde matches dizisi bulunamadı.");
 }
+
 /* =========================================================
    ANALİZ MOTORU
    ========================================================= */
+
 function dnaRunAnalysis(targetDate, resultId) {
   if (!DNA_RESULTS[resultId]) {
     throw new Error(`Sonuç grubu tanımlı değil: ${resultId}`);
   }
-  const startDate = dnaAddDays(targetDate, -DNA_CONFIG.HISTORY_DAYS);
+
+  const startDate = dnaAddDays(
+    targetDate,
+    -DNA_CONFIG.HISTORY_DAYS
+  );
+
   const history = dnaMatches.filter(match => {
     const date = dnaDateKey(match);
+
     return date &&
       date >= startDate &&
       date < targetDate &&
       dnaPlayed(match);
   });
+
   const targetIndex = new Map();
+
+  /* Seçilen tarihteki sadece oynanmamış maçları indeksle. */
   for (const match of dnaMatches) {
     if (dnaDateKey(match) !== targetDate) continue;
+    if (dnaPlayed(match)) continue;
+
     for (const market of DNA_MARKETS) {
       const odd = dnaOdds(match, market);
+
       if (odd === null) continue;
-      // Minimum tekli oran: 1.35
       if (Number(odd) < DNA_CONFIG.MIN_ODD) continue;
+
       const key = `${market.id}|${odd}`;
+
       if (!targetIndex.has(key)) {
         targetIndex.set(key, []);
       }
+
       targetIndex.get(key).push(match);
     }
   }
+
   const groups = new Map();
+
   for (const match of history) {
     const success = dnaResult(match, resultId);
+
     if (success === null) continue;
+
     for (const market of DNA_MARKETS) {
       const odd = dnaOdds(match, market);
+
       if (odd === null) continue;
+
       const key = `${market.id}|${odd}`;
+
       if (!groups.has(key)) {
         groups.set(key, {
           marketId: market.id,
@@ -381,89 +477,359 @@ function dnaRunAnalysis(targetDate, resultId) {
           success: 0
         });
       }
+
       const group = groups.get(key);
+
       group.total++;
+
       if (success) {
         group.success++;
       }
     }
   }
+
   const rows = [];
+
   for (const group of groups.values()) {
     if (group.total < DNA_CONFIG.MIN_SAMPLE) continue;
-    // Minimum tekli oran: 1.35
     if (Number(group.odd) < DNA_CONFIG.MIN_ODD) continue;
+
     group.rate = group.success / group.total * 100;
+
     if (group.rate < DNA_CONFIG.MIN_SUCCESS) continue;
-    const future = targetIndex.get(`${group.marketId}|${group.odd}`) || [];
+
+    const future = targetIndex.get(
+      `${group.marketId}|${group.odd}`
+    ) || [];
+
     if (!future.length) continue;
+
     group.future = future;
     rows.push(group);
   }
+
   rows.sort((a, b) =>
     b.rate - a.rate ||
     b.total - a.total ||
     Number(a.odd) - Number(b.odd)
   );
+
   return { history, rows };
 }
+
 /* =========================================================
-   ANALİZ SONUÇLARI
-   Kupona ekleme düğmesi kaldırılmıştır.
+   SON 5 GEÇMİŞ MAÇ — AYNI MARKET + AYNI ORAN
+
+   Takım eşleşmesi kontrol edilmez.
+   Sadece aynı marketin aynı açılış oranı aranır.
+   Geçmiş maçlar seçilen tarihten önce olmalıdır.
    ========================================================= */
-function dnaRenderMatches(row) {
-  let html = `
-    <div class="sa-details-title">
-      <span>${dnaEscape(row.marketLabel)} · ${dnaEscape(row.odd)}</span>
-      <strong>${row.rate.toFixed(1).replace(".0", "")}%</strong>
-    </div>
+
+function dnaRecentOddsMatches(market, odd, targetDate) {
+  return dnaMatches
+    .filter(match => {
+      const date = dnaDateKey(match);
+
+      if (!date || date >= targetDate) return false;
+      if (!dnaPlayed(match)) return false;
+
+      return dnaOdds(match, market) === odd;
+    })
+    .sort((a, b) => {
+      const dateA = dnaDateKey(a) || "";
+      const dateB = dnaDateKey(b) || "";
+
+      if (dateA !== dateB) {
+        return dateB.localeCompare(dateA);
+      }
+
+      return dnaTime(b).localeCompare(dnaTime(a));
+    })
+    .slice(0, DNA_CONFIG.RECENT_MATCH_LIMIT);
+}
+
+/* =========================================================
+   GEÇMİŞ MAÇ LİSTESİ TASARIMI
+   ========================================================= */
+
+function dnaAddRecentStyles() {
+  if ($("dnaRecentStyles")) return;
+
+  const style = document.createElement("style");
+  style.id = "dnaRecentStyles";
+
+  style.textContent = `
+    .dna-future-block {
+      padding: 0 0 10px;
+      margin-bottom: 7px;
+      border-bottom: 1px solid rgba(255,255,255,.09);
+    }
+
+    .dna-recent-wrap {
+      margin: 6px 0 8px;
+      padding: 8px 9px;
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: 9px;
+      background: rgba(2,6,23,.38);
+    }
+
+    .dna-recent-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      color: #cbd5e1;
+    }
+
+    .dna-recent-count {
+      color: #93c5fd;
+      white-space: nowrap;
+    }
+
+    .dna-recent-item {
+      display: grid;
+      grid-template-columns: 54px minmax(0,1fr) auto;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .dna-recent-date {
+      color: #94a3b8;
+      font-size: 9px;
+      white-space: nowrap;
+    }
+
+    .dna-recent-main {
+      min-width: 0;
+      color: #e2e8f0;
+      font-size: 10px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .dna-recent-scoreline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 3px;
+      font-size: 9px;
+      color: #94a3b8;
+    }
+
+    .dna-recent-scoreline strong {
+      color: #4ade80;
+      font-weight: 800;
+    }
+
+    .dna-recent-league {
+      margin-top: 2px;
+      font-size: 9px;
+      color: #64748b;
+      overflow-wrap: anywhere;
+    }
+
+    .dna-recent-odd {
+      color: #93c5fd;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .dna-recent-empty {
+      padding: 5px 0 2px;
+      color: #94a3b8;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 420px) {
+      .dna-recent-wrap {
+        padding: 7px;
+      }
+
+      .dna-recent-item {
+        grid-template-columns: 48px minmax(0,1fr) auto;
+        gap: 5px;
+      }
+    }
   `;
-  row.future.forEach(match => {
+
+  document.head.appendChild(style);
+}
+
+/* =========================================================
+   GEÇMİŞ MAÇLARI OLUŞTUR
+   ========================================================= */
+
+function dnaRenderRecentMatches(market, odd, targetDate) {
+  const recentMatches = dnaRecentOddsMatches(
+    market,
+    odd,
+    targetDate
+  );
+
+  let html = `
+    <div class="dna-recent-wrap">
+      <div class="dna-recent-heading">
+        <span>🕘 AYNI ORANIN SON ${DNA_CONFIG.RECENT_MATCH_LIMIT} MAÇI</span>
+        <span class="dna-recent-count">${recentMatches.length} maç</span>
+      </div>
+  `;
+
+  if (!recentMatches.length) {
     html += `
-      <div class="sa-match">
-        <div class="sa-match-time">${dnaEscape(dnaTime(match))}</div>
-        <div class="sa-match-info">
-          <div class="sa-match-teams">
+      <div class="dna-recent-empty">
+        Bu market ve açılış oranı için geçmiş maç bulunamadı.
+      </div>
+    `;
+  }
+
+  for (const match of recentMatches) {
+    const ht = dnaScore(match, "ht");
+    const ft = dnaScore(match, "ft");
+
+    html += `
+      <div class="dna-recent-item">
+        <div class="dna-recent-date">
+          ${dnaEscape(dnaFormatDate(dnaDateKey(match)))}
+        </div>
+
+        <div class="dna-recent-main">
+          <div>
             ${dnaEscape(dnaTeam(match, "home"))}
-            <span>vs</span>
+            <span> - </span>
             ${dnaEscape(dnaTeam(match, "away"))}
           </div>
-          <div class="sa-match-meta">
-            ${dnaEscape(dnaLeague(match))} ·
-            ${dnaEscape(dnaFormatDate(dnaDateKey(match)))}
+
+          <div class="dna-recent-scoreline">
+            <span>
+              İY:
+              <strong>${ht ? `${ht.home}-${ht.away}` : "—"}</strong>
+            </span>
+
+            <span>
+              MS:
+              <strong>${ft ? `${ft.home}-${ft.away}` : "—"}</strong>
+            </span>
+          </div>
+
+          <div class="dna-recent-league">
+            ${dnaEscape(dnaLeague(match))}
           </div>
         </div>
-        <div class="sa-match-actions">
-          <div class="sa-match-odd">
-            ${dnaEscape(row.marketLabel)}
-            <strong>${dnaEscape(row.odd)}</strong>
-          </div>
+
+        <div class="dna-recent-odd">
+          ${dnaEscape(odd)}
         </div>
       </div>
     `;
-  });
+  }
+
+  html += `</div>`;
+
   return html;
 }
+
+/* =========================================================
+   ANALİZ SONUÇLARI
+   Kupona ekleme düğmesi yoktur.
+   ========================================================= */
+
+function dnaRenderMatches(row, targetDate) {
+  const market = DNA_MARKETS.find(
+    item => item.id === row.marketId
+  );
+
+  if (!market) return "";
+
+  let html = `
+    <div class="sa-details-title">
+      <span>
+        ${dnaEscape(row.marketLabel)} · ${dnaEscape(row.odd)}
+      </span>
+      <strong>${row.rate.toFixed(1).replace(".0", "")}%</strong>
+    </div>
+
+    <div class="sa-details-subtitle">
+      Aynı market ve aynı açılış oranına ait geçmiş maçlar aşağıda.
+    </div>
+  `;
+
+  row.future.forEach(match => {
+    html += `
+      <div class="dna-future-block">
+        <div class="sa-match">
+          <div class="sa-match-time">
+            ${dnaEscape(dnaTime(match))}
+          </div>
+
+          <div class="sa-match-info">
+            <div class="sa-match-teams">
+              ${dnaEscape(dnaTeam(match, "home"))}
+              <span>vs</span>
+              ${dnaEscape(dnaTeam(match, "away"))}
+            </div>
+
+            <div class="sa-match-meta">
+              ${dnaEscape(dnaLeague(match))} ·
+              ${dnaEscape(dnaFormatDate(dnaDateKey(match)))}
+            </div>
+          </div>
+
+          <div class="sa-match-actions">
+            <div class="sa-match-odd">
+              ${dnaEscape(row.marketLabel)}
+              <strong>${dnaEscape(row.odd)}</strong>
+            </div>
+          </div>
+        </div>
+
+        ${dnaRenderRecentMatches(market, row.odd, targetDate)}
+      </div>
+    `;
+  });
+
+  return html;
+}
+
 function dnaRenderAnalysis(resultId, targetDate, analysis) {
   const content = $("saContent");
   const status = $("saStatus");
+
   if (!content || !status) return;
+
+  dnaAddRecentStyles();
+
   const definition = DNA_RESULTS[resultId];
   const period = $("saPeriod");
   const historyCount = $("saHistoryCount");
   const oddsCount = $("saOddsCount");
+
   if (period) {
     period.textContent =
       `${dnaFormatDate(dnaAddDays(targetDate, -DNA_CONFIG.HISTORY_DAYS))} - ` +
       `${dnaFormatDate(dnaAddDays(targetDate, -1))}`;
   }
-  if (historyCount) historyCount.textContent = analysis.history.length;
-  if (oddsCount) oddsCount.textContent = analysis.rows.length;
+
+  if (historyCount) {
+    historyCount.textContent = analysis.history.length;
+  }
+
+  if (oddsCount) {
+    oddsCount.textContent = analysis.rows.length;
+  }
+
   status.innerHTML =
     `<strong>${dnaEscape(dnaFormatDate(targetDate))}</strong> · ` +
     `<strong>${dnaEscape(definition.label)}</strong> · ` +
     `${analysis.history.length} geçmiş maç · ` +
     `${analysis.rows.length} uygun oran`;
+
   if (!analysis.rows.length) {
     content.innerHTML = `
       <div class="sa-empty">
@@ -479,23 +845,31 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
     `;
     return;
   }
+
   const marketGroups = new Map();
+
   for (const row of analysis.rows) {
     if (!marketGroups.has(row.marketId)) {
       marketGroups.set(row.marketId, []);
     }
+
     marketGroups.get(row.marketId).push(row);
   }
+
   let html = "";
+
   for (const market of DNA_MARKETS) {
     const rows = marketGroups.get(market.id);
+
     if (!rows?.length) continue;
+
     html += `
       <section class="sa-market">
         <div class="sa-market-title">
           <span>${dnaEscape(market.label)}</span>
           <span class="sa-market-count">${rows.length} oran</span>
         </div>
+
         <div class="sa-row sa-head">
           <div>ORAN</div>
           <div>ÖRNEK</div>
@@ -504,33 +878,46 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
           <div>MAÇ</div>
         </div>
     `;
+
     rows.forEach((row, index) => {
       const rowId = `dna-${market.id}-${index}`;
+
       html += `
         <div class="sa-row" data-row-id="${dnaEscape(rowId)}">
           <div class="sa-odd">${dnaEscape(row.odd)}</div>
           <div class="sa-value sa-sample">${row.total}</div>
           <div class="sa-value sa-success">${row.success}</div>
-          <div class="sa-rate">${row.rate.toFixed(1).replace(".0", "")}%</div>
+          <div class="sa-rate">
+            ${row.rate.toFixed(1).replace(".0", "")}%
+          </div>
           <div class="sa-expand">▶ ${row.future.length} maç</div>
         </div>
+
         <div id="${dnaEscape(rowId)}" class="sa-details">
-          ${dnaRenderMatches(row)}
+          ${dnaRenderMatches(row, targetDate)}
         </div>
       `;
     });
+
     html += "</section>";
   }
+
   content.innerHTML = html;
+
   content.querySelectorAll(".sa-row[data-row-id]").forEach(row => {
     row.addEventListener("click", () => {
       const details = $(row.dataset.rowId);
+
       if (!details) return;
+
       const wasOpen = details.classList.contains("open");
+
       content.querySelectorAll(".sa-details.open")
         .forEach(item => item.classList.remove("open"));
+
       content.querySelectorAll(".sa-row.active")
         .forEach(item => item.classList.remove("active"));
+
       if (!wasOpen) {
         details.classList.add("open");
         row.classList.add("active");
@@ -538,67 +925,94 @@ function dnaRenderAnalysis(resultId, targetDate, analysis) {
     });
   });
 }
+
 /* =========================================================
    ANALİZİ ÇALIŞTIR
    ========================================================= */
+
 async function dnaExecuteAnalysis() {
   const resultSelect = $("saResult");
   const dateInput = $("saDate");
   const status = $("saStatus");
+
   if (!resultSelect || !dateInput || !status) return;
+
   const resultId = resultSelect.value;
   const targetDate = dateInput.value;
+
   if (!targetDate) {
     status.textContent = "Lütfen analiz tarihi seçin.";
     return;
   }
+
   if (!DNA_RESULTS[resultId]) {
     status.textContent =
       `Sonuç seçeneği tanımlı değil: ${resultId}. DNA_RESULTS anahtarlarını kontrol edin.`;
     return;
   }
+
   if (!dnaMatches.length) {
     status.textContent = "Maç verileri henüz yüklenmedi.";
     return;
   }
-  status.textContent = `${dnaFormatDate(targetDate)} analiz ediliyor...`;
+
+  status.textContent =
+    `${dnaFormatDate(targetDate)} analiz ediliyor...`;
+
   try {
     const analysis = dnaRunAnalysis(targetDate, resultId);
+
     dnaAnalysisRows = analysis.rows;
+
     dnaRenderAnalysis(resultId, targetDate, analysis);
   } catch (error) {
     console.error("DNA analiz hatası:", error);
     status.textContent = `Analiz hatası: ${error.message}`;
   }
 }
+
 /* =========================================================
    BAŞLAT
    ========================================================= */
+
 async function dnaInit() {
   const dateInput = $("saDate");
   const runButton = $("saRun");
   const status = $("saStatus");
+
   if (!dateInput || !runButton || !status) {
-    console.error("DNA: saDate, saRun veya saStatus HTML elemanı bulunamadı.");
+    console.error(
+      "DNA: saDate, saRun veya saStatus HTML elemanı bulunamadı."
+    );
     return;
   }
+
   dateInput.value = dateInput.value || dnaTodayKey();
+
   runButton.addEventListener("click", dnaExecuteAnalysis);
+
   try {
     status.textContent = "Maç verileri yükleniyor...";
+
     dnaMatches = await dnaLoadData();
+
     if (!dnaMatches.length) {
       status.textContent = "matches.json içinde maç bulunamadı.";
       return;
     }
-    status.textContent = `${dnaMatches.length} maç yüklendi. Analiz hazırlanıyor...`;
+
+    status.textContent =
+      `${dnaMatches.length} maç yüklendi. Analiz hazırlanıyor...`;
+
     await dnaExecuteAnalysis();
   } catch (error) {
     console.error("DNA veri yükleme hatası:", error);
+
     status.textContent =
       `Veriler yüklenemedi: ${error.message}. data/matches.json yolunu kontrol edin.`;
   }
 }
+
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", dnaInit, { once: true });
 } else {
