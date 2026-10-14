@@ -20,7 +20,7 @@
 const DNA_CONFIG = {
   DATA_URL: "./data/matches.json",
   HISTORY_DAYS: 30,
-  MIN_SAMPLE: 8,
+  MIN_SAMPLE: 1,
   MIN_SUCCESS: 80,
   MIN_ODD: 1.35,
   MIN_TOTAL_ODD: 3,
