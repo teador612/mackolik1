@@ -1,7 +1,7 @@
 /* Otomatik oluşturulan Spor Toto verisi. */
 window.SPORT_TOTO_DATA = {
   season: "2026-2027",
-  currentWeek: 9,
+  currentWeek: 10,
   weeks: {
     1: [
       {"home":"Galatasaray","away":"Çorum FK","result":"X"},
@@ -161,7 +161,7 @@ window.SPORT_TOTO_DATA = {
 
 window.SPORT_TOTO_META = {
   season: "2026-2027",
-  currentWeek: 9,
+  currentWeek: 10,
   matchesPerWeek: 15,
   historyDays: 60,
   exactOdds: true,
