@@ -2,22 +2,29 @@
 "use strict";
 
 /* =========================================================
-   RNA — V2 VERİ TABANLI OTOMATİK KUPON MOTORU
+   RNA — HIZLANDIRILMIŞ V2 OTOMATİK KUPON MOTORU
    Veri: ./data/v2-data.json
-   Marketler: JSON içindeki markets dizisinden dinamik
-   Geçmiş: 30 gün
+   Geçmiş: Son 7 gün
    Minimum örnek: 8
    Minimum başarı: %80
    Minimum tekli oran: 1.35
    Minimum kupon oranı: 2.00
    Kupon başına maksimum: 5 maç
+   Maksimum kupon: 3
    Eşleştirme: Aynı market + birebir iki ondalıklı oran
+
+   Performans:
+   - Market eşleştirme haritası bir kez hazırlanır.
+   - Geçmiş sonuçlar veri yüklenirken indekslenir.
+   - Analiz sırasında bütün maçlar tekrar taranmaz.
+   - Tarih/market değişimlerinde indeks kullanılır.
+   - JSON gereksiz yere önbelleksiz indirilmez.
    ========================================================= */
 
 (() => {
     const CFG = Object.freeze({
         DATA_URL: "./data/v2-data.json",
-        HISTORY_DAYS: 30,
+        HISTORY_DAYS: 7,
         MIN_SAMPLE: 8,
         MIN_SUCCESS: 80,
         MIN_ODD: 1.35,
@@ -27,10 +34,6 @@
         FETCH_TIMEOUT: 20000
     });
 
-    /*
-     * Bu tanımlar JSON'daki market anahtarlarıyla eşleştirilir.
-     * JSON içindeki markets dizisi, ekrandaki asıl market listesidir.
-     */
     const MARKET_DEFS = [
         { key: "ms1", label: "MS 1" },
         { key: "msX", label: "MS 0" },
@@ -94,15 +97,23 @@
         aliases: [m.key, m.label]
     }));
 
+    // Her maç için yeniden oluşturulmaz.
+    let marketAliasMap = new Map();
+
     const state = {
         rows: [],
         selectedDate: todayISO(),
         selectedMarkets: new Set(MARKET_DEFS.map(m => m.key)),
         historyCache: new Map(),
+
+        // Market -> oran -> tarih -> geçmiş sonuç sayıları
+        historyIndex: new Map(),
+
         loading: false,
         error: "",
         stats: {},
-        controller: null
+        controller: null,
+        _marketSelectionInitialized: false
     };
 
     function todayISO() {
@@ -155,12 +166,18 @@
             return undefined;
         }
 
+        // Önce birebir alan adı kontrolü.
         for (const key of aliases) {
-            if (obj[key] !== undefined && obj[key] !== null && obj[key] !== "") {
+            if (
+                obj[key] !== undefined &&
+                obj[key] !== null &&
+                obj[key] !== ""
+            ) {
                 return obj[key];
             }
         }
 
+        // Gerekirse normalize edilmiş alan adı kontrolü.
         const wanted = new Set(aliases.map(norm));
 
         for (const [key, value] of Object.entries(obj)) {
@@ -183,6 +200,7 @@
         }
 
         const s = String(value).trim();
+
         let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
 
         if (m) {
@@ -243,12 +261,17 @@
         const teams = get(match, ["teams", "takimlar", "participants"]);
 
         if (teams && typeof teams === "object") {
-            const nested = get(teams, side === "home"
-                ? ["home", "homeTeam", "ev", "team1"]
-                : ["away", "awayTeam", "deplasman", "team2"]);
+            const nested = get(
+                teams,
+                side === "home"
+                    ? ["home", "homeTeam", "ev", "team1"]
+                    : ["away", "awayTeam", "deplasman", "team2"]
+            );
 
             if (nested && typeof nested === "object") {
-                return String(get(nested, ["name", "teamName", "title"]) ?? "Bilinmiyor");
+                return String(
+                    get(nested, ["name", "teamName", "title"]) ?? "Bilinmiyor"
+                );
             }
 
             if (nested != null) return String(nested);
@@ -274,7 +297,9 @@
 
         if (typeof value !== "string") return null;
 
-        const match = value.match(/(?:^|\D)(\d{1,2})\s*[-:–]\s*(\d{1,2})(?:\D|$)/);
+        const match = value.match(
+            /(?:^|\D)(\d{1,2})\s*[-:–]\s*(\d{1,2})(?:\D|$)/
+        );
 
         return match
             ? { h: Number(match[1]), a: Number(match[2]) }
@@ -349,7 +374,6 @@
             case "msX": return full ? full.h === full.a : null;
             case "ms2": return full ? full.h < full.a : null;
 
-            // Çifte şans marketleri
             case "h12": return full ? full.h !== full.a : null;
             case "h0": return full ? full.h >= full.a : null;
             case "h23": return full ? full.h <= full.a : null;
@@ -361,8 +385,11 @@
             case "iy15Ust": return half ? halfTotal >= 2 : null;
             case "iy15Alt": return half ? halfTotal <= 1 : null;
 
-            case "kgVar": return full ? full.h > 0 && full.a > 0 : null;
-            case "kgYok": return full ? full.h === 0 || full.a === 0 : null;
+            case "kgVar":
+                return full ? full.h > 0 && full.a > 0 : null;
+
+            case "kgYok":
+                return full ? full.h === 0 || full.a === 0 : null;
 
             case "au25Ust": return full ? total >= 3 : null;
             case "au25Alt": return full ? total <= 2 : null;
@@ -370,15 +397,11 @@
             case "au35Alt": return full ? total <= 3 : null;
 
             case "gol01": return full ? total <= 1 : null;
-            case "gol23": return full ? total >= 2 && total <= 3 : null;
-            case "gol45": return full ? total >= 4 && total <= 5 : null;
+            case "gol23":
+                return full ? total >= 2 && total <= 3 : null;
+            case "gol45":
+                return full ? total >= 4 && total <= 5 : null;
             case "gol6plus": return full ? total >= 6 : null;
-
-            /*
-             * "1 VE ALT/ÜST" gibi birleşik marketlerin alt/üst
-             * sınırı, market adından tek başına kesinleşmediği için
-             * bunlar yanlış varsayımla sonuçlandırılmaz.
-             */
 
             case "iyms11":
                 return half && full
@@ -473,13 +496,27 @@
                 });
         }
 
+        // Market isimleri tek sefer normalize edilir.
+        marketAliasMap = new Map();
+
+        for (const market of MARKETS) {
+            for (const alias of [
+                market.key,
+                market.label,
+                ...(market.aliases || [])
+            ]) {
+                marketAliasMap.set(norm(alias), market.key);
+            }
+        }
+
         const availableKeys = new Set(MARKETS.map(m => m.key));
 
-        // İlk yüklemede seçili olanları koru; yeni marketleri de seç.
         for (const market of MARKETS) {
-            if (!state._marketSelectionInitialized ||
+            if (
+                !state._marketSelectionInitialized ||
                 state.selectedMarkets.has(market.key) ||
-                MARKET_DEFS.some(m => m.key === market.key)) {
+                MARKET_DEFS.some(m => m.key === market.key)
+            ) {
                 state.selectedMarkets.add(market.key);
             }
         }
@@ -493,15 +530,7 @@
 
     function extractOdds(match) {
         const odds = Object.create(null);
-        const marketAliases = new Map();
 
-        for (const market of MARKETS) {
-            for (const alias of [market.key, market.label, ...(market.aliases || [])]) {
-                marketAliases.set(norm(alias), market.key);
-            }
-        }
-
-        const roots = [];
         const rootNames = [
             "odds", "openingOdds", "opening_odds", "openOdds",
             "open_odds", "opening", "oranlar", "oran", "markets",
@@ -509,9 +538,20 @@
             "iddaa", "iddaaOdds"
         ];
 
+        const roots = [];
+
         for (const name of rootNames) {
-            const value = get(match, [name]);
-            if (value && typeof value === "object") roots.push(value);
+            const value = match[name];
+
+            if (
+                value &&
+                typeof value === "object" &&
+                !Array.isArray(value)
+            ) {
+                roots.push(value);
+            } else if (Array.isArray(value)) {
+                roots.push(value);
+            }
         }
 
         roots.push(match);
@@ -522,7 +562,10 @@
         while (queue.length) {
             const { value, depth } = queue.pop();
 
-            if (!value || typeof value !== "object" || seen.has(value)) continue;
+            if (!value || typeof value !== "object" || seen.has(value)) {
+                continue;
+            }
+
             seen.add(value);
 
             if (Array.isArray(value)) {
@@ -535,15 +578,15 @@
                     ]);
 
                     if (name != null) {
-                        const key = marketAliases.get(norm(name));
-                        const odd = oddValue(item);
+                        const key = marketAliasMap.get(norm(name));
 
-                        if (key && odd !== null && odds[key] === undefined) {
-                            odds[key] = odd;
+                        if (key && odds[key] === undefined) {
+                            const odd = oddValue(item);
+                            if (odd !== null) odds[key] = odd;
                         }
                     }
 
-                    if (depth < 3) {
+                    if (depth < 2) {
                         queue.push({ value: item, depth: depth + 1 });
                     }
                 }
@@ -552,14 +595,18 @@
             }
 
             for (const [name, child] of Object.entries(value)) {
-                const key = marketAliases.get(norm(name));
+                const key = marketAliasMap.get(norm(name));
 
                 if (key && odds[key] === undefined) {
                     const odd = oddValue(child);
                     if (odd !== null) odds[key] = odd;
                 }
 
-                if (depth < 3 && child && typeof child === "object") {
+                if (
+                    depth < 2 &&
+                    child &&
+                    typeof child === "object"
+                ) {
                     queue.push({ value: child, depth: depth + 1 });
                 }
             }
@@ -569,11 +616,11 @@
             ]);
 
             if (name != null) {
-                const key = marketAliases.get(norm(name));
-                const odd = oddValue(value);
+                const key = marketAliasMap.get(norm(name));
 
-                if (key && odd !== null && odds[key] === undefined) {
-                    odds[key] = odd;
+                if (key && odds[key] === undefined) {
+                    const odd = oddValue(value);
+                    if (odd !== null) odds[key] = odd;
                 }
             }
         }
@@ -582,7 +629,10 @@
     }
 
     function flattenMatches(payload) {
+        // V2 dosyasında normalde doğrudan matches dizisi bulunur.
+        // Bu durumda bütün JSON içinde tekrar arama yapılmaz.
         if (Array.isArray(payload)) return payload;
+
         if (!payload || typeof payload !== "object") return [];
 
         for (const key of [
@@ -593,7 +643,8 @@
 
         if (Array.isArray(payload.data)) {
             if (payload.data.some(item =>
-                item && typeof item === "object" &&
+                item &&
+                typeof item === "object" &&
                 (getDate(item) || getTeam(item, "home") !== "Bilinmiyor")
             )) {
                 return payload.data;
@@ -607,12 +658,17 @@
         while (queue.length) {
             const { value, depth } = queue.pop();
 
-            if (!value || typeof value !== "object" || seen.has(value)) continue;
+            if (!value || typeof value !== "object" || seen.has(value)) {
+                continue;
+            }
+
             seen.add(value);
 
             if (Array.isArray(value)) {
                 const rows = value.filter(item =>
-                    item && typeof item === "object" && !Array.isArray(item)
+                    item &&
+                    typeof item === "object" &&
+                    !Array.isArray(item)
                 );
 
                 if (rows.length) {
@@ -625,7 +681,11 @@
                         if (getScore(row)) score++;
                     }
 
-                    candidates.push({ rows, score, length: rows.length });
+                    candidates.push({
+                        rows,
+                        score,
+                        length: rows.length
+                    });
                 }
 
                 continue;
@@ -647,6 +707,74 @@
         return candidates[0]?.rows || [];
     }
 
+    /*
+     * Geçmiş indeksini bir defa oluşturur.
+     *
+     * Yapı:
+     * market -> oran -> tarih -> örnek/kazanç/kayıp
+     *
+     * getHistory artık bütün maçları her defasında taramaz.
+     */
+    function buildHistoryIndex(rows) {
+        const index = new Map();
+
+        for (const market of MARKETS) {
+            index.set(market.key, new Map());
+        }
+
+        for (const row of rows) {
+            if (!row.played || !row.date) continue;
+
+            for (const market of MARKETS) {
+                const key = market.key;
+                const odd = row.odds[key];
+                const result = row.results[key];
+
+                if (
+                    odd === undefined ||
+                    odd < CFG.MIN_ODD ||
+                    result === null ||
+                    result === undefined
+                ) {
+                    continue;
+                }
+
+                const oddKey = odd.toFixed(2);
+                const marketIndex = index.get(key);
+
+                let dailyIndex = marketIndex.get(oddKey);
+
+                if (!dailyIndex) {
+                    dailyIndex = new Map();
+                    marketIndex.set(oddKey, dailyIndex);
+                }
+
+                let daily = dailyIndex.get(row.date);
+
+                if (!daily) {
+                    daily = {
+                        date: row.date,
+                        sample: 0,
+                        wins: 0,
+                        losses: 0
+                    };
+
+                    dailyIndex.set(row.date, daily);
+                }
+
+                daily.sample++;
+
+                if (result === true) {
+                    daily.wins++;
+                } else {
+                    daily.losses++;
+                }
+            }
+        }
+
+        state.historyIndex = index;
+    }
+
     function prepareRows(payload) {
         buildMarkets(payload);
 
@@ -655,6 +783,7 @@
 
         for (let i = 0; i < raw.length; i++) {
             const match = raw[i];
+
             const date = getDate(match);
             const home = getTeam(match, "home");
             const away = getTeam(match, "away");
@@ -687,8 +816,14 @@
 
         state.stats = {
             rawCount: raw.length,
-            datedCount: rows.filter(row => row.date).length,
-            playedCount: rows.filter(row => row.played).length,
+            datedCount: rows.reduce(
+                (sum, row) => sum + (row.date ? 1 : 0),
+                0
+            ),
+            playedCount: rows.reduce(
+                (sum, row) => sum + (row.played ? 1 : 0),
+                0
+            ),
             oddsCount: rows.reduce(
                 (sum, row) => sum + Object.keys(row.odds).length,
                 0
@@ -699,6 +834,9 @@
             ).length
         };
 
+        // Geçmiş hesaplamaları sadece burada hazırlanır.
+        buildHistoryIndex(rows);
+
         return rows;
     }
 
@@ -706,9 +844,9 @@
         const marketKeys = [...state.selectedMarkets].sort();
         const cacheKey = `${targetDate}|${marketKeys.join(",")}`;
 
-        if (state.historyCache.has(cacheKey)) {
-            return state.historyCache.get(cacheKey);
-        }
+        const cached = state.historyCache.get(cacheKey);
+
+        if (cached) return cached;
 
         const end = new Date(`${targetDate}T00:00:00.000Z`);
         const start = new Date(end);
@@ -717,60 +855,54 @@
         const startDate = start.toISOString().slice(0, 10);
         const index = new Map();
 
-        for (const row of state.rows) {
-            if (
-                !row.date ||
-                row.date < startDate ||
-                row.date >= targetDate ||
-                !row.played
-            ) {
-                continue;
-            }
+        for (const marketKey of marketKeys) {
+            const marketIndex = state.historyIndex.get(marketKey);
 
-            for (const marketKey of marketKeys) {
-                const odd = row.odds[marketKey];
-                const result = row.results[marketKey];
+            if (!marketIndex) continue;
 
-                if (
-                    odd === undefined ||
-                    odd < CFG.MIN_ODD ||
-                    result === null ||
-                    result === undefined
-                ) {
-                    continue;
+            for (const [oddKey, dailyIndex] of marketIndex) {
+                let sample = 0;
+                let wins = 0;
+                let losses = 0;
+
+                // Sadece son 7 günün tarihleri okunur.
+                const cursor = new Date(start);
+
+                while (cursor < end) {
+                    const date = cursor.toISOString().slice(0, 10);
+                    const daily = dailyIndex.get(date);
+
+                    if (daily) {
+                        sample += daily.sample;
+                        wins += daily.wins;
+                        losses += daily.losses;
+                    }
+
+                    cursor.setUTCDate(cursor.getUTCDate() + 1);
                 }
 
-                const oddKey = odd.toFixed(2);
+                if (sample === 0) continue;
+
                 const key = `${marketKey}|${oddKey}`;
 
-                let group = index.get(key);
-
-                if (!group) {
-                    group = {
-                        marketKey,
-                        odd: oddKey,
-                        sample: 0,
-                        wins: 0,
-                        losses: 0
-                    };
-                    index.set(key, group);
-                }
-
-                group.sample++;
-
-                if (result === true) group.wins++;
-                else group.losses++;
+                index.set(key, {
+                    marketKey,
+                    odd: oddKey,
+                    sample,
+                    wins,
+                    losses,
+                    success: wins / sample * 100
+                });
             }
-        }
-
-        for (const group of index.values()) {
-            group.success = group.wins / group.sample * 100;
         }
 
         state.historyCache.set(cacheKey, index);
 
+        // Bellekte en fazla 4 analiz sonucu tutulur.
         while (state.historyCache.size > 4) {
-            state.historyCache.delete(state.historyCache.keys().next().value);
+            state.historyCache.delete(
+                state.historyCache.keys().next().value
+            );
         }
 
         return index;
@@ -791,7 +923,9 @@
 
                 if (odd === undefined || odd < CFG.MIN_ODD) continue;
 
-                const group = history.get(`${marketKey}|${odd.toFixed(2)}`);
+                const group = history.get(
+                    `${marketKey}|${odd.toFixed(2)}`
+                );
 
                 if (
                     !group ||
@@ -801,7 +935,9 @@
                     continue;
                 }
 
-                const market = MARKETS.find(item => item.key === marketKey);
+                const market = MARKETS.find(
+                    item => item.key === marketKey
+                );
 
                 const candidate = {
                     row,
@@ -846,7 +982,13 @@
 
         for (const item of candidates) {
             if (items.length >= CFG.MAX_MATCHES) break;
-            if (item.success < threshold || used.has(item.matchId)) continue;
+
+            if (
+                item.success < threshold ||
+                used.has(item.matchId)
+            ) {
+                continue;
+            }
 
             items.push(item);
             used.add(item.matchId);
@@ -854,10 +996,16 @@
         }
 
         if (!items.length || totalOdds < CFG.MIN_TOTAL_ODDS) {
-            return { items: [], totalOdds: 1 };
+            return {
+                items: [],
+                totalOdds: 1
+            };
         }
 
-        return { items, totalOdds };
+        return {
+            items,
+            totalOdds
+        };
     }
 
     function getCoupons(candidates) {
@@ -877,7 +1025,7 @@
                 threshold: 80,
                 ...buildCoupon(candidates, 80)
             }
-        ];
+        ].slice(0, CFG.MAX_COUPONS);
     }
 
     function resultStatus(item) {
@@ -1000,7 +1148,6 @@
 
         $("#rnaDate").addEventListener("change", event => {
             state.selectedDate = event.target.value || todayISO();
-            state.historyCache.clear();
             render();
         });
 
@@ -1084,17 +1231,20 @@
     function render() {
         ensureUI();
 
-        if ($("#rnaDate").value !== state.selectedDate) {
-            $("#rnaDate").value = state.selectedDate;
+        const dateInput = $("#rnaDate");
+
+        if (dateInput && dateInput.value !== state.selectedDate) {
+            dateInput.value = state.selectedDate;
         }
 
         const history = getHistory(state.selectedDate);
         const target = analyzeTargetMatches(state.selectedDate, history);
         const coupons = getCoupons(target);
 
-        const targetMatches = state.rows.filter(row =>
-            row.date === state.selectedDate && !row.played
-        ).length;
+        const targetMatches = state.rows.reduce((sum, row) => {
+            return sum +
+                (row.date === state.selectedDate && !row.played ? 1 : 0);
+        }, 0);
 
         $("#rnaSummary").textContent =
             `${state.selectedDate} · ${targetMatches} oynanmamış maç · ` +
@@ -1102,10 +1252,16 @@
 
         $("#rnaCoupons").innerHTML = coupons.map(renderCoupon).join("");
 
-        const validGroups = [...history.values()].filter(group =>
-            group.sample >= CFG.MIN_SAMPLE &&
-            group.success >= CFG.MIN_SUCCESS
-        ).length;
+        let validGroups = 0;
+
+        for (const group of history.values()) {
+            if (
+                group.sample >= CFG.MIN_SAMPLE &&
+                group.success >= CFG.MIN_SUCCESS
+            ) {
+                validGroups++;
+            }
+        }
 
         $("#rnaDiagnostics").innerHTML = `
             <p>Kaynak: ${esc(CFG.DATA_URL)}</p>
@@ -1117,7 +1273,7 @@
             <p>Sonuç kuralı doğrulanması gereken market: ${state.stats.unsupportedMarketCount || 0}</p>
             <p>Geçmiş eşleşme grubu: ${history.size}</p>
             <p>Başarı ve örnek şartını karşılayan grup: ${validGroups}</p>
-            <p>Analiz önbelleği: ${state.historyCache.size}</p>
+            <p>Önbellekteki analiz: ${state.historyCache.size}</p>
         `;
 
         if (state.error) {
@@ -1150,15 +1306,12 @@
         );
 
         try {
-            const separator = CFG.DATA_URL.includes("?") ? "&" : "?";
-
-            const response = await fetch(
-                `${CFG.DATA_URL}${separator}t=${Date.now()}`,
-                {
-                    cache: "no-store",
-                    signal: controller.signal
-                }
-            );
+            // URL'ye her seferinde rastgele parametre eklenmez.
+            // Tarayıcı/CDN önbelleğinin kullanılması tekrar yüklemeyi hızlandırır.
+            const response = await fetch(CFG.DATA_URL, {
+                cache: "no-cache",
+                signal: controller.signal
+            });
 
             if (!response.ok) {
                 throw new Error(`JSON yüklenemedi: HTTP ${response.status}`);
@@ -1206,7 +1359,10 @@
                 console.warn("[RNA]", state.error, state.stats);
             }
         } catch (error) {
-            if (error.name === "AbortError" && controller !== state.controller) {
+            if (
+                error.name === "AbortError" &&
+                controller !== state.controller
+            ) {
                 return;
             }
 
@@ -1226,7 +1382,10 @@
             }
 
             const diagnostics = $("#rnaDiagnostics");
-            if (diagnostics) diagnostics.textContent = state.error;
+
+            if (diagnostics) {
+                diagnostics.textContent = state.error;
+            }
         } finally {
             clearTimeout(timer);
 
@@ -1255,6 +1414,7 @@
             return {
                 ...state.stats,
                 cachedHistories: state.historyCache.size,
+                indexedMarkets: state.historyIndex.size,
                 selectedMarkets: [...state.selectedMarkets]
             };
         }
