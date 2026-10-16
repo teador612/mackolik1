@@ -1,710 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta name="theme-color" content="#07111f">
-    <meta name="description" content="RNA futbol oran analizi ve otomatik kupon sistemi">
-    <title>RNA | Akıllı Kupon Merkezi</title>
-
-    <style>
-        :root {
-            color-scheme: dark;
-            --bg: #07111f;
-            --panel: #101b2c;
-            --panel2: #0b1524;
-            --border: #26364b;
-            --text: #f3f6fc;
-            --muted: #9aa9bd;
-            --green: #22c55e;
-            --blue: #2563eb;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            min-height: 100%;
-            background: var(--bg);
-            scroll-behavior: smooth;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background:
-                radial-gradient(ellipse at top, #142944 0%, transparent 48%),
-                var(--bg);
-            color: var(--text);
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        button,
-        input {
-            font: inherit;
-        }
-
-        button {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .app {
-            width: 100%;
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: max(14px, env(safe-area-inset-top)) 12px
-                     max(28px, env(safe-area-inset-bottom));
-        }
-
-        .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            padding: 10px 2px 18px;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            min-width: 0;
-        }
-
-        .brand-icon {
-            display: grid;
-            place-items: center;
-            flex: 0 0 45px;
-            width: 45px;
-            height: 45px;
-            border: 1px solid #285642;
-            border-radius: 14px;
-            background: #102d26;
-            color: #86efac;
-            font-size: 22px;
-            font-weight: 900;
-        }
-
-        .brand-name {
-            margin: 0;
-            font-size: 19px;
-            font-weight: 850;
-            letter-spacing: -.4px;
-        }
-
-        .brand-subtitle {
-            margin-top: 4px;
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .live-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            border: 1px solid #285642;
-            border-radius: 20px;
-            padding: 7px 10px;
-            color: #86efac;
-            background: #0d241e;
-            font-size: 11px;
-            font-weight: 750;
-        }
-
-        .live-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #22c55e;
-        }
-
-        .hero {
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 13px;
-            padding: 20px 17px;
-            border: 1px solid #2b4058;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #14273d, #101b2c 65%, #10251f);
-        }
-
-        .hero-label {
-            color: #86efac;
-            font-size: 10px;
-            font-weight: 850;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-        }
-
-        .hero h2 {
-            margin: 9px 0 7px;
-            font-size: clamp(22px, 5vw, 29px);
-            letter-spacing: -.7px;
-        }
-
-        .hero p {
-            max-width: 580px;
-            margin: 0;
-            color: #b7c5d7;
-            font-size: 12px;
-            line-height: 1.7;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 8px;
-            margin-bottom: 13px;
-        }
-
-        .stat {
-            min-width: 0;
-            padding: 12px 9px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            background: var(--panel);
-        }
-
-        .stat-label {
-            color: var(--muted);
-            font-size: 10px;
-            line-height: 1.4;
-        }
-
-        .stat-value {
-            margin-top: 7px;
-            font-size: clamp(17px, 4.4vw, 23px);
-            font-weight: 850;
-            overflow-wrap: anywhere;
-        }
-
-        .stat-value.green {
-            color: #86efac;
-        }
-
-        .section-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin: 20px 2px 10px;
-        }
-
-        .section-heading h2 {
-            margin: 0;
-            font-size: 16px;
-            font-weight: 800;
-        }
-
-        .section-tag {
-            color: #a5b4fc;
-            font-size: 10px;
-            font-weight: 800;
-            white-space: nowrap;
-        }
-
-        .card {
-            min-width: 0;
-            margin-bottom: 12px;
-            padding: 14px;
-            border: 1px solid var(--border);
-            border-radius: 15px;
-            background: var(--panel);
-        }
-
-        .date-label {
-            display: block;
-            margin-bottom: 7px;
-            color: #bdc9d9;
-            font-size: 12px;
-            font-weight: 700;
-        }
-
-        .date-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) auto;
-            gap: 8px;
-        }
-
-        .date-row input {
-            width: 100%;
-            min-width: 0;
-            min-height: 43px;
-            padding: 9px 10px;
-            border: 1px solid #394b63;
-            border-radius: 9px;
-            outline: none;
-            background: var(--panel2);
-            color: var(--text);
-        }
-
-        .date-row input:focus {
-            border-color: #60a5fa;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 7px;
-            min-height: 41px;
-            padding: 9px 13px;
-            border: 1px solid transparent;
-            border-radius: 9px;
-            background: var(--blue);
-            color: white;
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        .btn:active {
-            transform: scale(.98);
-        }
-
-        .btn-secondary {
-            border-color: #394b63;
-            background: #1a2a40;
-            color: #dbe7f5;
-        }
-
-        .btn-green {
-            background: #166534;
-            color: #dcfce7;
-        }
-
-        .status-box {
-            margin-top: 12px;
-            padding: 10px 11px;
-            border: 1px solid #2b4058;
-            border-radius: 9px;
-            background: #0b1524;
-            color: var(--muted);
-            font-size: 11px;
-            line-height: 1.7;
-            overflow-wrap: anywhere;
-        }
-
-        .status-box.error {
-            border-color: #7f3030;
-            color: #fecaca;
-        }
-
-        .market-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 7px;
-            margin-bottom: 12px;
-        }
-
-        .market-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 7px;
-        }
-
-        .market {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            min-width: 0;
-            min-height: 39px;
-            padding: 8px;
-            border: 1px solid #304057;
-            border-radius: 9px;
-            background: var(--panel2);
-            color: #dce5f1;
-            font-size: 11px;
-            overflow-wrap: anywhere;
-        }
-
-        .market:has(input:checked) {
-            border-color: #327b5a;
-            background: #102a24;
-        }
-
-        .market input {
-            flex: 0 0 auto;
-            width: 15px;
-            height: 15px;
-            margin: 0;
-            accent-color: #22c55e;
-        }
-
-        .coupon-summary {
-            margin-bottom: 11px;
-            color: var(--muted);
-            font-size: 11px;
-            line-height: 1.7;
-            overflow-wrap: anywhere;
-        }
-
-        .coupon-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            gap: 10px;
-        }
-
-        .coupon {
-            min-width: 0;
-            overflow: hidden;
-            border: 1px solid #304057;
-            border-radius: 13px;
-            background: #0b1524;
-        }
-
-        .coupon-header {
-            padding: 13px;
-            border-bottom: 1px solid #26364b;
-            background: linear-gradient(110deg, #172a40, #111d2d);
-        }
-
-        .coupon-header-row {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 10px;
-        }
-
-        .coupon h3 {
-            margin: 0;
-            font-size: 14px;
-        }
-
-        .coupon-subtitle {
-            margin-top: 5px;
-            color: var(--muted);
-            font-size: 10px;
-        }
-
-        .risk-label {
-            flex-shrink: 0;
-            padding: 5px 7px;
-            border: 1px solid #344b66;
-            border-radius: 7px;
-            color: #c7d2fe;
-            font-size: 9px;
-            font-weight: 800;
-        }
-
-        .coupon-total-row {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 13px;
-        }
-
-        .coupon-total-label {
-            color: var(--muted);
-            font-size: 10px;
-        }
-
-        .coupon-total {
-            margin-top: 3px;
-            color: #86efac;
-            font-size: 25px;
-            font-weight: 900;
-            letter-spacing: -.6px;
-        }
-
-        .pick-count {
-            color: #d1d9e6;
-            font-size: 11px;
-        }
-
-        .leg {
-            padding: 12px 13px;
-            border-bottom: 1px solid #202e41;
-        }
-
-        .leg:last-child {
-            border-bottom: 0;
-        }
-
-        .leg-name {
-            font-size: 12px;
-            font-weight: 800;
-            line-height: 1.5;
-            overflow-wrap: anywhere;
-        }
-
-        .leg-market {
-            display: inline-block;
-            margin-top: 7px;
-            padding: 5px 7px;
-            border: 1px solid #285642;
-            border-radius: 6px;
-            background: #102a24;
-            color: #86efac;
-            font-size: 10px;
-            font-weight: 800;
-        }
-
-        .leg-details {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .detail {
-            min-width: 0;
-            padding: 8px;
-            border: 1px solid #26364b;
-            border-radius: 8px;
-            background: #101b2c;
-        }
-
-        .detail-label {
-            color: var(--muted);
-            font-size: 9px;
-        }
-
-        .detail-value {
-            margin-top: 4px;
-            font-size: 12px;
-            font-weight: 800;
-            overflow-wrap: anywhere;
-        }
-
-        .result-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            margin-top: 9px;
-            font-size: 10px;
-            font-weight: 800;
-        }
-
-        .result-status.pending {
-            color: #fcd34d;
-        }
-
-        .result-status.success {
-            color: #86efac;
-        }
-
-        .result-status.failure {
-            color: #fca5a5;
-        }
-
-        .empty {
-            padding: 17px 12px;
-            color: var(--muted);
-            font-size: 11px;
-            line-height: 1.8;
-            text-align: center;
-        }
-
-        .diagnostics {
-            color: var(--muted);
-            font-size: 11px;
-            line-height: 1.8;
-            overflow-wrap: anywhere;
-        }
-
-        .diagnostics p {
-            margin: 5px 0;
-        }
-
-        .footer {
-            padding: 18px 5px 5px;
-            color: #77869b;
-            font-size: 10px;
-            line-height: 1.8;
-            text-align: center;
-        }
-
-        @media (min-width: 650px) {
-            .app {
-                padding-right: 20px;
-                padding-left: 20px;
-            }
-
-            .hero {
-                padding: 26px;
-            }
-
-            .card {
-                padding: 17px;
-            }
-
-            .market-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-            }
-
-            .coupon-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .coupon-grid .coupon:last-child:nth-child(odd) {
-                grid-column: 1 / -1;
-            }
-        }
-
-        @media (min-width: 900px) {
-            .coupon-grid {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
-            .coupon-grid .coupon:last-child:nth-child(odd) {
-                grid-column: auto;
-            }
-        }
-
-        @media (max-width: 360px) {
-            .app {
-                padding-right: 9px;
-                padding-left: 9px;
-            }
-
-            .date-row {
-                grid-template-columns: minmax(0, 1fr);
-            }
-
-            .date-row .btn {
-                width: 100%;
-            }
-
-            .market-grid {
-                grid-template-columns: minmax(0, 1fr);
-            }
-
-            .stats {
-                gap: 5px;
-            }
-
-            .stat {
-                padding: 10px 7px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
+  <meta name="description" content="RNA futbol oran analizi ve otomatik kupon sistemi">
+  <title>RNA | Akıllı Kupon Merkezi</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07111f;
+      --text: #f3f6fc;
+      --muted: #9aa9bd;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding:
+        max(14px, env(safe-area-inset-top))
+        12px
+        max(28px, env(safe-area-inset-bottom));
+      background:
+        radial-gradient(ellipse at top, #142944 0%, transparent 48%),
+        var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-wrap: anywhere;
+    }
+    main {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    #rna-load-status {
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border: 1px solid #26364b;
+      border-radius: 10px;
+      background: #101b2c;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+    #rna-load-status:empty {
+      display: none;
+    }
+  </style>
 </head>
-
 <body>
-    <main class="app">
-        <header class="topbar">
-            <div class="brand">
-                <div class="brand-icon">R</div>
-                <div>
-                    <h1 class="brand-name">RNA KU PON</h1>
-                    <div class="brand-subtitle">Akıllı analiz merkezi</div>
-                </div>
-            </div>
-
-            <div class="live-indicator">
-                <span class="live-dot"></span>
-                V2 VERİ
-            </div>
-        </header>
-
-        <section class="hero">
-            <div class="hero-label">İstatistik tabanlı analiz</div>
-            <h2>Akıllı Kupon Merkezi</h2>
-            <p>
-                Geçmiş maçların açılış oranlarını karşılaştırır.
-                Seçilen marketlerde başarı ve örnek sayısı şartlarını
-                karşılayan maçları mevcut RNA motorunun kurallarıyla listeler.
-            </p>
-        </section>
-
-        <section class="stats" aria-label="Motor ayarları">
-            <div class="stat">
-                <div class="stat-label">Geçmiş analiz</div>
-                <div class="stat-value">30 gün</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Min. başarı</div>
-                <div class="stat-value green">%80</div>
-            </div>
-            <div class="stat">
-                <div class="stat-label">Kupon limiti</div>
-                <div class="stat-value">5 maç</div>
-            </div>
-        </section>
-
-        <div class="section-heading">
-            <h2>Analiz ayarları</h2>
-            <span class="section-tag">01 / TARİH</span>
-        </div>
-
-        <section class="card">
-            <label class="date-label" for="rnaDate">Analiz edilecek maç tarihi</label>
-
-            <div class="date-row">
-                <input type="date" id="rnaDate">
-                <button class="btn" type="button" id="rnaRefresh">
-                    ↻ Verileri yenile
-                </button>
-            </div>
-
-            <div id="rnaMessage" class="status-box" role="status" aria-live="polite">
-                RNA motoru başlatılıyor…
-            </div>
-        </section>
-
-        <div class="section-heading">
-            <h2>Market filtreleri</h2>
-            <span class="section-tag">02 / MARKET</span>
-        </div>
-
-        <section class="card">
-            <div class="market-toolbar">
-                <button class="btn btn-green" type="button" id="rnaAll">
-                    Tümünü seç
-                </button>
-                <button class="btn btn-secondary" type="button" id="rnaNone">
-                    Seçimi temizle
-                </button>
-            </div>
-
-            <div id="rnaMarkets" class="market-grid">
-                <div class="empty">Market listesi yükleniyor…</div>
-            </div>
-        </section>
-
-        <div class="section-heading">
-            <h2>Otomatik kuponlar</h2>
-            <span class="section-tag">03 / SONUÇ</span>
-        </div>
-
-        <section class="card">
-            <div id="rnaSummary" class="coupon-summary">
-                Analiz sonuçları bekleniyor…
-            </div>
-
-            <div id="rnaCoupons" class="coupon-grid">
-                <div class="empty">Veriler yüklendiğinde kuponlar burada gösterilir.</div>
-            </div>
-        </section>
-
-        <div class="section-heading">
-            <h2>Sistem bilgileri</h2>
-            <span class="section-tag">04 / VERİ</span>
-        </div>
-
-        <section class="card">
-            <details>
-                <summary style="cursor:pointer;font-size:12px;font-weight:750;padding:4px 0 12px">
-                    Veri ve analiz tanılama bilgilerini göster
-                </summary>
-                <div id="rnaDiagnostics" class="diagnostics">
-                    Veri yüklenmesi bekleniyor…
-                </div>
-            </details>
-        </section>
-
-        <footer class="footer">
-            RNA · V2 açılış oranı analiz sistemi<br>
-            İstatistiksel geçmiş başarı, gelecekte aynı sonucun gerçekleşeceğini garanti etmez.
-        </footer>
-    </main>
-
-    <script src="./rnakupon.js" defer></script>
+  <main>
+    <div id="rna-load-status" role="status" aria-live="polite">
+      RNA sistemi yükleniyor…
+    </div>
+    <div id="mk-coupon-root"></div>
+  </main>
+  <script>
+    window.addEventListener("error", function (event) {
+      const status = document.getElementById("rna-load-status");
+      if (status && event.message) {
+        status.textContent = "JavaScript hatası: " + event.message;
+      }
+    });
+    window.addEventListener("unhandledrejection", function (event) {
+      const status = document.getElementById("rna-load-status");
+      const reason = event.reason;
+      const message = reason && reason.message
+        ? reason.message
+        : String(reason || "Bilinmeyen hata");
+      if (status) {
+        status.textContent = "Yükleme hatası: " + message;
+      }
+    });
+  </script>
+  <script
+    src="./rnakupon.js"
+    defer
+    onload="document.getElementById('rna-load-status').textContent = ''"
+    onerror="document.getElementById('rna-load-status').textContent = 'HATA: rnakupon.js yüklenemedi. Dosya adını ve yolunu kontrol et.'">
+  </script>
 </body>
 </html>
