@@ -4,6 +4,7 @@
 /* =========================================================
    RNA — V2 VERİ TABANLI OTOMATİK KUPON MOTORU
    Veri: ./data/v2-data.json
+   Marketler: JSON içindeki markets dizisinden dinamik
    Geçmiş: 30 gün
    Minimum örnek: 8
    Minimum başarı: %80
@@ -22,40 +23,81 @@
         MIN_ODD: 1.35,
         MIN_TOTAL_ODDS: 2.00,
         MAX_MATCHES: 5,
+        MAX_COUPONS: 3,
         FETCH_TIMEOUT: 20000
     });
 
-    const MARKETS = [
-        { key: "ms1", label: "MS 1", aliases: ["ms1", "ms 1", "1"] },
-        { key: "msX", label: "MS 0", aliases: ["msx", "ms0", "ms x", "ms 0", "x", "beraberlik"] },
-        { key: "ms2", label: "MS 2", aliases: ["ms2", "ms 2", "2"] },
-        { key: "iy1", label: "İY 1", aliases: ["iy1", "iy 1", "ht1"] },
-        { key: "iyX", label: "İY 0", aliases: ["iyx", "iy0", "htx"] },
-        { key: "iy2", label: "İY 2", aliases: ["iy2", "iy 2", "ht2"] },
-        { key: "iy05Ust", label: "İY 0.5 Üst", aliases: ["iy05ust", "iy 0.5 üst", "iy 0,5 üst"] },
-        { key: "iy15Ust", label: "İY 1.5 Üst", aliases: ["iy15ust", "iy 1.5 üst", "iy 1,5 üst"] },
-        { key: "iy15Alt", label: "İY 1.5 Alt", aliases: ["iy15alt", "iy 1.5 alt", "iy 1,5 alt"] },
-        { key: "kgVar", label: "KG Var", aliases: ["kgvar", "kg var", "bttsyes"] },
-        { key: "kgYok", label: "KG Yok", aliases: ["kgyok", "kg yok", "bttsno"] },
-        { key: "au15Ust", label: "1.5 Üst", aliases: ["au15ust", "1.5 üst", "1,5 üst"] },
-        { key: "au15Alt", label: "1.5 Alt", aliases: ["au15alt", "1.5 alt", "1,5 alt"] },
-        { key: "au25Ust", label: "2.5 Üst", aliases: ["au25ust", "2.5 üst", "2,5 üst"] },
-        { key: "au25Alt", label: "2.5 Alt", aliases: ["au25alt", "2.5 alt", "2,5 alt"] },
-        { key: "iyms11", label: "İY/MS 1/1", aliases: ["iyms11", "1/1"] },
-        { key: "iyms12", label: "İY/MS 1/2", aliases: ["iyms12", "1/2"] },
-        { key: "iyms21", label: "İY/MS 2/1", aliases: ["iyms21", "2/1"] },
-        { key: "iyms22", label: "İY/MS 2/2", aliases: ["iyms22", "2/2"] },
-        { key: "iyms00", label: "İY/MS 0/0", aliases: ["iyms00", "0/0", "x/x"] },
-        { key: "iyms10", label: "İY/MS 1/0", aliases: ["iyms10", "1/0", "1/x"] },
-        { key: "iyms20", label: "İY/MS 2/0", aliases: ["iyms20", "2/0", "2/x"] }
+    /*
+     * Bu tanımlar JSON'daki market anahtarlarıyla eşleştirilir.
+     * JSON içindeki markets dizisi, ekrandaki asıl market listesidir.
+     */
+    const MARKET_DEFS = [
+        { key: "ms1", label: "MS 1" },
+        { key: "msX", label: "MS 0" },
+        { key: "ms2", label: "MS 2" },
+
+        { key: "h12", label: "H12" },
+        { key: "h0", label: "H0" },
+        { key: "h23", label: "H23" },
+
+        { key: "i14", label: "İ14" },
+        { key: "olmaz", label: "OLMAZ" },
+        { key: "i25", label: "İ25" },
+
+        { key: "ms1Alt", label: "1 VE ALT" },
+        { key: "msXAlt", label: "0 VE ALT" },
+        { key: "ms2Alt", label: "2 VE ALT" },
+        { key: "ms1Ust", label: "1 VE ÜST" },
+        { key: "msXUst", label: "0 VE ÜST" },
+        { key: "ms2Ust", label: "2 VE ÜST" },
+
+        { key: "au25Alt", label: "2,5 ALT" },
+        { key: "au25Ust", label: "2,5 ÜST" },
+        { key: "au35Alt", label: "3,5 ALT" },
+        { key: "au35Ust", label: "3,5 ÜST" },
+
+        { key: "kgVar", label: "KG VAR" },
+        { key: "kgYok", label: "KG YOK" },
+
+        { key: "gol01", label: "0-1 GOL" },
+        { key: "gol23", label: "2-3 GOL" },
+        { key: "gol45", label: "4-5 GOL" },
+        { key: "gol6plus", label: "6+ GOL" },
+
+        { key: "iy1", label: "İY 1" },
+        { key: "iyX", label: "İY 0" },
+        { key: "iy2", label: "İY 2" },
+        { key: "iy15Alt", label: "İY 1,5 ALT" },
+        { key: "iy15Ust", label: "İY 1,5 ÜST" },
+
+        { key: "iyms11", label: "İY/MS 1/1" },
+        { key: "iyms10", label: "İY/MS 1/0" },
+        { key: "iyms12", label: "İY/MS 1/2" },
+        { key: "iyms01", label: "İY/MS 0/1" },
+        { key: "iyms00", label: "İY/MS 0/0" },
+        { key: "iyms02", label: "İY/MS 0/2" },
+        { key: "iyms21", label: "İY/MS 2/1" },
+        { key: "iyms20", label: "İY/MS 2/0" },
+        { key: "iyms22", label: "İY/MS 2/2" }
     ];
 
+    const UNSUPPORTED_OUTCOMES = new Set([
+        "i14",
+        "olmaz",
+        "i25"
+    ]);
+
     const $ = selector => document.querySelector(selector);
+
+    let MARKETS = MARKET_DEFS.map(m => ({
+        ...m,
+        aliases: [m.key, m.label]
+    }));
 
     const state = {
         rows: [],
         selectedDate: todayISO(),
-        selectedMarkets: new Set(MARKETS.map(m => m.key)),
+        selectedMarkets: new Set(MARKET_DEFS.map(m => m.key)),
         historyCache: new Map(),
         loading: false,
         error: "",
@@ -104,8 +146,8 @@
             s = s.replace(",", ".");
         }
 
-        const n = Number(s);
-        return Number.isFinite(n) ? n : null;
+        const result = Number(s);
+        return Number.isFinite(result) ? result : null;
     }
 
     function get(obj, aliases) {
@@ -135,11 +177,12 @@
 
         if (typeof value === "number") {
             const d = new Date(value < 1e11 ? value * 1000 : value);
-            return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+            return Number.isNaN(d.getTime())
+                ? null
+                : d.toISOString().slice(0, 10);
         }
 
         const s = String(value).trim();
-
         let m = s.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
 
         if (m) {
@@ -178,13 +221,21 @@
 
     function getTeam(match, side) {
         const aliases = side === "home"
-            ? ["homeTeam", "home_team", "home", "homeName", "home_name", "evSahibi", "evTakim", "team1", "host"]
-            : ["awayTeam", "away_team", "away", "awayName", "away_name", "deplasman", "depTakim", "team2", "visitor"];
+            ? [
+                "homeTeam", "home_team", "home", "homeName", "home_name",
+                "evSahibi", "evTakim", "team1", "host"
+            ]
+            : [
+                "awayTeam", "away_team", "away", "awayName", "away_name",
+                "deplasman", "depTakim", "team2", "visitor"
+            ];
 
         let value = get(match, aliases);
 
         if (value && typeof value === "object") {
-            value = get(value, ["name", "teamName", "team_name", "title", "displayName"]);
+            value = get(value, [
+                "name", "teamName", "team_name", "title", "displayName"
+            ]);
         }
 
         if (value != null) return String(value);
@@ -208,36 +259,65 @@
 
     function parseScore(value) {
         if (value && typeof value === "object") {
-            const home = num(get(value, ["home", "homeScore", "home_score", "ev", "h"]));
-            const away = num(get(value, ["away", "awayScore", "away_score", "dep", "a"]));
+            const home = num(get(value, [
+                "home", "homeScore", "home_score", "ev", "h"
+            ]));
 
-            if (home !== null && away !== null) return { h: home, a: away };
+            const away = num(get(value, [
+                "away", "awayScore", "away_score", "dep", "a"
+            ]));
+
+            if (home !== null && away !== null) {
+                return { h: home, a: away };
+            }
         }
 
         if (typeof value !== "string") return null;
 
         const match = value.match(/(?:^|\D)(\d{1,2})\s*[-:–]\s*(\d{1,2})(?:\D|$)/);
 
-        return match ? { h: Number(match[1]), a: Number(match[2]) } : null;
+        return match
+            ? { h: Number(match[1]), a: Number(match[2]) }
+            : null;
     }
 
     function getScore(match, half = false) {
         const directHome = half
-            ? ["halfHomeScore", "half_home_score", "htHomeScore", "iyHomeScore", "firstHalfHomeScore"]
-            : ["homeScore", "home_score", "scoreHome", "evSkor", "homeGoals", "ftHome"];
+            ? [
+                "halfHomeScore", "half_home_score", "htHomeScore",
+                "iyHomeScore", "firstHalfHomeScore"
+            ]
+            : [
+                "homeScore", "home_score", "scoreHome",
+                "evSkor", "homeGoals", "ftHome"
+            ];
 
         const directAway = half
-            ? ["halfAwayScore", "half_away_score", "htAwayScore", "iyAwayScore", "firstHalfAwayScore"]
-            : ["awayScore", "away_score", "scoreAway", "depSkor", "awayGoals", "ftAway"];
+            ? [
+                "halfAwayScore", "half_away_score", "htAwayScore",
+                "iyAwayScore", "firstHalfAwayScore"
+            ]
+            : [
+                "awayScore", "away_score", "scoreAway",
+                "depSkor", "awayGoals", "ftAway"
+            ];
 
         const home = num(get(match, directHome));
         const away = num(get(match, directAway));
 
-        if (home !== null && away !== null) return { h: home, a: away };
+        if (home !== null && away !== null) {
+            return { h: home, a: away };
+        }
 
         const aliases = half
-            ? ["halfTimeScore", "half_time_score", "htScore", "ht_score", "iySkor", "ilkYariSkor", "firstHalfScore", "scoreHT"]
-            : ["score", "result", "fullTimeScore", "full_time_score", "macSonucu", "skor", "ftScore", "finalScore"];
+            ? [
+                "halfTimeScore", "half_time_score", "htScore", "ht_score",
+                "iySkor", "ilkYariSkor", "firstHalfScore", "scoreHT"
+            ]
+            : [
+                "score", "result", "fullTimeScore", "full_time_score",
+                "macSonucu", "skor", "ftScore", "finalScore"
+            ];
 
         for (const alias of aliases) {
             const parsed = parseScore(get(match, [alias]));
@@ -261,36 +341,92 @@
     }
 
     function outcome(key, full, half) {
+        const total = full ? full.h + full.a : null;
+        const halfTotal = half ? half.h + half.a : null;
+
         switch (key) {
             case "ms1": return full ? full.h > full.a : null;
             case "msX": return full ? full.h === full.a : null;
             case "ms2": return full ? full.h < full.a : null;
 
+            // Çifte şans marketleri
+            case "h12": return full ? full.h !== full.a : null;
+            case "h0": return full ? full.h >= full.a : null;
+            case "h23": return full ? full.h <= full.a : null;
+
             case "iy1": return half ? half.h > half.a : null;
             case "iyX": return half ? half.h === half.a : null;
             case "iy2": return half ? half.h < half.a : null;
 
-            case "iy05Ust": return half ? half.h + half.a >= 1 : null;
-            case "iy15Ust": return half ? half.h + half.a >= 2 : null;
-            case "iy15Alt": return half ? half.h + half.a <= 1 : null;
+            case "iy15Ust": return half ? halfTotal >= 2 : null;
+            case "iy15Alt": return half ? halfTotal <= 1 : null;
 
             case "kgVar": return full ? full.h > 0 && full.a > 0 : null;
             case "kgYok": return full ? full.h === 0 || full.a === 0 : null;
 
-            case "au15Ust": return full ? full.h + full.a >= 2 : null;
-            case "au15Alt": return full ? full.h + full.a <= 1 : null;
-            case "au25Ust": return full ? full.h + full.a >= 3 : null;
-            case "au25Alt": return full ? full.h + full.a <= 2 : null;
+            case "au25Ust": return full ? total >= 3 : null;
+            case "au25Alt": return full ? total <= 2 : null;
+            case "au35Ust": return full ? total >= 4 : null;
+            case "au35Alt": return full ? total <= 3 : null;
 
-            case "iyms11": return half && full ? half.h > half.a && full.h > full.a : null;
-            case "iyms12": return half && full ? half.h > half.a && full.h < full.a : null;
-            case "iyms21": return half && full ? half.h < half.a && full.h > full.a : null;
-            case "iyms22": return half && full ? half.h < half.a && full.h < full.a : null;
-            case "iyms00": return half && full ? half.h === half.a && full.h === full.a : null;
-            case "iyms10": return half && full ? half.h > half.a && full.h === full.a : null;
-            case "iyms20": return half && full ? half.h < half.a && full.h === full.a : null;
+            case "gol01": return full ? total <= 1 : null;
+            case "gol23": return full ? total >= 2 && total <= 3 : null;
+            case "gol45": return full ? total >= 4 && total <= 5 : null;
+            case "gol6plus": return full ? total >= 6 : null;
 
-            default: return null;
+            /*
+             * "1 VE ALT/ÜST" gibi birleşik marketlerin alt/üst
+             * sınırı, market adından tek başına kesinleşmediği için
+             * bunlar yanlış varsayımla sonuçlandırılmaz.
+             */
+
+            case "iyms11":
+                return half && full
+                    ? half.h > half.a && full.h > full.a
+                    : null;
+
+            case "iyms10":
+                return half && full
+                    ? half.h > half.a && full.h === full.a
+                    : null;
+
+            case "iyms12":
+                return half && full
+                    ? half.h > half.a && full.h < full.a
+                    : null;
+
+            case "iyms01":
+                return half && full
+                    ? half.h === half.a && full.h > full.a
+                    : null;
+
+            case "iyms00":
+                return half && full
+                    ? half.h === half.a && full.h === full.a
+                    : null;
+
+            case "iyms02":
+                return half && full
+                    ? half.h === half.a && full.h < full.a
+                    : null;
+
+            case "iyms21":
+                return half && full
+                    ? half.h < half.a && full.h > full.a
+                    : null;
+
+            case "iyms20":
+                return half && full
+                    ? half.h < half.a && full.h === full.a
+                    : null;
+
+            case "iyms22":
+                return half && full
+                    ? half.h < half.a && full.h < full.a
+                    : null;
+
+            default:
+                return null;
         }
     }
 
@@ -307,17 +443,60 @@
         return n !== null && n > 1 && n < 10000 ? n : null;
     }
 
-    /*
-     * Oran alanları maç başına yalnızca bir defa dolaşılır.
-     * Bu, eski sürümdeki her market için tekrarlanan JSON
-     * taramalarını ortadan kaldırır.
-     */
+    function buildMarkets(payload) {
+        const catalog = Array.isArray(payload?.markets)
+            ? payload.markets
+            : [];
+
+        if (!catalog.length) {
+            MARKETS = MARKET_DEFS.map(m => ({
+                ...m,
+                aliases: [m.key, m.label]
+            }));
+        } else {
+            MARKETS = catalog
+                .filter(item => item && item.key)
+                .map(item => {
+                    const fallback = MARKET_DEFS.find(
+                        market => norm(market.key) === norm(item.key)
+                    );
+
+                    return {
+                        key: String(item.key),
+                        label: String(item.name ?? fallback?.label ?? item.key),
+                        aliases: [
+                            String(item.key),
+                            String(item.name ?? ""),
+                            ...(fallback?.aliases ?? [])
+                        ].filter(Boolean)
+                    };
+                });
+        }
+
+        const availableKeys = new Set(MARKETS.map(m => m.key));
+
+        // İlk yüklemede seçili olanları koru; yeni marketleri de seç.
+        for (const market of MARKETS) {
+            if (!state._marketSelectionInitialized ||
+                state.selectedMarkets.has(market.key) ||
+                MARKET_DEFS.some(m => m.key === market.key)) {
+                state.selectedMarkets.add(market.key);
+            }
+        }
+
+        for (const key of [...state.selectedMarkets]) {
+            if (!availableKeys.has(key)) state.selectedMarkets.delete(key);
+        }
+
+        state._marketSelectionInitialized = true;
+    }
+
     function extractOdds(match) {
         const odds = Object.create(null);
         const marketAliases = new Map();
 
         for (const market of MARKETS) {
-            for (const alias of [market.key, market.label, ...market.aliases]) {
+            for (const alias of [market.key, market.label, ...(market.aliases || [])]) {
                 marketAliases.set(norm(alias), market.key);
             }
         }
@@ -364,7 +543,9 @@
                         }
                     }
 
-                    if (depth < 3) queue.push({ value: item, depth: depth + 1 });
+                    if (depth < 3) {
+                        queue.push({ value: item, depth: depth + 1 });
+                    }
                 }
 
                 continue;
@@ -383,7 +564,9 @@
                 }
             }
 
-            const name = get(value, ["market", "marketKey", "market_key", "betType", "bet_type"]);
+            const name = get(value, [
+                "market", "marketKey", "market_key", "betType", "bet_type"
+            ]);
 
             if (name != null) {
                 const key = marketAliases.get(norm(name));
@@ -398,17 +581,13 @@
         return odds;
     }
 
-    /*
-     * JSON içindeki bilinen maç dizilerini tercih eder.
-     * Pazar tanım dizisi gibi alakasız dizileri maç olarak
-     * seçmemeye çalışır.
-     */
     function flattenMatches(payload) {
         if (Array.isArray(payload)) return payload;
-
         if (!payload || typeof payload !== "object") return [];
 
-        for (const key of ["matches", "fixtures", "events", "results", "rows", "records"]) {
+        for (const key of [
+            "matches", "fixtures", "events", "results", "rows", "records"
+        ]) {
             if (Array.isArray(payload[key])) return payload[key];
         }
 
@@ -469,12 +648,13 @@
     }
 
     function prepareRows(payload) {
+        buildMarkets(payload);
+
         const raw = flattenMatches(payload);
         const rows = [];
 
         for (let i = 0; i < raw.length; i++) {
             const match = raw[i];
-
             const date = getDate(match);
             const home = getTeam(match, "home");
             const away = getTeam(match, "away");
@@ -484,7 +664,9 @@
             const results = Object.create(null);
 
             for (const market of MARKETS) {
-                results[market.key] = outcome(market.key, full, half);
+                results[market.key] = UNSUPPORTED_OUTCOMES.has(market.key)
+                    ? null
+                    : outcome(market.key, full, half);
             }
 
             rows.push({
@@ -510,7 +692,11 @@
             oddsCount: rows.reduce(
                 (sum, row) => sum + Object.keys(row.odds).length,
                 0
-            )
+            ),
+            marketCount: MARKETS.length,
+            unsupportedMarketCount: MARKETS.filter(
+                market => UNSUPPORTED_OUTCOMES.has(market.key)
+            ).length
         };
 
         return rows;
@@ -526,7 +712,6 @@
 
         const end = new Date(`${targetDate}T00:00:00.000Z`);
         const start = new Date(end);
-
         start.setUTCDate(start.getUTCDate() - CFG.HISTORY_DAYS);
 
         const startDate = start.toISOString().slice(0, 10);
@@ -546,7 +731,12 @@
                 const odd = row.odds[marketKey];
                 const result = row.results[marketKey];
 
-                if (odd === undefined || odd < CFG.MIN_ODD || result === null) {
+                if (
+                    odd === undefined ||
+                    odd < CFG.MIN_ODD ||
+                    result === null ||
+                    result === undefined
+                ) {
                     continue;
                 }
 
@@ -563,7 +753,6 @@
                         wins: 0,
                         losses: 0
                     };
-
                     index.set(key, group);
                 }
 
@@ -851,8 +1040,11 @@
 
         container.querySelectorAll("[data-market]").forEach(input => {
             input.addEventListener("change", () => {
-                if (input.checked) state.selectedMarkets.add(input.dataset.market);
-                else state.selectedMarkets.delete(input.dataset.market);
+                if (input.checked) {
+                    state.selectedMarkets.add(input.dataset.market);
+                } else {
+                    state.selectedMarkets.delete(input.dataset.market);
+                }
 
                 state.historyCache.clear();
                 render();
@@ -921,6 +1113,8 @@
             <p>Tarihi bulunan kayıt: ${state.stats.datedCount || 0}</p>
             <p>Skoru tamamlanmış kayıt: ${state.stats.playedCount || 0}</p>
             <p>İndekslenen market/oran: ${state.stats.oddsCount || 0}</p>
+            <p>JSON market sayısı: ${state.stats.marketCount || MARKETS.length}</p>
+            <p>Sonuç kuralı doğrulanması gereken market: ${state.stats.unsupportedMarketCount || 0}</p>
             <p>Geçmiş eşleşme grubu: ${history.size}</p>
             <p>Başarı ve örnek şartını karşılayan grup: ${validGroups}</p>
             <p>Analiz önbelleği: ${state.historyCache.size}</p>
@@ -933,14 +1127,15 @@
     }
 
     async function loadData() {
-        if (state.loading) {
-            if (state.controller) state.controller.abort();
+        if (state.loading && state.controller) {
+            state.controller.abort();
         }
 
         state.loading = true;
         state.error = "";
 
         const message = $("#rnaMessage");
+
         if (message) {
             message.textContent = "V2 verileri yükleniyor…";
             message.className = "muted";
@@ -949,7 +1144,10 @@
         const controller = new AbortController();
         state.controller = controller;
 
-        const timer = setTimeout(() => controller.abort(), CFG.FETCH_TIMEOUT);
+        const timer = setTimeout(
+            () => controller.abort(),
+            CFG.FETCH_TIMEOUT
+        );
 
         try {
             const separator = CFG.DATA_URL.includes("?") ? "&" : "?";
@@ -981,6 +1179,7 @@
             state.rows = rows;
             state.historyCache.clear();
 
+            renderMarketFilters();
             render();
 
             if (!state.stats.datedCount) {
@@ -996,7 +1195,10 @@
 
             if (status) {
                 status.textContent = state.error ||
-                    `${state.rows.length} kayıt yüklendi · ${state.stats.oddsCount} oran indekslendi.`;
+                    `${state.rows.length} kayıt yüklendi · ` +
+                    `${state.stats.marketCount} market · ` +
+                    `${state.stats.oddsCount} oran indekslendi.`;
+
                 status.className = state.error ? "muted error" : "muted";
             }
 
@@ -1017,6 +1219,7 @@
             ensureUI();
 
             const status = $("#rnaMessage");
+
             if (status) {
                 status.textContent = state.error;
                 status.className = "muted error";
@@ -1036,14 +1239,24 @@
 
     window.RNA = Object.freeze({
         config: CFG,
-        markets: MARKETS,
+
+        get markets() {
+            return MARKETS;
+        },
+
         reload: loadData,
         render,
+
         get rows() {
             return state.rows.length;
         },
+
         get diagnostics() {
-            return { ...state.stats, cachedHistories: state.historyCache.size };
+            return {
+                ...state.stats,
+                cachedHistories: state.historyCache.size,
+                selectedMarkets: [...state.selectedMarkets]
+            };
         }
     });
 
