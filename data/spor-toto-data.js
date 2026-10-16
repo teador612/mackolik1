@@ -157,7 +157,7 @@ window.SPORT_TOTO_DATA = {
       {"number":15,"home":"Como","away":"Roma","result":"X"},
     ],
     "10": [
-      {"number":1,"home":"Arca Çorum FK","away":"Çaykur Rizespor","result":null},
+      {"number":1,"home":"Arca Çorum FK","away":"Çaykur Rizespor","result":"1"},
       {"number":2,"home":"Erzurumspor FK","away":"Eyüpspor","result":null},
       {"number":3,"home":"Amed Sportif Faaliyetler","away":"Tümosan Konyaspor","result":null},
       {"number":4,"home":"Gençlerbirliği","away":"Galatasaray","result":null},
