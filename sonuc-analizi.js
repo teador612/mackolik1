@@ -1,7 +1,8 @@
+
 "use strict";
 
 /* =========================================================
-   SONUÇTAN ORAN ANALİZİ
+   SONUÇTAN ORAN ANALİZİ — OPTİMİZE EDİLMİŞ SÜRÜM
 
    Veri              : ./data/v2-data.json
    Analiz dönemi     : 10 gün
@@ -9,7 +10,13 @@
    Minimum başarı    : %80
    Oran eşleştirmesi : Birebir, 2 ondalık
    Başarı hesabı     : Aynı market + aynı oran için son 5 maç
-   Geçmiş liste      : Son 5 eşleşen maç
+
+   Optimizasyon:
+   - Maç tarihleri ve skorları bir kez hazırlanır.
+   - Market/oran geçmişi önceden indekslenir.
+   - Her analizde geçmiş maçlar tekrar tekrar sıralanmaz.
+   - Aynı geçmiş maç listesi her gelecek maçın altında
+     yeniden oluşturulmaz.
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -17,10 +24,6 @@ const DATA_URL = "./data/v2-data.json";
 const HISTORY_DAYS = 10;
 const MIN_SUCCESS = 80;
 const RECENT_MATCH_LIMIT = 5;
-
-/* =========================================================
-   MARKETLER
-   ========================================================= */
 
 const MARKETS = [
   { id: "iy15Alt", label: "İY 1.5 Alt", fields: ["iy15Alt", "iy15A", "iy_15_alt", "IY15Alt"] },
@@ -75,9 +78,7 @@ const MARKETS = [
   { id: "iyms22", label: "İY/MS 2/2", fields: ["iyms22", "IYMS22"] }
 ];
 
-/* =========================================================
-   SONUÇ TANIMLARI
-   ========================================================= */
+const MARKET_BY_ID = new Map(MARKETS.map(market => [market.id, market]));
 
 const RESULTS = {
   MS1: { label: "MS 1", type: "ft", test: s => s.home > s.away },
@@ -129,7 +130,6 @@ function parseDateKey(value) {
   if (!value) return null;
 
   const text = String(value).trim();
-
   let match = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
 
   if (match) {
@@ -163,16 +163,10 @@ function getDateKey(match) {
   return null;
 }
 
-function dateToNumber(dateKey) {
-  const parts = String(dateKey).split("-").map(Number);
-
-  if (parts.length !== 3) return NaN;
-
-  return Date.UTC(parts[0], parts[1] - 1, parts[2]);
-}
-
 function addDays(dateKey, days) {
-  const date = new Date(dateToNumber(dateKey));
+  const parts = dateKey.split("-").map(Number);
+  const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+
   date.setUTCDate(date.getUTCDate() + days);
 
   return [
@@ -309,10 +303,6 @@ function getScore(match, type) {
   return null;
 }
 
-function isPlayed(match) {
-  return Boolean(getScore(match, "ft"));
-}
-
 /* =========================================================
    AÇILIŞ ORANLARI
    ========================================================= */
@@ -349,16 +339,14 @@ function getOdds(match, market) {
   return null;
 }
 
-/* =========================================================
-   SONUÇ KONTROLÜ
-   ========================================================= */
-
-function getTargetResult(match, resultId) {
+function getTargetResult(matchInfo, resultId) {
   const definition = RESULTS[resultId];
 
   if (!definition) return null;
 
-  const score = getScore(match, definition.type);
+  const score = definition.type === "ht"
+    ? matchInfo.ht
+    : matchInfo.ft;
 
   if (!score) return null;
 
@@ -366,57 +354,81 @@ function getTargetResult(match, resultId) {
 }
 
 /* =========================================================
-   SON 5 MAÇTA BAŞARI HESABI
-   Aynı market + aynı açılış oranı
-   ========================================================= */
-
-function calculateRecentSuccess(market, odd, targetDate) {
-  const recentMatches = allMatches
-    .filter(match => {
-      const date = getDateKey(match);
-
-      if (!date || date >= targetDate) return false;
-      if (!isPlayed(match)) return false;
-
-      return getOdds(match, market) === odd;
-    })
-    .sort((a, b) => {
-      const dateA = getDateKey(a) || "";
-      const dateB = getDateKey(b) || "";
-
-      if (dateA !== dateB) return dateB.localeCompare(dateA);
-
-      return getTime(b).localeCompare(getTime(a));
-    })
-    .slice(0, RECENT_MATCH_LIMIT);
-
-  let success = 0;
-
-  for (const match of recentMatches) {
-    const result = getTargetResult(match, selectedResultId);
-
-    if (result === true) success++;
-  }
-
-  return {
-    total: recentMatches.length,
-    success,
-    rate: recentMatches.length
-      ? success / recentMatches.length * 100
-      : 0
-  };
-}
-
-/* =========================================================
-   VERİ YÜKLEME
+   VERİ VE İNDEKS ÖNBELLEĞİ
    ========================================================= */
 
 let allMatches = [];
-let selectedResultId = "MS1";
+let matchInfos = [];
+let oddsIndex = new Map();
+let dataReady = false;
+
+function compareNewestFirst(a, b) {
+  if (a.date !== b.date) {
+    return b.date.localeCompare(a.date);
+  }
+
+  return b.time.localeCompare(a.time);
+}
+
+function buildDataIndexes(matches) {
+  const infos = [];
+  const index = new Map();
+
+  for (const match of matches) {
+    const date = getDateKey(match);
+
+    if (!date) continue;
+
+    const ft = getScore(match, "ft");
+    const ht = getScore(match, "ht");
+    const played = Boolean(ft);
+    const time = getTime(match);
+
+    const info = {
+      match,
+      date,
+      time,
+      ft,
+      ht,
+      played,
+      marketOdds: []
+    };
+
+    infos.push(info);
+
+    for (const market of MARKETS) {
+      const odd = getOdds(match, market);
+
+      if (!odd) continue;
+
+      const key = `${market.id}|${odd}`;
+      const entry = { info, odd, marketId: market.id };
+
+      info.marketOdds.push(entry);
+
+      // Son 5 geçmiş maç hesabında yalnızca sonucu belli maçlar gerekir.
+      if (played) {
+        if (!index.has(key)) index.set(key, []);
+        index.get(key).push(info);
+      }
+    }
+  }
+
+  // Her market/oran grubunu yalnızca bir defa sırala.
+  for (const list of index.values()) {
+    list.sort(compareNewestFirst);
+  }
+
+  matchInfos = infos;
+  oddsIndex = index;
+  dataReady = true;
+}
 
 async function loadData() {
-  const response = await fetch(`${DATA_URL}?t=${Date.now()}`, {
-    cache: "no-store"
+  // Her sayfa açılışında rastgele sorgu parametresi eklemek yerine
+  // tarayıcının önbelleği doğrulamasına izin ver.
+  const response = await fetch(DATA_URL, {
+    cache: "no-cache"
   });
 
   if (!response.ok) {
@@ -432,26 +444,70 @@ async function loadData() {
 }
 
 /* =========================================================
-   SEÇİLEN TARİHTEKİ OYNANMAMIŞ MAÇLAR
+   İNDEKSTEN SON 5 EŞLEŞEN MAÇ
    ========================================================= */
 
-function buildFutureIndex(matches, targetDate) {
+function getRecentOddsMatches(marketId, odd, targetDate) {
+  const list = oddsIndex.get(`${marketId}|${odd}`);
+
+  if (!list || !list.length) return [];
+
+  const recent = [];
+
+  // Liste zaten yeni tarihten eski tarihe sıralı.
+  // Yeniden filtreleme ve sıralama yapmadan ilk 5 uygun maçı al.
+  for (const info of list) {
+    if (info.date >= targetDate) continue;
+
+    recent.push(info);
+
+    if (recent.length >= RECENT_MATCH_LIMIT) break;
+  }
+
+  return recent;
+}
+
+function calculateRecentSuccess(marketId, odd, targetDate, resultId) {
+  const recentMatches = getRecentOddsMatches(
+    marketId,
+    odd,
+    targetDate
+  );
+
+  let success = 0;
+
+  for (const info of recentMatches) {
+    if (getTargetResult(info, resultId) === true) {
+      success++;
+    }
+  }
+
+  return {
+    recentMatches,
+    total: recentMatches.length,
+    success,
+    rate: recentMatches.length
+      ? success / recentMatches.length * 100
+      : 0
+  };
+}
+
+/* =========================================================
+   GELECEK MAÇ İNDEKSİ
+   ========================================================= */
+
+function buildFutureIndex(targetDate) {
   const index = new Map();
 
-  for (const match of matches) {
-    if (getDateKey(match) !== targetDate) continue;
-    if (isPlayed(match)) continue;
+  for (const info of matchInfos) {
+    if (info.date !== targetDate || info.played) continue;
 
-    for (const market of MARKETS) {
-      const odd = getOdds(match, market);
-
-      if (!odd) continue;
-
-      const key = `${market.id}|${odd}`;
+    for (const entry of info.marketOdds) {
+      const key = `${entry.marketId}|${entry.odd}`;
 
       if (!index.has(key)) index.set(key, []);
 
-      index.get(key).push(match);
+      index.get(key).push(info);
     }
   }
 
@@ -460,62 +516,59 @@ function buildFutureIndex(matches, targetDate) {
 
 /* =========================================================
    ANALİZ MOTORU
-   Başarı oranı ilgili market/oranın son 5 maçından hesaplanır.
    ========================================================= */
 
 function runAnalysis(targetDate, resultId) {
-  selectedResultId = resultId;
+  if (!dataReady) {
+    throw new Error("Veriler henüz hazırlanmadı.");
+  }
 
   const startDate = addDays(targetDate, -HISTORY_DAYS);
-
-  const history = allMatches.filter(match => {
-    const date = getDateKey(match);
-
-    return Boolean(
-      date &&
-      date >= startDate &&
-      date < targetDate &&
-      isPlayed(match)
-    );
-  });
-
-  const futureIndex = buildFutureIndex(allMatches, targetDate);
+  const history = [];
   const groups = new Map();
 
-  for (const match of history) {
-    for (const market of MARKETS) {
-      const odd = getOdds(match, market);
+  // Son 10 günlük oynanmış maçları tek geçişte bul.
+  for (const info of matchInfos) {
+    if (
+      info.date < startDate ||
+      info.date >= targetDate ||
+      !info.played
+    ) {
+      continue;
+    }
 
-      if (!odd) continue;
+    history.push(info);
 
-      const key = `${market.id}|${odd}`;
+    for (const entry of info.marketOdds) {
+      const key = `${entry.marketId}|${entry.odd}`;
 
       if (!groups.has(key)) {
+        const market = MARKET_BY_ID.get(entry.marketId);
+
         groups.set(key, {
-          marketId: market.id,
-          marketLabel: market.label,
-          odd
+          marketId: entry.marketId,
+          marketLabel: market ? market.label : entry.marketId,
+          odd: entry.odd
         });
       }
     }
   }
 
+  const futureIndex = buildFutureIndex(targetDate);
   const rows = [];
 
   for (const item of groups.values()) {
-    const futureKey = `${item.marketId}|${item.odd}`;
-    const future = futureIndex.get(futureKey) || [];
+    const key = `${item.marketId}|${item.odd}`;
+    const future = futureIndex.get(key);
 
-    if (!future.length) continue;
-
-    const market = MARKETS.find(m => m.id === item.marketId);
-
-    if (!market) continue;
+    // Seçilen tarihte bu oranla oynanmamış maç yoksa hesaplama yapma.
+    if (!future || !future.length) continue;
 
     const recent = calculateRecentSuccess(
-      market,
+      item.marketId,
       item.odd,
-      targetDate
+      targetDate,
+      resultId
     );
 
     if (recent.total === 0) continue;
@@ -526,7 +579,8 @@ function runAnalysis(targetDate, resultId) {
       total: recent.total,
       success: recent.success,
       rate: recent.rate,
-      future
+      future,
+      recentMatches: recent.recentMatches
     });
   }
 
@@ -541,32 +595,7 @@ function runAnalysis(targetDate, resultId) {
 }
 
 /* =========================================================
-   SON 5 MAÇ: AYNI MARKET + AYNI ORAN
-   ========================================================= */
-
-function getRecentOddsMatches(market, odd, targetDate) {
-  return allMatches
-    .filter(match => {
-      const date = getDateKey(match);
-
-      if (!date || date >= targetDate) return false;
-      if (!isPlayed(match)) return false;
-
-      return getOdds(match, market) === odd;
-    })
-    .sort((a, b) => {
-      const dateA = getDateKey(a) || "";
-      const dateB = getDateKey(b) || "";
-
-      if (dateA !== dateB) return dateB.localeCompare(dateA);
-
-      return getTime(b).localeCompare(getTime(a));
-    })
-    .slice(0, RECENT_MATCH_LIMIT);
-}
-
-/* =========================================================
-   KÜÇÜK GEÇMİŞ MAÇ TASARIMI
+   GEÇMİŞ MAÇ STİLLERİ
    ========================================================= */
 
 function addRecentMatchStyles() {
@@ -679,12 +708,10 @@ function addRecentMatchStyles() {
 }
 
 /* =========================================================
-   GEÇMİŞ MAÇ LİSTESİ
+   GEÇMİŞ MAÇ HTML'İ
    ========================================================= */
 
-function renderRecentMatches(market, odd, targetDate) {
-  const recentMatches = getRecentOddsMatches(market, odd, targetDate);
-
+function renderRecentMatches(recentMatches, odd) {
   let html = `
     <div class="sa-recent-wrap">
       <div class="sa-recent-heading">
@@ -701,14 +728,15 @@ function renderRecentMatches(market, odd, targetDate) {
     `;
   }
 
-  for (const match of recentMatches) {
-    const ft = getScore(match, "ft");
-    const ht = getScore(match, "ht");
+  for (const info of recentMatches) {
+    const match = info.match;
+    const ft = info.ft;
+    const ht = info.ht;
 
     html += `
       <div class="sa-recent-item">
         <div class="sa-recent-date">
-          ${escapeHtml(formatDate(getDateKey(match)))}
+          ${escapeHtml(formatDate(info.date))}
         </div>
 
         <div class="sa-recent-teams">
@@ -743,12 +771,75 @@ function renderRecentMatches(market, odd, targetDate) {
 }
 
 /* =========================================================
-   ANA GÖRÜNÜM
+   YÜZDE
    ========================================================= */
 
 function formatPercent(value) {
   return `${Number(value).toFixed(1).replace(".0", "")}%`;
 }
+
+/* =========================================================
+   OYNANMAMIŞ MAÇLARIN GÖRÜNÜMÜ
+
+   Geçmiş maç listesi her gelecek maç için tekrar
+   oluşturulmaz; ilgili oran grubunda bir kez gösterilir.
+   ========================================================= */
+
+function renderFutureMatches(row) {
+  if (!row.future.length) return "";
+
+  let html = `
+    <div class="sa-details-title">
+      <span>
+        ${escapeHtml(row.marketLabel)} · ${escapeHtml(row.odd)}
+      </span>
+      <strong>${formatPercent(row.rate)}</strong>
+    </div>
+
+    <div class="sa-details-subtitle">
+      Aynı açılış oranına sahip oynanmamış maçlar
+    </div>
+  `;
+
+  for (const info of row.future) {
+    const match = info.match;
+
+    html += `
+      <div class="sa-future-block">
+        <div class="sa-match">
+          <div class="sa-match-time">
+            ${escapeHtml(info.time)}
+          </div>
+
+          <div class="sa-match-main">
+            <div class="sa-match-teams">
+              ${escapeHtml(getTeamName(match, "home"))}
+              <span>vs</span>
+              ${escapeHtml(getTeamName(match, "away"))}
+            </div>
+
+            <div class="sa-match-meta">
+              ${escapeHtml(getLeague(match))}
+            </div>
+          </div>
+
+          <div class="sa-match-odd">
+            ${escapeHtml(row.marketLabel)}
+            <strong>${escapeHtml(row.odd)}</strong>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  html += renderRecentMatches(row.recentMatches, row.odd);
+
+  return html;
+}
+
+/* =========================================================
+   ANA GÖRÜNÜM
+   ========================================================= */
 
 function renderAnalysis(resultId, targetDate, analysis) {
   const content = document.getElementById("saContent");
@@ -845,7 +936,7 @@ function renderAnalysis(resultId, targetDate, analysis) {
         </div>
 
         <div id="${rowId}" class="sa-details">
-          ${renderFutureMatches(row, targetDate)}
+          ${renderFutureMatches(row)}
         </div>
       `;
     });
@@ -859,105 +950,58 @@ function renderAnalysis(resultId, targetDate, analysis) {
 }
 
 /* =========================================================
-   OYNANMAMIŞ MAÇLAR
-   ========================================================= */
-
-function renderFutureMatches(row, targetDate) {
-  if (!row.future.length) return "";
-
-  const market = MARKETS.find(item => item.id === row.marketId);
-
-  if (!market) return "";
-
-  let html = `
-    <div class="sa-details-title">
-      <span>
-        ${escapeHtml(row.marketLabel)} · ${escapeHtml(row.odd)}
-      </span>
-      <strong>${formatPercent(row.rate)}</strong>
-    </div>
-
-    <div class="sa-details-subtitle">
-      Aynı açılış oranına sahip oynanmamış maçlar
-    </div>
-  `;
-
-  for (const match of row.future) {
-    html += `
-      <div class="sa-future-block">
-        <div class="sa-match">
-          <div class="sa-match-time">
-            ${escapeHtml(getTime(match))}
-          </div>
-
-          <div class="sa-match-main">
-            <div class="sa-match-teams">
-              ${escapeHtml(getTeamName(match, "home"))}
-              <span>vs</span>
-              ${escapeHtml(getTeamName(match, "away"))}
-            </div>
-
-            <div class="sa-match-meta">
-              ${escapeHtml(getLeague(match))}
-            </div>
-          </div>
-
-          <div class="sa-match-odd">
-            ${escapeHtml(row.marketLabel)}
-            <strong>${escapeHtml(row.odd)}</strong>
-          </div>
-        </div>
-
-        ${renderRecentMatches(market, row.odd, targetDate)}
-      </div>
-    `;
-  }
-
-  return html;
-}
-
-/* =========================================================
    SATIR AÇMA / KAPATMA
    ========================================================= */
 
 function bindRows() {
-  document.querySelectorAll("#saContent .sa-row[data-row-id]")
-    .forEach(row => {
-      row.addEventListener("click", () => {
-        const details = document.getElementById(row.dataset.rowId);
+  const content = document.getElementById("saContent");
 
-        if (!details) return;
+  // Tek bir dinleyici kullan; her satıra ayrı dinleyici ekleme.
+  content.onclick = event => {
+    const row = event.target.closest(".sa-row[data-row-id]");
 
-        const wasOpen = details.classList.contains("open");
+    if (!row || !content.contains(row)) return;
 
-        document.querySelectorAll("#saContent .sa-details.open")
-          .forEach(item => item.classList.remove("open"));
+    const details = document.getElementById(row.dataset.rowId);
 
-        document.querySelectorAll("#saContent .sa-row.active")
-          .forEach(item => item.classList.remove("active"));
+    if (!details) return;
 
-        if (!wasOpen) {
-          details.classList.add("open");
-          row.classList.add("active");
-        }
-      });
+    const wasOpen = details.classList.contains("open");
+
+    content.querySelectorAll(".sa-details.open").forEach(item => {
+      item.classList.remove("open");
     });
+
+    content.querySelectorAll(".sa-row.active").forEach(item => {
+      item.classList.remove("active");
+    });
+
+    if (!wasOpen) {
+      details.classList.add("open");
+      row.classList.add("active");
+    }
+  };
 }
 
 /* =========================================================
    ANALİZİ ÇALIŞTIR
    ========================================================= */
 
+let isAnalyzing = false;
+
 async function executeAnalysis() {
   const resultSelect = document.getElementById("saResult");
   const dateInput = document.getElementById("saDate");
   const status = document.getElementById("saStatus");
   const content = document.getElementById("saContent");
+  const runButton = document.getElementById("saRun");
 
   if (!resultSelect || !dateInput || !status || !content) {
     console.error("Analiz için gerekli HTML elemanları bulunamadı.");
     return;
   }
+
+  if (isAnalyzing) return;
 
   const resultId = resultSelect.value;
   const targetDate = dateInput.value;
@@ -972,9 +1016,11 @@ async function executeAnalysis() {
     return;
   }
 
-  status.innerHTML =
-    `⏳ Son ${HISTORY_DAYS} günlük geçmişteki son ` +
-    `${RECENT_MATCH_LIMIT} eşleşen maç analiz ediliyor...`;
+  isAnalyzing = true;
+
+  if (runButton) runButton.disabled = true;
+
+  status.textContent = "Analiz hazırlanıyor...";
 
   try {
     const analysis = runAnalysis(targetDate, resultId);
@@ -991,6 +1037,9 @@ async function executeAnalysis() {
         <span>Veri yapısını kontrol edin.</span>
       </div>
     `;
+  } finally {
+    isAnalyzing = false;
+    if (runButton) runButton.disabled = false;
   }
 }
 
@@ -1010,7 +1059,6 @@ async function init() {
   }
 
   dateInput.value = todayKey();
-
   runButton.addEventListener("click", executeAnalysis);
 
   try {
@@ -1018,9 +1066,14 @@ async function init() {
 
     allMatches = await loadData();
 
-    status.innerHTML =
-      `<strong>${allMatches.length}</strong> maç verisi yüklendi. ` +
-      `Analiz hazırlanıyor...`;
+    status.textContent =
+      `${allMatches.length} maç verisi hazırlanıyor...`;
+
+    // Pahalı hazırlık işlemleri yalnızca bir kez yapılır.
+    buildDataIndexes(allMatches);
+
+    status.textContent =
+      `${allMatches.length} maç verisi yüklendi. Analiz hazırlanıyor...`;
 
     await executeAnalysis();
   } catch (error) {
@@ -1039,7 +1092,7 @@ async function init() {
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
+  document.addEventListener("DOMContentLoaded", init, { once: true });
 } else {
   init();
 }
