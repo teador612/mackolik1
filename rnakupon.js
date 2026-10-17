@@ -1,4 +1,3 @@
-
 "use strict";
 
 /* =========================================================
@@ -12,13 +11,6 @@
    Kupon başına maksimum: 5 maç
    Maksimum kupon: 3
    Eşleştirme: Aynı market + birebir iki ondalıklı oran
-
-   Performans:
-   - Market eşleştirme haritası bir kez hazırlanır.
-   - Geçmiş sonuçlar veri yüklenirken indekslenir.
-   - Analiz sırasında bütün maçlar tekrar taranmaz.
-   - Tarih/market değişimlerinde indeks kullanılır.
-   - JSON gereksiz yere önbelleksiz indirilmez.
    ========================================================= */
 
 (() => {
@@ -84,12 +76,6 @@
         { key: "iyms22", label: "İY/MS 2/2" }
     ];
 
-    const UNSUPPORTED_OUTCOMES = new Set([
-        "i14",
-        "olmaz",
-        "i25"
-    ]);
-
     const $ = selector => document.querySelector(selector);
 
     let MARKETS = MARKET_DEFS.map(m => ({
@@ -97,7 +83,6 @@
         aliases: [m.key, m.label]
     }));
 
-    // Her maç için yeniden oluşturulmaz.
     let marketAliasMap = new Map();
 
     const state = {
@@ -105,10 +90,7 @@
         selectedDate: todayISO(),
         selectedMarkets: new Set(MARKET_DEFS.map(m => m.key)),
         historyCache: new Map(),
-
-        // Market -> oran -> tarih -> geçmiş sonuç sayıları
         historyIndex: new Map(),
-
         loading: false,
         error: "",
         stats: {},
@@ -166,7 +148,6 @@
             return undefined;
         }
 
-        // Önce birebir alan adı kontrolü.
         for (const key of aliases) {
             if (
                 obj[key] !== undefined &&
@@ -177,7 +158,6 @@
             }
         }
 
-        // Gerekirse normalize edilmiş alan adı kontrolü.
         const wanted = new Set(aliases.map(norm));
 
         for (const [key, value] of Object.entries(obj)) {
@@ -194,6 +174,7 @@
 
         if (typeof value === "number") {
             const d = new Date(value < 1e11 ? value * 1000 : value);
+
             return Number.isNaN(d.getTime())
                 ? null
                 : d.toISOString().slice(0, 10);
@@ -220,7 +201,10 @@
         }
 
         const d = new Date(s);
-        return Number.isNaN(d.getTime()) ? null : d.toISOString().slice(0, 10);
+
+        return Number.isNaN(d.getTime())
+            ? null
+            : d.toISOString().slice(0, 10);
     }
 
     function getDate(match) {
@@ -397,10 +381,13 @@
             case "au35Alt": return full ? total <= 3 : null;
 
             case "gol01": return full ? total <= 1 : null;
+
             case "gol23":
                 return full ? total >= 2 && total <= 3 : null;
+
             case "gol45":
                 return full ? total >= 4 && total <= 5 : null;
+
             case "gol6plus": return full ? total >= 6 : null;
 
             case "iyms11":
@@ -463,6 +450,7 @@
         }
 
         const n = num(value);
+
         return n !== null && n > 1 && n < 10000 ? n : null;
     }
 
@@ -496,7 +484,6 @@
                 });
         }
 
-        // Market isimleri tek sefer normalize edilir.
         marketAliasMap = new Map();
 
         for (const market of MARKETS) {
@@ -522,7 +509,9 @@
         }
 
         for (const key of [...state.selectedMarkets]) {
-            if (!availableKeys.has(key)) state.selectedMarkets.delete(key);
+            if (!availableKeys.has(key)) {
+                state.selectedMarkets.delete(key);
+            }
         }
 
         state._marketSelectionInitialized = true;
@@ -582,6 +571,7 @@
 
                         if (key && odds[key] === undefined) {
                             const odd = oddValue(item);
+
                             if (odd !== null) odds[key] = odd;
                         }
                     }
@@ -599,14 +589,11 @@
 
                 if (key && odds[key] === undefined) {
                     const odd = oddValue(child);
+
                     if (odd !== null) odds[key] = odd;
                 }
 
-                if (
-                    depth < 2 &&
-                    child &&
-                    typeof child === "object"
-                ) {
+                if (depth < 2 && child && typeof child === "object") {
                     queue.push({ value: child, depth: depth + 1 });
                 }
             }
@@ -620,6 +607,7 @@
 
                 if (key && odds[key] === undefined) {
                     const odd = oddValue(value);
+
                     if (odd !== null) odds[key] = odd;
                 }
             }
@@ -629,10 +617,7 @@
     }
 
     function flattenMatches(payload) {
-        // V2 dosyasında normalde doğrudan matches dizisi bulunur.
-        // Bu durumda bütün JSON içinde tekrar arama yapılmaz.
         if (Array.isArray(payload)) return payload;
-
         if (!payload || typeof payload !== "object") return [];
 
         for (const key of [
@@ -707,14 +692,6 @@
         return candidates[0]?.rows || [];
     }
 
-    /*
-     * Geçmiş indeksini bir defa oluşturur.
-     *
-     * Yapı:
-     * market -> oran -> tarih -> örnek/kazanç/kayıp
-     *
-     * getHistory artık bütün maçları her defasında taramaz.
-     */
     function buildHistoryIndex(rows) {
         const index = new Map();
 
@@ -793,9 +770,7 @@
             const results = Object.create(null);
 
             for (const market of MARKETS) {
-                results[market.key] = UNSUPPORTED_OUTCOMES.has(market.key)
-                    ? null
-                    : outcome(market.key, full, half);
+                results[market.key] = outcome(market.key, full, half);
             }
 
             rows.push({
@@ -828,13 +803,9 @@
                 (sum, row) => sum + Object.keys(row.odds).length,
                 0
             ),
-            marketCount: MARKETS.length,
-            unsupportedMarketCount: MARKETS.filter(
-                market => UNSUPPORTED_OUTCOMES.has(market.key)
-            ).length
+            marketCount: MARKETS.length
         };
 
-        // Geçmiş hesaplamaları sadece burada hazırlanır.
         buildHistoryIndex(rows);
 
         return rows;
@@ -850,9 +821,9 @@
 
         const end = new Date(`${targetDate}T00:00:00.000Z`);
         const start = new Date(end);
+
         start.setUTCDate(start.getUTCDate() - CFG.HISTORY_DAYS);
 
-        const startDate = start.toISOString().slice(0, 10);
         const index = new Map();
 
         for (const marketKey of marketKeys) {
@@ -865,7 +836,6 @@
                 let wins = 0;
                 let losses = 0;
 
-                // Sadece son 7 günün tarihleri okunur.
                 const cursor = new Date(start);
 
                 while (cursor < end) {
@@ -898,7 +868,6 @@
 
         state.historyCache.set(cacheKey, index);
 
-        // Bellekte en fazla 4 analiz sonucu tutulur.
         while (state.historyCache.size > 4) {
             state.historyCache.delete(
                 state.historyCache.keys().next().value
@@ -1270,7 +1239,6 @@
             <p>Skoru tamamlanmış kayıt: ${state.stats.playedCount || 0}</p>
             <p>İndekslenen market/oran: ${state.stats.oddsCount || 0}</p>
             <p>JSON market sayısı: ${state.stats.marketCount || MARKETS.length}</p>
-            <p>Sonuç kuralı doğrulanması gereken market: ${state.stats.unsupportedMarketCount || 0}</p>
             <p>Geçmiş eşleşme grubu: ${history.size}</p>
             <p>Başarı ve örnek şartını karşılayan grup: ${validGroups}</p>
             <p>Önbellekteki analiz: ${state.historyCache.size}</p>
@@ -1306,8 +1274,6 @@
         );
 
         try {
-            // URL'ye her seferinde rastgele parametre eklenmez.
-            // Tarayıcı/CDN önbelleğinin kullanılması tekrar yüklemeyi hızlandırır.
             const response = await fetch(CFG.DATA_URL, {
                 cache: "no-cache",
                 signal: controller.signal
