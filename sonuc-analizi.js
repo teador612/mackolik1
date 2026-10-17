@@ -1,22 +1,20 @@
-
 "use strict";
 
 /* =========================================================
    SONUÇTAN ORAN ANALİZİ
 
    Veri              : ./data/v2-data.json
-   Analiz dönemi     : 30 gün
-   Minimum örnek     : 8
+   Analiz dönemi     : 10 gün
+   Minimum örnek     : Yok
    Minimum başarı    : %80
    Oran eşleştirmesi : Birebir, 2 ondalık
-   Geçmiş liste      : Aynı market + aynı açılış oranı
-   Geçmiş maç sayısı : Son 5 maç
+   Başarı hesabı     : Aynı market + aynı oran için son 5 maç
+   Geçmiş liste      : Son 5 eşleşen maç
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
 
-const HISTORY_DAYS = 30;
-const MIN_SAMPLE = 8;
+const HISTORY_DAYS = 10;
 const MIN_SUCCESS = 80;
 const RECENT_MATCH_LIMIT = 5;
 
@@ -368,10 +366,53 @@ function getTargetResult(match, resultId) {
 }
 
 /* =========================================================
+   SON 5 MAÇTA BAŞARI HESABI
+   Aynı market + aynı açılış oranı
+   ========================================================= */
+
+function calculateRecentSuccess(market, odd, targetDate) {
+  const recentMatches = allMatches
+    .filter(match => {
+      const date = getDateKey(match);
+
+      if (!date || date >= targetDate) return false;
+      if (!isPlayed(match)) return false;
+
+      return getOdds(match, market) === odd;
+    })
+    .sort((a, b) => {
+      const dateA = getDateKey(a) || "";
+      const dateB = getDateKey(b) || "";
+
+      if (dateA !== dateB) return dateB.localeCompare(dateA);
+
+      return getTime(b).localeCompare(getTime(a));
+    })
+    .slice(0, RECENT_MATCH_LIMIT);
+
+  let success = 0;
+
+  for (const match of recentMatches) {
+    const result = getTargetResult(match, selectedResultId);
+
+    if (result === true) success++;
+  }
+
+  return {
+    total: recentMatches.length,
+    success,
+    rate: recentMatches.length
+      ? success / recentMatches.length * 100
+      : 0
+  };
+}
+
+/* =========================================================
    VERİ YÜKLEME
    ========================================================= */
 
 let allMatches = [];
+let selectedResultId = "MS1";
 
 async function loadData() {
   const response = await fetch(`${DATA_URL}?t=${Date.now()}`, {
@@ -419,9 +460,12 @@ function buildFutureIndex(matches, targetDate) {
 
 /* =========================================================
    ANALİZ MOTORU
+   Başarı oranı ilgili market/oranın son 5 maçından hesaplanır.
    ========================================================= */
 
 function runAnalysis(targetDate, resultId) {
+  selectedResultId = resultId;
+
   const startDate = addDays(targetDate, -HISTORY_DAYS);
 
   const history = allMatches.filter(match => {
@@ -439,10 +483,6 @@ function runAnalysis(targetDate, resultId) {
   const groups = new Map();
 
   for (const match of history) {
-    const result = getTargetResult(match, resultId);
-
-    if (result === null) continue;
-
     for (const market of MARKETS) {
       const odd = getOdds(match, market);
 
@@ -454,36 +494,40 @@ function runAnalysis(targetDate, resultId) {
         groups.set(key, {
           marketId: market.id,
           marketLabel: market.label,
-          odd,
-          total: 0,
-          success: 0
+          odd
         });
       }
-
-      const group = groups.get(key);
-      group.total++;
-
-      if (result) group.success++;
     }
   }
 
-  const rows = Array.from(groups.values())
-    .filter(item => {
-      if (item.total < MIN_SAMPLE) return false;
-      if (item.success <= 0) return false;
+  const rows = [];
 
-      const rate = item.success / item.total * 100;
+  for (const item of groups.values()) {
+    const futureKey = `${item.marketId}|${item.odd}`;
+    const future = futureIndex.get(futureKey) || [];
 
-      if (rate < MIN_SUCCESS) return false;
+    if (!future.length) continue;
 
-      const futureKey = `${item.marketId}|${item.odd}`;
+    const market = MARKETS.find(m => m.id === item.marketId);
 
-      return (futureIndex.get(futureKey) || []).length > 0;
+    if (!market) continue;
+
+    const recent = calculateRecentSuccess(
+      market,
+      item.odd,
+      targetDate
+    );
+
+    if (recent.total === 0) continue;
+    if (recent.rate < MIN_SUCCESS) continue;
+
+    rows.push({
+      ...item,
+      total: recent.total,
+      success: recent.success,
+      rate: recent.rate,
+      future
     });
-
-  for (const row of rows) {
-    row.rate = row.success / row.total * 100;
-    row.future = futureIndex.get(`${row.marketId}|${row.odd}`) || [];
   }
 
   rows.sort((a, b) =>
@@ -498,10 +542,6 @@ function runAnalysis(targetDate, resultId) {
 
 /* =========================================================
    SON 5 MAÇ: AYNI MARKET + AYNI ORAN
-
-   Takım eşleşmesi aranmaz.
-   Geçmişteki bütün maçlar arasında ilgili market ve
-   açılış oranı birebir eşleştirilir.
    ========================================================= */
 
 function getRecentOddsMatches(market, odd, targetDate) {
@@ -736,7 +776,7 @@ function renderAnalysis(resultId, targetDate, analysis) {
   status.innerHTML =
     `<strong>${escapeHtml(result.label)}</strong> için ` +
     `<strong>${analysis.rows.length}</strong> uygun oran bulundu. ` +
-    `Minimum örnek: <strong>${MIN_SAMPLE}</strong> · ` +
+    `Başarı hesabı: <strong>son ${RECENT_MATCH_LIMIT} maç</strong> · ` +
     `Minimum başarı: <strong>%${MIN_SUCCESS}</strong>`;
 
   if (!analysis.rows.length) {
@@ -745,9 +785,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
         <div class="sa-empty-icon">🔎</div>
         <strong>Uygun oran bulunamadı</strong>
         <span>
-          Son ${HISTORY_DAYS} günlük geçmişte en az ${MIN_SAMPLE}
-          örneği ve %${MIN_SUCCESS} başarı oranı olan,
-          seçilen tarihte oynanmamış maçı bulunan birebir açılış oranı yok.
+          Son ${HISTORY_DAYS} günlük analiz döneminde,
+          son ${RECENT_MATCH_LIMIT} eşleşen maçta %${MIN_SUCCESS}
+          başarıya ulaşan ve seçilen tarihte oynanmamış maçı bulunan
+          birebir açılış oranı yok.
         </span>
       </div>
     `;
@@ -931,7 +972,9 @@ async function executeAnalysis() {
     return;
   }
 
-  status.innerHTML = `⏳ Son ${HISTORY_DAYS} günlük geçmiş analiz ediliyor...`;
+  status.innerHTML =
+    `⏳ Son ${HISTORY_DAYS} günlük geçmişteki son ` +
+    `${RECENT_MATCH_LIMIT} eşleşen maç analiz ediliyor...`;
 
   try {
     const analysis = runAnalysis(targetDate, resultId);
