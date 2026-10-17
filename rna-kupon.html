@@ -52,7 +52,7 @@
     <div class="container">
         <header>
             <h1>RNA — Hızlandırılmış V2 Otomatik Kupon Paneli</h1>
-            <p>Geçmiş maç verileri ve oran analizine dayalı akıllı kupon üretim sistemi</p>
+            <p>Canlı ve Geriye Dönük Kupon Analiz/Test Motoru</p>
         </header>
 
         <!-- Motorun arayüzünü bağlayacağı kök element -->
@@ -477,8 +477,9 @@
             return index;
         }
 
+        // Düzeltme 1: Geriye dönük kupon simülasyonu için hem oynanmış hem oynanmamış maçlar taranabilir.
         function analyzeTargetMatches(targetDate, history) {
-            const matches = state.rows.filter(row => row.date === targetDate && !row.played);
+            const matches = state.rows.filter(row => row.date === targetDate);
             const candidates = [];
             for (const row of matches) {
                 let best = null;
@@ -502,14 +503,16 @@
             return candidates.sort((a, b) => b.success - a.success || b.sample - a.sample || b.odd - a.odd);
         }
 
-        function buildCoupon(candidates, threshold) {
-            const items = [], used = new Set();
+        // Düzeltme 2: globalUsedMatches ile bir maçın birden fazla kupona girmesini engelliyoruz.
+        function buildCoupon(candidates, threshold, globalUsedMatches) {
+            const items = [];
             let totalOdds = 1;
             for (const item of candidates) {
                 if (items.length >= CFG.MAX_MATCHES) break;
-                if (item.success < threshold || used.has(item.matchId)) continue;
+                if (item.success < threshold || globalUsedMatches.has(item.matchId)) continue;
+                
                 items.push(item);
-                used.add(item.matchId);
+                globalUsedMatches.add(item.matchId);
                 totalOdds *= item.odd;
             }
             if (!items.length || totalOdds < CFG.MIN_TOTAL_ODDS) return { items: [], totalOdds: 1 };
@@ -517,10 +520,11 @@
         }
 
         function getCoupons(candidates) {
+            const globalUsedMatches = new Set();
             return [
-                { title: "Güvenli Kupon", threshold: 90, ...buildCoupon(candidates, 90) },
-                { title: "Orta Risk Kupon", threshold: 85, ...buildCoupon(candidates, 85) },
-                { title: "Riskli Kupon", threshold: 80, ...buildCoupon(candidates, 80) }
+                { title: "Güvenli Kupon", threshold: 90, ...buildCoupon(candidates, 90, globalUsedMatches) },
+                { title: "Orta Risk Kupon", threshold: 85, ...buildCoupon(candidates, 85, globalUsedMatches) },
+                { title: "Riskli Kupon", threshold: 80, ...buildCoupon(candidates, 80, globalUsedMatches) }
             ].slice(0, CFG.MAX_COUPONS);
         }
 
@@ -646,9 +650,10 @@
         function renderCoupon(coupon) {
             const content = coupon.items.length ? coupon.items.map(item => {
                 const [status, label] = resultStatus(item);
+                const scoreInfo = item.row.played && item.row.full ? ` (MS: ${item.row.full.h}-${item.row.full.a})` : "";
                 return `
                     <div class="leg">
-                        <strong>${esc(item.name)}</strong>
+                        <strong>${esc(item.name)}${scoreInfo}</strong>
                         <small>
                             ${esc(item.marketLabel)} · Oran: <strong>${item.oddKey}</strong><br>
                             Başarı: %${percent(item.success)} (${item.wins}K / ${item.losses}M · ${item.sample} maç)
@@ -656,7 +661,7 @@
                         <span class="status ${status}">${label}</span>
                     </div>
                 `;
-            }).join("") : `<div class="empty">Bu kupon eşiğinde kriterlere uygun maç bulunamadı.</div>`;
+            }).join("") : `<div class="empty">Bu kupon eşiğinde kriterlere uygun benzersiz maç bulunamadı.</div>`;
 
             return `
                 <article class="coupon">
@@ -678,9 +683,9 @@
             const target = analyzeTargetMatches(state.selectedDate, history);
             const coupons = getCoupons(target);
 
-            const targetMatches = state.rows.reduce((sum, row) => sum + (row.date === state.selectedDate && !row.played ? 1 : 0), 0);
+            const totalMatchesOnDate = state.rows.reduce((sum, row) => sum + (row.date === state.selectedDate ? 1 : 0), 0);
 
-            $("#rnaSummary").textContent = `${state.selectedDate} · ${targetMatches} oynanmamış maç · ${target.length} filtrelere uygun maç adayı`;
+            $("#rnaSummary").textContent = `${state.selectedDate} · Toplam ${totalMatchesOnDate} maç · ${target.length} filtrelere uygun maç adayı`;
             $("#rnaCoupons").innerHTML = coupons.map(renderCoupon).join("");
 
             let validGroups = 0;
