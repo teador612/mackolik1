@@ -98,8 +98,9 @@ h1{font-size:20px}
     </div>
     <div class="small">
       Spor Toto programı spor-toto-data.js dosyasından alınır. Maçlar V2 verisindeki takım
-      adlarıyla eşleştirilir. Geçmişte aynı markette birebir aynı açılış oranına sahip
-      maçların MS1 / MS X / MS2 sonuç dağılımı hesaplanır.
+      adlarıyla eşleştirilir. Son 30 gündeki geçmiş maçlarda aynı markette birebir aynı
+      açılış oranına sahip maçların MS1 / MS X / MS2 sonuç dağılımı hesaplanır.
+      Tahmin hesabına yalnızca sonucu ayrı ayrı en az %50 başarı oranına ulaşan sonuçlar katılır.
     </div>
   </section>
   <section id="matchList" class="match-list">
@@ -108,9 +109,12 @@ h1{font-size:20px}
   <section class="panel">
     <h2>Hesaplama bilgileri</h2>
     <div class="small">
-      Geçmiş analiz penceresi son 60 gündür. Oran eşleşmesinde tolerans kullanılmaz.
-      Geçmiş örnek bulunamazsa MS açılış oranlarından piyasa olasılığı hesaplanır.
-      Bu oranlar da yoksa tahmin üretilemez. Geçmiş veriler gelecekteki sonuçları garanti etmez.
+      Geçmiş analiz penceresi son 30 gündür. Minimum maç sayısı şartı yoktur;
+      en az bir geçmiş eşleşme hesaplamaya aday olabilir. MS1, MS X ve MS2 başarı oranları
+      ayrı ayrı kontrol edilir ve yalnızca %50 ve üzerindeki sonuçlar tahmine katkı verir.
+      Oran eşleşmesinde tolerans kullanılmaz. Uygun geçmiş eşleşmesi bulunamazsa MS açılış
+      oranlarından piyasa olasılığı hesaplanır. Bu oranlar da yoksa tahmin üretilemez.
+      Geçmiş veriler gelecekteki sonuçları garanti etmez.
     </div>
   </section>
 </main>
@@ -121,7 +125,7 @@ h1{font-size:20px}
 const CONFIG = {
   DATA_URL: "./data/v2-data.json",
   HISTORY_DAYS: 30,
-  MIN_SAMPLE: 5,
+  MIN_SUCCESS_RATE: 50,
   FUZZY_TEAM_THRESHOLD: 0.76,
   FUZZY_SIDE_THRESHOLD: 0.68
 };
@@ -292,7 +296,7 @@ function getOutcome(m) {
     m?.outcome??m?.result1X2??m?.msResult??m?.matchResult??m?.sonuc??m?.result
   );
 }
-/* V2 veri yapısı: maçın oranları odds nesnesinde bulunur. */
+/* V2 veri yapısı: maçın açılış oranları odds nesnesinde bulunur. */
 function getOpeningOdds(m) {
   if(!m||typeof m!=="object") return {};
   if(m.odds&&typeof m.odds==="object") return m.odds;
@@ -435,6 +439,7 @@ function analyzeMarket(target,key,history) {
   if(targetOdd===null) return out;
   for(const old of history) {
     const oldOdd=getOdd(old,key);
+    /* Açılış oranları birebir aynı olmalı. */
     if(oldOdd===null||oldOdd!==targetOdd) continue;
     const result=getOutcome(old);
     if(!result) continue;
@@ -454,31 +459,38 @@ function getMarketAnalyses(target,history) {
     .map(k=>analyzeMarket(target,k,history))
     .filter(x=>x.targetOdd!==null);
 }
-function combineProbabilities(markets,enforceMinimum) {
+/*
+ * Her markette MS1, MS X ve MS2 ayrı ayrı değerlendirilir.
+ * Başarı oranı %50'nin altındaki sonuçlar hesaplamaya katılmaz.
+ * Minimum örnek sayısı şartı yoktur.
+ */
+function combineProbabilities(markets) {
   const totals={"1":0,"X":0,"2":0};
-  let totalWeight=0,usedMarkets=0,totalSamples=0;
+  let usedMarkets=0,totalSamples=0;
   for(const m of markets) {
     if(!m.sample) continue;
-    if(enforceMinimum&&m.sample<CONFIG.MIN_SAMPLE) continue;
+    const accepted=["1","X","2"].filter(r=>
+      m.rates[r]!==null&&m.rates[r]>=CONFIG.MIN_SUCCESS_RATE
+    );
+    /* Bu markette %50'ye ulaşan sonuç yoksa marketi atla. */
+    if(!accepted.length) continue;
     const weight=Math.sqrt(m.sample);
-    totalWeight+=weight;
     usedMarkets++;
     totalSamples+=m.sample;
-    for(const r of ["1","X","2"]) {
+    for(const r of accepted) {
       totals[r]+=m.rates[r]*weight;
     }
   }
-  if(!totalWeight) return {probabilities:null,usedMarkets:0,totalSamples:0};
-  const p={
-    "1":totals["1"]/totalWeight,
-    "X":totals["X"]/totalWeight,
-    "2":totals["2"]/totalWeight
-  };
-  const sum=p["1"]+p["X"]+p["2"];
-  if(sum>0) {
-    for(const r of ["1","X","2"]) p[r]=p[r]/sum*100;
+  const sum=totals["1"]+totals["X"]+totals["2"];
+  if(sum<=0) {
+    return {probabilities:null,usedMarkets:0,totalSamples:0};
   }
-  return {probabilities:p,usedMarkets,totalSamples};
+  const probabilities={
+    "1":totals["1"]/sum*100,
+    "X":totals["X"]/sum*100,
+    "2":totals["2"]/sum*100
+  };
+  return {probabilities,usedMarkets,totalSamples};
 }
 function getImpliedProbabilities(target) {
   const odds={
@@ -511,13 +523,9 @@ function choosePrediction(target,history) {
     };
   }
   const markets=getMarketAnalyses(target,history);
-  let combined=combineProbabilities(markets,true);
-  let method="history";
-  if(!combined.probabilities) {
-    combined=combineProbabilities(markets,false);
-    method="limited-history";
-  }
+  const combined=combineProbabilities(markets);
   let probabilities=combined.probabilities;
+  let method="history";
   if(!probabilities) {
     probabilities=getImpliedProbabilities(target);
     method=probabilities?"market-odds":"missing-odds";
@@ -527,16 +535,14 @@ function choosePrediction(target,history) {
     return {
       selection:"—",confidence:null,probabilities:null,markets,
       usedMarkets:0,totalSamples:0,method,
-      reason:"Eşleşen kayıtta kullanılabilir açılış oranı yok."
+      reason:"Kullanılabilir geçmiş eşleşmesi veya MS açılış oranı yok."
     };
   }
   let reason;
   if(method==="history") {
-    reason=`${combined.usedMarkets} market, ${combined.totalSamples} market-oran örneği kullanıldı.`;
-  } else if(method==="limited-history") {
-    reason="Yeterli örnekli market yok; bulunan geçmiş oran eşleşmeleri kullanıldı.";
+    reason=`%${CONFIG.MIN_SUCCESS_RATE} ve üzeri sonuç filtresiyle ${combined.usedMarkets} market ve ${combined.totalSamples} market-oran örneği kullanıldı. Minimum örnek şartı yok.`;
   } else {
-    reason="Geçmiş oran eşleşmesi yok; MS açılış oranlarından piyasa olasılığı hesaplandı.";
+    reason="Son 30 günlük geçmişte %50 ve üzeri uygun sonuç bulunamadı; MS açılış oranlarından piyasa olasılığı hesaplandı.";
   }
   return {
     selection,
@@ -568,7 +574,11 @@ function renderDetails(analysis) {
   }
   const rows=[...analysis.markets]
     .sort((a,b)=>b.sample-a.sample)
-    .map(m=>`
+    .map(m=>{
+      const qualifies=["1","X","2"].some(r=>
+        m.rates[r]!==null&&m.rates[r]>=CONFIG.MIN_SUCCESS_RATE
+      );
+      return `
       <tr>
         <td>${escapeHTML(m.label)}</td>
         <td>${formatOdd(m.targetOdd)}</td>
@@ -579,8 +589,9 @@ function renderDetails(analysis) {
         <td class="rate ${rateClass(m.rates["1"])}">${m.rates["1"]==null?"—":"%"+m.rates["1"].toFixed(1)}</td>
         <td class="rate ${rateClass(m.rates["X"])}">${m.rates["X"]==null?"—":"%"+m.rates["X"].toFixed(1)}</td>
         <td class="rate ${rateClass(m.rates["2"])}">${m.rates["2"]==null?"—":"%"+m.rates["2"].toFixed(1)}</td>
-      </tr>
-    `).join("");
+        <td><span class="badge ${qualifies?"green":"yellow"}">${m.sample?(qualifies?"Dahil":"%50 altı"):"Eşleşme yok"}</span></td>
+      </tr>`;
+    }).join("");
   const p=analysis.probabilities;
   return `<div class="details-content">
     <div class="table-wrap">
@@ -589,7 +600,7 @@ function renderDetails(analysis) {
           <tr>
             <th>Market</th><th>Açılış oranı</th><th>Örnek</th>
             <th>MS1</th><th>MS X</th><th>MS2</th>
-            <th>MS1 %</th><th>MS X %</th><th>MS2 %</th>
+            <th>MS1 %</th><th>MS X %</th><th>MS2 %</th><th>Hesaplama</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -599,7 +610,11 @@ function renderDetails(analysis) {
       <strong>Birleştirilmiş dağılım:</strong>
       MS1 %${p["1"].toFixed(1)} · MS X %${p["X"].toFixed(1)} · MS2 %${p["2"].toFixed(1)}
     </div>`:""}
-    <p class="small">Oran eşleşmesinde birebir aynı değer aranır. Minimum örnek eşiği: ${CONFIG.MIN_SAMPLE}.</p>
+    <p class="small">
+      Son 30 gün değerlendirilir. Minimum örnek sayısı şartı yoktur.
+      Yalnızca başarı oranı %${CONFIG.MIN_SUCCESS_RATE} ve üzerindeki sonuçlar hesaplamaya katılır.
+      Oran eşleşmesi birebir yapılır.
+    </p>
   </div>`;
 }
 function totoResult(game) {
@@ -632,7 +647,7 @@ function renderWeek() {
     const matchScore=target?`Eşleşme: %${(target._matchConfidence*100).toFixed(0)}`:"Takım eşleşmedi";
     const source=target?(target._matchedUnplayed?"Oynanmamış kayıt":"Geçmiş kayıt"):"";
     const marketText=analysis.usedMarkets?`${analysis.usedMarkets} market`:"MS oranı yedeği";
-    const sampleText=analysis.totalSamples?`${analysis.totalSamples} örnek`:"Geçmiş örnek yok";
+    const sampleText=analysis.totalSamples?`${analysis.totalSamples} örnek`:"Uygun geçmiş örneği yok";
     return `<article class="match">
       <div class="match-top">
         <div>
@@ -733,7 +748,8 @@ async function loadData() {
     showMessage(
       `Veriler yüklendi: ${getWeeks().length} hafta, ${allMatches.length} V2 maçı, `+
       `${withResults} sonuçlu maç, ${withOdds} oranlı kayıt. `+
-      `Son ${CONFIG.HISTORY_DAYS} günde ${history.length} geçmiş maç.`,
+      `Son ${CONFIG.HISTORY_DAYS} günde ${history.length} sonuçlanmış geçmiş maç. `+
+      `Minimum örnek şartı yok; başarı filtresi %${CONFIG.MIN_SUCCESS_RATE}.`,
       "good"
     );
   } catch(error) {
