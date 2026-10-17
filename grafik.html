@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -53,7 +52,7 @@ button { cursor:pointer; }
   letter-spacing:2px; text-transform:uppercase;
 }
 .intro h2 {
-  margin:5px 0 5px; font-size:clamp(25px,4vw,39px);
+  margin:5px 0; font-size:clamp(25px,4vw,39px);
   line-height:1.15; letter-spacing:-1.5px;
 }
 .intro p { color:var(--muted); margin:0; }
@@ -78,6 +77,7 @@ button { cursor:pointer; }
   white-space:nowrap;
 }
 .action:hover { background:#145439; }
+.action:disabled { opacity:.6; cursor:wait; }
 .presets { display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; }
 .preset {
   border:1px solid var(--line); background:transparent;
@@ -120,6 +120,12 @@ button { cursor:pointer; }
 .section-head h3 { margin:0; font-size:18px; letter-spacing:-.5px; }
 .section-head p { margin:3px 0 0; font-size:12px; color:var(--muted); }
 .section-count { font-size:11px; color:var(--green); font-weight:850; }
+.bucket-select {
+  max-width:210px; min-width:130px; height:36px;
+  padding:0 10px; border:1px solid var(--line);
+  border-radius:9px; background:var(--white);
+  color:var(--green); font-size:12px; font-weight:800;
+}
 .content-grid {
   display:grid; grid-template-columns:minmax(0,1.12fr) minmax(0,1fr);
   gap:14px; align-items:start;
@@ -190,6 +196,7 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
   .card { padding:12px; }
   .chart-grid { grid-template-columns:1fr; }
   .section-head h3 { font-size:16px; }
+  .bucket-select { max-width:155px; min-width:110px; }
 }
 </style>
 </head>
@@ -205,13 +212,11 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
     </div>
     <span class="live-tag">● TARİHSEL ANALİZ</span>
   </header>
-
   <section class="intro">
     <div class="eyebrow">Market research / 01</div>
     <h2>Oranların arkasındaki<br>sonuçları keşfet.</h2>
     <p>Bir açılış oranı seç. Aynı oran grubundaki maçların gerçek sonuçlarını incele.</p>
   </section>
-
   <section class="control-board">
     <div class="field">
       <label for="dateFrom">Başlangıç tarihi</label>
@@ -223,7 +228,9 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
     </div>
     <div class="field">
       <label for="market">Referans market</label>
-      <select id="market"><option value="ms1">MS1</option></select>
+      <select id="market">
+        <option value="ms1">MS1</option>
+      </select>
     </div>
     <div class="field">
       <label for="minOdd">En düşük oran</label>
@@ -233,18 +240,15 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
       <label for="maxOdd">En yüksek oran</label>
       <input type="number" id="maxOdd" min="1" max="1000" step="0.05" value="3.00">
     </div>
-    <button class="action" id="refresh">Analiz et ↗</button>
+    <button class="action" id="refresh" type="button">Analiz et ↗</button>
   </section>
-
   <div class="presets">
-    <button class="preset" data-days="1">Bugün</button>
-    <button class="preset" data-days="3">Son 3 gün</button>
-    <button class="preset" data-days="10">Son 10 gün</button>
-    <button class="preset" data-days="30">Son 30 gün</button>
+    <button class="preset" type="button" data-days="1">Bugün</button>
+    <button class="preset" type="button" data-days="3">Son 3 gün</button>
+    <button class="preset" type="button" data-days="10">Son 10 gün</button>
+    <button class="preset" type="button" data-days="30">Son 30 gün</button>
   </div>
-
   <div id="status" class="notice">Veriler yükleniyor...</div>
-
   <section class="overview">
     <div class="metric">
       <div class="metric-label">TAMAMLANAN MAÇ</div>
@@ -267,7 +271,6 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
       <div class="metric-foot">Maç sonucu</div>
     </div>
   </section>
-
   <section>
     <div class="section-head">
       <div>
@@ -297,16 +300,19 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
       </div>
     </div>
   </section>
-
   <section>
     <div class="section-head">
       <div>
         <h3 id="detailTitle">Sonuç profili</h3>
         <p>Seçili oran aralığındaki gerçek maç sonuçları.</p>
       </div>
-      <span class="section-count" id="detailBadge">GRUP SEÇ</span>
+      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end">
+        <select id="bucket" class="bucket-select" aria-label="Oran grubu seç">
+          <option value="">Grup seç</option>
+        </select>
+        <span class="section-count" id="detailBadge">GRUP SEÇ</span>
+      </div>
     </div>
-
     <div class="chart-grid">
       <div class="chart-card"><h3>01 / Maç sonucu</h3><div id="msChart"></div></div>
       <div class="chart-card"><h3>02 / Karşılıklı gol</h3><div id="kgChart"></div></div>
@@ -320,7 +326,6 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
       </div>
     </div>
   </section>
-
   <section>
     <div class="section-head">
       <div>
@@ -334,8 +339,12 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
         <table>
           <thead>
             <tr>
-              <th>Tarih</th><th>Lig</th><th>Karşılaşma</th>
-              <th>MS</th><th>İY</th><th id="oddsHeading">Oran</th>
+              <th>Tarih</th>
+              <th>Lig</th>
+              <th>Karşılaşma</th>
+              <th>MS</th>
+              <th>İY</th>
+              <th id="oddsHeading">Oran</th>
             </tr>
           </thead>
           <tbody id="matchesBody">
@@ -346,38 +355,38 @@ tbody tr.active td:first-child { color:var(--green); font-weight:900; }
       <p class="small-note">Oranlar kaynak verideki açılış oranlarıdır. Sonuç yüzdeleri yalnızca sonucu kayıtlı maçlardan hesaplanır.</p>
     </div>
   </section>
-
   <footer class="footer">RNA ODDS LAB · Independent historical analysis</footer>
 </div>
-
 <script>
 "use strict";
-
 const DATA_URL = "./data/v2-data.json";
 const STEP = 0.05;
 const $ = id => document.getElementById(id);
-
 const NAMES = {
-  ms1:"MS1",msX:"MSX",ms2:"MS2",h12:"H12",h0:"H0",h23:"H23",
-  i14:"İ14",olmaz:"OLMAZ",i25:"İ25",
+  ms1:"MS1",msX:"MSX",ms2:"MS2",
+  h12:"H12",h0:"H0",h23:"H23",i14:"İ14",olmaz:"OLMAZ",i25:"İ25",
   ms1Alt:"MS1 ve Alt",msXAlt:"MSX ve Alt",ms2Alt:"MS2 ve Alt",
   ms1Ust:"MS1 ve Üst",msXUst:"MSX ve Üst",ms2Ust:"MS2 ve Üst",
-  au25Alt:"2.5 Alt",au25Ust:"2.5 Üst",au35Alt:"3.5 Alt",au35Ust:"3.5 Üst",
-  kgVar:"KG Var",kgYok:"KG Yok",gol01:"0-1 Gol",gol23:"2-3 Gol",
-  gol45:"4-5 Gol",gol6plus:"6+ Gol",
-  iy1:"İY1",iyX:"İYX",iy2:"İY2",iy15Alt:"İY 1.5 Alt",iy15Ust:"İY 1.5 Üst",
-  iyms11:"1/1",iyms10:"1/X",iyms12:"1/2",iyms01:"X/1",iyms00:"X/X",
-  iyms02:"X/2",iyms21:"2/1",iyms20:"2/X",iyms22:"2/2"
+  au15Alt:"1.5 Alt",au15Ust:"1.5 Üst",
+  au25Alt:"2.5 Alt",au25Ust:"2.5 Üst",
+  au35Alt:"3.5 Alt",au35Ust:"3.5 Üst",
+  kgVar:"KG Var",kgYok:"KG Yok",
+  gol01:"0-1 Gol",gol23:"2-3 Gol",gol45:"4-5 Gol",gol6plus:"6+ Gol",
+  iy1:"İY1",iyX:"İYX",iy2:"İY2",
+  iy15Alt:"İY 1.5 Alt",iy15Ust:"İY 1.5 Üst",
+  iyms11:"1/1",iyms10:"1/X",iyms12:"1/2",
+  iyms01:"X/1",iyms00:"X/X",iyms02:"X/2",
+  iyms21:"2/1",iyms20:"2/X",iyms22:"2/2"
 };
 const COLORS = ["","orange","yellow","red","purple"];
-
 let allMatches = [];
 let recentMatches = [];
 let groups = [];
 let selectedItems = [];
 let metadata = [];
-
-function pad(n) { return String(n).padStart(2,"0"); }
+function pad(n) {
+  return String(n).padStart(2,"0");
+}
 function dateInputValue(d) {
   return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
 }
@@ -392,9 +401,15 @@ function parseDate(value) {
   if (!value) return null;
   const s = String(value).trim();
   let m = s.match(/^(\d{1,2})[.\/-](\d{1,2})[.\/-](\d{4})$/);
-  if (m) return new Date(+m[3],+m[2]-1,+m[1]);
+  if (m) {
+    const d = new Date(+m[3],+m[2]-1,+m[1]);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
   m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) return new Date(+m[1],+m[2]-1,+m[3]);
+  if (m) {
+    const d = new Date(+m[1],+m[2]-1,+m[3]);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
   return null;
 }
 function scoreOf(value) {
@@ -405,8 +420,10 @@ function scoreOf(value) {
   if (value && typeof value === "object") {
     const h = value.home ?? value.h ?? value[0];
     const a = value.away ?? value.a ?? value[1];
-    if (h != null && a != null && Number.isFinite(+h) && Number.isFinite(+a))
+    if (h != null && a != null &&
+        Number.isFinite(+h) && Number.isFinite(+a)) {
       return {h:+h,a:+a};
+    }
   }
   return null;
 }
@@ -437,9 +454,15 @@ function getOutcomes(m) {
   return out;
 }
 function oddsOf(m,key) {
-  const choices = [m?.odds?.[key],m?.[key],m?.marketOdds?.[key]];
-  const meta = metadata.find(x => x.key === key);
-  if (meta?.name) choices.push(m?.marketOdds?.[meta.name]);
+  const choices = [
+    m?.odds?.[key],
+    m?.[key],
+    m?.marketOdds?.[key]
+  ];
+  const meta = metadata.find(x => x && x.key === key);
+  if (meta?.name) {
+    choices.push(m?.marketOdds?.[meta.name]);
+  }
   for (const v of choices) {
     if (v == null || v === "") continue;
     const n = Number(v);
@@ -449,27 +472,43 @@ function oddsOf(m,key) {
 }
 function html(s) {
   return String(s ?? "").replace(/[&<>"']/g,c=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
   })[c]);
 }
 function dateRangeMatches() {
   const from = $("dateFrom").value;
   const to = $("dateTo").value;
-  if (!from || !to) throw new Error("Başlangıç ve bitiş tarihlerini seç.");
-  if (from > to) throw new Error("Başlangıç tarihi bitiş tarihinden sonra olamaz.");
+  if (!from || !to) {
+    throw new Error("Başlangıç ve bitiş tarihlerini seç.");
+  }
+  if (from > to) {
+    throw new Error("Başlangıç tarihi bitiş tarihinden sonra olamaz.");
+  }
   return allMatches.filter(m => {
+    if (!m || typeof m !== "object") return false;
     const d = parseDate(m.date);
-    return d && dateInputValue(d) >= from &&
-      dateInputValue(d) <= to && getOutcomes(m);
+    return Boolean(
+      d &&
+      dateInputValue(d) >= from &&
+      dateInputValue(d) <= to &&
+      getOutcomes(m)
+    );
   });
 }
 function setStatus(text,type="") {
-  $("status").textContent=text;
-  $("status").className="notice"+(type?" "+type:"");
+  $("status").textContent = text;
+  $("status").className = "notice"+(type ? " "+type : "");
 }
 function bounds(index,min) {
   const start = Math.round((min+index*STEP)*100)/100;
-  return {start,end:Math.round((start+STEP)*100)/100};
+  return {
+    start,
+    end:Math.round((start+STEP)*100)/100
+  };
 }
 function labelFor(index,min) {
   const b = bounds(index,min);
@@ -478,69 +517,84 @@ function labelFor(index,min) {
 function calculateGroups() {
   const min = Number($("minOdd").value);
   const max = Number($("maxOdd").value);
-  if (!Number.isFinite(min)||!Number.isFinite(max)||min<=0||max<=min)
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min <= 0 || max <= min) {
     throw new Error("Oran aralığını kontrol et. Bitiş oranı başlangıçtan büyük olmalı.");
-
+  }
   const key = $("market").value;
   const map = new Map();
   let withOdds = 0;
   for (const match of recentMatches) {
     const odd = oddsOf(match,key);
-    if (odd == null || odd < min-1e-8 || odd >= max-1e-8) continue;
+    if (odd == null || odd < min-1e-8 || odd >= max-1e-8) {
+      continue;
+    }
     withOdds++;
     const idx = Math.floor((odd-min+1e-8)/STEP);
     if (!map.has(idx)) map.set(idx,[]);
-    map.get(idx).push({match,odd,out:getOutcomes(match)});
+    map.get(idx).push({
+      match,
+      odd,
+      out:getOutcomes(match)
+    });
   }
-  groups = [...map.entries()].sort((a,b)=>a[0]-b[0])
-    .map(([index,items])=>({index,label:labelFor(index,min),items}));
+  groups = [...map.entries()]
+    .sort((a,b)=>a[0]-b[0])
+    .map(([index,items])=>({
+      index,
+      label:labelFor(index,min),
+      items
+    }));
   return withOdds;
 }
 function distribution(items,getter,labels) {
   const counts = Object.fromEntries(labels.map(x=>[x,0]));
-  let total=0;
+  let total = 0;
   for (const item of items) {
-    const value=getter(item);
+    const value = getter(item);
     if (value == null || !(value in counts)) continue;
     counts[value]++;
     total++;
   }
   return labels.map(label=>({
-    label,count:counts[label],total,
+    label,
+    count:counts[label],
+    total,
     percent:total ? counts[label]*100/total : 0
   }));
 }
 function percentage(items,getter,value,labels) {
-  const d=distribution(items,getter,labels);
-  const row=d.find(x=>x.label===value);
+  const d = distribution(items,getter,labels);
+  const row = d.find(x=>x.label===value);
   return row && row.total ? row.percent.toFixed(0)+"%" : "—";
 }
 function renderChart(id,items,getter,labels) {
-  const data=distribution(items,getter,labels);
-  const total=data[0]?.total||0;
+  const data = distribution(items,getter,labels);
+  const total = data[0]?.total || 0;
   if (!total) {
-    $(id).innerHTML='<div class="empty">Bu sonuç için veri yok.</div>';
+    $(id).innerHTML = '<div class="empty">Bu sonuç için veri yok.</div>';
     return;
   }
-  $(id).innerHTML=data.map((d,i)=>`
+  $(id).innerHTML = data.map((d,i)=>`
     <div class="chart-row">
       <div class="chart-top">
         <strong>${html(d.label)}</strong>
         <span>${d.count} <span style="color:var(--muted);font-weight:500">· ${d.percent.toFixed(1)}%</span></span>
       </div>
-      <div class="track"><div class="bar ${COLORS[i%COLORS.length]}"
-        style="width:${d.percent.toFixed(3)}%"></div></div>
+      <div class="track">
+        <div class="bar ${COLORS[i%COLORS.length]}"
+          style="width:${d.percent.toFixed(3)}%"></div>
+      </div>
       <div class="chart-foot">${d.count} / ${total} maç</div>
-    </div>`).join("");
+    </div>
+  `).join("");
 }
 function renderDetails() {
-  const items=selectedItems;
+  const items = selectedItems;
   renderChart("msChart",items,x=>x.out.ms,["1","X","2"]);
   renderChart("kgChart",items,x=>x.out.kg,["Var","Yok"]);
   renderChart("htChart",items,x=>x.out.ht,["1","X","2"]);
   renderChart("countChart",items,x=>x.out.goals,["0-1","2-3","4-5","6+"]);
   renderChart("htGoalChart",items,x=>x.out.iy15,["Alt","Üst"]);
-
   $("goalChart").innerHTML =
     '<h3 style="font-size:12px">1.5 gol</h3><div id="g15"></div>'+
     '<h3 style="font-size:12px;margin-top:18px">2.5 gol</h3><div id="g25"></div>'+
@@ -548,37 +602,51 @@ function renderDetails() {
   renderChart("g15",items,x=>x.out.g15,["Alt","Üst"]);
   renderChart("g25",items,x=>x.out.g25,["Alt","Üst"]);
   renderChart("g35",items,x=>x.out.g35,["Alt","Üst"]);
-  renderChart("htftChart",items,x=>x.out.htft,
-    ["1/1","1/X","1/2","X/1","X/X","X/2","2/1","2/X","2/2"]);
-
-  $("matchesBody").innerHTML = items.length ? [...items]
-    .sort((a,b)=>(parseDate(b.match.date)||0)-(parseDate(a.match.date)||0))
-    .map(x=>{
-      const m=x.match,o=x.out;
-      return `<tr>
-        <td>${html(m.date)}</td><td>${html(m.league||"—")}</td>
-        <td>${html(m.home||"?")} – ${html(m.away||"?")}</td>
-        <td><span class="tag">${o.ft.h}-${o.ft.a}</span></td>
-        <td>${o.htScore?o.htScore.h+"-"+o.htScore.a:"—"}</td>
-        <td class="num">${x.odd.toFixed(2)}</td>
-      </tr>`;
-    }).join("")
+  renderChart(
+    "htftChart",
+    items,
+    x=>x.out.htft,
+    ["1/1","1/X","1/2","X/1","X/X","X/2","2/1","2/X","2/2"]
+  );
+  $("matchesBody").innerHTML = items.length
+    ? [...items]
+        .sort((a,b)=>{
+          const da = parseDate(a.match.date);
+          const db = parseDate(b.match.date);
+          return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+        })
+        .map(x=>{
+          const m = x.match;
+          const o = x.out;
+          return `<tr>
+            <td>${html(m.date)}</td>
+            <td>${html(m.league||"—")}</td>
+            <td>${html(m.home||"?")} – ${html(m.away||"?")}</td>
+            <td><span class="tag">${o.ft.h}-${o.ft.a}</span></td>
+            <td>${o.htScore ? o.htScore.h+"-"+o.htScore.a : "—"}</td>
+            <td class="num">${x.odd.toFixed(2)}</td>
+          </tr>`;
+        }).join("")
     : '<tr><td colspan="6" class="empty">Seçili aralıkta maç yok.</td></tr>';
-  $("matchCountLabel").textContent=items.length+" MAÇ";
+  $("matchCountLabel").textContent = items.length+" MAÇ";
 }
 function renderSelected() {
-  const index=Number($("bucket").value);
-  const group=groups.find(g=>g.index===index);
-  selectedItems=group?group.items:[];
-  $("selectedCount").textContent=selectedItems.length;
-  $("detailTitle").textContent=group ? "Sonuç profili · "+group.label : "Sonuç profili";
-  $("detailBadge").textContent=group ? group.items.length+" MAÇ" : "GRUP SEÇ";
-  $("topMS").textContent="—";
-
+  const bucket = $("bucket");
+  const index = Number(bucket.value);
+  const group = groups.find(g=>g.index===index);
+  selectedItems = group ? group.items : [];
+  $("selectedCount").textContent = selectedItems.length;
+  $("detailTitle").textContent = group
+    ? "Sonuç profili · "+group.label
+    : "Sonuç profili";
+  $("detailBadge").textContent = group
+    ? group.items.length+" MAÇ"
+    : "GRUP SEÇ";
+  $("topMS").textContent = "—";
   if (selectedItems.length) {
-    const d=distribution(selectedItems,x=>x.out.ms,["1","X","2"]);
+    const d = distribution(selectedItems,x=>x.out.ms,["1","X","2"]);
     d.sort((a,b)=>b.count-a.count);
-    $("topMS").textContent="MS"+d[0].label;
+    $("topMS").textContent = "MS"+d[0].label;
   }
   $("groupsBody").querySelectorAll("tr[data-index]").forEach(row=>{
     row.classList.toggle("active",Number(row.dataset.index)===index);
@@ -586,31 +654,32 @@ function renderSelected() {
   renderDetails();
 }
 function renderGroups() {
-  const withOdds=calculateGroups();
-  $("withOdds").textContent=withOdds;
-  $("totalMatches").textContent=recentMatches.length;
-  const body=$("groupsBody");
-  const select=$("bucket");
-  const previous=select.value;
-
+  const withOdds = calculateGroups();
+  $("withOdds").textContent = withOdds;
+  $("totalMatches").textContent = recentMatches.length;
+  const body = $("groupsBody");
+  const select = $("bucket");
+  const previous = select.value;
   if (!groups.length) {
-    body.innerHTML='<tr><td colspan="7" class="empty">Bu tarih ve oran aralığında maç bulunamadı.</td></tr>';
-    select.innerHTML='<option value="">Grup yok</option>';
-    selectedItems=[];
-    $("selectedCount").textContent="0";
-    $("topMS").textContent="—";
-    $("detailBadge").textContent="GRUP YOK";
+    body.innerHTML =
+      '<tr><td colspan="7" class="empty">Bu tarih ve oran aralığında maç bulunamadı.</td></tr>';
+    select.innerHTML = '<option value="">Grup yok</option>';
+    selectedItems = [];
+    $("selectedCount").textContent = "0";
+    $("topMS").textContent = "—";
+    $("detailTitle").textContent = "Sonuç profili";
+    $("detailBadge").textContent = "GRUP YOK";
     renderDetails();
     return;
   }
-
-  select.innerHTML=groups.map(g=>
-    `<option value="${g.index}">${g.label} · ${g.items.length} maç</option>`
+  select.innerHTML = groups.map(g=>
+    `<option value="${g.index}">${html(g.label)} · ${g.items.length} maç</option>`
   ).join("");
-  select.value=groups.some(g=>String(g.index)===previous)?previous:String(groups[0].index);
-
-  body.innerHTML=groups.map(g=>{
-    const a=g.items;
+  select.value = groups.some(g=>String(g.index)===previous)
+    ? previous
+    : String(groups[0].index);
+  body.innerHTML = groups.map(g=>{
+    const a = g.items;
     return `<tr data-index="${g.index}" class="${String(g.index)===select.value?"active":""}">
       <td>${html(g.label)}</td>
       <td>${a.length}</td>
@@ -621,61 +690,93 @@ function renderGroups() {
       <td>${percentage(a,x=>x.out.g25,"Üst",["Alt","Üst"])}</td>
     </tr>`;
   }).join("");
-
   body.querySelectorAll("tr[data-index]").forEach(row=>{
     row.addEventListener("click",()=>{
-      select.value=row.dataset.index;
+      select.value = row.dataset.index;
       renderSelected();
     });
   });
   renderSelected();
 }
 function fillMarkets(data) {
-  metadata=Array.isArray(data.markets)?data.markets:[];
-  const keys=new Map();
+  metadata = Array.isArray(data.markets)
+    ? data.markets.filter(m=>m && typeof m==="object")
+    : [];
+  const keys = new Map();
   metadata.forEach(m=>{
-    if (m.key) keys.set(m.key,{key:m.key,name:NAMES[m.key]||m.name||m.key});
+    if (m.key) {
+      keys.set(m.key,{
+        key:m.key,
+        name:NAMES[m.key]||m.name||m.key
+      });
+    }
   });
   (data.matches||[]).forEach(m=>{
+    if (!m || typeof m!=="object") return;
     Object.keys(m.odds||{}).forEach(key=>{
-      if (!keys.has(key)) keys.set(key,{key,name:NAMES[key]||key});
+      if (!keys.has(key)) {
+        keys.set(key,{key,name:NAMES[key]||key});
+      }
+    });
+    Object.keys(m.marketOdds||{}).forEach(key=>{
+      const marketKey = Object.keys(NAMES).find(k=>NAMES[k]===key);
+      if (marketKey && !keys.has(marketKey)) {
+        keys.set(marketKey,{key:marketKey,name:NAMES[marketKey]});
+      }
     });
     Object.keys(m).forEach(key=>{
-      if (["date","league","time","home","away","score","halfTimeScore","odds","marketOdds"].includes(key)) return;
-      if (typeof m[key]==="number" && !keys.has(key)) keys.set(key,{key,name:NAMES[key]||key});
+      if ([
+        "date","league","time","home","away","score",
+        "halfTimeScore","odds","marketOdds"
+      ].includes(key)) return;
+      if (typeof m[key]==="number" && !keys.has(key)) {
+        keys.set(key,{key,name:NAMES[key]||key});
+      }
     });
   });
-  const arr=[...keys.values()].sort((a,b)=>{
-    if(a.key==="ms1")return -1;
-    if(b.key==="ms1")return 1;
+  const arr = [...keys.values()].sort((a,b)=>{
+    if (a.key==="ms1") return -1;
+    if (b.key==="ms1") return 1;
     return a.name.localeCompare(b.name,"tr");
   });
-  $("market").innerHTML=arr.map(m=>
+  $("market").innerHTML = arr.map(m=>
     `<option value="${html(m.key)}">${html(m.name)} · ${html(m.key)}</option>`
   ).join("");
-  $("market").value=keys.has("ms1")?"ms1":(arr[0]?.key||"");
+  $("market").value = keys.has("ms1")
+    ? "ms1"
+    : (arr[0]?.key||"");
 }
 async function loadData() {
-  $("refresh").disabled=true;
+  $("refresh").disabled = true;
   setStatus("Veri dosyası yükleniyor...");
   try {
-    const response=await fetch(DATA_URL,{cache:"no-store"});
-    if(!response.ok) throw new Error("JSON alınamadı (HTTP "+response.status+").");
-    const data=await response.json();
-    if(!Array.isArray(data.matches)) throw new Error("JSON içinde matches dizisi bulunamadı.");
-    allMatches=data.matches;
+    const response = await fetch(DATA_URL,{cache:"no-store"});
+    if (!response.ok) {
+      throw new Error("JSON alınamadı (HTTP "+response.status+").");
+    }
+    const data = await response.json();
+    if (!data || !Array.isArray(data.matches)) {
+      throw new Error("JSON içinde matches dizisi bulunamadı.");
+    }
+    allMatches = data.matches;
     fillMarkets(data);
     analyze();
   } catch(e) {
-    console.error(e);
-    setStatus("Veri yüklenemedi: "+e.message+" · Dosya data/v2-data.json konumunda olmalı ve sayfa HTTP üzerinden açılmalı.","error");
+    console.error("RNA Odds Lab veri yükleme hatası:",e);
+    setStatus(
+      "Veri yüklenemedi: "+e.message+
+      " Dosya yolu: data/v2-data.json. Sayfayı GitHub Pages üzerinden açmayı dene.",
+      "error"
+    );
+    $("groupsBody").innerHTML =
+      '<tr><td colspan="7" class="empty">Veriler yüklenemedi. Üstteki hata mesajını kontrol et.</td></tr>';
   } finally {
-    $("refresh").disabled=false;
+    $("refresh").disabled = false;
   }
 }
 function analyze() {
   try {
-    recentMatches=dateRangeMatches();
+    recentMatches = dateRangeMatches();
     renderGroups();
     setStatus(
       "Analiz hazır · "+$("dateFrom").value+" → "+$("dateTo").value+
@@ -683,10 +784,10 @@ function analyze() {
       "ok"
     );
   } catch(e) {
+    console.error("RNA Odds Lab analiz hatası:",e);
     setStatus(e.message,"error");
   }
 }
-
 $("refresh").addEventListener("click",analyze);
 $("market").addEventListener("change",analyze);
 $("bucket").addEventListener("change",renderSelected);
