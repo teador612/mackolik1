@@ -2,20 +2,18 @@
 "use strict";
 
 /* =========================================================
-   SONUÇTAN ORAN ANALİZİ — OPTİMİZE EDİLMİŞ SÜRÜM
+   SONUÇTAN ORAN ANALİZİ
 
    Veri              : ./data/v2-data.json
    Analiz dönemi     : 10 gün
-   Minimum örnek     : Yok
    Minimum başarı    : %80
    Oran eşleştirmesi : Birebir, 2 ondalık
    Başarı hesabı     : Aynı market + aynı oran için son 5 maç
 
-   İY/MS sonuçları:
-   1/2, 2/1, 1/0, 2/0, 0/1, 0/2
+   EV15_UST  : Ev sahibi en az 2 gol attı mı?
+   DEP15_UST : Deplasman en az 2 gol attı mı?
 
-   Not:
-   0 = Beraberlik
+   Bu iki seçenek SONUÇ filtresidir, oran marketi değildir.
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -24,6 +22,7 @@ const HISTORY_DAYS = 10;
 const MIN_SUCCESS = 80;
 const RECENT_MATCH_LIMIT = 5;
 
+/* Mevcut açılış oranı marketleri korunmuştur. */
 const MARKETS = [
   { id: "iy15Alt", label: "İY 1.5 Alt", fields: ["iy15Alt", "iy15A", "iy_15_alt", "IY15Alt"] },
   { id: "iy15Ust", label: "İY 1.5 Üst", fields: ["iy15Ust", "iy15U", "iy_15_ust", "IY15Ust"] },
@@ -81,6 +80,8 @@ const MARKET_BY_ID = new Map(
   MARKETS.map(market => [market.id, market])
 );
 
+/* Sonuç filtresi tanımları.
+   EV15_UST ve DEP15_UST, MARKETS listesinde bulunmaz. */
 const RESULTS = {
   MS1: {
     label: "MS 1",
@@ -163,52 +164,46 @@ const RESULTS = {
     test: score => score.home + score.away >= 3
   },
 
-  // İY/MS sonuçları
-  // İlk değer ilk yarı, ikinci değer maç sonu sonucudur.
-  // 1 = Ev sahibi önde / kazanır
-  // 0 = Beraberlik
-  // 2 = Deplasman önde / kazanır
+  EV15_UST: {
+    label: "Ev 1.5 Üst",
+    type: "ft",
+    test: score => score.home >= 2
+  },
+  DEP15_UST: {
+    label: "Deplasman 1.5 Üst",
+    type: "ft",
+    test: score => score.away >= 2
+  },
 
   IYMS12: {
     label: "İY/MS 1/2",
     type: "htft",
-    test: (ht, ft) =>
-      ht.home > ht.away && ft.away > ft.home
+    test: (ht, ft) => ht.home > ht.away && ft.away > ft.home
   },
-
   IYMS21: {
     label: "İY/MS 2/1",
     type: "htft",
-    test: (ht, ft) =>
-      ht.away > ht.home && ft.home > ft.away
+    test: (ht, ft) => ht.away > ht.home && ft.home > ft.away
   },
-
   IYMS10: {
     label: "İY/MS 1/0",
     type: "htft",
-    test: (ht, ft) =>
-      ht.home > ht.away && ft.home === ft.away
+    test: (ht, ft) => ht.home > ht.away && ft.home === ft.away
   },
-
   IYMS20: {
     label: "İY/MS 2/0",
     type: "htft",
-    test: (ht, ft) =>
-      ht.away > ht.home && ft.home === ft.away
+    test: (ht, ft) => ht.away > ht.home && ft.home === ft.away
   },
-
   IYMS01: {
     label: "İY/MS 0/1",
     type: "htft",
-    test: (ht, ft) =>
-      ht.home === ht.away && ft.home > ft.away
+    test: (ht, ft) => ht.home === ht.away && ft.home > ft.away
   },
-
   IYMS02: {
     label: "İY/MS 0/2",
     type: "htft",
-    test: (ht, ft) =>
-      ht.home === ht.away && ft.away > ft.home
+    test: (ht, ft) => ht.home === ht.away && ft.away > ft.home
   }
 };
 
@@ -279,9 +274,7 @@ function getDateKey(match) {
 
 function addDays(dateKey, days) {
   const parts = dateKey.split("-").map(Number);
-  const date = new Date(
-    Date.UTC(parts[0], parts[1] - 1, parts[2])
-  );
+  const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
 
   date.setUTCDate(date.getUTCDate() + days);
 
@@ -448,8 +441,8 @@ function getOddsContainers(match) {
     match?.opening_prices,
     match?.marketOdds,
     match?.markets
-  ].filter(
-    container => container && typeof container === "object"
+  ].filter(container =>
+    container && typeof container === "object"
   );
 }
 
@@ -458,9 +451,7 @@ function getOdds(match, market) {
 
   for (const container of containers) {
     for (const field of market.fields) {
-      if (
-        !Object.prototype.hasOwnProperty.call(container, field)
-      ) {
+      if (!Object.prototype.hasOwnProperty.call(container, field)) {
         continue;
       }
 
@@ -475,10 +466,6 @@ function getOdds(match, market) {
 
 /* =========================================================
    SEÇİLEN SONUCUN KONTROLÜ
-
-   Normal sonuçlar tek skorla kontrol edilir.
-   İY/MS sonuçları hem ilk yarı hem maç sonu skoruyla
-   kontrol edilir.
    ========================================================= */
 
 function getTargetResult(matchInfo, resultId) {
@@ -487,12 +474,9 @@ function getTargetResult(matchInfo, resultId) {
   if (!definition) return null;
 
   if (definition.type === "htft") {
-    const ht = matchInfo.ht;
-    const ft = matchInfo.ft;
+    if (!matchInfo.ht || !matchInfo.ft) return null;
 
-    if (!ht || !ft) return null;
-
-    return definition.test(ht, ft);
+    return definition.test(matchInfo.ht, matchInfo.ft);
   }
 
   const score = definition.type === "ht"
@@ -595,7 +579,7 @@ async function loadData() {
 }
 
 /* =========================================================
-   İNDEKSTEN SON 5 EŞLEŞEN MAÇ
+   AYNI MARKET VE AYNI ORANIN SON 5 GEÇMİŞ MAÇI
    ========================================================= */
 
 function getRecentOddsMatches(marketId, odd, targetDate) {
@@ -616,12 +600,7 @@ function getRecentOddsMatches(marketId, odd, targetDate) {
   return recent;
 }
 
-function calculateRecentSuccess(
-  marketId,
-  odd,
-  targetDate,
-  resultId
-) {
+function calculateRecentSuccess(marketId, odd, targetDate, resultId) {
   const recentMatches = getRecentOddsMatches(
     marketId,
     odd,
@@ -670,6 +649,13 @@ function buildFutureIndex(targetDate) {
 
 /* =========================================================
    ANALİZ MOTORU
+
+   Geçmiş dönemdeki bütün oynanmış maçların oran marketleri
+   taranır. Seçilen sonuç, her oran eşleşmesinin son 5 maçında
+   test edilir.
+
+   Böylece Ev/Deplasman 1.5 Üst, oran marketi olarak değil,
+   geçmiş maçların sonuç filtresi olarak kullanılır.
    ========================================================= */
 
 function runAnalysis(targetDate, resultId) {
@@ -692,6 +678,7 @@ function runAnalysis(targetDate, resultId) {
 
     history.push(info);
 
+    /* Bütün mevcut oran marketlerini tara. */
     for (const entry of info.marketOdds) {
       const key = `${entry.marketId}|${entry.odd}`;
 
@@ -700,9 +687,7 @@ function runAnalysis(targetDate, resultId) {
 
         groups.set(key, {
           marketId: entry.marketId,
-          marketLabel: market
-            ? market.label
-            : entry.marketId,
+          marketLabel: market ? market.label : entry.marketId,
           odd: entry.odd
         });
       }
@@ -999,13 +984,7 @@ function renderAnalysis(resultId, targetDate, analysis) {
   const historyCount = document.getElementById("saHistoryCount");
   const oddsCount = document.getElementById("saOddsCount");
 
-  if (
-    !content ||
-    !status ||
-    !period ||
-    !historyCount ||
-    !oddsCount
-  ) {
+  if (!content || !status || !period || !historyCount || !oddsCount) {
     console.error("Analiz görünüm elemanları bulunamadı.");
     return;
   }
@@ -1022,10 +1001,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
   oddsCount.textContent = analysis.rows.length;
 
   status.innerHTML =
-    `<strong>${escapeHtml(result.label)}</strong> için ` +
-    `<strong>${analysis.rows.length}</strong> uygun oran bulundu. ` +
-    `Başarı hesabı: <strong>son ${RECENT_MATCH_LIMIT} maç</strong> · ` +
-    `Minimum başarı: <strong>%${MIN_SUCCESS}</strong>`;
+    `<strong>${escapeHtml(result.label)}</strong> sonuç filtresi için ` +
+    `<strong>${analysis.rows.length}</strong> uygun oran eşleşmesi bulundu. ` +
+    `Son ${RECENT_MATCH_LIMIT} eşleşen maç · Minimum başarı: ` +
+    `<strong>%${MIN_SUCCESS}</strong>`;
 
   if (!analysis.rows.length) {
     content.innerHTML = `
@@ -1033,10 +1012,10 @@ function renderAnalysis(resultId, targetDate, analysis) {
         <div class="sa-empty-icon">🔎</div>
         <strong>Uygun oran bulunamadı</strong>
         <span>
-          Son ${HISTORY_DAYS} günlük analiz döneminde,
+          Son ${HISTORY_DAYS} günlük dönemde, seçilen sonuç filtresinde
           son ${RECENT_MATCH_LIMIT} eşleşen maçta %${MIN_SUCCESS}
           başarıya ulaşan ve seçilen tarihte oynanmamış maçı bulunan
-          birebir açılış oranı yok.
+          birebir açılış oranı eşleşmesi yok.
         </span>
       </div>
     `;
