@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -98,21 +97,13 @@ tbody tr.result-row:hover{background:#ffffff08}
  .daily-chip strong{font-size:18px}
  .daily-chip small{font-size:9px}
 }
-
-/* Mobil menü: çentikten uzak, ekranın ortasında */
 @media(max-width:850px){
  .mobile-menu{
-   display:flex;
-   align-items:center;
-   justify-content:center;
-   width:min(100%,320px);
-   min-height:52px;
-   margin:calc(env(safe-area-inset-top, 0px) + 14px) auto 16px;
-   padding:12px 20px;
-   text-align:center;
-   position:relative;
-   z-index:60;
-   touch-action:manipulation;
+   display:flex;align-items:center;justify-content:center;
+   width:min(100%,320px);min-height:52px;
+   margin:calc(env(safe-area-inset-top,0px) + 14px) auto 16px;
+   padding:12px 20px;text-align:center;position:relative;
+   z-index:60;touch-action:manipulation;
  }
 }
 </style>
@@ -142,7 +133,7 @@ tbody tr.result-row:hover{background:#ffffff08}
 
     <section id="scoreView">
       <header>
-        <h1>DNA | Skor ve Açılış Oranı Analizi</h1>
+        <h1>DNA | Skor ve Oran Analizi</h1>
         <p>Hedef skoru seç. Sistem geçmiş maçlardaki marketleri ve aynı açılış oranlarını tarasın. Başarı filtresini boş bırakarak tüm sonuçları görebilirsin.</p>
       </header>
 
@@ -153,13 +144,20 @@ tbody tr.result-row:hover{background:#ffffff08}
           <div class="field"><label for="awayScore">Deplasman skoru</label><select id="awayScore"></select></div>
           <div class="field"><label for="dateRange">Geçmiş aralığı</label>
             <select id="dateRange">
-              <option value="7">Son 7 gün</option><option value="15">Son 15 gün</option>
-              <option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option>
-              <option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option>
+              <option value="7">Son 7 gün</option>
+              <option value="15">Son 15 gün</option>
+              <option value="30" selected>Son 30 gün</option>
+              <option value="60">Son 60 gün</option>
+              <option value="90">Son 90 gün</option>
+              <option value="all">Tüm geçmiş</option>
             </select>
           </div>
           <div class="field"><label for="minSample">Minimum geçmiş maç</label>
-            <select id="minSample"><option>3</option><option>5</option><option value="8" selected>8</option><option>10</option><option>20</option></select>
+            <select id="minSample">
+              <option>3</option><option>5</option>
+              <option value="8" selected>8</option>
+              <option>10</option><option>20</option>
+            </select>
           </div>
           <div class="field"><label for="minRate">Minimum başarı (%) — boş = filtre yok</label><input id="minRate" type="number" min="0" max="100" placeholder="Filtre uygulama"></div>
         </div>
@@ -178,14 +176,14 @@ tbody tr.result-row:hover{background:#ffffff08}
       </div>
 
       <section class="panel">
-        <div class="heading"><h2>Market ve oran sonuçları</h2><span class="badge" id="filterBadge">Başarı filtresi kapalı</span></div>
+        <div class="heading"><h2>Market ve oran sonuçları</h2><span class="badge" id="filterBadge">Başarı filtresi kapalı · Skor sıklığı ≥ %60</span></div>
         <div class="table-wrap">
           <table>
             <thead><tr><th>#</th><th>Market</th><th>Açılış oranı</th><th>Örnek</th><th>Hedef skor</th><th>Skor sıklığı</th></tr></thead>
             <tbody id="resultsBody"><tr><td colspan="6" class="empty">Veriler yükleniyor...</td></tr></tbody>
           </table>
         </div>
-        <div class="note">Skor sıklığı, aynı market ve aynı açılış oranına sahip geçmiş maçlarda seçilen skorun görülme yüzdesidir. Geçmiş sonuçlar geleceği garanti etmez.</div>
+        <div class="note">Yalnızca skor sıklığı %60 ve üzerindeki gruplar gösterilir. Skor sıklığı, aynı market ve aynı açılış oranına sahip geçmiş maçlarda seçilen skorun görülme yüzdesidir. Geçmiş sonuçlar geleceği garanti etmez.</div>
       </section>
 
       <section class="panel detail" id="detailPanel" hidden>
@@ -207,7 +205,6 @@ tbody tr.result-row:hover{background:#ffffff08}
           <h2>Maç tarihi ve analiz ayarları</h2>
           <span class="badge" id="dailyDateBadge">Bugün</span>
         </div>
-
         <div class="filters">
           <div class="field daily-date-field">
             <label for="dailyDatePicker">Maç tarihi</label>
@@ -216,24 +213,19 @@ tbody tr.result-row:hover{background:#ffffff08}
           <div class="field">
             <label for="dailyRange">Geçmiş aralığı</label>
             <select id="dailyRange">
-              <option value="7">Son 7 gün</option>
-              <option value="15">Son 15 gün</option>
-              <option value="30" selected>Son 30 gün</option>
-              <option value="60">Son 60 gün</option>
-              <option value="90">Son 90 gün</option>
-              <option value="all">Tüm geçmiş</option>
+              <option value="7">Son 7 gün</option><option value="15">Son 15 gün</option>
+              <option value="30" selected>Son 30 gün</option><option value="60">Son 60 gün</option>
+              <option value="90">Son 90 gün</option><option value="all">Tüm geçmiş</option>
             </select>
           </div>
           <div class="field">
             <label for="dailyMinSample">Minimum eşleşen geçmiş maç</label>
             <select id="dailyMinSample">
-              <option>3</option><option>5</option>
-              <option value="8" selected>8</option>
+              <option>3</option><option>5</option><option value="8" selected>8</option>
               <option>10</option><option>20</option>
             </select>
           </div>
         </div>
-
         <div class="actions">
           <button class="btn primary" id="dailyReloadBtn" type="button">🔎 Seçilen Tarihi Tara</button>
           <button class="btn" id="dailyTodayBtn" type="button">📅 Bugüne Dön</button>
@@ -255,7 +247,7 @@ tbody tr.result-row:hover{background:#ffffff08}
             <tbody id="dailyResultsBody"><tr><td colspan="10" class="empty">Maçlar yükleniyor...</td></tr></tbody>
           </table>
         </div>
-        <div class="note">Bir maça dokunarak market bazında geçmiş eşleşmeleri ve skor sıklıklarını görebilirsin. Yeterli geçmiş eşleşmesi bulunmayan maçlar da listede kalır.</div>
+        <div class="note">Bir maça dokunarak market bazında geçmiş eşleşmeleri ve skor sıklıklarını görebilirsin. Yeterli geçmiş eşleşmesi bulunmayan maçlar da listede kalır. Günün maçları bölümünde de yalnızca skor sıklığı %60 ve üzerindeki analizler gösterilir.</div>
       </section>
 
       <section class="panel detail" id="dailyDetailPanel" hidden>
@@ -271,6 +263,7 @@ tbody tr.result-row:hover{background:#ffffff08}
 "use strict";
 (() => {
   const DATA_URL = "./data/v2-data.json";
+  const MIN_SCORE_FREQUENCY = 60;
   const $ = id => document.getElementById(id);
 
   const MARKETS = [
@@ -300,7 +293,7 @@ tbody tr.result-row:hover{background:#ffffff08}
     ["iyKgVar","İY KG Var",["iyKgVar","IY_KG_VAR","iykgvar"]],
     ["iyKgYok","İY KG Yok",["iyKgYok","IY_KG_YOK","iykgyok"]],
     ["handicap1","Handikap 1",["handicap1","handicap_1"]],
-    ["handicapX","Handikap X",["handicapX","handicapX","handicap_x"]],
+    ["handicapX","Handikap X",["handicapX","handicap_x"]],
     ["handicap2","Handikap 2",["handicap2","handicap_2"]]
   ].map(([key,name,aliases])=>({key,name,aliases}));
 
@@ -321,6 +314,7 @@ tbody tr.result-row:hover{background:#ffffff08}
   function dateKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
   }
+
   function parseDate(value) {
     if(!value) return null;
     if(value instanceof Date && !Number.isNaN(value.getTime()))
@@ -333,10 +327,12 @@ tbody tr.result-row:hover{background:#ffffff08}
     const d = new Date(s);
     return Number.isNaN(d.getTime()) ? null : new Date(d.getFullYear(),d.getMonth(),d.getDate());
   }
+
   function dateLabel(value) {
     const d = value instanceof Date ? value : parseDate(value);
     return d ? d.toLocaleDateString("tr-TR") : String(value || "—");
   }
+
   function readScore(value) {
     if(value && typeof value === "object") {
       const h = number(value.home ?? value.homeScore ?? value.homeGoals ?? value.h ?? value.ev);
@@ -349,6 +345,7 @@ tbody tr.result-row:hover{background:#ffffff08}
     }
     return null;
   }
+
   function getScore(m) {
     for(const value of [
       m.score,m.fullTimeScore,m.full_time_score,m.ftScore,m.ms,m.macSonucu,m.finalScore,
@@ -361,6 +358,7 @@ tbody tr.result-row:hover{background:#ffffff08}
     const a = number(m.awayScore ?? m.awayGoals ?? m.goalsAway ?? m.ftAway);
     return h !== null && a !== null ? readScore({home:h,away:a}) : null;
   }
+
   function getHTScore(m) {
     for(const value of [m.halfTimeScore,m.half_time_score,m.htScore,m.halftimeScore,m.halftime,m.halfTime,m.iyScore,m.firstHalfScore,m.ilkYari,m.ilkYariSkor]) {
       const s = readScore(value);
@@ -368,11 +366,13 @@ tbody tr.result-row:hover{background:#ffffff08}
     }
     return null;
   }
+
   function firstValue(obj, keys) {
     if(!obj || typeof obj !== "object") return undefined;
     for(const k of keys) if(obj[k] !== undefined && obj[k] !== null && obj[k] !== "") return obj[k];
     return undefined;
   }
+
   function getOdds(m) {
     const containers = [
       m.openingOdds,m.opening_odds,m.openOdds,m.opening,m.odds,m.Odds,
@@ -395,12 +395,14 @@ tbody tr.result-row:hover{background:#ffffff08}
     }
     return result;
   }
+
   function normalize(payload) {
     const arr = Array.isArray(payload) ? payload :
       Array.isArray(payload?.matches) ? payload.matches :
       Array.isArray(payload?.data) ? payload.data :
       Array.isArray(payload?.fixtures) ? payload.fixtures :
       Array.isArray(payload?.results) ? payload.results : [];
+
     return arr.map(m=>{
       const rawDate = m.date ?? m.matchDate ?? m.gameDate ?? m.tarih ?? m.datetime ?? m.dateTime ?? m.kickoff ?? m.startTime ?? m.timestamp;
       const d = parseDate(rawDate);
@@ -412,6 +414,7 @@ tbody tr.result-row:hover{background:#ffffff08}
       const home = String(m.home ?? m.homeTeam ?? m.homeName ?? m.ev ?? m.evSahibi ?? m.team1 ?? m.localteam ?? "Ev sahibi");
       const away = String(m.away ?? m.awayTeam ?? m.awayName ?? m.dep ?? m.deplasman ?? m.team2 ?? m.awayteam ?? "Deplasman");
       const odds = getOdds(m);
+
       return {
         raw:m,date:d,dateKey:d?dateKey(d):"",dateLabel:dateLabel(d || rawDate),time,
         league:String(m.league ?? m.leagueName ?? m.competition ?? m.lig ?? m.tournament ?? "—"),
@@ -419,9 +422,11 @@ tbody tr.result-row:hover{background:#ffffff08}
       };
     }).filter(m=>m.home && m.away);
   }
+
   function marketResult(match,key) {
     const s = match.score, ht = match.ht;
     if(!s) return null;
+
     switch(key) {
       case "ms1": return s.home>s.away;
       case "msX": return s.home===s.away;
@@ -451,6 +456,7 @@ tbody tr.result-row:hover{background:#ffffff08}
       default: return null;
     }
   }
+
   function historyFor(range) {
     const valid = played.filter(m=>m.date);
     if(range==="all" || !valid.length) return valid;
@@ -460,6 +466,7 @@ tbody tr.result-row:hover{background:#ffffff08}
     cutoff.setDate(cutoff.getDate()-days+1);
     return valid.filter(m=>m.date>=cutoff && m.date<=new Date());
   }
+
   function prepareData() {
     prepared = allMatches.map(m=>{
       const d = parseDate(m.date ?? m.matchDate ?? m.gameDate ?? m.tarih ?? m.datetime ?? m.dateTime ?? m.kickoff ?? m.startTime);
@@ -467,129 +474,235 @@ tbody tr.result-row:hover{background:#ffffff08}
     });
     played = prepared.filter(m=>m.score && m.date);
   }
+
   function status(id,message,type="") {
     const el=$(id);
     el.textContent=message;
     el.className="status"+(type?" "+type:"");
   }
+
   function fillScoreSelect(id) {
     const el=$(id);
     for(let i=0;i<=10;i++) {
       const opt=document.createElement("option");
-      opt.value=String(i);opt.textContent=String(i);
-      if((id==="homeScore"&&i===2)||(id==="awayScore"&&i===1))opt.selected=true;
+      opt.value=String(i);
+      opt.textContent=String(i);
+      if((id==="homeScore"&&i===2)||(id==="awayScore"&&i===1)) opt.selected=true;
       el.appendChild(opt);
     }
   }
+
   function scoreGroups(history,target,minSample) {
     const map=new Map();
+
     for(const m of history) {
       if(!m.score) continue;
+
       for(const market of MARKETS) {
         const odds=m.odds[market.key];
         if(!odds) continue;
+
         const key=market.key+"|"+odds;
-        if(!map.has(key)) map.set(key,{key,marketKey:market.key,marketName:market.name,odds,matches:[],targetCount:0});
+
+        if(!map.has(key)) {
+          map.set(key,{
+            key,
+            marketKey:market.key,
+            marketName:market.name,
+            odds,
+            matches:[],
+            targetCount:0
+          });
+        }
+
         const group=map.get(key);
         group.matches.push(m);
-        if(m.score.home===target.home&&m.score.away===target.away)group.targetCount++;
+
+        if(m.score.home===target.home&&m.score.away===target.away) {
+          group.targetCount++;
+        }
       }
     }
-    return [...map.values()].filter(g=>g.matches.length>=minSample).map(g=>({
-      ...g,total:g.matches.length,rate:g.targetCount/g.matches.length*100
-    })).sort((a,b)=>b.rate-a.rate||b.total-a.total||a.marketName.localeCompare(b.marketName,"tr"));
+
+    return [...map.values()]
+      .filter(g=>g.matches.length>=minSample)
+      .map(g=>({
+        ...g,
+        total:g.matches.length,
+        rate:g.targetCount/g.matches.length*100
+      }))
+      .filter(g=>g.rate>=MIN_SCORE_FREQUENCY)
+      .sort((a,b)=>
+        b.rate-a.rate||
+        b.total-a.total||
+        a.marketName.localeCompare(b.marketName,"tr")
+      );
   }
+
   function renderScoreResults() {
-    if(!loaded)return;
+    if(!loaded) return;
+
     const target={home:+$("homeScore").value,away:+$("awayScore").value};
     $("targetScore").textContent=target.home+"-"+target.away;
+
     const history=historyFor($("dateRange").value);
     const minSample=+$("minSample").value;
     const rawRate=$("minRate").value.trim();
     const minRate=rawRate===""?null:Number(rawRate);
+
     if(minRate!==null&&(!Number.isFinite(minRate)||minRate<0||minRate>100)) {
-      status("scoreStatus","Başarı eşiği 0 ile 100 arasında olmalı.","error");return;
+      status("scoreStatus","Başarı eşiği 0 ile 100 arasında olmalı.","error");
+      return;
     }
+
     const groups=scoreGroups(history,target,minSample);
     shownGroups=groups.filter(g=>minRate===null||g.rate>=minRate);
+
     $("playedCount").textContent=history.length.toLocaleString("tr-TR");
     $("groupCount").textContent=groups.length.toLocaleString("tr-TR");
     $("shownCount").textContent=shownGroups.length.toLocaleString("tr-TR");
-    $("filterBadge").textContent=minRate===null?"Başarı filtresi kapalı":"Minimum başarı: %"+minRate;
+    $("filterBadge").textContent=minRate===null
+      ?`Başarı filtresi kapalı · Skor sıklığı ≥ %${MIN_SCORE_FREQUENCY}`
+      :`Minimum başarı: %${minRate} · Skor sıklığı ≥ %${MIN_SCORE_FREQUENCY}`;
+
     $("detailPanel").hidden=true;
+
     const body=$("resultsBody");
+
     if(!shownGroups.length) {
-      body.innerHTML='<tr><td colspan="6" class="empty">Bu ayarlara uygun oran grubu bulunamadı. Geçmiş aralığını genişlet, örnek sayısını azalt veya başarı filtresini temizle.</td></tr>';
+      body.innerHTML='<tr><td colspan="6" class="empty">Skor sıklığı %60 ve üzerinde olan, seçilen ayarlara uygun oran grubu bulunamadı. Geçmiş aralığını genişlet veya minimum örnek sayısını azalt.</td></tr>';
     } else {
       body.innerHTML=shownGroups.map((g,i)=>{
-        const cls=g.rate>=70?"high":g.rate>=40?"medium":"low";
+        const cls=g.rate>=70?"high":g.rate>=60?"medium":"low";
+
         return `<tr class="result-row" data-group="${i}" tabindex="0">
-          <td>${i+1}</td><td><strong>${esc(g.marketName)}</strong></td>
-          <td><span class="badge">${g.odds}</span></td><td>${g.total}</td>
-          <td>${g.targetCount}/${g.total}</td><td><span class="${cls}">${pct(g.rate)}</span><div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div></td>
+          <td>${i+1}</td>
+          <td><strong>${esc(g.marketName)}</strong></td>
+          <td><span class="badge">${g.odds}</span></td>
+          <td>${g.total}</td>
+          <td>${g.targetCount}/${g.total}</td>
+          <td>
+            <span class="${cls}">${pct(g.rate)}</span>
+            <div class="bar"><span style="width:${Math.min(100,g.rate)}%"></span></div>
+          </td>
         </tr>`;
       }).join("");
     }
-    status("scoreStatus",`${history.length} tamamlanmış maç tarandı. ${groups.length} yeterli örnekli grup bulundu; ${shownGroups.length} grup gösteriliyor.`+(minRate===null?" Başarı filtresi uygulanmadı.":` Minimum başarı: %${minRate}.`),"success");
+
+    status(
+      "scoreStatus",
+      `${history.length} tamamlanmış maç tarandı. ${groups.length} oran grubu bulundu (%${MIN_SCORE_FREQUENCY} ve üzeri skor sıklığı); ${shownGroups.length} grup gösteriliyor.`+
+      (minRate===null?" Başarı filtresi uygulanmadı.":` Minimum başarı: %${minRate}.`),
+      "success"
+    );
   }
+
   function showScoreDetail(index) {
-    const g=shownGroups[index];if(!g)return;
+    const g=shownGroups[index];
+    if(!g) return;
+
     const target={home:+$("homeScore").value,away:+$("awayScore").value};
+
     $("detailPanel").hidden=false;
-    $("detailSummary").textContent=`${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} maçta hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
+    $("detailSummary").textContent=
+      `${g.marketName} · Açılış oranı ${g.odds} · ${g.targetCount}/${g.total} maçta hedef skor ${target.home}-${target.away} · Sıklık ${pct(g.rate)}`;
+
     const sorted=[...g.matches].sort((a,b)=>b.dateKey.localeCompare(a.dateKey));
+
     $("detailBody").innerHTML=sorted.map(m=>`<tr>
-      <td>${esc(m.dateLabel)}</td><td>${esc(m.league)}</td><td>${esc(m.home)}</td>
-      <td class="${m.score.home===target.home&&m.score.away===target.away?"high":""}"><strong>${m.score.home}-${m.score.away}</strong></td>
-      <td>${esc(m.away)}</td><td>${g.odds}</td>
+      <td>${esc(m.dateLabel)}</td>
+      <td>${esc(m.league)}</td>
+      <td>${esc(m.home)}</td>
+      <td class="${m.score.home===target.home&&m.score.away===target.away?"high":""}">
+        <strong>${m.score.home}-${m.score.away}</strong>
+      </td>
+      <td>${esc(m.away)}</td>
+      <td>${g.odds}</td>
     </tr>`).join("");
+
     $("detailPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
+
   function scoreFrequency(matches) {
     const map=new Map();
-    for(const m of matches) if(m.score) {
+
+    for(const m of matches) {
+      if(!m.score) continue;
       const s=m.score.home+"-"+m.score.away;
       map.set(s,(map.get(s)||0)+1);
     }
-    return [...map.entries()].map(([score,count])=>({score,count,rate:count/matches.length*100}))
+
+    return [...map.entries()]
+      .map(([score,count])=>({score,count,rate:count/matches.length*100}))
       .sort((a,b)=>b.count-a.count||a.score.localeCompare(b.score,"tr",{numeric:true}));
   }
+
   function dailyAnalysis(match,history,minSample) {
     const results=[];
+
     for(const market of MARKETS) {
-      const odds=match.odds[market.key];if(!odds)continue;
-      const matches=history.filter(h=>h.odds[market.key]===odds&&marketResult(h,market.key)!==null);
-      if(matches.length<minSample)continue;
+      const odds=match.odds[market.key];
+      if(!odds) continue;
+
+      const matches=history.filter(h=>
+        h.odds[market.key]===odds&&marketResult(h,market.key)!==null
+      );
+
+      if(matches.length<minSample) continue;
+
       const frequencies=scoreFrequency(matches);
-      if(!frequencies.length)continue;
+      if(!frequencies.length) continue;
+
       const best=frequencies[0];
-      results.push({marketKey:market.key,marketName:market.name,odds,matches,total:matches.length,
-        topScore:best.score,targetCount:best.count,rate:best.rate,frequencies});
+
+      if(best.rate<MIN_SCORE_FREQUENCY) continue;
+
+      results.push({
+        marketKey:market.key,
+        marketName:market.name,
+        odds,
+        matches,
+        total:matches.length,
+        topScore:best.score,
+        targetCount:best.count,
+        rate:best.rate,
+        frequencies
+      });
     }
-    return results.sort((a,b)=>b.rate-a.rate||b.total-a.total||a.marketName.localeCompare(b.marketName,"tr"));
+
+    return results.sort((a,b)=>
+      b.rate-a.rate||
+      b.total-a.total||
+      a.marketName.localeCompare(b.marketName,"tr")
+    );
   }
 
   function runDailyAnalysis() {
-    if(!loaded)return;
+    if(!loaded) return;
 
-    const selectedKey=$("dailyDatePicker").value || todayKey();
+    const selectedKey=$("dailyDatePicker").value||todayKey();
     const selectedDate=parseDate(selectedKey);
     const selectedLabel=dateLabel(selectedDate);
 
     $("dailyDateBadge").textContent=selectedLabel;
     $("dailyListTitle").textContent=selectedLabel+" tarihli maçlar";
 
-    const selectedMatches=prepared.filter(m=>m.dateKey===selectedKey).map(match=>({
-      match,
-      analyses:dailyAnalysis(
+    const selectedMatches=prepared
+      .filter(m=>m.dateKey===selectedKey)
+      .map(match=>({
         match,
-        historyFor($("dailyRange").value),
-        +$("dailyMinSample").value
-      )
-    }));
+        analyses:dailyAnalysis(
+          match,
+          historyFor($("dailyRange").value),
+          +$("dailyMinSample").value
+        )
+      }));
 
     selectedMatches.sort((a,b)=>{
-      if(!!a.analyses.length!==!!b.analyses.length)return a.analyses.length?-1:1;
+      if(!!a.analyses.length!==!!b.analyses.length) {
+        return a.analyses.length?-1:1;
+      }
+
       return (b.analyses[0]?.rate??-1)-(a.analyses[0]?.rate??-1)||
         (b.analyses[0]?.total??0)-(a.analyses[0]?.total??0)||
         a.match.time.localeCompare(b.match.time);
@@ -598,20 +711,25 @@ tbody tr.result-row:hover{background:#ffffff08}
     dailyMatches=selectedMatches;
 
     const analyzed=selectedMatches.filter(x=>x.analyses.length).length;
+
     $("dailyMatchCount").textContent=selectedMatches.length.toLocaleString("tr-TR");
     $("dailyAnalyzedCount").textContent=analyzed.toLocaleString("tr-TR");
     $("dailyNoAnalysisCount").textContent=(selectedMatches.length-analyzed).toLocaleString("tr-TR");
 
     renderDaily();
 
-    status("dailyStatus",selectedMatches.length
-      ?`${selectedLabel} tarihinde ${selectedMatches.length} maç bulundu. ${analyzed} maçta yeterli geçmiş oran eşleşmesi var.`
-      :`${selectedLabel} tarihinde maç bulunamadı. v2-data.json içindeki maç tarihlerini kontrol et.`,
-      selectedMatches.length?"success":"");
+    status(
+      "dailyStatus",
+      selectedMatches.length
+        ?`${selectedLabel} tarihinde ${selectedMatches.length} maç bulundu. ${analyzed} maçta %${MIN_SCORE_FREQUENCY} ve üzeri skor sıklığına sahip yeterli geçmiş oran eşleşmesi var.`
+        :`${selectedLabel} tarihinde maç bulunamadı. v2-data.json içindeki maç tarihlerini kontrol et.`,
+      selectedMatches.length?"success":""
+    );
   }
 
   function renderDaily() {
     const body=$("dailyResultsBody");
+
     if(!dailyMatches.length) {
       body.innerHTML='<tr><td colspan="10" class="empty">Seçilen tarihte maç bulunamadı.</td></tr>';
       $("dailyDetailPanel").hidden=true;
@@ -619,39 +737,59 @@ tbody tr.result-row:hover{background:#ffffff08}
     }
 
     body.innerHTML=dailyMatches.map((item,i)=>{
-      const m=item.match,g=item.analyses[0];
+      const m=item.match;
+      const g=item.analyses[0];
+
       return `<tr class="result-row" data-daily="${i}" tabindex="0">
-        <td>${i+1}</td><td>${esc(m.time)}</td><td>${esc(m.league)}</td>
+        <td>${i+1}</td>
+        <td>${esc(m.time)}</td>
+        <td>${esc(m.league)}</td>
         <td><strong>${esc(m.home)} - ${esc(m.away)}</strong>${m.score?`<br><span class="badge">${m.score.home}-${m.score.away} tamamlandı</span>`:""}</td>
-        <td>${g?esc(g.marketName):"—"}</td><td>${g?g.odds:"—"}</td><td>${g?g.total:"—"}</td>
-        <td>${g?esc(g.topScore):"—"}</td><td>${g?`<span class="${g.rate>=70?"high":g.rate>=40?"medium":"low"}">${pct(g.rate)}</span>`:"—"}</td>
+        <td>${g?esc(g.marketName):"—"}</td>
+        <td>${g?g.odds:"—"}</td>
+        <td>${g?g.total:"—"}</td>
+        <td>${g?esc(g.topScore):"—"}</td>
+        <td>${g?`<span class="${g.rate>=70?"high":"medium"}">${pct(g.rate)}</span>`:"—"}</td>
         <td>${g?'<span class="badge">Detay</span>':'<span class="badge">Analiz yok</span>'}</td>
       </tr>`;
     }).join("");
   }
 
   function showDailyDetail(index) {
-    const item=dailyMatches[index];if(!item)return;
-    const m=item.match,analyses=item.analyses;
+    const item=dailyMatches[index];
+    if(!item) return;
+
+    const m=item.match;
+    const analyses=item.analyses;
+
     $("dailyDetailPanel").hidden=false;
     $("dailyDetailTitle").textContent=m.home+" - "+m.away;
-    $("dailyDetailSummary").textContent=`${m.dateLabel} · ${m.time} · ${m.league} · ${m.score?`Skor: ${m.score.home}-${m.score.away}`:"Henüz tamamlanmadı"} · ${analyses.length} market analizi`;
+    $("dailyDetailSummary").textContent=
+      `${m.dateLabel} · ${m.time} · ${m.league} · ${m.score?`Skor: ${m.score.home}-${m.score.away}`:"Henüz tamamlanmadı"} · ${analyses.length} market analizi`;
 
     if(!analyses.length) {
-      $("dailyAnalysisList").innerHTML='<div class="empty">Bu maç için seçilen geçmiş aralığında yeterli sayıda aynı market ve açılış oranı eşleşmesi bulunamadı. Minimum örnek sayısını azaltabilir veya geçmiş aralığını genişletebilirsin.</div>';
+      $("dailyAnalysisList").innerHTML='<div class="empty">Bu maç için %60 ve üzeri skor sıklığına sahip yeterli geçmiş eşleşmesi bulunamadı. Minimum örnek sayısını azaltabilir veya geçmiş aralığını genişletebilirsin.</div>';
     } else {
       $("dailyAnalysisList").innerHTML=analyses.map((g,i)=>`
         <div class="detail-card">
           <div class="detail-title">${i+1}. ${esc(g.marketName)} · Açılış oranı ${g.odds}</div>
-          <div class="detail-meta">En sık skor: <strong>${esc(g.topScore)}</strong> · ${g.targetCount}/${g.total} maç · Sıklık: <strong class="${g.rate>=70?"high":g.rate>=40?"medium":"low"}">${pct(g.rate)}</strong></div>
-          <div class="detail-meta" style="margin-top:8px">Geçmiş skor dağılımı: ${g.frequencies.slice(0,8).map(x=>`${esc(x.score)} (${x.count}, ${pct(x.rate)})`).join(" · ")}</div>
+          <div class="detail-meta">
+            En sık skor: <strong>${esc(g.topScore)}</strong> ·
+            ${g.targetCount}/${g.total} maç ·
+            Sıklık: <strong class="${g.rate>=70?"high":"medium"}">${pct(g.rate)}</strong>
+          </div>
+          <div class="detail-meta" style="margin-top:8px">
+            Geçmiş skor dağılımı: ${g.frequencies.slice(0,8).map(x=>`${esc(x.score)} (${x.count}, ${pct(x.rate)})`).join(" · ")}
+          </div>
         </div>`).join("");
     }
+
     $("dailyDetailPanel").scrollIntoView({behavior:"smooth",block:"start"});
   }
 
   async function loadData() {
-    if(busy)return;
+    if(busy) return;
+
     busy=true;
     $("reloadBtn").disabled=true;
     $("dailyReloadBtn").disabled=true;
@@ -663,19 +801,33 @@ tbody tr.result-row:hover{background:#ffffff08}
 
     try {
       const response=await fetch(DATA_URL+"?v="+Date.now(),{cache:"no-store"});
-      if(!response.ok)throw new Error("HTTP "+response.status);
+      if(!response.ok) throw new Error("HTTP "+response.status);
+
       const payload=await response.json();
       allMatches=normalize(payload);
-      if(!allMatches.length)throw new Error("JSON içinde tanınabilir maç dizisi bulunamadı.");
+
+      if(!allMatches.length) {
+        throw new Error("JSON içinde tanınabilir maç dizisi bulunamadı.");
+      }
+
       prepareData();
-      if(!played.length)throw new Error("Maç verisi yüklendi ancak tamamlanmış maç skorları tanınamadı.");
+
+      if(!played.length) {
+        throw new Error("Maç verisi yüklendi ancak tamamlanmış maç skorları tanınamadı.");
+      }
+
       loaded=true;
       renderScoreResults();
       runDailyAnalysis();
     } catch(error) {
-      loaded=false;allMatches=[];prepared=[];played=[];
+      loaded=false;
+      allMatches=[];
+      prepared=[];
+      played=[];
+
       $("resultsBody").innerHTML=`<tr><td colspan="6" class="empty">${esc(error.message)}</td></tr>`;
       $("dailyResultsBody").innerHTML=`<tr><td colspan="10" class="empty">${esc(error.message)}</td></tr>`;
+
       status("scoreStatus","Veri yüklenemedi: "+error.message,"error");
       status("dailyStatus","Veri yüklenemedi: "+error.message,"error");
     } finally {
@@ -690,18 +842,20 @@ tbody tr.result-row:hover{background:#ffffff08}
   fillScoreSelect("homeScore");
   fillScoreSelect("awayScore");
 
-  // Takvimi bugünün tarihiyle başlat.
   $("dailyDatePicker").value=todayKey();
 
   document.querySelectorAll(".nav-btn").forEach(btn=>{
     btn.addEventListener("click",()=>{
       document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b===btn));
+
       const view=btn.dataset.view;
       $("scoreView").hidden=view!=="scoreView";
       $("dailyView").hidden=view!=="dailyView";
       $("sidebar").classList.remove("open");
       $("mobileMenuBtn").textContent="☰ Menü";
-      if(view==="dailyView"&&loaded)runDailyAnalysis();
+
+      if(view==="dailyView"&&loaded) runDailyAnalysis();
+
       window.scrollTo({top:0,behavior:"auto"});
     });
   });
@@ -714,11 +868,8 @@ tbody tr.result-row:hover{background:#ffffff08}
   $("analyzeBtn").addEventListener("click",renderScoreResults);
   $("reloadBtn").addEventListener("click",loadData);
   $("dailyReloadBtn").addEventListener("click",runDailyAnalysis);
-
-  // Tarih seçildiğinde o günün maçlarını otomatik tara.
   $("dailyDatePicker").addEventListener("change",runDailyAnalysis);
 
-  // Tek dokunuşla bugünün maçlarına dön.
   $("dailyTodayBtn").addEventListener("click",()=>{
     $("dailyDatePicker").value=todayKey();
     runDailyAnalysis();
@@ -734,22 +885,31 @@ tbody tr.result-row:hover{background:#ffffff08}
 
   $("resultsBody").addEventListener("click",e=>{
     const row=e.target.closest("[data-group]");
-    if(row)showScoreDetail(+row.dataset.group);
+    if(row) showScoreDetail(+row.dataset.group);
   });
+
   $("resultsBody").addEventListener("keydown",e=>{
-    if(e.key==="Enter"||e.key===" "){
+    if(e.key==="Enter"||e.key===" ") {
       const row=e.target.closest("[data-group]");
-      if(row){e.preventDefault();showScoreDetail(+row.dataset.group);}
+      if(row) {
+        e.preventDefault();
+        showScoreDetail(+row.dataset.group);
+      }
     }
   });
+
   $("dailyResultsBody").addEventListener("click",e=>{
     const row=e.target.closest("[data-daily]");
-    if(row)showDailyDetail(+row.dataset.daily);
+    if(row) showDailyDetail(+row.dataset.daily);
   });
+
   $("dailyResultsBody").addEventListener("keydown",e=>{
-    if(e.key==="Enter"||e.key===" "){
+    if(e.key==="Enter"||e.key===" ") {
       const row=e.target.closest("[data-daily]");
-      if(row){e.preventDefault();showDailyDetail(+row.dataset.daily);}
+      if(row) {
+        e.preventDefault();
+        showDailyDetail(+row.dataset.daily);
+      }
     }
   });
 
