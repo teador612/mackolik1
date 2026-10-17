@@ -11,12 +11,11 @@
    Oran eşleştirmesi : Birebir, 2 ondalık
    Başarı hesabı     : Aynı market + aynı oran için son 5 maç
 
-   Optimizasyon:
-   - Maç tarihleri ve skorları bir kez hazırlanır.
-   - Market/oran geçmişi önceden indekslenir.
-   - Her analizde geçmiş maçlar tekrar tekrar sıralanmaz.
-   - Aynı geçmiş maç listesi her gelecek maçın altında
-     yeniden oluşturulmaz.
+   İY/MS sonuçları:
+   1/2, 2/1, 1/0, 2/0, 0/1, 0/2
+
+   Not:
+   0 = Beraberlik
    ========================================================= */
 
 const DATA_URL = "./data/v2-data.json";
@@ -78,29 +77,139 @@ const MARKETS = [
   { id: "iyms22", label: "İY/MS 2/2", fields: ["iyms22", "IYMS22"] }
 ];
 
-const MARKET_BY_ID = new Map(MARKETS.map(market => [market.id, market]));
+const MARKET_BY_ID = new Map(
+  MARKETS.map(market => [market.id, market])
+);
 
 const RESULTS = {
-  MS1: { label: "MS 1", type: "ft", test: s => s.home > s.away },
-  MSX: { label: "MS X", type: "ft", test: s => s.home === s.away },
-  MS2: { label: "MS 2", type: "ft", test: s => s.away > s.home },
+  MS1: {
+    label: "MS 1",
+    type: "ft",
+    test: score => score.home > score.away
+  },
+  MSX: {
+    label: "MS X",
+    type: "ft",
+    test: score => score.home === score.away
+  },
+  MS2: {
+    label: "MS 2",
+    type: "ft",
+    test: score => score.away > score.home
+  },
 
-  IY1: { label: "İY 1", type: "ht", test: s => s.home > s.away },
-  IYX: { label: "İY X", type: "ht", test: s => s.home === s.away },
-  IY2: { label: "İY 2", type: "ht", test: s => s.away > s.home },
+  IY1: {
+    label: "İY 1",
+    type: "ht",
+    test: score => score.home > score.away
+  },
+  IYX: {
+    label: "İY X",
+    type: "ht",
+    test: score => score.home === score.away
+  },
+  IY2: {
+    label: "İY 2",
+    type: "ht",
+    test: score => score.away > score.home
+  },
 
-  KG_VAR: { label: "KG Var", type: "ft", test: s => s.home > 0 && s.away > 0 },
-  KG_YOK: { label: "KG Yok", type: "ft", test: s => s.home === 0 || s.away === 0 },
+  KG_VAR: {
+    label: "KG Var",
+    type: "ft",
+    test: score => score.home > 0 && score.away > 0
+  },
+  KG_YOK: {
+    label: "KG Yok",
+    type: "ft",
+    test: score => score.home === 0 || score.away === 0
+  },
 
-  IY_KG_VAR: { label: "İY KG Var", type: "ht", test: s => s.home > 0 && s.away > 0 },
-  IY_KG_YOK: { label: "İY KG Yok", type: "ht", test: s => s.home === 0 || s.away === 0 },
+  IY_KG_VAR: {
+    label: "İY KG Var",
+    type: "ht",
+    test: score => score.home > 0 && score.away > 0
+  },
+  IY_KG_YOK: {
+    label: "İY KG Yok",
+    type: "ht",
+    test: score => score.home === 0 || score.away === 0
+  },
 
-  IY15_ALT: { label: "İY 1.5 Alt", type: "ht", test: s => s.home + s.away <= 1 },
-  IY15_UST: { label: "İY 1.5 Üst", type: "ht", test: s => s.home + s.away >= 2 },
+  IY15_ALT: {
+    label: "İY 1.5 Alt",
+    type: "ht",
+    test: score => score.home + score.away <= 1
+  },
+  IY15_UST: {
+    label: "İY 1.5 Üst",
+    type: "ht",
+    test: score => score.home + score.away >= 2
+  },
 
-  "15_ALT": { label: "MS 1.5 Alt", type: "ft", test: s => s.home + s.away <= 1 },
-  "15_UST": { label: "MS 1.5 Üst", type: "ft", test: s => s.home + s.away >= 2 },
-  "25_UST": { label: "MS 2.5 Üst", type: "ft", test: s => s.home + s.away >= 3 }
+  "15_ALT": {
+    label: "MS 1.5 Alt",
+    type: "ft",
+    test: score => score.home + score.away <= 1
+  },
+  "15_UST": {
+    label: "MS 1.5 Üst",
+    type: "ft",
+    test: score => score.home + score.away >= 2
+  },
+  "25_UST": {
+    label: "MS 2.5 Üst",
+    type: "ft",
+    test: score => score.home + score.away >= 3
+  },
+
+  // İY/MS sonuçları
+  // İlk değer ilk yarı, ikinci değer maç sonu sonucudur.
+  // 1 = Ev sahibi önde / kazanır
+  // 0 = Beraberlik
+  // 2 = Deplasman önde / kazanır
+
+  IYMS12: {
+    label: "İY/MS 1/2",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.home > ht.away && ft.away > ft.home
+  },
+
+  IYMS21: {
+    label: "İY/MS 2/1",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.away > ht.home && ft.home > ft.away
+  },
+
+  IYMS10: {
+    label: "İY/MS 1/0",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.home > ht.away && ft.home === ft.away
+  },
+
+  IYMS20: {
+    label: "İY/MS 2/0",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.away > ht.home && ft.home === ft.away
+  },
+
+  IYMS01: {
+    label: "İY/MS 0/1",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.home === ht.away && ft.home > ft.away
+  },
+
+  IYMS02: {
+    label: "İY/MS 0/2",
+    type: "htft",
+    test: (ht, ft) =>
+      ht.home === ht.away && ft.away > ft.home
+  }
 };
 
 /* =========================================================
@@ -117,7 +226,9 @@ function escapeHtml(value) {
 }
 
 function normalizeOdd(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
 
   const number = Number(String(value).trim().replace(",", "."));
 
@@ -130,7 +241,10 @@ function parseDateKey(value) {
   if (!value) return null;
 
   const text = String(value).trim();
-  let match = text.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+
+  let match = text.match(
+    /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
+  );
 
   if (match) {
     return `${match[3]}-${match[2].padStart(2, "0")}-${match[1].padStart(2, "0")}`;
@@ -165,7 +279,9 @@ function getDateKey(match) {
 
 function addDays(dateKey, days) {
   const parts = dateKey.split("-").map(Number);
-  const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  const date = new Date(
+    Date.UTC(parts[0], parts[1] - 1, parts[2])
+  );
 
   date.setUTCDate(date.getUTCDate() + days);
 
@@ -234,7 +350,9 @@ function getTime(match) {
   for (const value of candidates) {
     if (!value) continue;
 
-    const matchTime = String(value).trim().match(/(\d{1,2}):(\d{2})/);
+    const matchTime = String(value)
+      .trim()
+      .match(/(\d{1,2}):(\d{2})/);
 
     if (matchTime) {
       return `${matchTime[1].padStart(2, "0")}:${matchTime[2]}`;
@@ -249,7 +367,9 @@ function getTime(match) {
    ========================================================= */
 
 function parseScore(value) {
-  if (value === null || value === undefined || value === "") return null;
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
 
   if (typeof value === "object") {
     const home = value.home ?? value.homeScore ?? value.ev;
@@ -261,17 +381,25 @@ function parseScore(value) {
       Number.isFinite(Number(home)) &&
       Number.isFinite(Number(away))
     ) {
-      return { home: Number(home), away: Number(away) };
+      return {
+        home: Number(home),
+        away: Number(away)
+      };
     }
 
     return null;
   }
 
-  const match = String(value).trim().match(/(\d+)\s*[-:]\s*(\d+)/);
+  const match = String(value)
+    .trim()
+    .match(/(\d+)\s*[-:]\s*(\d+)/);
 
   if (!match) return null;
 
-  return { home: Number(match[1]), away: Number(match[2]) };
+  return {
+    home: Number(match[1]),
+    away: Number(match[2])
+  };
 }
 
 function getScore(match, type) {
@@ -320,7 +448,9 @@ function getOddsContainers(match) {
     match?.opening_prices,
     match?.marketOdds,
     match?.markets
-  ].filter(container => container && typeof container === "object");
+  ].filter(
+    container => container && typeof container === "object"
+  );
 }
 
 function getOdds(match, market) {
@@ -328,7 +458,11 @@ function getOdds(match, market) {
 
   for (const container of containers) {
     for (const field of market.fields) {
-      if (!Object.prototype.hasOwnProperty.call(container, field)) continue;
+      if (
+        !Object.prototype.hasOwnProperty.call(container, field)
+      ) {
+        continue;
+      }
 
       const odd = normalizeOdd(container[field]);
 
@@ -339,10 +473,27 @@ function getOdds(match, market) {
   return null;
 }
 
+/* =========================================================
+   SEÇİLEN SONUCUN KONTROLÜ
+
+   Normal sonuçlar tek skorla kontrol edilir.
+   İY/MS sonuçları hem ilk yarı hem maç sonu skoruyla
+   kontrol edilir.
+   ========================================================= */
+
 function getTargetResult(matchInfo, resultId) {
   const definition = RESULTS[resultId];
 
   if (!definition) return null;
+
+  if (definition.type === "htft") {
+    const ht = matchInfo.ht;
+    const ft = matchInfo.ft;
+
+    if (!ht || !ft) return null;
+
+    return definition.test(ht, ft);
+  }
 
   const score = definition.type === "ht"
     ? matchInfo.ht
@@ -402,11 +553,14 @@ function buildDataIndexes(matches) {
       if (!odd) continue;
 
       const key = `${market.id}|${odd}`;
-      const entry = { info, odd, marketId: market.id };
+      const entry = {
+        info,
+        odd,
+        marketId: market.id
+      };
 
       info.marketOdds.push(entry);
 
-      // Son 5 geçmiş maç hesabında yalnızca sonucu belli maçlar gerekir.
       if (played) {
         if (!index.has(key)) index.set(key, []);
         index.get(key).push(info);
@@ -414,7 +568,6 @@ function buildDataIndexes(matches) {
     }
   }
 
-  // Her market/oran grubunu yalnızca bir defa sırala.
   for (const list of index.values()) {
     list.sort(compareNewestFirst);
   }
@@ -425,8 +578,6 @@ function buildDataIndexes(matches) {
 }
 
 async function loadData() {
-  // Her sayfa açılışında rastgele sorgu parametresi eklemek yerine
-  // tarayıcının önbelleği doğrulamasına izin ver.
   const response = await fetch(DATA_URL, {
     cache: "no-cache"
   });
@@ -454,8 +605,6 @@ function getRecentOddsMatches(marketId, odd, targetDate) {
 
   const recent = [];
 
-  // Liste zaten yeni tarihten eski tarihe sıralı.
-  // Yeniden filtreleme ve sıralama yapmadan ilk 5 uygun maçı al.
   for (const info of list) {
     if (info.date >= targetDate) continue;
 
@@ -467,7 +616,12 @@ function getRecentOddsMatches(marketId, odd, targetDate) {
   return recent;
 }
 
-function calculateRecentSuccess(marketId, odd, targetDate, resultId) {
+function calculateRecentSuccess(
+  marketId,
+  odd,
+  targetDate,
+  resultId
+) {
   const recentMatches = getRecentOddsMatches(
     marketId,
     odd,
@@ -527,7 +681,6 @@ function runAnalysis(targetDate, resultId) {
   const history = [];
   const groups = new Map();
 
-  // Son 10 günlük oynanmış maçları tek geçişte bul.
   for (const info of matchInfos) {
     if (
       info.date < startDate ||
@@ -547,7 +700,9 @@ function runAnalysis(targetDate, resultId) {
 
         groups.set(key, {
           marketId: entry.marketId,
-          marketLabel: market ? market.label : entry.marketId,
+          marketLabel: market
+            ? market.label
+            : entry.marketId,
           odd: entry.odd
         });
       }
@@ -561,7 +716,6 @@ function runAnalysis(targetDate, resultId) {
     const key = `${item.marketId}|${item.odd}`;
     const future = futureIndex.get(key);
 
-    // Seçilen tarihte bu oranla oynanmamış maç yoksa hesaplama yapma.
     if (!future || !future.length) continue;
 
     const recent = calculateRecentSuccess(
@@ -780,9 +934,6 @@ function formatPercent(value) {
 
 /* =========================================================
    OYNANMAMIŞ MAÇLARIN GÖRÜNÜMÜ
-
-   Geçmiş maç listesi her gelecek maç için tekrar
-   oluşturulmaz; ilgili oran grubunda bir kez gösterilir.
    ========================================================= */
 
 function renderFutureMatches(row) {
@@ -848,7 +999,13 @@ function renderAnalysis(resultId, targetDate, analysis) {
   const historyCount = document.getElementById("saHistoryCount");
   const oddsCount = document.getElementById("saOddsCount");
 
-  if (!content || !status || !period || !historyCount || !oddsCount) {
+  if (
+    !content ||
+    !status ||
+    !period ||
+    !historyCount ||
+    !oddsCount
+  ) {
     console.error("Analiz görünüm elemanları bulunamadı.");
     return;
   }
@@ -956,7 +1113,6 @@ function renderAnalysis(resultId, targetDate, analysis) {
 function bindRows() {
   const content = document.getElementById("saContent");
 
-  // Tek bir dinleyici kullan; her satıra ayrı dinleyici ekleme.
   content.onclick = event => {
     const row = event.target.closest(".sa-row[data-row-id]");
 
@@ -1039,6 +1195,7 @@ async function executeAnalysis() {
     `;
   } finally {
     isAnalyzing = false;
+
     if (runButton) runButton.disabled = false;
   }
 }
@@ -1059,6 +1216,7 @@ async function init() {
   }
 
   dateInput.value = todayKey();
+
   runButton.addEventListener("click", executeAnalysis);
 
   try {
@@ -1069,7 +1227,6 @@ async function init() {
     status.textContent =
       `${allMatches.length} maç verisi hazırlanıyor...`;
 
-    // Pahalı hazırlık işlemleri yalnızca bir kez yapılır.
     buildDataIndexes(allMatches);
 
     status.textContent =
