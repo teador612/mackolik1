@@ -1,537 +1,800 @@
 <!DOCTYPE html>
-<html lang="tr" class="dark">
+<html lang="tr">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090d16">
-  <title>Spor Toto Analiz Sistemi</title>
-  <!-- Google Fonts: Inter & JetBrains Mono -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#080d18">
+  <title>Spor Toto | Analiz Merkezi</title>
   <style>
     :root {
-      --bg-base: #090d16;
-      --bg-surface: #111827;
-      --bg-surface-hover: #1f2937;
-      --bg-card: rgba(17, 24, 39, 0.75);
-      --border-subtle: rgba(255, 255, 255, 0.08);
-      --border-glow: rgba(59, 130, 246, 0.3);
-      
-      --text-main: #f3f4f6;
-      --text-muted: #9ca3af;
-      --text-dim: #6b7280;
-      
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --primary-glow: rgba(59, 130, 246, 0.25);
-      
-      --accent-green: #10b981;
-      --accent-green-bg: rgba(16, 185, 129, 0.12);
-      --accent-yellow: #f59e0b;
-      --accent-yellow-bg: rgba(245, 158, 11, 0.12);
-      --accent-red: #ef4444;
-      --accent-red-bg: rgba(239, 68, 68, 0.12);
-      --accent-blue: #60a5fa;
-      
-      --radius-sm: 8px;
-      --radius-md: 14px;
-      --radius-lg: 20px;
-      
-      --shadow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.4), 0 0 1px 1px rgba(255, 255, 255, 0.05);
-      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      color-scheme: dark;
+      --bg: #080d18;
+      --surface: #101827;
+      --surface-2: #151f31;
+      --surface-3: #1b2940;
+      --border: rgba(155, 178, 215, .13);
+      --text: #edf3ff;
+      --muted: #8e9db5;
+      --green: #45e0a0;
+      --green-soft: rgba(69, 224, 160, .12);
+      --blue: #75a7ff;
+      --blue-soft: rgba(117, 167, 255, .12);
+      --yellow: #f6c96b;
+      --red: #ff7f91;
+      --radius: 16px;
+      --shadow: 0 12px 35px rgba(0, 0, 0, .15);
     }
-
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
-      background-color: var(--bg-base);
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 85% 85%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
-      background-attachment: fixed;
-      color: var(--text-main);
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      font-size: 13.5px;
+      background:
+        radial-gradient(ellipse at 15% 0%, rgba(42, 87, 142, .15), transparent 34%),
+        radial-gradient(ellipse at 100% 20%, rgba(22, 139, 105, .08), transparent 30%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
       line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
     }
-
-    button, select {
+    button,
+    select {
       font: inherit;
     }
-
+    button,
+    select {
+      outline: none;
+    }
+    button:focus-visible,
+    select:focus-visible {
+      box-shadow: 0 0 0 3px rgba(117, 167, 255, .2);
+      border-color: var(--blue);
+    }
     .container {
-      width: min(1140px, 100%);
-      margin: auto;
-      padding: 24px 16px;
+      width: min(1080px, 100%);
+      margin: 0 auto;
+      padding: 24px 18px 30px;
     }
-
-    header {
-      margin-bottom: 24px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      border-bottom: 1px solid var(--border-subtle);
-      padding-bottom: 18px;
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      background:
+        linear-gradient(120deg, rgba(25, 48, 72, .92), rgba(15, 25, 42, .96) 60%, rgba(15, 42, 39, .75));
+      box-shadow: var(--shadow);
     }
-
-    h1 {
-      margin: 0;
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      background: linear-gradient(135deg, #ffffff 30%, #9ca3af 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      right: -70px;
+      top: -125px;
+      border-radius: 50%;
+      border: 1px solid rgba(117, 167, 255, .18);
+      box-shadow:
+        0 0 0 24px rgba(117, 167, 255, .025),
+        0 0 0 48px rgba(117, 167, 255, .025);
+      pointer-events: none;
+    }
+    .brand-row {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
     }
-
-    .subtitle, .muted {
-      color: var(--text-muted);
-      line-height: 1.6;
-      font-size: 13px;
+    .brand-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      border: 1px solid rgba(69, 224, 160, .25);
+      border-radius: 16px;
+      background: var(--green-soft);
+      font-size: 26px;
     }
-
+    h1 {
+      font-size: clamp(21px, 4vw, 29px);
+      line-height: 1.2;
+      letter-spacing: -.8px;
+      margin: 0;
+      font-weight: 800;
+    }
+    .hero-subtitle {
+      color: #a5b6ce;
+      margin-top: 6px;
+      font-size: 12px;
+    }
+    .hero-tags {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-top: 19px;
+      position: relative;
+      z-index: 1;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #c1cee0;
+      background: rgba(5, 12, 23, .32);
+      font-size: 11px;
+    }
+    .tag-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+    }
     .panel {
-      background: var(--bg-card);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow-card);
       min-width: 0;
-      transition: var(--transition);
+      padding: 18px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(17, 26, 42, .97), rgba(13, 21, 35, .97));
+      box-shadow: var(--shadow);
     }
-
-    .panel:hover {
-      border-color: rgba(255, 255, 255, 0.12);
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
     }
-
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: -.2px;
+    }
+    .title-icon {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--blue-soft);
+      font-size: 15px;
+    }
+    .muted,
+    .subtitle {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+    .muted {
+      font-size: 11px;
+    }
     .toolbar {
       display: flex;
       align-items: center;
       flex-wrap: wrap;
-      gap: 12px;
+      gap: 10px;
     }
-
-    label {
-      font-weight: 600;
-      color: var(--text-muted);
+    .toolbar label {
+      color: #b7c5d9;
       font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      font-weight: 650;
     }
-
-    select, button {
-      min-height: 42px;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-surface);
-      color: var(--text-main);
-      padding: 8px 14px;
-      font-weight: 500;
-      transition: var(--transition);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    select,
+    button {
+      min-height: 39px;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      background: var(--surface-2);
     }
-
     select {
+      max-width: 100%;
       cursor: pointer;
-      padding-right: 32px;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
     }
-
-    select:hover, button:hover {
-      border-color: var(--primary);
-      background: var(--bg-surface-hover);
-    }
-
-    select:focus, button:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
-    }
-
     button {
       cursor: pointer;
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-      border: none;
-      font-weight: 600;
-      padding: 0 18px;
+      font-weight: 700;
+      transition: transform .15s, border-color .15s, background .15s;
     }
-
     button:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
+      border-color: rgba(117, 167, 255, .5);
+      background: var(--surface-3);
     }
-
     button:active {
-      transform: translateY(0);
+      transform: scale(.98);
     }
-
+    .primary-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      border-color: rgba(69, 224, 160, .3);
+      background: var(--green-soft);
+      color: var(--green);
+    }
+    .primary-button:hover {
+      background: rgba(69, 224, 160, .18);
+    }
+    #loadStatus {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 13px 0 0;
+      padding: 10px 12px;
+      border-radius: 9px;
+      background: rgba(5, 12, 23, .35);
+      overflow-wrap: anywhere;
+    }
     .stats {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
+      gap: 12px;
     }
-
     .stat {
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      padding: 16px;
-      border-radius: var(--radius-md);
-      min-width: 0;
       position: relative;
       overflow: hidden;
+      min-width: 0;
+      padding: 17px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: linear-gradient(145deg, var(--surface-2), rgba(17, 27, 44, .75));
     }
-
-    .stat::before {
-      content: '';
+    .stat::after {
+      content: "";
       position: absolute;
-      top: 0; left: 0; width: 4px; height: 100%;
-      background: var(--primary);
-      opacity: 0.6;
+      right: -17px;
+      bottom: -24px;
+      width: 75px;
+      height: 75px;
+      border-radius: 50%;
+      background: rgba(117, 167, 255, .05);
     }
-
     .stat-label {
-      color: var(--text-muted);
+      position: relative;
+      z-index: 1;
+      color: var(--muted);
       font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-bottom: 6px;
+      margin-bottom: 9px;
     }
-
     .stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--text-main);
+      position: relative;
+      z-index: 1;
+      font-size: 27px;
+      font-weight: 800;
+      letter-spacing: -.7px;
+      line-height: 1.15;
       overflow-wrap: anywhere;
     }
-
-    .section-title {
-      font-size: 17px;
-      font-weight: 700;
-      margin: 0 0 14px;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .stat:nth-child(1) .stat-value {
+      color: var(--blue);
     }
-
+    .stat:nth-child(2) .stat-value {
+      color: var(--green);
+    }
+    .stat:nth-child(3) .stat-value {
+      color: var(--yellow);
+    }
+    .section-description {
+      color: var(--muted);
+      font-size: 11px;
+      margin: 7px 0 0;
+      line-height: 1.6;
+    }
     .match-list {
       display: grid;
-      gap: 10px;
+      gap: 9px;
     }
-
     .match {
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-md);
-      padding: 14px 18px;
-      background: var(--bg-surface);
-      transition: var(--transition);
+      min-width: 0;
+      padding: 13px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: linear-gradient(120deg, rgba(22, 33, 52, .78), rgba(12, 21, 35, .86));
+      transition: border-color .18s, transform .18s;
     }
-
     .match:hover {
-      border-color: rgba(59, 130, 246, 0.4);
-      background: var(--bg-surface-hover);
-      transform: translateY(-2px);
+      border-color: rgba(117, 167, 255, .32);
+      transform: translateY(-1px);
     }
-
     .match-top {
       display: grid;
-      grid-template-columns: 32px minmax(0, 1fr) auto;
-      gap: 12px;
+      grid-template-columns: 34px minmax(0, 1fr) auto;
       align-items: center;
+      gap: 11px;
     }
-
     .match-number {
       display: grid;
       place-items: center;
-      width: 32px;
-      height: 32px;
-      border-radius: var(--radius-sm);
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-subtle);
-      font-weight: 700;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 13px;
-      color: var(--primary);
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(117, 167, 255, .2);
+      border-radius: 10px;
+      background: var(--blue-soft);
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
     }
-
     .teams {
       min-width: 0;
-      font-weight: 700;
-      font-size: 14px;
+      font-size: 13px;
+      font-weight: 750;
+      letter-spacing: -.1px;
       overflow-wrap: anywhere;
-      letter-spacing: -0.01em;
     }
-
     .match-meta {
-      margin-top: 3px;
-      font-size: 11px;
-      color: var(--text-dim);
-      font-weight: 500;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 450;
     }
-
     .prediction {
-      font-size: 16px;
-      font-weight: 800;
-      font-family: 'JetBrains Mono', monospace;
-      color: var(--accent-green);
-      background: var(--accent-green-bg);
-      padding: 6px 12px;
-      border-radius: var(--radius-sm);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      min-width: 46px;
+      text-align: center;
+      padding: 8px 10px;
+      border: 1px solid rgba(69, 224, 160, .24);
+      border-radius: 10px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 15px;
+      font-weight: 850;
+      letter-spacing: .3px;
       white-space: nowrap;
     }
-
     .probabilities {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
       margin-top: 12px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border-subtle);
     }
-
     .prob {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--border-subtle);
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11.5px;
-      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 5px;
+      min-width: 0;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      background: rgba(5, 12, 23, .3);
+      color: var(--muted);
+      font-size: 11px;
     }
-
     .prob strong {
-      color: var(--accent-blue);
-      font-family: 'JetBrains Mono', monospace;
-      margin-left: 3px;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 800;
     }
-
     .reason {
-      margin-top: 8px;
-      color: var(--text-muted);
-      font-size: 11.5px;
-      line-height: 1.5;
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px solid rgba(155, 178, 215, .08);
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
     }
-
+    .method-label {
+      display: inline-block;
+      margin-right: 5px;
+      color: var(--green);
+      font-weight: 750;
+    }
     .table-wrap {
-      overflow-x: auto;
       width: 100%;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-subtle);
-      background: var(--bg-surface);
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--surface-3) transparent;
     }
-
     table {
       width: 100%;
+      min-width: 780px;
       border-collapse: collapse;
-      min-width: 720px;
+      background: rgba(5, 12, 23, .18);
     }
-
-    th, td {
-      padding: 12px 14px;
+    th,
+    td {
+      padding: 11px 10px;
+      border-bottom: 1px solid rgba(155, 178, 215, .09);
       text-align: left;
-      border-bottom: 1px solid var(--border-subtle);
       white-space: nowrap;
     }
-
     th {
-      color: var(--text-muted);
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      background: rgba(0, 0, 0, 0.2);
+      position: sticky;
+      top: 0;
+      background: #172338;
+      color: #9babc2;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .3px;
     }
-
-    tr:last-child td {
+    td {
+      color: #d5dfef;
+      font-size: 11px;
+    }
+    tbody tr:last-child td {
       border-bottom: none;
     }
-
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
+    tbody tr:hover {
+      background: rgba(117, 167, 255, .045);
     }
-
-    td {
-      font-size: 12.5px;
-      font-family: 'JetBrains Mono', monospace;
-    }
-
     td:first-child {
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
+      color: var(--text);
+      font-weight: 750;
     }
-
     .status {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-radius: 6px;
-      padding: 4px 8px;
-      font-size: 11px;
-      font-weight: 700;
-      font-family: 'Inter', sans-serif;
+      padding: 5px 7px;
+      font-size: 10px;
+      font-weight: 750;
     }
-
     .status-ok {
-      background: var(--accent-green-bg);
-      color: var(--accent-green);
-      border: 1px solid rgba(16, 185, 129, 0.2);
+      background: rgba(69, 224, 160, .12);
+      color: var(--green);
     }
-
     .status-warn {
-      background: var(--accent-yellow-bg);
-      color: var(--accent-yellow);
-      border: 1px solid rgba(245, 158, 11, 0.2);
+      background: rgba(246, 201, 107, .12);
+      color: var(--yellow);
     }
-
     .status-bad {
-      background: var(--accent-red-bg);
-      color: var(--accent-red);
-      border: 1px solid rgba(239, 68, 68, 0.2);
+      background: rgba(255, 127, 145, .12);
+      color: var(--red);
     }
-
     .empty {
-      padding: 24px;
-      color: var(--text-muted);
+      padding: 27px 12px;
+      border: 1px dashed rgba(155, 178, 215, .17);
+      border-radius: 11px;
+      color: var(--muted);
       text-align: center;
-      line-height: 1.6;
-      font-style: italic;
-    }
-
-    .notice {
-      border-left: 3px solid var(--primary);
-      background: var(--bg-surface);
-      padding: 14px 16px;
-      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-      color: var(--text-muted);
-      line-height: 1.65;
-      font-size: 12px;
-      border-top: 1px solid var(--border-subtle);
-      border-right: 1px solid var(--border-subtle);
-      border-bottom: 1px solid var(--border-subtle);
-    }
-
-    .error {
-      color: var(--accent-red);
-    }
-
-    footer {
-      color: var(--text-dim);
-      font-size: 11.5px;
       line-height: 1.7;
-      padding: 12px 0 24px;
-      text-align: center;
-      border-top: 1px solid var(--border-subtle);
-      margin-top: 20px;
+      font-size: 12px;
     }
-
-    @media (max-width: 640px) {
+    .notice {
+      padding: 15px;
+      border: 1px solid rgba(117, 167, 255, .15);
+      border-left: 3px solid var(--blue);
+      border-radius: 11px;
+      background: rgba(117, 167, 255, .055);
+      color: #aebed4;
+      font-size: 11px;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+    }
+    .notice strong {
+      color: var(--text);
+    }
+    .rules-list {
+      display: grid;
+      gap: 10px;
+    }
+    .rule {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: #b5c2d5;
+      font-size: 11px;
+      line-height: 1.65;
+    }
+    .rule-check {
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 7px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 900;
+    }
+    .error {
+      color: var(--red);
+    }
+    footer {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 2px 15px;
+      color: var(--muted);
+      font-size: 10px;
+      line-height: 1.7;
+    }
+    .footer-dot {
+      width: 6px;
+      height: 6px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--yellow);
+    }
+    @media (min-width: 760px) {
       .container {
-        padding: 12px 8px;
+        padding-top: 30px;
       }
-      h1 {
-        font-size: 21px;
+      .hero {
+        padding: 29px;
       }
-      .stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
+      .match {
+        padding: 14px 16px;
+      }
+    }
+    @media (max-width: 520px) {
+      .container {
+        padding: 12px 9px 22px;
+      }
+      .hero {
+        padding: 19px 15px;
+        border-radius: 17px;
+      }
+      .brand-icon {
+        width: 44px;
+        height: 44px;
+        border-radius: 13px;
+        font-size: 22px;
+      }
+      .brand-row {
+        gap: 11px;
+      }
+      .hero-subtitle {
+        font-size: 11px;
+      }
+      .hero-tags {
+        margin-top: 14px;
+      }
+      .tag {
+        font-size: 10px;
+        padding: 5px 8px;
       }
       .panel {
-        padding: 14px;
-        border-radius: var(--radius-md);
+        padding: 13px 11px;
+        margin-bottom: 10px;
+        border-radius: 13px;
       }
-      .match-top {
-        grid-template-columns: 28px minmax(0, 1fr) auto;
+      .stats {
+        gap: 7px;
+      }
+      .stat {
+        padding: 12px 9px;
+        border-radius: 11px;
+      }
+      .stat-label {
+        min-height: 28px;
+        font-size: 10px;
+        margin-bottom: 5px;
+      }
+      .stat-value {
+        font-size: 21px;
+      }
+      .section-title {
+        font-size: 14px;
+      }
+      .title-icon {
+        width: 27px;
+        height: 27px;
+      }
+      .toolbar {
         gap: 8px;
       }
+      #weekSelect {
+        flex: 1;
+        min-width: 0;
+      }
+      .match {
+        padding: 10px;
+      }
+      .match-top {
+        grid-template-columns: 29px minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+      .match-number {
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+      }
+      .teams {
+        font-size: 12px;
+      }
       .prediction {
-        font-size: 14px;
-        padding: 4px 8px;
+        min-width: 41px;
+        padding: 7px 8px;
+        font-size: 13px;
+      }
+      .probabilities {
+        gap: 5px;
+        margin-top: 10px;
+      }
+      .prob {
+        padding: 7px 6px;
+        font-size: 10px;
+      }
+      .prob strong {
+        font-size: 11px;
+      }
+      .reason {
+        font-size: 10px;
+      }
+      .notice {
+        padding: 12px;
+      }
+    }
+    @media (max-width: 360px) {
+      .stats {
+        grid-template-columns: 1fr;
+      }
+      .stat {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .stat-label {
+        min-height: 0;
+        margin: 0;
+      }
+      .stat-value {
+        font-size: 19px;
+      }
+      .prob {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
       }
     }
   </style>
 </head>
 <body>
   <main class="container">
-    <header>
-      <h1>⚽ Spor Toto Analiz Sistemi</h1>
-      <div class="subtitle">
-        V2 geçmiş açılış oranlarıyla 15 maçlık profesyonel Spor Toto analizi
+    <header class="hero">
+      <div class="brand-row">
+        <div class="brand-icon">⚽</div>
+        <div>
+          <h1>Spor Toto Analiz</h1>
+          <div class="hero-subtitle">
+            Açılış oranlarıyla akıllı geçmiş maç analizi
+          </div>
+        </div>
+      </div>
+      <div class="hero-tags">
+        <span class="tag"><span class="tag-dot"></span> V2 veri sistemi</span>
+        <span class="tag">◷ Son 30 gün</span>
+        <span class="tag">✓ Min. 5 maç</span>
+        <span class="tag">↗ %50 başarı filtresi</span>
       </div>
     </header>
     <section class="panel">
+      <div class="panel-heading">
+        <h2 class="section-title">
+          <span class="title-icon">▦</span>
+          Hafta Seçimi
+        </h2>
+      </div>
       <div class="toolbar">
-        <label for="weekSelect">Hafta:</label>
+        <label for="weekSelect">Spor Toto haftası</label>
         <select id="weekSelect">
           <option value="">Haftalar yükleniyor...</option>
         </select>
-        <button id="refreshButton" type="button">Yenile</button>
+        <button id="refreshButton" class="primary-button" type="button">
+          ↻ Yenile
+        </button>
       </div>
-      <p id="loadStatus" class="muted" style="margin-top: 10px; margin-bottom: 0;">Veriler yükleniyor...</p>
+      <p id="loadStatus" class="muted">Veriler yükleniyor...</p>
     </section>
     <section class="panel">
+      <div class="panel-heading">
+        <h2 class="section-title">
+          <span class="title-icon">◈</span>
+          Genel Bakış
+        </h2>
+      </div>
       <div class="stats">
         <div class="stat">
-          <div class="stat-label">Haftadaki Maç</div>
+          <div class="stat-label">Haftadaki maç</div>
           <div class="stat-value" id="totalMatches">0</div>
         </div>
         <div class="stat">
-          <div class="stat-label">Analiz Yapılan Maç</div>
+          <div class="stat-label">Geçmiş analiz kullanılan maç</div>
           <div class="stat-value" id="analyzedMatches">0</div>
         </div>
         <div class="stat">
-          <div class="stat-label">Geçmiş Analiz Aralığı</div>
-          <div class="stat-value" style="font-size: 18px; line-height: 1.4;">30 Gün</div>
+          <div class="stat-label">Geçmiş tarama süresi</div>
+          <div class="stat-value">30 gün</div>
         </div>
       </div>
     </section>
     <section class="panel">
-      <h2 class="section-title">🏆 15 Maçlık Tahmin Listesi</h2>
+      <div class="panel-heading">
+        <div>
+          <h2 class="section-title">
+            <span class="title-icon">⚽</span>
+            15 Maçlık Tahmin Listesi
+          </h2>
+          <p class="section-description">
+            Her maç için MS1, MS X ve MS2 olasılıkları ile hesaplama kaynağı.
+          </p>
+        </div>
+      </div>
       <div id="predictionList" class="match-list">
         <div class="empty">Veriler bekleniyor...</div>
       </div>
     </section>
     <section class="panel">
-      <h2 class="section-title">📊 Market ve Oran Analizi</h2>
-      <p class="muted" style="margin-top: 0; margin-bottom: 12px;">
-        Bir maçı seçerek marketlerin geçmiş eşleşmelerini detaylı inceleyebilirsin.
-      </p>
+      <div class="panel-heading">
+        <div>
+          <h2 class="section-title">
+            <span class="title-icon">⌕</span>
+            Market ve Oran Analizi
+          </h2>
+          <p class="section-description">
+            Bir maç seçerek açılış oranlarına ait geçmiş sonuçları incele.
+          </p>
+        </div>
+      </div>
       <div class="toolbar">
-        <label for="matchSelect">Maç:</label>
-        <select id="matchSelect" style="flex:1;min-width:200px">
+        <label for="matchSelect">Maç seç</label>
+        <select id="matchSelect" style="flex:1;min-width:180px">
           <option value="">Maç seç</option>
         </select>
       </div>
       <div id="details" style="margin-top:14px">
-        <div class="empty">Detayları görmek için maç seç.</div>
+        <div class="empty">Analiz detaylarını görmek için bir maç seç.</div>
       </div>
     </section>
     <section class="panel">
-      <h2 class="section-title">💡 Hesaplama Kuralları</h2>
-      <div class="notice">
-        • Geçmiş taraması son 30 günle sınırlıdır.<br>
-        • Her market için en az 5 eşleşen geçmiş maç gerekir.<br>
-        • Açılış oranları birebir aynı olmalıdır.<br>
-        • MS1, MS X and MS2 sonuçları ayrı ayrı değerlendirilir.<br>
-        • Başarı oranı %50'nin altında kalan sonuç tahmine katılmaz.<br>
-        • Yeterli geçmiş verisi bulunamazsa açılış MS oranlarından piyasa olasılığı gösterilir. Bu durumda tahmin, geçmiş başarı filtresinden gelmez.
+      <div class="panel-heading">
+        <h2 class="section-title">
+          <span class="title-icon">✓</span>
+          Hesaplama Kuralları
+        </h2>
+      </div>
+      <div class="rules-list">
+        <div class="rule">
+          <span class="rule-check">✓</span>
+          <span>Geçmiş maçlar yalnızca son 30 gün içinden alınır.</span>
+        </div>
+        <div class="rule">
+          <span class="rule-check">✓</span>
+          <span>Her market için en az 5 eşleşen ve sonucu belli geçmiş maç gerekir.</span>
+        </div>
+        <div class="rule">
+          <span class="rule-check">✓</span>
+          <span>Açılış oranları tolerans olmadan birebir eşleştirilir.</span>
+        </div>
+        <div class="rule">
+          <span class="rule-check">✓</span>
+          <span>MS1, MS X ve MS2 sonuçları birbirinden bağımsız olarak değerlendirilir.</span>
+        </div>
+        <div class="rule">
+          <span class="rule-check">✓</span>
+          <span>Başarı oranı en az %50 olan sonuçlar geçmiş analiz tahminine katılır.</span>
+        </div>
+        <div class="rule">
+          <span class="rule-check">i</span>
+          <span>Uygun geçmiş market bulunamazsa mevcut MS açılış oranlarından piyasa olasılığı gösterilir. Bu sonuç geçmiş başarı filtresinden gelmez.</span>
+        </div>
       </div>
     </section>
     <footer>
-      Tahminler geçmiş verilerin istatistiksel analizidir; kesin sonuç garantisi vermez.
+      <span class="footer-dot"></span>
+      İstatistiksel analiz bilgilendirme amaçlıdır; kesin sonuç garantisi vermez.
     </footer>
   </main>
   <script src="./data/spor-toto-data.js"></script>
@@ -698,7 +961,12 @@
         const number = Number(
           typeof value === "string" ? value.replace(",", ".") : value
         );
-        if (value !== null && value !== "" && Number.isFinite(number) && number > 0) {
+        if (
+          value !== null &&
+          value !== "" &&
+          Number.isFinite(number) &&
+          number > 0
+        ) {
           return number;
         }
       }
@@ -783,11 +1051,9 @@
       if (!targetHome || !targetAway || !historyHome || !historyAway) {
         return false;
       }
-      const directHome = similarity(targetHome, historyHome);
-      const directAway = similarity(targetAway, historyAway);
       return (
-        directHome >= CONFIG.FUZZY_TEAM_THRESHOLD &&
-        directAway >= CONFIG.FUZZY_TEAM_THRESHOLD
+        similarity(targetHome, historyHome) >= CONFIG.FUZZY_TEAM_THRESHOLD &&
+        similarity(targetAway, historyAway) >= CONFIG.FUZZY_TEAM_THRESHOLD
       );
     }
     function getHistoricalMatches() {
@@ -819,6 +1085,7 @@
       for (const historical of history) {
         if (sameFixture(target, historical)) continue;
         const historicalOdd = getOddsValue(historical, marketKey);
+        // Açılış oranları birebir aynı olmalıdır.
         if (historicalOdd === null || historicalOdd !== targetOdd) continue;
         const outcome = getOutcome(historical);
         if (!outcome) continue;
@@ -903,8 +1170,9 @@
         : `%${value.toFixed(1)}`;
     }
     function choosePrediction(target, history) {
-      const markets = MARKET_DEFINITIONS
-        .map(market => analyzeMarket(target, market.key, history));
+      const markets = MARKET_DEFINITIONS.map(market =>
+        analyzeMarket(target, market.key, history)
+      );
       const combined = combineProbabilities(markets);
       if (combined.probabilities) {
         const sorted = Object.entries(combined.probabilities)
@@ -918,8 +1186,10 @@
           prediction = sorted
             .slice(0, 2)
             .map(item => item[0])
-            .sort((a, b) => ["1", "X", "2"].indexOf(a) -
-              ["1", "X", "2"].indexOf(b))
+            .sort((a, b) =>
+              ["1", "X", "2"].indexOf(a) -
+              ["1", "X", "2"].indexOf(b)
+            )
             .join("");
         } else {
           prediction = "1X2";
@@ -933,8 +1203,8 @@
           totalSamples: combined.totalSamples,
           reason:
             `${combined.usedMarkets} uygun market kullanıldı. ` +
-            `Market-oran eşleşmelerinde toplam ${combined.totalSamples} örnek var. ` +
-            `Her markette en az ${CONFIG.MIN_SAMPLE} maç ve sonuç başına en az ` +
+            `Toplam ${combined.totalSamples} market-oran eşleşmesi var. ` +
+            `Market başına en az ${CONFIG.MIN_SAMPLE} maç ve sonuç başına ` +
             `%${CONFIG.MIN_SUCCESS_RATE} başarı şartı uygulandı.`
         };
       }
@@ -950,9 +1220,9 @@
           usedMarkets: 0,
           totalSamples: 0,
           reason:
-            `Son ${CONFIG.HISTORY_DAYS} günde minimum ${CONFIG.MIN_SAMPLE} ` +
-            `eşleşmeli ve %${CONFIG.MIN_SUCCESS_RATE} eşiğini geçen uygun market ` +
-            `bulunamadı. Gösterilen olasılıklar MS açılış oranlarından hesaplandı.`
+            `Son ${CONFIG.HISTORY_DAYS} günde en az ${CONFIG.MIN_SAMPLE} ` +
+            `eşleşmeli ve %${CONFIG.MIN_SUCCESS_RATE} eşiğini geçen uygun ` +
+            `market bulunamadı. Olasılıklar MS açılış oranlarından hesaplandı.`
         };
       }
       return {
@@ -962,7 +1232,7 @@
         method: "missing-odds",
         usedMarkets: 0,
         totalSamples: 0,
-        reason: "Tahmin için yeterli geçmiş veri veya MS1/MS X/MS2 açılış oranı yok."
+        reason: "Yeterli geçmiş veri veya MS1/MS X/MS2 açılış oranı bulunamadı."
       };
     }
     function safeText(value) {
@@ -998,44 +1268,6 @@
       }
       return [];
     }
-    function getTotoResult(match) {
-      const value = String(
-        match.totoResult ??
-        match.result ??
-        match.outcome ??
-        match.sign ??
-        ""
-      ).trim().toUpperCase();
-      if (["1", "MS1"].includes(value)) return "1";
-      if (["X", "0", "MSX", "MS0"].includes(value)) return "X";
-      if (["2", "MS2"].includes(value)) return "2";
-      const score = getScore(match);
-      if (!score) return "";
-      if (score.home > score.away) return "1";
-      if (score.home === score.away) return "X";
-      return "2";
-    }
-    function findHistoryFixture(target, history) {
-      let best = null;
-      let bestScore = 0;
-      for (const historical of history) {
-        const homeScore = similarity(
-          getTeamName(target, "home"),
-          getTeamName(historical, "home")
-        );
-        const awayScore = similarity(
-          getTeamName(target, "away"),
-          getTeamName(historical, "away")
-        );
-        const directScore = (homeScore + awayScore) / 2;
-        if (directScore > bestScore) {
-          bestScore = directScore;
-          best = historical;
-        }
-      }
-      if (bestScore >= CONFIG.FUZZY_SIDE_THRESHOLD) return best;
-      return null;
-    }
     function renderPredictions() {
       const container = $("predictionList");
       const history = getHistoricalMatches();
@@ -1053,16 +1285,24 @@
         const home = getTeamName(match, "home") || "Ev sahibi";
         const away = getTeamName(match, "away") || "Deplasman";
         const date = getMatchDate(match);
-        const time = match.time ? ` · ${match.time}` : "";
-        const dateText = date
-          ? date.toLocaleDateString("tr-TR")
-          : "";
+        const time = match.time ? `Saat ${match.time}` : "";
+        const dateText = date ? date.toLocaleDateString("tr-TR") : "";
+        const league = match.league ?? match.competition ?? "Spor Toto";
         const probabilities = analysis.probabilities
           ? `
             <div class="probabilities">
-              <span class="prob">MS1<strong>${formatPercent(analysis.probabilities["1"])}</strong></span>
-              <span class="prob">MS X<strong>${formatPercent(analysis.probabilities["X"])}</strong></span>
-              <span class="prob">MS2<strong>${formatPercent(analysis.probabilities["2"])}</strong></span>
+              <div class="prob">
+                <span>MS1</span>
+                <strong>${formatPercent(analysis.probabilities["1"])}</strong>
+              </div>
+              <div class="prob">
+                <span>MS X</span>
+                <strong>${formatPercent(analysis.probabilities["X"])}</strong>
+              </div>
+              <div class="prob">
+                <span>MS2</span>
+                <strong>${formatPercent(analysis.probabilities["2"])}</strong>
+              </div>
             </div>
           `
           : "";
@@ -1076,18 +1316,19 @@
             <div class="match-top">
               <div class="match-number">${index + 1}</div>
               <div class="teams">
-                ${safeText(home)} – ${safeText(away)}
+                ${safeText(home)} <span style="color:var(--muted)">–</span> ${safeText(away)}
                 <div class="match-meta">
-                  ${safeText(match.league ?? match.competition ?? "Spor Toto")}
-                  ${dateText ? ` · ${safeText(dateText)}` : ""}
-                  ${safeText(time)}
+                  <span>${safeText(league)}</span>
+                  ${dateText ? `<span>· ${safeText(dateText)}</span>` : ""}
+                  ${time ? `<span>· ${safeText(time)}</span>` : ""}
                 </div>
               </div>
               <div class="prediction">${safeText(analysis.prediction)}</div>
             </div>
             ${probabilities}
             <div class="reason">
-              ${safeText(methodLabel)} · ${safeText(analysis.reason)}
+              <span class="method-label">${safeText(methodLabel)}</span>
+              ${safeText(analysis.reason)}
             </div>
           </article>
         `;
@@ -1100,7 +1341,7 @@
       const container = $("details");
       if (!target) {
         container.innerHTML =
-          '<div class="empty">Detayları görmek için maç seç.</div>';
+          '<div class="empty">Analiz detaylarını görmek için bir maç seç.</div>';
         return;
       }
       const history = getHistoricalMatches();
@@ -1138,14 +1379,20 @@
             <td>${formatPercent(market.rates["1"])}</td>
             <td>${formatPercent(market.rates["X"])}</td>
             <td>${formatPercent(market.rates["2"])}</td>
-            <td><span class="status ${statusClass}">${safeText(statusText)}</span></td>
+            <td>
+              <span class="status ${statusClass}">
+                ${safeText(statusText)}
+              </span>
+            </td>
           </tr>
         `;
       }).join("");
       container.innerHTML = `
-        <div class="notice" style="margin-bottom:14px">
-          <strong>${safeText(getTeamName(target, "home"))} – ${safeText(getTeamName(target, "away"))}</strong><br>
-          Tahmin: <strong style="color: var(--accent-green);">${safeText(analysis.prediction)}</strong><br>
+        <div class="notice" style="margin-bottom:13px">
+          <strong>${safeText(getTeamName(target, "home"))} – ${safeText(getTeamName(target, "away"))}</strong>
+          <br>
+          Tahmin: <strong style="color:var(--green)">${safeText(analysis.prediction)}</strong>
+          <br>
           ${safeText(analysis.reason)}
         </div>
         <div class="table-wrap">
@@ -1153,7 +1400,7 @@
             <thead>
               <tr>
                 <th>Market</th>
-                <th>Açılış Oranı</th>
+                <th>Açılış oranı</th>
                 <th>Örnek</th>
                 <th>MS1</th>
                 <th>MS X</th>
@@ -1169,11 +1416,11 @@
             </tbody>
           </table>
         </div>
-        <p class="muted" style="margin-top: 10px;">
+        <p class="muted">
           Son ${CONFIG.HISTORY_DAYS} gün · Market başına minimum
           ${CONFIG.MIN_SAMPLE} maç · Minimum başarı
           %${CONFIG.MIN_SUCCESS_RATE} · Birebir açılış oranı eşleşmesi.
-          Örnek sütunu, o markette eşleşen ve sonucu belli olan geçmiş maç sayısını gösterir.
+          Örnek sütunu, eşleşen ve sonucu belli geçmiş maç sayısını gösterir.
         </p>
       `;
     }
@@ -1242,8 +1489,8 @@
         selectWeek();
         $("loadStatus").textContent =
           `${state.historyMatches.length} geçmiş maç yüklendi. ` +
-          `Son ${CONFIG.HISTORY_DAYS} gün taranıyor; minimum ${CONFIG.MIN_SAMPLE} ` +
-          `eşleşme ve %${CONFIG.MIN_SUCCESS_RATE} başarı filtresi etkin.`;
+          `Son ${CONFIG.HISTORY_DAYS} gün taranıyor. Minimum ` +
+          `${CONFIG.MIN_SAMPLE} eşleşme ve %${CONFIG.MIN_SUCCESS_RATE} başarı filtresi etkin.`;
       } catch (error) {
         console.error(error);
         $("loadStatus").innerHTML =
