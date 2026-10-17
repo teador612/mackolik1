@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -89,22 +90,10 @@ h1{font-size:20px}
   <div id="message" class="notice">Veriler yükleniyor...</div>
 
   <section class="stats">
-    <div class="stat">
-      <div class="stat-label">Haftadaki maç</div>
-      <div id="statMatches" class="stat-value">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Tahmin üretilen</div>
-      <div id="statAnalyzed" class="stat-value">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Sonucu belli tahmin</div>
-      <div id="statSettled" class="stat-value">—</div>
-    </div>
-    <div class="stat">
-      <div class="stat-label">Tahmin başarı oranı</div>
-      <div id="statAccuracy" class="stat-value">—</div>
-    </div>
+    <div class="stat"><div class="stat-label">Haftadaki maç</div><div id="statMatches" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Tahmin üretilen</div><div id="statAnalyzed" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Sonucu belli tahmin</div><div id="statSettled" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Tahmin başarı oranı</div><div id="statAccuracy" class="stat-value">—</div></div>
   </section>
 
   <section class="panel">
@@ -206,8 +195,15 @@ const IGNORABLE_TOKENS = new Set([
 ]);
 
 let allMatches = [];
+let historicalMatches = [];
 let totoData = null;
 let activeWeek = null;
+let exactTeamIndex = new Map();
+let teamRecordCache = new Map();
+let similarityCache = new Map();
+let profileSimilarityCache = new Map();
+let analysisCache = new WeakMap();
+let preparedAt = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -349,8 +345,9 @@ function normalizeOutcome(value) {
 }
 
 function getOutcome(m) {
-  const pair=getScorePair(m);
+  if(m?._prepared) return m._outcome;
 
+  const pair=getScorePair(m);
   if(pair) return pair[0]>pair[1]?"1":pair[0]<pair[1]?"2":"X";
 
   return normalizeOutcome(
@@ -360,6 +357,8 @@ function getOutcome(m) {
 
 function getOpeningOdds(m) {
   if(!m||typeof m!=="object") return {};
+
+  if(m._prepared) return m._openingOddsRaw;
 
   const candidates=[
     m.odds,m.openingOdds,m.opening_odds,m.openOdds,m.open_odds,m.marketOdds
@@ -388,19 +387,69 @@ function normalizedMarketKey(key) {
   return String(key).trim().toLowerCase();
 }
 
+/* Her maçın oranları, sonuç bilgisi ve takım adları bir kez hazırlanır. */
+function prepareMatch(m,index) {
+  const home=getHome(m);
+  const away=getAway(m);
+  const rawOdds=getOpeningOdds(m);
+  const oddsByNorm=Object.create(null);
+  const oddsEntries=[];
+
+  for(const [key,value] of Object.entries(rawOdds)) {
+    const odd=parseNumber(value);
+    if(odd===null) continue;
+
+    const norm=normalizedMarketKey(key);
+
+    if(oddsByNorm[norm]===undefined) {
+      oddsByNorm[norm]=odd;
+      oddsEntries.push({key,norm,odd});
+    }
+  }
+
+  const date=getDate(m);
+  const outcome=getOutcome(m);
+
+  m._prepared=true;
+  m._cacheId=index;
+  m._home=home;
+  m._away=away;
+  m._canonicalHome=canonicalTeam(home);
+  m._canonicalAway=canonicalTeam(away);
+  m._teamKey=m._canonicalHome+"||"+m._canonicalAway;
+  m._dateObj=date;
+  m._dateTime=date?date.getTime():0;
+  m._outcome=outcome;
+  m._openingOddsRaw=rawOdds;
+  m._oddsByNorm=oddsByNorm;
+  m._oddsEntries=oddsEntries;
+  m._oddsKeys=oddsEntries.map(item=>item.key);
+  m._oddsCount=oddsEntries.length;
+  m._mainOdds={
+    ms1:oddsByNorm.ms1??null,
+    msx:oddsByNorm.msx??null,
+    ms2:oddsByNorm.ms2??null
+  };
+
+  return m;
+}
+
 function getMarketKeys(m) {
-  const odds=getOpeningOdds(m);
-  return Object.keys(odds).filter(k=>parseNumber(odds[k])!==null);
+  if(m?._prepared) return m._oddsKeys;
+  return Object.keys(getOpeningOdds(m)).filter(k=>parseNumber(getOpeningOdds(m)[k])!==null);
 }
 
 function getOdd(m,key) {
-  const odds=getOpeningOdds(m);
+  const wanted=normalizedMarketKey(key);
 
+  if(m?._prepared) {
+    return m._oddsByNorm[wanted]??null;
+  }
+
+  const odds=getOpeningOdds(m);
   if(odds[key]!==undefined) return parseNumber(odds[key]);
 
-  const wanted=normalizedMarketKey(key);
   const actual=Object.keys(odds).find(k=>normalizedMarketKey(k)===wanted);
-
   return actual?parseNumber(odds[actual]):null;
 }
 
@@ -451,10 +500,14 @@ function tokenSimilarity(a,b) {
   return 2*common/(aa.size+bb.size);
 }
 
+/* Aynı takım çifti karşılaştırması tekrar hesaplanmaz. */
 function teamSimilarity(a,b) {
   const ca=canonicalTeam(a),cb=canonicalTeam(b);
   if(!ca||!cb) return 0;
   if(ca===cb) return 1;
+
+  const cacheKey=ca+"||"+cb;
+  if(similarityCache.has(cacheKey)) return similarityCache.get(cacheKey);
 
   let score=tokenSimilarity(ca,cb)*.58+diceSimilarity(ca,cb)*.42;
   const aa=ca.replace(/\s/g,""),bb=cb.replace(/\s/g,"");
@@ -463,12 +516,14 @@ function teamSimilarity(a,b) {
     score=Math.max(score,.82);
   }
 
+  similarityCache.set(cacheKey,score);
+  similarityCache.set(cb+"||"+ca,score);
   return score;
 }
 
 function compareFixture(home,away,m) {
-  const hs=teamSimilarity(home,getHome(m));
-  const as=teamSimilarity(away,getAway(m));
+  const hs=teamSimilarity(home,m._home);
+  const as=teamSimilarity(away,m._away);
 
   if(hs<CONFIG.FUZZY_SIDE_THRESHOLD||as<CONFIG.FUZZY_SIDE_THRESHOLD) return null;
 
@@ -478,76 +533,110 @@ function compareFixture(home,away,m) {
   return {match:m,homeScore:hs,awayScore:as,combined};
 }
 
-function getMatchingTeamRecord(home,away) {
-  const exactHome=canonicalTeam(home),exactAway=canonicalTeam(away);
-  if(!exactHome||!exactAway) return null;
+function sortTeamCandidates(a,b) {
+  if(a.exact!==b.exact) return a.exact?-1:1;
+  if(a.unplayed!==b.unplayed) return a.unplayed?-1:1;
+  if((a.oddsCount>0)!==(b.oddsCount>0)) return a.oddsCount>0?-1:1;
+  if(a.combined!==b.combined) return b.combined-a.combined;
+  if(a.oddsCount!==b.oddsCount) return b.oddsCount-a.oddsCount;
+  return b.time-a.time;
+}
 
-  const candidates=[];
+function makeTeamCandidate(match,combined,homeScore,awayScore,exact) {
+  return {
+    match,
+    combined,
+    homeScore,
+    awayScore,
+    oddsCount:match._oddsCount,
+    unplayed:match._outcome===null,
+    time:match._dateTime,
+    exact
+  };
+}
 
-  for(const m of allMatches) {
-    if(!getHome(m)||!getAway(m)) continue;
-
-    const c=compareFixture(home,away,m);
-    if(!c) continue;
-
-    const oddsCount=getMarketKeys(m).length;
-    const unplayed=getOutcome(m)===null;
-    const d=getDate(m);
-
-    candidates.push({
-      ...c,
-      oddsCount,
-      unplayed,
-      time:d?d.getTime():0,
-      exact:canonicalTeam(getHome(m))===exactHome&&
-        canonicalTeam(getAway(m))===exactAway
-    });
-  }
-
+function finishTeamMatch(candidates) {
   if(!candidates.length) return null;
 
-  candidates.sort((a,b)=>{
-    if(a.exact!==b.exact) return a.exact?-1:1;
-    if(a.unplayed!==b.unplayed) return a.unplayed?-1:1;
-    if((a.oddsCount>0)!==(b.oddsCount>0)) return a.oddsCount>0?-1:1;
-    if(a.combined!==b.combined) return b.combined-a.combined;
-    if(a.oddsCount!==b.oddsCount) return b.oddsCount-a.oddsCount;
-    return b.time-a.time;
-  });
-
+  candidates.sort(sortTeamCandidates);
   const best=candidates[0];
 
   const second=candidates.find(c=>
-    canonicalTeam(getHome(c.match))!==canonicalTeam(getHome(best.match))||
-    canonicalTeam(getAway(c.match))!==canonicalTeam(getAway(best.match))
+    c.match._canonicalHome!==best.match._canonicalHome||
+    c.match._canonicalAway!==best.match._canonicalAway
   );
 
   if(second&&!best.exact&&Math.abs(best.combined-second.combined)<.045) return null;
 
-  return {
-    ...best.match,
-    _matchConfidence:best.combined,
-    _homeConfidence:best.homeScore,
-    _awayConfidence:best.awayScore,
-    _oddsCount:best.oddsCount,
-    _matchedUnplayed:best.unplayed
-  };
-}
+  const target=best.match;
 
-function getHistoricalMatches() {
-  const now=new Date();
-  const cutoff=new Date(now);
-  cutoff.setDate(cutoff.getDate()-CONFIG.HISTORY_DAYS);
+  target._matchConfidence=best.combined;
+  target._homeConfidence=best.homeScore;
+  target._awayConfidence=best.awayScore;
+  target._matchedUnplayed=best.unplayed;
 
-  return allMatches.filter(m=>{
-    const d=getDate(m);
-    return d&&d>=cutoff&&d<=now&&getOutcome(m)!==null;
-  });
+  return target;
 }
 
 /*
- * Her market için birebir oran eşleşmesinin geçmiş dağılımı.
- * Bu tablo bilgilendirme amaçlıdır; ana tahmin tek bir markete dayanmaz.
+ * Önce aynı ev/deplasman takım çiftleri indeks üzerinden bulunur.
+ * Yalnızca birebir eşleşme yoksa eski bulanık eşleştirme taraması çalışır.
+ */
+function getMatchingTeamRecord(home,away) {
+  const exactHome=canonicalTeam(home);
+  const exactAway=canonicalTeam(away);
+  if(!exactHome||!exactAway) return null;
+
+  const cacheKey=exactHome+"||"+exactAway;
+  if(teamRecordCache.has(cacheKey)) return teamRecordCache.get(cacheKey);
+
+  const exactCandidates=exactTeamIndex.get(cacheKey);
+
+  if(exactCandidates?.length) {
+    const candidates=exactCandidates.map(m=>
+      makeTeamCandidate(m,1,1,1,true)
+    );
+    const result=finishTeamMatch(candidates);
+    teamRecordCache.set(cacheKey,result);
+    return result;
+  }
+
+  const candidates=[];
+
+  for(const m of allMatches) {
+    if(!m._home||!m._away) continue;
+
+    const c=compareFixture(home,away,m);
+    if(!c) continue;
+
+    candidates.push(makeTeamCandidate(
+      m,c.combined,c.homeScore,c.awayScore,false
+    ));
+  }
+
+  const result=finishTeamMatch(candidates);
+  teamRecordCache.set(cacheKey,result);
+  return result;
+}
+
+function buildHistoricalMatches() {
+  const now=Date.now();
+  const cutoff=now-CONFIG.HISTORY_DAYS*86400000;
+
+  historicalMatches=allMatches.filter(m=>
+    m._dateTime>=cutoff&&
+    m._dateTime<=now&&
+    m._outcome!==null
+  );
+}
+
+function getHistoricalMatches() {
+  return historicalMatches;
+}
+
+/*
+ * Market ayrıntıları yalnızca ilgili maçın detay alanı açılınca hesaplanır.
+ * Ekran ilk yüklenirken her market için geçmişte tekrar tekrar tarama yapılmaz.
  */
 function analyzeMarket(target,key,history) {
   const targetOdd=getOdd(target,key);
@@ -563,11 +652,13 @@ function analyzeMarket(target,key,history) {
 
   if(targetOdd===null) return out;
 
-  for(const old of history) {
-    const oldOdd=getOdd(old,key);
-    if(oldOdd===null||oldOdd!==targetOdd) continue;
+  const norm=normalizedMarketKey(key);
 
-    const result=getOutcome(old);
+  for(const old of history) {
+    const oldOdd=old._oddsByNorm[norm];
+    if(oldOdd===undefined||oldOdd!==targetOdd) continue;
+
+    const result=old._outcome;
     if(!result) continue;
 
     out.counts[result]++;
@@ -586,9 +677,9 @@ function analyzeMarket(target,key,history) {
 function getMarketAnalyses(target,history) {
   if(!target) return [];
 
-  return getMarketKeys(target)
-    .map(key=>analyzeMarket(target,key,history))
-    .filter(m=>m.targetOdd!==null);
+  return target._oddsEntries.map(entry=>
+    analyzeMarket(target,entry.key,history)
+  );
 }
 
 function isMainOutcomeMarket(key) {
@@ -596,37 +687,27 @@ function isMainOutcomeMarket(key) {
 }
 
 /*
- * Benzerlik:
- * - Hedef ve geçmiş maçtaki ortak açılış oranları karşılaştırılır.
- * - MS1/MSX/MS2 oranları daha yüksek ağırlık taşır.
- * - Logaritmik oran farkı, örneğin 1.50 ile 1.60 farkını
- *   3.00 ile 3.10 farkıyla aynı mutlak ölçekte değerlendirmez.
+ * Profil benzerliği önbelleğe alınır.
+ * Hesaplama formülü korunmuştur: logaritmik fark, ana market ağırlığı 3.
  */
 function compareOddsProfiles(target,old) {
-  const targetOdds=getOpeningOdds(target);
-  const oldOdds=getOpeningOdds(old);
+  const cacheKey=target._cacheId+":"+old._cacheId;
+  if(profileSimilarityCache.has(cacheKey)) {
+    return profileSimilarityCache.get(cacheKey);
+  }
 
   let weightedDistance=0;
   let totalWeight=0;
   let common=0;
   let mainCommon=0;
 
-  for(const key of Object.keys(targetOdds)) {
-    const targetOdd=parseNumber(targetOdds[key]);
-    if(targetOdd===null) continue;
+  for(const entry of target._oddsEntries) {
+    const oldOdd=old._oddsByNorm[entry.norm];
+    if(oldOdd===undefined) continue;
 
-    const oldKey=Object.keys(oldOdds).find(
-      k=>normalizedMarketKey(k)===normalizedMarketKey(key)
-    );
-
-    if(!oldKey) continue;
-
-    const oldOdd=parseNumber(oldOdds[oldKey]);
-    if(oldOdd===null) continue;
-
-    const main=isMainOutcomeMarket(key);
+    const targetOdd=entry.odd;
+    const main=isMainOutcomeMarket(entry.key);
     const weight=main?3:1;
-
     const distance=Math.abs(Math.log(targetOdd/oldOdd));
 
     weightedDistance+=distance*weight;
@@ -636,14 +717,17 @@ function compareOddsProfiles(target,old) {
     if(main) mainCommon++;
   }
 
-  if(common<CONFIG.MIN_COMMON_MARKETS||totalWeight===0) return null;
+  if(common<CONFIG.MIN_COMMON_MARKETS||totalWeight===0) {
+    profileSimilarityCache.set(cacheKey,null);
+    return null;
+  }
 
   const meanDistance=weightedDistance/totalWeight;
-
-  // 1'e yakın değerler daha benzer; büyük farklarda ağırlık azalır.
   const similarity=Math.exp(-2.5*meanDistance);
+  const result={similarity,common,mainCommon,meanDistance};
 
-  return {similarity,common,mainCommon,meanDistance};
+  profileSimilarityCache.set(cacheKey,result);
+  return result;
 }
 
 function getOddsPrior(target) {
@@ -655,7 +739,6 @@ function getOddsPrior(target) {
 
   if(Object.values(odds).some(v=>v===null)) return null;
 
-  // Bahis şirketi marjını basit normalize işlemiyle çıkar.
   const raw={
     "1":1/odds["1"],
     "X":1/odds["X"],
@@ -674,26 +757,22 @@ function getOddsPrior(target) {
 
 function getSimilarMatches(target,history) {
   const candidates=[];
+  const now=Date.now();
 
   for(const old of history) {
-    if(getOutcome(old)===null) continue;
-
     const profile=compareOddsProfiles(target,old);
-    if(!profile) continue;
+    if(!profile||profile.similarity<0.12) continue;
 
-    // Benzerlik çok düşük olan maçlar katkı sağlamasın.
-    if(profile.similarity<0.12) continue;
+    const ageDays=old._dateTime
+      ?Math.max(0,(now-old._dateTime)/86400000)
+      :CONFIG.HISTORY_DAYS;
 
-    const d=getDate(old);
-    const ageDays=d?Math.max(0,(Date.now()-d.getTime())/86400000):CONFIG.HISTORY_DAYS;
-
-    // Daha yakın tarihli maçlara sınırlı ek ağırlık ver.
     const recencyWeight=Math.exp(-ageDays/180);
     const weight=profile.similarity*recencyWeight;
 
     candidates.push({
       match:old,
-      outcome:getOutcome(old),
+      outcome:old._outcome,
       similarity:profile.similarity,
       common:profile.common,
       mainCommon:profile.mainCommon,
@@ -702,7 +781,6 @@ function getSimilarMatches(target,history) {
   }
 
   candidates.sort((a,b)=>b.weight-a.weight);
-
   return candidates.slice(0,CONFIG.MAX_SIMILAR_MATCHES);
 }
 
@@ -728,14 +806,11 @@ function blendProbabilities(historyProbabilities,oddsPrior) {
   if(!historyProbabilities) return null;
   if(!oddsPrior) return historyProbabilities;
 
-  const historyWeight=CONFIG.HISTORY_WEIGHT;
-  const oddsWeight=CONFIG.ODDS_WEIGHT;
-
   const result={};
 
   for(const key of ["1","X","2"]) {
-    result[key]=historyProbabilities[key]*historyWeight+
-      oddsPrior[key]*oddsWeight;
+    result[key]=historyProbabilities[key]*CONFIG.HISTORY_WEIGHT+
+      oddsPrior[key]*CONFIG.ODDS_WEIGHT;
   }
 
   const total=result["1"]+result["X"]+result["2"];
@@ -756,32 +831,38 @@ function bestOutcome(probabilities) {
   )[0];
 }
 
+/* Tahmin, aynı V2 kaydı için bir kez hesaplanır. */
 function choosePrediction(target,history) {
   if(!target) {
     return {
       selection:"—",
       confidence:null,
       probabilities:null,
-      markets:[],
+      markets:null,
       similarCount:0,
       method:"missing",
       reason:"Takım isimleri V2 verisinde güvenilir biçimde eşleşmedi."
     };
   }
 
-  const markets=getMarketAnalyses(target,history);
+  const cached=analysisCache.get(target);
+  if(cached) return cached;
+
   const similar=getSimilarMatches(target,history);
 
   if(similar.length<CONFIG.MIN_SAMPLE) {
-    return {
+    const insufficient={
       selection:"—",
       confidence:null,
       probabilities:null,
-      markets,
+      markets:null,
       similarCount:similar.length,
       method:"insufficient",
       reason:`Yeterli benzer maç bulunamadı. En az ${CONFIG.MIN_SAMPLE} benzer geçmiş maç gerekiyor.`
     };
+
+    analysisCache.set(target,insufficient);
+    return insufficient;
   }
 
   const historicalProbabilities=calculateSimilarProbabilities(similar);
@@ -789,24 +870,27 @@ function choosePrediction(target,history) {
   const probabilities=blendProbabilities(historicalProbabilities,oddsPrior);
 
   if(!probabilities) {
-    return {
+    const insufficient={
       selection:"—",
       confidence:null,
       probabilities:null,
-      markets,
+      markets:null,
       similarCount:similar.length,
       method:"insufficient",
       reason:"Olasılık hesabı için yeterli ağırlıklı veri bulunamadı."
     };
+
+    analysisCache.set(target,insufficient);
+    return insufficient;
   }
 
   const selection=bestOutcome(probabilities);
 
-  return {
+  const analysis={
     selection,
     confidence:probabilities[selection],
     probabilities,
-    markets,
+    markets:null,
     similarCount:similar.length,
     method:"similar",
     reason:
@@ -816,6 +900,9 @@ function choosePrediction(target,history) {
         ?"Geçmiş dağılım ile marjı giderilmiş MS oranları birleştirildi."
         :"MS oranları eksik olduğu için geçmiş maç dağılımı kullanıldı.")
   };
+
+  analysisCache.set(target,analysis);
+  return analysis;
 }
 
 function escapeHTML(value) {
@@ -838,7 +925,11 @@ function predictionClass(rate) {
   return rate>=65?"high":rate>=55?"medium":"";
 }
 
-function renderDetails(analysis) {
+function renderDetails(analysis,target,history) {
+  if(!analysis.markets) {
+    analysis.markets=getMarketAnalyses(target,history);
+  }
+
   const visibleMarkets=analysis.markets
     .filter(m=>m.sample>=CONFIG.MIN_SAMPLE)
     .sort((a,b)=>b.sample-a.sample);
@@ -967,7 +1058,7 @@ function renderWeek() {
       ?(target._matchedUnplayed?"Oynanmamış kayıt":"Geçmiş kayıt")
       :"";
 
-    const marketCount=target?getMarketKeys(target).length:0;
+    const marketCount=target?target._oddsCount:0;
 
     return `
       <article class="match">
@@ -976,7 +1067,6 @@ function renderWeek() {
             <div class="match-no">Maç ${escapeHTML(game.number??index+1)}</div>
             <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
           </div>
-
           <div class="prediction ${predictionClass(analysis.confidence)}">
             ${escapeHTML(selection)}
             <small>${escapeHTML(confidence)}</small>
@@ -996,16 +1086,40 @@ function renderWeek() {
 
         <details class="details">
           <summary>Market analizi ve tahmin ayrıntıları</summary>
-          ${renderDetails(analysis)}
+          <div class="details-content">
+            <div class="small">Market ayrıntıları hazırlanıyor...</div>
+          </div>
           <div class="small" style="padding-top:10px">
             ${escapeHTML(analysis.reason)}
-            ${target?`<br>V2: ${escapeHTML(getHome(target))} – ${escapeHTML(getAway(target))}`:""}
+            ${target?`<br>V2: ${escapeHTML(target._home)} – ${escapeHTML(target._away)}`:""}
             ${target?`<br>Okunabilen açılış marketi: ${target._oddsCount}`:""}
           </div>
         </details>
       </article>
     `;
   }).join("")||'<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
+
+  /* Ayrıntı tabloları yalnızca kullanıcı açınca hazırlanır. */
+  $("matchList").querySelectorAll("details.details").forEach((details,index)=>{
+    const game=games[index];
+    if(!game) return;
+
+    const home=game.home??game.evSahibi??"Ev sahibi bilinmiyor";
+    const away=game.away??game.deplasman??"Deplasman bilinmiyor";
+    const target=getMatchingTeamRecord(home,away);
+    const analysis=choosePrediction(target,history);
+    let rendered=false;
+
+    details.addEventListener("toggle",()=>{
+      if(!details.open||rendered) return;
+
+      const content=details.querySelector(".details-content");
+      if(!content) return;
+
+      content.outerHTML=renderDetails(analysis,target,history);
+      rendered=true;
+    });
+  });
 
   $("statAnalyzed").textContent=`${analyzed}/${games.length}`;
   $("statSettled").textContent=settled;
@@ -1040,7 +1154,6 @@ function renderWeekOptions() {
   }
 
   const preferred=String(totoData.currentWeek??weeks[weeks.length-1]);
-
   activeWeek=weeks.includes(preferred)?preferred:weeks[weeks.length-1];
 
   for(const week of weeks) {
@@ -1050,6 +1163,29 @@ function renderWeekOptions() {
     option.selected=week===activeWeek;
     select.appendChild(option);
   }
+}
+
+function prepareAllData(rawMatches) {
+  allMatches=rawMatches.filter(m=>m&&typeof m==="object");
+
+  exactTeamIndex=new Map();
+  teamRecordCache=new Map();
+  similarityCache=new Map();
+  profileSimilarityCache=new Map();
+  analysisCache=new WeakMap();
+
+  allMatches.forEach((m,index)=>{
+    prepareMatch(m,index);
+
+    if(!m._canonicalHome||!m._canonicalAway) return;
+
+    const key=m._teamKey;
+    if(!exactTeamIndex.has(key)) exactTeamIndex.set(key,[]);
+    exactTeamIndex.get(key).push(m);
+  });
+
+  buildHistoricalMatches();
+  preparedAt=Date.now();
 }
 
 async function loadData() {
@@ -1075,7 +1211,7 @@ async function loadData() {
 
     const json=await response.json();
 
-    allMatches=Array.isArray(json)
+    const rawMatches=Array.isArray(json)
       ?json
       :Array.isArray(json.matches)
         ?json.matches
@@ -1083,9 +1219,14 @@ async function loadData() {
           ?json.data
           :[];
 
-    if(!allMatches.length) {
+    if(!rawMatches.length) {
       throw new Error("v2-data.json içinde maç listesi bulunamadı.");
     }
+
+    showMessage("Maç verileri hazırlanıyor...");
+    await new Promise(resolve=>requestAnimationFrame(resolve));
+
+    prepareAllData(rawMatches);
 
     renderWeekOptions();
 
@@ -1095,15 +1236,14 @@ async function loadData() {
 
     renderWeek();
 
-    const history=getHistoricalMatches();
-    const withResults=allMatches.filter(m=>getOutcome(m)!==null).length;
-    const withOdds=allMatches.filter(m=>getMarketKeys(m).length>0).length;
+    const withResults=allMatches.reduce((n,m)=>n+(m._outcome!==null?1:0),0);
+    const withOdds=allMatches.reduce((n,m)=>n+(m._oddsCount>0?1:0),0);
 
     showMessage(
       `Veriler yüklendi: ${getWeeks().length} hafta, `+
       `${allMatches.length} V2 maçı, ${withResults} sonuçlu maç, `+
       `${withOdds} oranlı kayıt. Son ${CONFIG.HISTORY_DAYS} günde `+
-      `${history.length} sonuçlanmış maç. Tahmin için en az `+
+      `${historicalMatches.length} sonuçlanmış maç. Tahmin için en az `+
       `${CONFIG.MIN_SAMPLE} benzer maç aranıyor.`,
       "good"
     );
