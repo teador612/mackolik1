@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -77,7 +76,7 @@ h1{font-size:20px}
 <header>
   <div class="container" style="padding:0 4px">
     <h1>⚽ Spor Toto Analiz</h1>
-    <div class="subtitle">Tüm açılış marketleri · Benzer maç analizi · Tek sonuç: 1 / X / 2</div>
+    <div class="subtitle">8 seçili market · Benzer maç analizi · Tek sonuç: 1 / X / 2</div>
   </div>
 </header>
 
@@ -102,10 +101,11 @@ h1{font-size:20px}
       <span id="weekBadge" class="badge">Hafta —</span>
     </div>
     <div class="small">
-      Sistem geçmiş maçlardaki tüm ortak açılış marketlerini tarar.
-      Oranları benzer olan maçlara daha fazla ağırlık verir.
-      MS1, MSX ve MS2 açılış oranları ayrıca değerlendirilir.
-      Her maç için yalnızca bir sonuç seçilir.
+      Benzerlik taraması yalnızca İY 1, İY 2, İY 1,5 Üst, MS 1, MS 2,
+      MS 0, KG Var ve 2,5 Üst marketleri üzerinden yapılır.
+      Oranları benzer olan maçlara daha fazla ağırlık verilir.
+      MS 1, MS 0 ve MS 2 açılış oranları tahmin olasılıklarında ayrıca
+      değerlendirilir. Her maç için yalnızca bir sonuç seçilir.
     </div>
   </section>
 
@@ -114,13 +114,16 @@ h1{font-size:20px}
   </section>
 
   <section class="panel">
-    <h2>Hesaplama yöntemi</h2>
+    <h2>Taranan marketler</h2>
     <div class="small">
+      İY 1 · İY 2 · İY 1,5 Üst · MS 1 · MS 2 · MS 0 · KG Var · 2,5 Üst
+      <br><br>
       Geçmiş analiz penceresi son 90 gündür. Benzerlik hesaplamasında
-      ortak açılış oranları kullanılır; MS1/MSX/MS2 oranlarına daha yüksek
-      ağırlık verilir. Benzer geçmiş maçların sonuç dağılımı, mevcut
-      MS oranlarından hesaplanan marjı giderilmiş olasılıklarla birlikte
-      değerlendirilir. En az 5 uygun geçmiş maç bulunamazsa tahmin üretilmez.
+      yalnızca yukarıdaki ortak açılış marketleri kullanılır. MS 1, MS 0
+      ve MS 2 oranlarına daha yüksek ağırlık verilir. Benzer geçmiş
+      maçların sonuç dağılımı, mevcut MS oranlarından hesaplanan
+      marjı giderilmiş olasılıklarla birlikte değerlendirilir.
+      En az 10 uygun geçmiş maç bulunamazsa tahmin üretilmez.
       Bu oranlar istatistiksel tahmindir, garanti değildir.
     </div>
   </section>
@@ -162,11 +165,6 @@ const MARKET_LABELS = {
   iyms21:"İY/MS 2/1",iyms20:"İY/MS 2/X",iyms22:"İY/MS 2/2"
 };
 
-/*
- * Farklı kaynaklardaki alternatif market isimlerini standart etikete çevirir.
- * Bu eşleme yalnızca ekranda gösterimi etkiler; oran anahtarlarını ve
- * tahmin hesaplamalarını değiştirmez.
- */
 const MARKET_ALIASES = {
   "1":"MS 1",
   "ms1":"MS 1",
@@ -176,6 +174,7 @@ const MARKET_ALIASES = {
   "ms 2":"MS 2",
   "0":"MS X",
   "x":"MS X",
+  "ms0":"MS X",
   "msx":"MS X",
   "ms x":"MS X",
 
@@ -202,6 +201,7 @@ const MARKET_ALIASES = {
   "2,5 ü":"2,5 Üst",
   "2 5 u":"2,5 Üst",
   "2,5 üst":"2,5 Üst",
+  "25ust":"2,5 Üst",
   "au25ust":"2,5 Üst",
 
   "3,5 a":"3,5 Alt",
@@ -276,6 +276,22 @@ const MARKET_ALIASES = {
   "2vealt":"MS 2 ve Alt",
   "ms2vealt":"MS 2 ve Alt"
 };
+
+/*
+ * Tarama listesi:
+ * İY 1, İY 2, İY 1,5 Üst, MS 1, MS 2,
+ * MS 0/MS X, KG Var, 2,5 Üst.
+ */
+const SCAN_MARKET_IDS = new Set([
+  "iy1",
+  "iy2",
+  "iy15ust",
+  "ms1",
+  "ms2",
+  "msx",
+  "kgvar",
+  "au25ust"
+]);
 
 const TEAM_ALIASES = {
   "atl junior":"atletico junior",
@@ -452,7 +468,7 @@ function normalizeOutcome(value) {
   const s=String(value).trim().toUpperCase().replace(/\s+/g,"");
 
   if(["1","MS1","HOME"].includes(s)) return "1";
-  if(["X","MSX","DRAW","0"].includes(s)) return "X";
+  if(["X","MSX","DRAW","0","MS0"].includes(s)) return "X";
   if(["2","MS2","AWAY"].includes(s)) return "2";
 
   return null;
@@ -505,10 +521,6 @@ function normalizedMarketLabel(label) {
   return normalizeBasic(label).replace(/[^a-z0-9]/g,"");
 }
 
-/*
- * Market adını, eşdeğer alternatifleri de tanıyacak şekilde standartlaştır.
- * Bu fonksiyon yalnızca gösterim ve tablo tekilleştirmesinde kullanılır.
- */
 function marketLabel(key) {
   const raw=String(key??"").trim();
   const basic=normalizeBasic(raw);
@@ -527,12 +539,54 @@ function marketLabel(key) {
   return known?MARKET_LABELS[known]:raw;
 }
 
+/*
+ * Kaynakta kullanılan farklı market anahtarlarını aynı tarama kimliğine çevirir.
+ * Örneğin MS 0, MS X ve ms0 aynı market olarak değerlendirilir.
+ */
+function scanMarketId(key) {
+  const raw=String(key??"").trim();
+  const basic=normalizeBasic(raw);
+  const compact=basic.replace(/[^a-z0-9]/g,"");
+  const normalized=normalizedMarketKey(raw);
+  const label=marketLabel(raw);
+  const labelKey=normalizedMarketLabel(label);
+
+  const aliases={
+    "1":"ms1",
+    "ms1":"ms1",
+    "2":"ms2",
+    "ms2":"ms2",
+    "0":"msx",
+    "x":"msx",
+    "ms0":"msx",
+    "msx":"msx",
+    "iy1":"iy1",
+    "iy2":"iy2",
+    "iy15ust":"iy15ust",
+    "kgvar":"kgvar",
+    "var":"kgvar",
+    "au25ust":"au25ust",
+    "25ust":"au25ust"
+  };
+
+  if(aliases[normalized]) return aliases[normalized];
+  if(aliases[compact]) return aliases[compact];
+  if(aliases[labelKey]) return aliases[labelKey];
+
+  return null;
+}
+
+function isScanMarket(key) {
+  return SCAN_MARKET_IDS.has(scanMarketId(key));
+}
+
 function prepareMatch(m,index) {
   const home=getHome(m);
   const away=getAway(m);
   const rawOdds=getOpeningOdds(m);
   const oddsByNorm=Object.create(null);
   const oddsEntries=[];
+  const scanEntriesById=new Map();
   const seenMarkets=new Set();
 
   for(const [key,value] of Object.entries(rawOdds)) {
@@ -545,6 +599,24 @@ function prepareMatch(m,index) {
     seenMarkets.add(norm);
     oddsByNorm[norm]=odd;
     oddsEntries.push({key,norm,odd});
+
+    const scanId=scanMarketId(key);
+
+    if(scanId&&!scanEntriesById.has(scanId)) {
+      scanEntriesById.set(scanId,{
+        key,
+        norm,
+        odd,
+        scanId
+      });
+    }
+  }
+
+  const scanOddsEntries=[...scanEntriesById.values()];
+  const scanOddsById=Object.create(null);
+
+  for(const entry of scanOddsEntries) {
+    scanOddsById[entry.scanId]=entry.odd;
   }
 
   const date=getDate(m);
@@ -565,10 +637,13 @@ function prepareMatch(m,index) {
   m._oddsEntries=oddsEntries;
   m._oddsKeys=oddsEntries.map(item=>item.key);
   m._oddsCount=oddsEntries.length;
+  m._scanOddsEntries=scanOddsEntries;
+  m._scanOddsById=scanOddsById;
+  m._scanOddsCount=scanOddsEntries.length;
   m._mainOdds={
-    ms1:oddsByNorm.ms1??null,
-    msx:oddsByNorm.msx??null,
-    ms2:oddsByNorm.ms2??null
+    ms1:scanOddsById.ms1??null,
+    msx:scanOddsById.msx??null,
+    ms2:scanOddsById.ms2??null
   };
 
   return m;
@@ -584,6 +659,10 @@ function getOdd(m,key) {
   const wanted=normalizedMarketKey(key);
 
   if(m?._prepared) {
+    const scanId=scanMarketId(key);
+    if(scanId&&m._scanOddsById[scanId]!==undefined) {
+      return m._scanOddsById[scanId];
+    }
     return m._oddsByNorm[wanted]??null;
   }
 
@@ -595,7 +674,13 @@ function getOdd(m,key) {
     k=>normalizedMarketKey(k)===wanted
   );
 
-  return actual?parseNumber(odds[actual]):null;
+  if(actual) return parseNumber(odds[actual]);
+
+  const scanId=scanMarketId(key);
+  if(!scanId) return null;
+
+  const alternate=Object.keys(odds).find(k=>scanMarketId(k)===scanId);
+  return alternate?parseNumber(odds[alternate]):null;
 }
 
 function bigrams(value) {
@@ -693,7 +778,7 @@ function sortTeamCandidates(a,b) {
 function makeTeamCandidate(match,combined,homeScore,awayScore,exact) {
   return {
     match,combined,homeScore,awayScore,
-    oddsCount:match._oddsCount,
+    oddsCount:match._scanOddsCount,
     unplayed:match._outcome===null,
     time:match._dateTime,
     exact
@@ -795,10 +880,12 @@ function analyzeMarket(target,key,history) {
 
   if(targetOdd===null) return out;
 
-  const norm=normalizedMarketKey(key);
+  const scanId=scanMarketId(key);
 
   for(const old of history) {
-    const oldOdd=old._oddsByNorm[norm];
+    const oldOdd=scanId
+      ?old._scanOddsById[scanId]
+      :old._oddsByNorm[normalizedMarketKey(key)];
 
     if(oldOdd===undefined||oldOdd!==targetOdd) continue;
 
@@ -818,44 +905,29 @@ function analyzeMarket(target,key,history) {
   return out;
 }
 
-/*
- * Her ham marketin kendi oranı ve istatistiği ayrı hesaplanır.
- * Yalnızca sonuç tablosunda aynı standart etikete sahip marketlerden
- * tek satır gösterilir. Böylece tahmin motorunun verileri birleştirilmez.
- */
 function getMarketAnalyses(target,history) {
   if(!target) return [];
 
-  const analysesByLabel=new Map();
+  const analysesById=new Map();
 
-  for(const entry of target._oddsEntries) {
-    const label=marketLabel(entry.key);
-    const labelNorm=normalizedMarketLabel(label);
-    if(!labelNorm) continue;
+  for(const entry of target._scanOddsEntries) {
+    const scanId=entry.scanId;
+    if(!SCAN_MARKET_IDS.has(scanId)) continue;
 
     const analysis=analyzeMarket(target,entry.key,history);
-    const existing=analysesByLabel.get(labelNorm);
+    const existing=analysesById.get(scanId);
 
-    if(!existing) {
-      analysesByLabel.set(labelNorm,analysis);
-      continue;
-    }
-
-    /*
-     * Aynı standart market adı birden fazla ham anahtarda varsa
-     * örnek sayısı en yüksek olan kaydı görüntüle.
-     * Eşitlikte ilk kayıt korunur; örnekler toplanmaz.
-     */
-    if(analysis.sample>existing.sample) {
-      analysesByLabel.set(labelNorm,analysis);
+    if(!existing||analysis.sample>existing.sample) {
+      analysesById.set(scanId,analysis);
     }
   }
 
-  return [...analysesByLabel.values()];
+  return [...analysesById.values()];
 }
 
 function isMainOutcomeMarket(key) {
-  return ["ms1","msx","ms2"].includes(normalizedMarketKey(key));
+  const id=scanMarketId(key);
+  return ["ms1","msx","ms2"].includes(id);
 }
 
 function compareOddsProfiles(target,old) {
@@ -870,9 +942,10 @@ function compareOddsProfiles(target,old) {
   let common=0;
   let mainCommon=0;
 
-  for(const entry of target._oddsEntries) {
-    const oldOdd=old._oddsByNorm[entry.norm];
+  for(const entry of target._scanOddsEntries) {
+    if(!SCAN_MARKET_IDS.has(entry.scanId)) continue;
 
+    const oldOdd=old._scanOddsById[entry.scanId];
     if(oldOdd===undefined) continue;
 
     const targetOdd=entry.odd;
@@ -1053,7 +1126,7 @@ function choosePrediction(target,history) {
     method:"similar",
     reason:
       `${similar.length} benzer maç kullanıldı. `+
-      `Tüm ortak açılış marketleri karşılaştırıldı. `+
+      `Yalnızca seçilen 8 marketin ortak açılış oranları karşılaştırıldı. `+
       (oddsPrior
         ?"Geçmiş dağılım ile marjı giderilmiş MS oranları birleştirildi."
         :"MS oranları eksik olduğu için geçmiş maç dağılımı kullanıldı.")
@@ -1089,8 +1162,8 @@ function renderDetails(analysis,target,history) {
   for(const market of analysis.markets) {
     if(market.sample<CONFIG.MIN_SAMPLE) continue;
 
-    const displayKey=normalizedMarketLabel(market.label);
-    if(!displayKey) continue;
+    const displayKey=scanMarketId(market.key);
+    if(!displayKey||!SCAN_MARKET_IDS.has(displayKey)) continue;
 
     const existing=displayMarkets.get(displayKey);
 
@@ -1121,9 +1194,8 @@ function renderDetails(analysis,target,history) {
       <div class="details-content">
         ${summary}
         <div class="empty">
-          Birebir aynı açılış oranında en az ${CONFIG.MIN_SAMPLE}
-          örnek bulunan market yok. Tahmin hesabı, tüm ortak
-          marketlerin benzerlik analizini kullanır.
+          Seçilen 8 markette birebir aynı açılış oranına sahip en az
+          ${CONFIG.MIN_SAMPLE} geçmiş örnek bulunan market yok.
         </div>
       </div>
     `;
@@ -1165,9 +1237,9 @@ function renderDetails(analysis,target,history) {
         </table>
       </div>
       <p class="small">
-        Tablo birebir aynı oranlı geçmiş kayıtları gösterir.
-        Aynı standart market adı yalnızca bir kez gösterilir.
-        Ana tahmin tüm ortak marketlerdeki oran benzerliğini kullanır.
+        Yalnızca belirlenen 8 market gösterilir. Tablo birebir aynı
+        açılış oranına sahip geçmiş maçları listeler. Benzer maç
+        tahmini de bu 8 marketin ortak oranlarıyla hesaplanır.
       </p>
     </div>
   `;
@@ -1224,7 +1296,7 @@ function renderWeek() {
     const source=target
       ?(target._matchedUnplayed?"Oynanmamış kayıt":"Geçmiş kayıt"):"";
 
-    const marketCount=target?target._oddsCount:0;
+    const marketCount=target?target._scanOddsCount:0;
 
     return `
       <article class="match">
@@ -1244,7 +1316,7 @@ function renderWeek() {
           <span class="tag">${escapeHTML(matchScore)}</span>
           ${source?`<span class="tag">${escapeHTML(source)}</span>`:""}
           <span class="tag">Benzer maç: <strong>${analysis.similarCount}</strong></span>
-          <span class="tag">Tarama: <strong>${marketCount} market</strong></span>
+          <span class="tag">Taranan market: <strong>${marketCount}/8</strong></span>
           ${result?`<span class="tag">Gerçek sonuç: <strong>${escapeHTML(result)}</strong></span>`:""}
         </div>
 
@@ -1256,7 +1328,7 @@ function renderWeek() {
           <div class="small" style="padding-top:10px">
             ${escapeHTML(analysis.reason)}
             ${target?`<br>V2: ${escapeHTML(target._home)} – ${escapeHTML(target._away)}`:""}
-            ${target?`<br>Okunabilen açılış marketi: ${target._oddsCount}`:""}
+            ${target?`<br>Taranabilir açılış marketi: ${target._scanOddsCount}/8`:""}
           </div>
         </details>
       </article>
@@ -1400,15 +1472,16 @@ async function loadData() {
     );
 
     const withOdds=allMatches.reduce(
-      (n,m)=>n+(m._oddsCount>0?1:0),0
+      (n,m)=>n+(m._scanOddsCount>0?1:0),0
     );
 
     showMessage(
       `Veriler yüklendi: ${getWeeks().length} hafta, `+
       `${allMatches.length} V2 maçı, ${withResults} sonuçlu maç, `+
-      `${withOdds} oranlı kayıt. Son ${CONFIG.HISTORY_DAYS} günde `+
-      `${historicalMatches.length} sonuçlanmış maç. Tahmin için en az `+
-      `${CONFIG.MIN_SAMPLE} benzer maç aranıyor.`,
+      `${withOdds} seçili marketlerden en az birine sahip kayıt. `+
+      `Son ${CONFIG.HISTORY_DAYS} günde ${historicalMatches.length} `+
+      `sonuçlanmış maç. Tahmin için en az ${CONFIG.MIN_SAMPLE} `+
+      `benzer maç aranıyor. Tarama listesi 8 marketle sınırlandırıldı.`,
       "good"
     );
 
