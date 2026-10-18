@@ -162,7 +162,7 @@ window.SPORT_TOTO_DATA = {
       {"number":3,"home":"Amed Sportif Faaliyetler","away":"Tümosan Konyaspor","result":"1"},
       {"number":4,"home":"Gençlerbirliği","away":"Galatasaray","result":"2"},
       {"number":5,"home":"Fenerbahçe","away":"Corendon Alanyaspor","result":"1"},
-      {"number":6,"home":"Kasımpaşa","away":"Samsunspor","result":null},
+      {"number":6,"home":"Kasımpaşa","away":"Samsunspor","result":"1"},
       {"number":7,"home":"Kocaelispor","away":"Göztepe","result":null},
       {"number":8,"home":"İstanbul Başakşehir","away":"Gaziantep FK","result":null},
       {"number":9,"home":"Trabzonspor","away":"Beşiktaş","result":null},
