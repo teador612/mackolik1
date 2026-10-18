@@ -6,7 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1220">
 <title>Spor Toto Analiz Sistemi</title>
-
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#18263a;--border:#293b53;--text:#edf4ff;--muted:#9aacc3}
 *{box-sizing:border-box}
@@ -62,7 +61,6 @@ td{white-space:nowrap}
 .rate.low{color:#f87171}
 .empty{padding:25px;text-align:center;color:var(--muted);line-height:1.7}
 footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
-
 @media(max-width:600px){
 header{padding:16px 12px}
 .container{padding:11px}
@@ -75,7 +73,6 @@ h1{font-size:20px}
 }
 </style>
 </head>
-
 <body>
 <header>
   <div class="container" style="padding:0 4px">
@@ -132,7 +129,6 @@ h1{font-size:20px}
 <footer>Spor Toto Analiz · V2 JSON ve Spor Toto haftalık verileri kullanılır.</footer>
 
 <script src="./data/spor-toto-data.js"></script>
-
 <script>
 "use strict";
 
@@ -164,6 +160,121 @@ const MARKET_LABELS = {
   iyms11:"İY/MS 1/1",iyms10:"İY/MS 1/X",iyms12:"İY/MS 1/2",
   iyms01:"İY/MS X/1",iyms00:"İY/MS X/X",iyms02:"İY/MS X/2",
   iyms21:"İY/MS 2/1",iyms20:"İY/MS 2/X",iyms22:"İY/MS 2/2"
+};
+
+/*
+ * Farklı kaynaklardaki alternatif market isimlerini standart etikete çevirir.
+ * Bu eşleme yalnızca ekranda gösterimi etkiler; oran anahtarlarını ve
+ * tahmin hesaplamalarını değiştirmez.
+ */
+const MARKET_ALIASES = {
+  "1":"MS 1",
+  "ms1":"MS 1",
+  "ms 1":"MS 1",
+  "2":"MS 2",
+  "ms2":"MS 2",
+  "ms 2":"MS 2",
+  "0":"MS X",
+  "x":"MS X",
+  "msx":"MS X",
+  "ms x":"MS X",
+
+  "var":"KG Var",
+  "kg var":"KG Var",
+  "kgvar":"KG Var",
+  "yok":"KG Yok",
+  "kg yok":"KG Yok",
+  "kgyok":"KG Yok",
+
+  "1,5 a":"1,5 Alt",
+  "1 5 a":"1,5 Alt",
+  "1,5 alt":"1,5 Alt",
+  "au15alt":"1,5 Alt",
+  "1,5 ü":"1,5 Üst",
+  "1 5 u":"1,5 Üst",
+  "1,5 üst":"1,5 Üst",
+  "au15ust":"1,5 Üst",
+
+  "2,5 a":"2,5 Alt",
+  "2 5 a":"2,5 Alt",
+  "2,5 alt":"2,5 Alt",
+  "au25alt":"2,5 Alt",
+  "2,5 ü":"2,5 Üst",
+  "2 5 u":"2,5 Üst",
+  "2,5 üst":"2,5 Üst",
+  "au25ust":"2,5 Üst",
+
+  "3,5 a":"3,5 Alt",
+  "3 5 a":"3,5 Alt",
+  "3,5 alt":"3,5 Alt",
+  "au35alt":"3,5 Alt",
+  "3,5 ü":"3,5 Üst",
+  "3 5 u":"3,5 Üst",
+  "3,5 üst":"3,5 Üst",
+  "au35ust":"3,5 Üst",
+
+  "iy 1,5 a":"İY 1,5 Alt",
+  "iy15alt":"İY 1,5 Alt",
+  "iy 1,5 alt":"İY 1,5 Alt",
+  "iy 1,5 ü":"İY 1,5 Üst",
+  "iy15ust":"İY 1,5 Üst",
+  "iy 1,5 üst":"İY 1,5 Üst",
+
+  "iy 0":"İY X",
+  "iy x":"İY X",
+  "iyx":"İY X",
+  "iy 1":"İY 1",
+  "iy1":"İY 1",
+  "iy 2":"İY 2",
+  "iy2":"İY 2",
+
+  "0-1":"Toplam gol 0-1",
+  "gol01":"Toplam gol 0-1",
+  "2-3":"Toplam gol 2-3",
+  "gol23":"Toplam gol 2-3",
+  "4-5":"Toplam gol 4-5",
+  "gol45":"Toplam gol 4-5",
+  "6+":"Toplam gol 6+",
+  "gol6plus":"Toplam gol 6+",
+
+  "1/1":"İY/MS 1/1",
+  "iyms11":"İY/MS 1/1",
+  "1/0":"İY/MS 1/X",
+  "1/x":"İY/MS 1/X",
+  "iyms10":"İY/MS 1/X",
+  "1/2":"İY/MS 1/2",
+  "iyms12":"İY/MS 1/2",
+  "0/1":"İY/MS X/1",
+  "x/1":"İY/MS X/1",
+  "iyms01":"İY/MS X/1",
+  "0/0":"İY/MS X/X",
+  "x/x":"İY/MS X/X",
+  "iyms00":"İY/MS X/X",
+  "0/2":"İY/MS X/2",
+  "x/2":"İY/MS X/2",
+  "iyms02":"İY/MS X/2",
+  "2/1":"İY/MS 2/1",
+  "iyms21":"İY/MS 2/1",
+  "2/0":"İY/MS 2/X",
+  "2/x":"İY/MS 2/X",
+  "iyms20":"İY/MS 2/X",
+  "2/2":"İY/MS 2/2",
+  "iyms22":"İY/MS 2/2",
+
+  "0veust":"MS X ve Üst",
+  "xveust":"MS X ve Üst",
+  "msxveust":"MS X ve Üst",
+  "0vealt":"MS X ve Alt",
+  "xvealt":"MS X ve Alt",
+  "msxvealt":"MS X ve Alt",
+  "1veust":"MS 1 ve Üst",
+  "ms1veust":"MS 1 ve Üst",
+  "1vealt":"MS 1 ve Alt",
+  "ms1vealt":"MS 1 ve Alt",
+  "2veust":"MS 2 ve Üst",
+  "ms2veust":"MS 2 ve Üst",
+  "2vealt":"MS 2 ve Alt",
+  "ms2vealt":"MS 2 ve Alt"
 };
 
 const TEAM_ALIASES = {
@@ -386,22 +497,34 @@ function getOpeningOdds(m) {
   return combined;
 }
 
-/*
- * Market anahtarını tek bir biçime çevirir.
- * ms1Alt, ms1_alt, MS 1 ALT ve ms-1-alt gibi yazımlar
- * karşılaştırma için aynı normalize anahtara dönüştürülür.
- */
 function normalizedMarketKey(key) {
   return normalizeBasic(key).replace(/[^a-z0-9]/g,"");
 }
 
-/*
- * Ekranda görünen market adını da standartlaştırır.
- * Böylece farklı anahtarlar aynı etiketi üretiyorsa tabloya
- * yalnızca bir satır eklenir.
- */
 function normalizedMarketLabel(label) {
   return normalizeBasic(label).replace(/[^a-z0-9]/g,"");
+}
+
+/*
+ * Market adını, eşdeğer alternatifleri de tanıyacak şekilde standartlaştır.
+ * Bu fonksiyon yalnızca gösterim ve tablo tekilleştirmesinde kullanılır.
+ */
+function marketLabel(key) {
+  const raw=String(key??"").trim();
+  const basic=normalizeBasic(raw);
+  const compact=basic.replace(/[^a-z0-9]/g,"");
+
+  if(MARKET_ALIASES[basic]) return MARKET_ALIASES[basic];
+  if(MARKET_ALIASES[compact]) return MARKET_ALIASES[compact];
+
+  if(MARKET_LABELS[raw]) return MARKET_LABELS[raw];
+
+  const lower=normalizedMarketKey(raw);
+  const known=Object.keys(MARKET_LABELS).find(
+    k=>normalizedMarketKey(k)===lower
+  );
+
+  return known?MARKET_LABELS[known]:raw;
 }
 
 function prepareMatch(m,index) {
@@ -473,18 +596,6 @@ function getOdd(m,key) {
   );
 
   return actual?parseNumber(odds[actual]):null;
-}
-
-function marketLabel(key) {
-  if(MARKET_LABELS[key]) return MARKET_LABELS[key];
-
-  const lower=normalizedMarketKey(key);
-
-  const known=Object.keys(MARKET_LABELS).find(
-    k=>normalizedMarketKey(k)===lower
-  );
-
-  return known?MARKET_LABELS[known]:key;
 }
 
 function bigrams(value) {
@@ -654,7 +765,6 @@ function getMatchingTeamRecord(home,away) {
 
   const result=finishTeamMatch(candidates);
   teamRecordCache.set(cacheKey,result);
-
   return result;
 }
 
@@ -708,40 +818,40 @@ function analyzeMarket(target,key,history) {
   return out;
 }
 
-/* Market anahtarına ve görünen market adına göre çift korumalı tekilleştirme. */
+/*
+ * Her ham marketin kendi oranı ve istatistiği ayrı hesaplanır.
+ * Yalnızca sonuç tablosunda aynı standart etikete sahip marketlerden
+ * tek satır gösterilir. Böylece tahmin motorunun verileri birleştirilmez.
+ */
 function getMarketAnalyses(target,history) {
   if(!target) return [];
 
-  const uniqueByKey=new Map();
-  const uniqueByLabel=new Map();
+  const analysesByLabel=new Map();
 
   for(const entry of target._oddsEntries) {
-    const norm=normalizedMarketKey(entry.key);
     const label=marketLabel(entry.key);
     const labelNorm=normalizedMarketLabel(label);
-
-    if(!norm||uniqueByKey.has(norm)) continue;
+    if(!labelNorm) continue;
 
     const analysis=analyzeMarket(target,entry.key,history);
+    const existing=analysesByLabel.get(labelNorm);
 
-    if(labelNorm&&uniqueByLabel.has(labelNorm)) {
-      const existing=uniqueByLabel.get(labelNorm);
-
-      /*
-       * Aynı etiket birden fazla anahtarda bulunuyorsa tek satır bırak.
-       * Aynı oranı temsil eden tekrarların sayısı artırılmaz.
-       */
-      if(analysis.sample>existing.sample) {
-        uniqueByLabel.set(labelNorm,analysis);
-      }
+    if(!existing) {
+      analysesByLabel.set(labelNorm,analysis);
       continue;
     }
 
-    uniqueByKey.set(norm,analysis);
-    if(labelNorm) uniqueByLabel.set(labelNorm,analysis);
+    /*
+     * Aynı standart market adı birden fazla ham anahtarda varsa
+     * örnek sayısı en yüksek olan kaydı görüntüle.
+     * Eşitlikte ilk kayıt korunur; örnekler toplanmaz.
+     */
+    if(analysis.sample>existing.sample) {
+      analysesByLabel.set(labelNorm,analysis);
+    }
   }
 
-  return [...uniqueByLabel.values()];
+  return [...analysesByLabel.values()];
 }
 
 function isMainOutcomeMarket(key) {
@@ -784,11 +894,9 @@ function compareOddsProfiles(target,old) {
 
   const meanDistance=weightedDistance/totalWeight;
   const similarity=Math.exp(-2.5*meanDistance);
-
   const result={similarity,common,mainCommon,meanDistance};
 
   profileSimilarityCache.set(cacheKey,result);
-
   return result;
 }
 
@@ -824,7 +932,6 @@ function getSimilarMatches(target,history) {
 
   for(const old of history) {
     const profile=compareOddsProfiles(target,old);
-
     if(!profile||profile.similarity<0.12) continue;
 
     const ageDays=old._dateTime
@@ -845,7 +952,6 @@ function getSimilarMatches(target,history) {
   }
 
   candidates.sort((a,b)=>b.weight-a.weight);
-
   return candidates.slice(0,CONFIG.MAX_SIMILAR_MATCHES);
 }
 
@@ -879,7 +985,6 @@ function blendProbabilities(historyProbabilities,oddsPrior) {
   }
 
   const total=result["1"]+result["X"]+result["2"];
-
   if(total<=0) return null;
 
   for(const key of ["1","X","2"]) {
@@ -979,11 +1084,6 @@ function renderDetails(analysis,target,history) {
     analysis.markets=getMarketAnalyses(target,history);
   }
 
-  /*
-   * Son ekran koruması:
-   * Aynı görünen market etiketi iki farklı kaynaktan gelirse,
-   * tabloya sadece bir satır eklenir.
-   */
   const displayMarkets=new Map();
 
   for(const market of analysis.markets) {
@@ -1066,8 +1166,8 @@ function renderDetails(analysis,target,history) {
       </div>
       <p class="small">
         Tablo birebir aynı oranlı geçmiş kayıtları gösterir.
-        Ana tahmin ise tüm ortak marketlerdeki oran benzerliğini
-        kullanır; aynı oran tablosu tek başına tahmini belirlemez.
+        Aynı standart market adı yalnızca bir kez gösterilir.
+        Ana tahmin tüm ortak marketlerdeki oran benzerliğini kullanır.
       </p>
     </div>
   `;
