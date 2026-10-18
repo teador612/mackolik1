@@ -164,14 +164,14 @@ window.SPORT_TOTO_DATA = {
       {"number":5,"home":"Fenerbahçe","away":"Corendon Alanyaspor","result":"1"},
       {"number":6,"home":"Kasımpaşa","away":"Samsunspor","result":"1"},
       {"number":7,"home":"Kocaelispor","away":"Göztepe","result":"2"},
-      {"number":8,"home":"İstanbul Başakşehir","away":"Gaziantep FK","result":null},
+      {"number":8,"home":"İstanbul Başakşehir","away":"Gaziantep FK","result":"1"},
       {"number":9,"home":"Trabzonspor","away":"Beşiktaş","result":null},
       {"number":10,"home":"Everton","away":"Chelsea","result":"2"},
       {"number":11,"home":"Brentford","away":"Liverpool","result":"2"},
       {"number":12,"home":"Real Betis","away":"Barcelona","result":"2"},
-      {"number":13,"home":"Real Madrid","away":"Sevilla","result":null},
-      {"number":14,"home":"Milan","away":"Atalanta","result":null},
-      {"number":15,"home":"Juventus","away":"Lazio","result":null},
+      {"number":13,"home":"Real Madrid","away":"Sevilla","result":"1"},
+      {"number":14,"home":"Milan","away":"Atalanta","result":"1"},
+      {"number":15,"home":"Juventus","away":"Lazio","result":"2"},
     ],
   }
 };
