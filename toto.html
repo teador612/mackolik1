@@ -54,7 +54,7 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
 <header>
   <div class="container" style="padding:0 4px">
     <h1>⚽ Spor Toto Analiz</h1>
-    <div class="subtitle">8 market · Aynı markette birebir aynı açılış oranı · Son 30 gün · En yeni 5 sonuç · 1 / X / 2</div>
+    <div class="subtitle">8 market · Aynı markette birebir aynı açılış oranı · En yeni 5 sonuç · 1 / X / 2</div>
   </div>
 </header>
 
@@ -80,10 +80,10 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
     </div>
     <div class="small">
       İY 1, İY 2, İY 1,5 Üst, MS 1, MS 2, MS X, KG Var ve 2,5 Üst
-      marketleri ayrı ayrı incelenir. Yalnızca son 30 gün içindeki
-      sonuçlanmış maçlar değerlendirilir. Her markette aynı açılış oranına
-      sahip en yeni en fazla 5 maç kullanılır. Market sonuç yüzdeleri eşit
-      ağırlıkla birleştirilerek tek bir 1/X/2 tahmini oluşturulur.
+      marketleri ayrı ayrı incelenir. Her markette aynı açılış oranına
+      sahip en yeni en fazla 5 sonuçlanmış maç kullanılır. Son 30 gün
+      sınırı yoktur. Market sonuç yüzdeleri eşit ağırlıkla birleştirilerek
+      tek bir 1/X/2 tahmini oluşturulur.
     </div>
   </section>
 
@@ -98,7 +98,7 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
       <br><br>
       Her market yalnızca kendi açılış oranıyla eşleştirilir. Eksik örnekler
       başka marketlerden tamamlanmaz. Hiçbir markette eşleşme yoksa tahmin
-      üretilmez. Geçmiş maçlar için son 30 gün sınırı uygulanır.
+      üretilmez. Tüm mevcut geçmiş taranır; tarih sınırı uygulanmaz.
     </div>
   </section>
 </main>
@@ -112,7 +112,6 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
 const CONFIG = {
   DATA_URL: "./data/v2-data.json",
   MAX_MATCHES_PER_MARKET: 5,
-  HISTORY_DAYS: 30,
   FUZZY_TEAM_THRESHOLD: 0.76,
   FUZZY_SIDE_THRESHOLD: 0.68
 };
@@ -341,6 +340,7 @@ function scanMarketId(key) {
 }
 
 function prepareMatch(m,index) {
+  // ÖNEMLİ: Sonucu _prepared işaretinden önce hesapla.
   const outcome=getOutcome(m);
   const rawOdds=getOpeningOdds(m);
 
@@ -393,6 +393,7 @@ function prepareMatch(m,index) {
   m._scanOddsById=scanOddsById;
   m._scanOddsCount=scanOddsEntries.length;
 
+  // Bu işaret en son konulmalı.
   m._prepared=true;
   return m;
 }
@@ -544,19 +545,12 @@ function getMatchingTeamRecord(home,away) {
   return result;
 }
 
-/* SON 30 GÜNDEKİ SONUÇLANMIŞ GEÇMİŞ MAÇLAR */
 function buildHistoricalMatches() {
   const now=Date.now();
-  const cutoff=now-CONFIG.HISTORY_DAYS*24*60*60*1000;
 
   historicalMatches=allMatches
-    .filter(m=>
-      m._outcome!==null &&
-      m._dateTime>0 &&
-      m._dateTime>=cutoff &&
-      m._dateTime<=now
-    )
-    .sort((a,b)=>b._dateTime-a._dateTime);
+    .filter(m=>m._outcome!==null&&(!m._dateTime||m._dateTime<=now))
+    .sort((a,b)=>(b._dateTime||0)-(a._dateTime||0));
 }
 
 function getHistoricalMatches() {
@@ -663,7 +657,7 @@ function choosePrediction(target,history) {
     const result={
       selection:"—",confidence:null,probabilities:null,markets,
       similarCount:0,usableMarkets:0,method:"insufficient",
-      reason:"Son 30 gün içinde sekiz markette de birebir aynı açılış oranına sahip sonuçlanmış maç bulunamadı."
+      reason:"Sekiz markette de birebir aynı açılış oranına sahip sonuçlanmış maç bulunamadı."
     };
     analysisCache.set(target,result);
     return result;
@@ -679,8 +673,8 @@ function choosePrediction(target,history) {
     markets,
     similarCount:combined.totalSamples,
     usableMarkets:combined.usableMarkets,
-    method:"exact-odds-last-30-days-last-five",
-    reason:`Son 30 günde ${combined.usableMarkets}/8 markette eşleşme bulundu. Her markette en yeni en fazla ${CONFIG.MAX_MATCHES_PER_MARKET} birebir aynı oranlı sonuç kullanıldı.`
+    method:"exact-odds-last-five",
+    reason:`${combined.usableMarkets}/8 markette eşleşme bulundu. Her markette en yeni en fazla ${CONFIG.MAX_MATCHES_PER_MARKET} birebir aynı oranlı sonuç kullanıldı.`
   };
 
   analysisCache.set(target,result);
@@ -742,7 +736,7 @@ function renderDetails(analysis,target,history) {
           <tbody>${rows}</tbody>
         </table>
       </div>
-      <p class="small">Yalnızca son 30 gün içindeki sonuçlanmış maçlar kullanılır. Her markette aynı açılış oranına sahip en yeni en fazla 5 maç değerlendirilir.</p>
+      <p class="small">Her markette aynı açılış oranına sahip en yeni en fazla 5 sonuçlanmış maç kullanılır. Son 30 gün sınırı yoktur.</p>
       <div class="table-wrap" style="margin-top:12px">
         <table>
           <thead><tr><th>Market</th><th>Eşleşen maçlar ve sonuçları</th></tr></thead>
@@ -930,7 +924,7 @@ async function loadData() {
     showMessage(
       `Veriler yüklendi: ${getWeeks().length} hafta, ${allMatches.length} V2 maçı, `+
       `${withResults} sonuçlu maç, ${withOdds} seçili marketlerden en az birine sahip kayıt. `+
-      `Son ${CONFIG.HISTORY_DAYS} gün içindeki sonuçlanmış maçlar taranıyor. Her markette en yeni en fazla ${CONFIG.MAX_MATCHES_PER_MARKET} birebir oran eşleşmesi aranıyor.`,
+      `Tüm geçmiş taranıyor; son 30 gün sınırı yok. Her markette en yeni en fazla 5 birebir oran eşleşmesi aranıyor.`,
       "good"
     );
   } catch(error) {
