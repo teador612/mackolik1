@@ -624,7 +624,7 @@ function runAnalysis() {
       for (const pastOriginal of historicalMatches) {
         const past = { ...pastOriginal, _odds: getOdds(pastOriginal) };
         const shared = sharedMarkets(target, past);
-        if (shared.length > 0) history.push({ match: past, shared });
+        if (shared.length >= 3) history.push({ match: past, shared });
       }
       const prediction = calculatePrediction(history);
       return { match, history, prediction };
