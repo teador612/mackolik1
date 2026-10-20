@@ -1,10 +1,21 @@
+
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
 
 const SITE = 'https://arsiv.mackolik.com';
-const PAGE = SITE + '/Genis-Iddaa-Programi';
+const PAGE = `${SITE}/Genis-Iddaa-Programi`;
 const DATA_PATH = path.resolve('data/matches.json');
+
+const REQUEST_HEADERS = {
+  'User-Agent':
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Accept':
+    'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Cache-Control': 'no-cache',
+  'Pragma': 'no-cache'
+};
 
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
@@ -29,15 +40,11 @@ function numberOrNull(value) {
     String(value).replace(',', '.')
   );
 
-  return Number.isFinite(number)
-    ? number
-    : null;
+  return Number.isFinite(number) ? number : null;
 }
 
 function parseScoreValue(value, status) {
-  const normalizedStatus = Number(status);
-
-  if (normalizedStatus === 0) {
+  if (Number(status) === 0) {
     return null;
   }
 
@@ -54,29 +61,63 @@ function parseScoreValue(value, status) {
   return result === '' ? null : result;
 }
 
-async function getCurrentWeek() {
-  const response = await fetch(PAGE);
+async function request(url, referer = PAGE) {
+  let response;
+
+  try {
+    response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        ...REQUEST_HEADERS,
+        Referer: referer
+      },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(25000)
+    });
+  } catch (error) {
+    throw new Error(
+      `Mackolik isteği başarısız: ${url}\n` +
+      `Ayrıntı: ${error.message}`
+    );
+  }
 
   if (!response.ok) {
+    const detail =
+      response.status === 403
+        ? 'Sunucu erişimi reddetti. İstek başlıkları eklenmiş olsa da IP veya bot koruması engeli olabilir.'
+        : response.status === 429
+          ? 'İstek sınırına ulaşıldı.'
+          : 'Sunucu başarılı yanıt vermedi.';
+
     throw new Error(
-      'Mackolik sayfasi alinamadi. HTTP ' +
-      response.status
+      `${detail}\n` +
+      `HTTP ${response.status}\n` +
+      `URL: ${url}`
     );
   }
 
-  const html = await response.text();
+  return response.text();
+}
 
-  const match = html.match(
-    /currentWeek\s*=\s*"(\d+)"/
+async function getCurrentWeek() {
+  const html = await request(PAGE);
+
+  const patterns = [
+    /\bcurrentWeek\s*=\s*["']?(\d+)["']?/i,
+    /\bcurrentWeek\s*:\s*["']?(\d+)["']?/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = html.match(pattern);
+
+    if (match) {
+      return Number(match[1]);
+    }
+  }
+
+  throw new Error(
+    'Mackolik sayfası alındı ancak güncel bülten haftası bulunamadı.'
   );
-
-  if (!match) {
-    throw new Error(
-      'Mackolik guncel bulten haftasi bulunamadi.'
-    );
-  }
-
-  return Number(match[1]);
 }
 
 async function fetchMatches(week) {
@@ -92,28 +133,35 @@ async function fetchMatches(week) {
     '&np=0' +
     '&sport=1';
 
-  const response = await fetch(url);
+  const text = await request(url, PAGE);
 
-  if (!response.ok) {
+  let payload;
+
+  try {
+    payload = parseJsLiteral(text);
+  } catch (error) {
     throw new Error(
-      'Mackolik mac verisi alinamadi. HTTP ' +
-      response.status
+      'Mackolik yanıtı beklenen veri formatında değil. ' +
+      'Yanıt HTML veya başka bir içerik olabilir. ' +
+      `Ayrıntı: ${error.message}`
     );
   }
 
-  const text = await response.text();
-  const payload = parseJsLiteral(text);
+  if (!payload || !Array.isArray(payload.m)) {
+    throw new Error(
+      'Mackolik yanıtında beklenen maç listesi bulunamadı.'
+    );
+  }
 
   const matches = [];
 
-  for (const day of payload.m ?? []) {
+  for (const day of payload.m) {
     for (const row of day.m ?? []) {
       const matchStatus = Number(row[5] ?? 0);
-      
 
       matches.push({
         code: String(row[0]),
-        week: week,
+        week,
         date: row[7] || day.d,
         time: row[6] || null,
         league: row[26] || '',
@@ -123,25 +171,13 @@ async function fetchMatches(week) {
         status: matchStatus,
 
         score: {
-          home: parseScoreValue(
-            row[8],
-            matchStatus
-          ),
-          away: parseScoreValue(
-            row[9],
-            matchStatus
-          )
+          home: parseScoreValue(row[8], matchStatus),
+          away: parseScoreValue(row[9], matchStatus)
         },
 
         halfTimeScore: {
-          home: parseScoreValue(
-            row[11],
-            matchStatus
-          ),
-          away: parseScoreValue(
-            row[12],
-            matchStatus
-          )
+          home: parseScoreValue(row[11], matchStatus),
+          away: parseScoreValue(row[12], matchStatus)
         },
 
         openingOdds: {
@@ -187,6 +223,13 @@ async function fetchMatches(week) {
     }
   }
 
+  if (matches.length === 0) {
+    throw new Error(
+      'Mackolik yanıtı boş maç listesi içeriyor. ' +
+      'Mevcut veri dosyası korunacak.'
+    );
+  }
+
   return matches;
 }
 
@@ -194,163 +237,141 @@ function sameJson(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 
-let previous = {
-  week: null,
-  updatedAt: null,
-  matches: []
-};
+async function loadPrevious() {
+  try {
+    const text = await fs.readFile(DATA_PATH, 'utf8');
+    const data = JSON.parse(text);
 
-try {
-  const previousText = await fs.readFile(
-    DATA_PATH,
-    'utf8'
-  );
+    if (!Array.isArray(data.matches)) {
+      throw new Error(
+        'Mevcut matches.json içinde matches listesi bulunamadı.'
+      );
+    }
 
-  previous = JSON.parse(previousText);
-} catch {
-  previous = {
-    week: null,
-    updatedAt: null,
-    matches: []
-  };
+    return data;
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      return {
+        source: PAGE,
+        week: null,
+        updatedAt: null,
+        matches: []
+      };
+    }
+
+    throw error;
+  }
 }
 
-const week = await getCurrentWeek();
-const fetched = await fetchMatches(week);
+async function main() {
+  // Önceki dosyayı yükle; hatalı JSON durumunda dur.
+  const previous = await loadPrevious();
 
-const previousByCode = new Map();
+  // Her iki veri isteği de başarılı olmadan dosyaya yazılmaz.
+  const week = await getCurrentWeek();
+  const fetched = await fetchMatches(week);
 
-for (const match of previous.matches ?? []) {
-  previousByCode.set(
-    String(match.code),
-    match
-  );
-}
+  const previousByCode = new Map();
 
-let changed = false;
-
-for (const current of fetched) {
-  const code = String(current.code);
-  const old = previousByCode.get(code);
-
-  // Yeni maç
-  if (!old) {
-    previousByCode.set(code, {
-      ...current,
-      openingRecordedAt:
-        new Date().toISOString()
-    });
-
-    changed = true;
-    continue;
+  for (const match of previous.matches) {
+    previousByCode.set(String(match.code), match);
   }
 
-  // Mevcut maç:
-  // Güncel bilgileri yenile,
-  // fakat açılış oranlarını koru.
-  const merged = {
-    ...old,
+  let changed = false;
 
-    week: current.week,
-    date: current.date,
-    time: current.time,
-    league: current.league,
-    home: current.home,
-    away: current.away,
-    mbs: current.mbs,
+  for (const current of fetched) {
+    const code = String(current.code);
+    const old = previousByCode.get(code);
 
-    status: current.status,
+    if (!old) {
+      previousByCode.set(code, {
+        ...current,
+        openingRecordedAt: new Date().toISOString()
+      });
 
-    score: current.score,
+      changed = true;
+      continue;
+    }
 
-    halfTimeScore:
-      current.halfTimeScore,
+    const merged = {
+      ...old,
 
-    openingOdds:
-      old.openingOdds ??
-      current.openingOdds,
+      week: current.week,
+      date: current.date,
+      time: current.time,
+      league: current.league,
+      home: current.home,
+      away: current.away,
+      mbs: current.mbs,
 
-    openingRecordedAt:
-      old.openingRecordedAt ??
-      'previous-record'
+      status: current.status,
+      score: current.score,
+      halfTimeScore: current.halfTimeScore,
+
+      // Kaydedilmiş açılış oranlarını değiştirme.
+      openingOdds: old.openingOdds ?? current.openingOdds,
+
+      openingRecordedAt:
+        old.openingRecordedAt ?? 'previous-record'
+    };
+
+    if (
+      !sameJson(old.score, merged.score) ||
+      !sameJson(old.halfTimeScore, merged.halfTimeScore) ||
+      Number(old.status) !== Number(merged.status)
+    ) {
+      changed = true;
+    }
+
+    previousByCode.set(code, merged);
+  }
+
+  const matches = Array.from(previousByCode.values());
+
+  if (matches.length !== previous.matches.length) {
+    changed = true;
+  }
+
+  const next = {
+    source: PAGE,
+    week,
+    updatedAt: changed
+      ? new Date().toISOString()
+      : previous.updatedAt,
+    matches
   };
 
   if (
-    !sameJson(
-      old.score,
-      current.score
-    ) ||
-    !sameJson(
-      old.halfTimeScore,
-      current.halfTimeScore
-    ) ||
-    Number(old.status) !==
-      Number(current.status)
+    changed ||
+    previous.matches.length === 0
   ) {
-    changed = true;
+    await fs.mkdir(path.dirname(DATA_PATH), {
+      recursive: true
+    });
+
+    const output = JSON.stringify(next, null, 2) + '\n';
+    const tempPath = DATA_PATH + '.tmp';
+
+    try {
+      await fs.writeFile(tempPath, output, 'utf8');
+      await fs.rename(tempPath, DATA_PATH);
+    } catch (error) {
+      await fs.rm(tempPath, { force: true }).catch(() => {});
+      throw error;
+    }
   }
 
-  previousByCode.set(
-    code,
-    merged
-  );
+  console.log(JSON.stringify({
+    week,
+    fetched: fetched.length,
+    archived: matches.length,
+    changed,
+    dataPath: DATA_PATH
+  }, null, 2));
 }
 
-// Eski maçlar + yeni maçlar
-const matches = Array.from(
-  previousByCode.values()
-);
-
-if (
-  matches.length !==
-  (previous.matches ?? []).length
-) {
-  changed = true;
-}
-
-const next = {
-  source: PAGE,
-  week: week,
-  updatedAt: changed
-    ? new Date().toISOString()
-    : previous.updatedAt,
-  matches: matches
-};
-
-if (
-  changed ||
-  !previous.matches ||
-  previous.matches.length === 0
-) {
-  await fs.mkdir(
-    path.dirname(DATA_PATH),
-    {
-      recursive: true
-    }
-  );
-
-  const output =
-    JSON.stringify(next, null, 2) +
-    '\n';
-
-  await fs.writeFile(
-    DATA_PATH,
-    output,
-    'utf8'
-  );
-}
-
-console.log(
-  JSON.stringify(
-    {
-      week: week,
-      fetched: fetched.length,
-      archived:
-        matches.length,
-      changed: changed,
-      dataPath: DATA_PATH
-    },
-    null,
-    2
-  )
-);
+main().catch(error => {
+  console.error('Mackolik güncelleme hatası:');
+  console.error(error.stack || error.message);
+  process.exitCode = 1;
+});
