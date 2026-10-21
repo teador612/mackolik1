@@ -65,28 +65,61 @@ tbody tr:hover td{filter:brightness(1.08)}
 .history-score{font-weight:800;white-space:nowrap}
 .empty{padding:25px;text-align:center;color:var(--muted)}
 footer{font-size:11px;color:var(--muted);line-height:1.7;padding:13px 2px}
-@media(max-width:700px){
-  main{padding:9px}
-  h1{font-size:20px}
-  .subtitle{font-size:12px}
-  .panel{padding:10px;border-radius:9px}
-  .controls{gap:8px}
-  .field{flex:1 1 calc(50% - 8px);min-width:0}
-  .field input,.field select{width:100%;min-width:0;font-size:14px}
-  .controls button{flex:1 1 calc(50% - 8px)}
-  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .stat{padding:10px}
-  .stat-value{font-size:20px}
-  .legend{gap:8px}
-  .table-wrap{border-radius:8px}
-  table{min-width:1050px}
-  th,td{padding:9px 7px}
-  .match-cell{min-width:220px}
-  .teams{font-size:13px}
-  .shared-markets{font-size:10px}
-  .history-item{gap:6px}
+
+/* Lig seçici */
+.league-field{flex:1 1 250px;min-width:220px}
+.league-picker{position:relative}
+.league-picker summary{
+list-style:none;cursor:pointer;min-height:39px;padding:10px;
+background:var(–panel2);border:1px solid var(–border);
+border-radius:8px;font-size:13px;overflow:hidden;
+white-space:nowrap;text-overflow:ellipsis
 }
-</style>
+.league-picker summary::-webkit-details-marker{display:none}
+.league-picker summary:after{content:“▾”;float:right;margin-left:8px}
+.league-picker[open] summary{border-color:var(–blue);border-radius:8px 8px 0 0}
+.league-menu{
+position:absolute;top:100%;left:0;right:0;z-index:20;
+background:#1b2736;border:1px solid var(–border);
+border-top:0;border-radius:0 0 9px 9px;padding:9px;
+box-shadow:0 8px 22px #0005;max-height:300px;overflow:auto
+}
+.league-search{width:100%;margin-bottom:8px}
+.league-actions{display:flex;gap:7px;margin-bottom:7px}
+.league-actions button{flex:1;min-height:32px;padding:6px;font-size:11px}
+.league-option{
+display:flex;align-items:center;gap:9px;padding:8px 5px;
+border-bottom:1px solid #354356;font-size:12px;cursor:pointer;
+overflow-wrap:anywhere
+}
+.league-option:last-child{border-bottom:0}
+.league-option input{min-height:16px;width:16px;margin:0;flex:0 0 auto;accent-color:#70b7ff}
+.league-option span{line-height:1.4}
+.league-count{font-size:11px;color:var(–muted);margin-top:5px}
+@media(max-width:700px){
+main{padding:9px}
+h1{font-size:20px}
+.subtitle{font-size:12px}
+.panel{padding:10px;border-radius:9px}
+.controls{gap:8px}
+.field{flex:1 1 calc(50% - 8px);min-width:0}
+.field input,.field select{width:100%;min-width:0;font-size:14px}
+.league-field{flex:1 1 100%;min-width:0}
+.league-picker summary{font-size:14px}
+.controls button{flex:1 1 calc(50% - 8px)}
+.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.stat{padding:10px}
+.stat-value{font-size:20px}
+.legend{gap:8px}
+.table-wrap{border-radius:8px}
+table{min-width:1050px}
+th,td{padding:9px 7px}
+.match-cell{min-width:220px}
+.teams{font-size:13px}
+.shared-markets{font-size:10px}
+.history-item{gap:6px}
+.league-menu{max-height:260px}
+}
 </head>
 <body>
 <main>
@@ -102,33 +135,48 @@ footer{font-size:11px;color:var(--muted);line-height:1.7;padding:13px 2px}
         <label for="date">Maç tarihi</label>
         <input type="date" id="date">
       </div>
-      <div class="field">
-        <label for="days">Geçmiş aralığı</label>
-        <select id="days">
-          <option value="3">Son 3 gün</option>
-          <option value="7" selected>Son 7 gün</option>
-          <option value="14">Son 14 gün</option>
-          <option value="30">Son 30 gün</option>
-          <option value="60">Son 60 gün</option>
-          <option value="0">Tüm geçmiş</option>
-        </select>
+  <div class="field">
+    <label for="days">Geçmiş aralığı</label>
+    <select id="days">
+      <option value="3">Son 3 gün</option>
+      <option value="7" selected>Son 7 gün</option>
+      <option value="14">Son 14 gün</option>
+      <option value="30">Son 30 gün</option>
+      <option value="60">Son 60 gün</option>
+      <option value="0">Tüm geçmiş</option>
+    </select>
+  </div>
+  <div class="field league-field">
+    <label>Lig filtresi</label>
+    <details class="league-picker" id="leaguePicker">
+      <summary id="leagueSummary">Tüm Ligler</summary>
+      <div class="league-menu">
+        <input class="league-search" id="leagueSearch" type="search" placeholder="Lig ara...">
+        <div class="league-actions">
+          <button type="button" id="allLeagues">Tümünü seç</button>
+          <button type="button" id="clearLeagues">Seçimi temizle</button>
+        </div>
+        <div id="leagueOptions"></div>
       </div>
-      <div class="field">
-        <label for="sort">Sıralama</label>
-        <select id="sort">
-          <option value="time">Tarih / saat</option>
-          <option value="league">Lig</option>
-          <option value="home">Ev sahibi</option>
-          <option value="history">Geçmiş eşleşme sayısı</option>
-        </select>
-      </div>
-      <div class="field" style="flex:1;min-width:150px">
-        <label for="search">Maç ara</label>
-        <input id="search" type="search" placeholder="Takım veya lig">
-      </div>
-      <button class="primary" id="analyze">Analiz et</button>
-      <button id="csv">CSV indir</button>
-    </div>
+    </details>
+    <div class="league-count" id="leagueCount">Tüm ligler gösteriliyor</div>
+  </div>
+  <div class="field">
+    <label for="sort">Sıralama</label>
+    <select id="sort">
+      <option value="time">Tarih / saat</option>
+      <option value="league">Lig</option>
+      <option value="home">Ev sahibi</option>
+      <option value="history">Geçmiş eşleşme sayısı</option>
+    </select>
+  </div>
+  <div class="field" style="flex:1;min-width:150px">
+    <label for="search">Maç ara</label>
+    <input id="search" type="search" placeholder="Takım veya lig">
+  </div>
+  <button class="primary" id="analyze">Analiz et</button>
+  <button id="csv">CSV indir</button>
+</div>
   </section>
   <section class="stats">
     <div class="stat">
@@ -194,6 +242,8 @@ let matches=[];
 let markets={};
 let rows=[];
 let expanded=new Set();
+let availableLeagues=[];
+let selectedLeagues=new Set();
 const ALIASES={
  ms1:"MS 1",msx:"MS 0",ms0:"MS 0",ms2:"MS 2",
  kgvar:"KG Var",kgyok:"KG Yok",kg:"KG",
@@ -217,7 +267,7 @@ function norm(v){
   .replace(/[^a-z0-9]/g,"");
 }
 function dateOf(m){
- const s=String(first(m.date,m.matchDate,m.tarih,m.datetime,""));
+ let s=String(first(m.date,m.matchDate,m.tarih,m.datetime,""));
  let x=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
  if(x)return `${x[1]}-${x[2].padStart(2,"0")}-${x[3].padStart(2,"0")}`;
  x=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
@@ -374,25 +424,44 @@ function niceDate(s){
  const x=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
  return x?`${x[3]}.${x[2]}.${x[1]}`:s;
 }
-function symbol(v,label){
- let text="—",cls="unknown";
- if(v===true||v==="true"){text="✓";cls="yes";}
- else if(v===false||v==="false"){text="✕";cls="no";}
- else if(v!=null&&v!==""){text=String(v);}
- return `<span class="symbol ${cls}">${esc(text)}</span>
- <span class="cell-label">${esc(label)}</span>`;
+/* Lig listesi veriden otomatik oluşturulur. */
+function buildLeagueOptions(){
+ availableLeagues=[...new Set(matches.map(m=>league(m).trim()).filter(Boolean))]
+  .sort((a,b)=>a.localeCompare(b,"tr"));
+ const q=norm($("leagueSearch").value);
+ const filtered=availableLeagues.filter(name=>!q||norm(name).includes(q));
+ $("leagueOptions").innerHTML=filtered.map(name=>`
+  <label class="league-option">
+   <input type="checkbox" data-league="${esc(name)}"
+    ${selectedLeagues.has(name)?"checked":""}>
+   <span>${esc(name)}</span>
+  </label>
+ `).join("")||'<div class="empty">Bu aramayla eşleşen lig bulunamadı.</div>';
+ updateLeagueSummary();
 }
-function scoreHtml(m){
- const f=ft(m),h=ht(m);
- if(!f)return '<div class="score">—</div>';
- return `<div class="score">${f[0]} - ${f[1]}</div>
- ${h?`<div class="ht-score">İY ${h[0]} - ${h[1]}</div>`:""}`;
+function updateLeagueSummary(){
+ const total=availableLeagues.length;
+ const count=selectedLeagues.size;
+ $("leagueSummary").textContent=count===0
+  ?"Tüm Ligler"
+  :count===1?[...selectedLeagues][0]
+  :`${count} lig seçildi`;
+ $("leagueCount").textContent=count===0
+  ?`Tüm ligler gösteriliyor (${total} lig)`
+  :`${count} / ${total} lig seçildi`;
 }
-function valueCell(r,k){
- const value=r.actual?r.actual[k]:r.pred[k]?.value;
- const label=r.actual?"Gerçekleşen":
-  value==null?"Tahmin yok":`Tahmin · ${Math.round((r.pred[k]?.rate||0)*100)}%`;
- return symbol(value,label);
+function selectAllLeagues(){
+ selectedLeagues.clear();
+ buildLeagueOptions();
+ render();
+}
+function clearLeagues(){
+ selectedLeagues.clear();
+ buildLeagueOptions();
+ render();
+}
+function leagueMatches(name){
+ return selectedLeagues.size===0||selectedLeagues.has(league(name.match).trim());
 }
 function build(selected,days){
  const start=days===0?-Infinity:Date.parse(selected+"T00:00:00")-days*86400000;
@@ -453,18 +522,22 @@ function historyHtml(r){
   ${content||'<div class="empty">Aynı ligde en az 3 market eşleşen geçmiş maç bulunamadı.</div>'}
  </div></td></tr>`;
 }
-function render(){
+function filteredRows(){
  const q=norm($("search").value);
- const list=rows
+ return rows
   .filter(r=>r.history.length>0)
+  .filter(leagueMatches)
   .filter(r=>!q||norm([home(r.match),away(r.match),league(r.match)].join(" ")).includes(q))
   .sort(sortRows);
+}
+function render(){
+ const list=filteredRows();
  $("sMatches").textContent=list.length;
  $("sPred").textContent=list.filter(r=>!r.actual).length;
  $("sFinished").textContent=list.filter(r=>!!r.actual).length;
  $("sHistory").textContent=list.reduce((n,r)=>n+r.history.length,0);
  if(!list.length){
-  $("tbody").innerHTML='<tr><td colspan="10" class="empty">Bu tarihte aynı ligde en az 3 marketi eşleşen maç bulunamadı.</td></tr>';
+  $("tbody").innerHTML='<tr><td colspan="10" class="empty">Seçili tarih ve lig filtrelerinde eşleşme bulunamadı.</td></tr>';
   return;
  }
  $("tbody").innerHTML=list.map(r=>{
@@ -490,6 +563,26 @@ function render(){
   </tr>${historyHtml(r)}`;
  }).join("");
 }
+function symbol(v,label){
+ let text="—",cls="unknown";
+ if(v===true||v==="true"){text="✓";cls="yes";}
+ else if(v===false||v==="false"){text="✕";cls="no";}
+ else if(v!=null&&v!==""){text=String(v);}
+ return `<span class="symbol ${cls}">${esc(text)}</span>
+ <span class="cell-label">${esc(label)}</span>`;
+}
+function scoreHtml(m){
+ const f=ft(m),h=ht(m);
+ if(!f)return '<div class="score">—</div>';
+ return `<div class="score">${f[0]} - ${f[1]}</div>
+ ${h?`<div class="ht-score">İY ${h[0]} - ${h[1]}</div>`:""}`;
+}
+function valueCell(r,k){
+ const value=r.actual?r.actual[k]:r.pred[k]?.value;
+ const label=r.actual?"Gerçekleşen":
+  value==null?"Tahmin yok":`Tahmin · ${Math.round((r.pred[k]?.rate||0)*100)}%`;
+ return symbol(value,label);
+}
 function analyze(){
  const d=$("date").value;
  if(!d){$("status").textContent="Lütfen tarih seç.";return;}
@@ -498,10 +591,10 @@ function analyze(){
  const total=rows.reduce((n,r)=>n+r.history.length,0);
  const visible=rows.filter(r=>r.history.length>0).length;
  $("status").textContent=
-  `${niceDate(d)}: ${visible} eşleşen maç listelendi. `+
-  `Zorunlu şartlar: aynı lig ve en az 3 aynı market oranı. `+
+  `${niceDate(d)}: ${visible} eşleşen maç bulundu. `+
+  `Şartlar: aynı lig ve en az 3 aynı market oranı. `+
   `Eşleşmesi olmayan maçlar gizlenir. Toplam geçmiş eşleşme: ${total}. `+
-  `Oran değerleri gösterilmiyor.`;
+  `Oran değerleri gösterilmiyor. Lig filtresi sonuçları aşağıda daraltır.`;
  render();
 }
 function downloadCsv(){
@@ -510,11 +603,7 @@ function downloadCsv(){
   "Skor","İY Skor","Eşleşen Marketler","Geçmiş Maç",
   "MS","KG Var","2.5 Üst","İY 0.5 Üst","İY 1.5 Üst","İY/MS"
  ];
- const q=norm($("search").value);
- const list=rows
-  .filter(r=>r.history.length>0)
-  .filter(r=>!q||norm([home(r.match),away(r.match),league(r.match)].join(" ")).includes(q))
-  .sort(sortRows);
+ const list=filteredRows();
  const cv=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
  const data=[headers,...list.map(r=>{
   const m=r.match,f=ft(m),h=ht(m);
@@ -556,6 +645,7 @@ async function load(){
   if(!matches.length)throw new Error("JSON içinde maç listesi bulunamadı.");
   const dates=[...new Set(matches.map(dateOf).filter(Boolean))].sort();
   if(!dates.length)throw new Error("Geçerli maç tarihi bulunamadı.");
+  buildLeagueOptions();
   const now=new Date();
   const today=[
    now.getFullYear(),
@@ -576,6 +666,18 @@ $("days").addEventListener("change",analyze);
 $("sort").addEventListener("change",render);
 $("search").addEventListener("input",render);
 $("csv").addEventListener("click",downloadCsv);
+$("leagueOptions").addEventListener("change",e=>{
+ const input=e.target.closest('input[data-league]');
+ if(!input)return;
+ const name=input.dataset.league;
+ if(input.checked)selectedLeagues.add(name);
+ else selectedLeagues.delete(name);
+ updateLeagueSummary();
+ render();
+});
+$("leagueSearch").addEventListener("input",buildLeagueOptions);
+$("allLeagues").addEventListener("click",selectAllLeagues);
+$("clearLeagues").addEventListener("click",clearLeagues);
 $("tbody").addEventListener("click",e=>{
  const b=e.target.closest("[data-id]");
  if(!b)return;
