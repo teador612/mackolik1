@@ -15,8 +15,9 @@
   --blue:#70b7ff;--yellow:#f3c969;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
-main{max-width:1800px;margin:auto;padding:16px}
+html{width:100%;overflow-x:hidden}
+body{margin:0;width:100%;overflow-x:hidden;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+main{max-width:1800px;margin:auto;padding:16px;min-width:0}
 h1{font-size:23px;margin:0 0 7px}
 .subtitle{font-size:13px;line-height:1.6;color:var(--muted);margin-bottom:15px}
 .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:13px}
@@ -28,13 +29,13 @@ button{cursor:pointer;font-weight:700}
 button:hover{border-color:var(--blue)}
 .primary{background:#1e5795;border-color:#347ac0}
 .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:13px}
-.stat{padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:10px}
+.stat{padding:12px;background:var(--panel);border:1px solid var(--border);border-radius:10px;min-width:0}
 .stat-label{font-size:12px;color:var(--muted)}
 .stat-value{font-size:23px;font-weight:800;margin-top:5px}
 #status{font-size:13px;line-height:1.6;color:var(--muted)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;font-size:12px;color:var(--muted)}
 .green-text{color:#63dfa9}.red-text{color:#ff8791}.yellow-text{color:var(--yellow)}
-.table-wrap{overflow:auto;max-width:100%;border:1px solid var(--border);border-radius:10px;background:var(--panel);-webkit-overflow-scrolling:touch}
+.table-wrap{overflow:auto;width:100%;max-width:100%;border:1px solid var(--border);border-radius:10px;background:var(--panel);-webkit-overflow-scrolling:touch}
 table{border-collapse:separate;border-spacing:0;width:100%;min-width:1130px;font-size:12px}
 th,td{padding:10px 8px;text-align:center;vertical-align:middle;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
 th{position:sticky;top:0;z-index:2;background:#303b4a;color:#fff;white-space:nowrap;font-size:11px;letter-spacing:.15px}
@@ -90,8 +91,8 @@ footer{font-size:11px;color:var(--muted);line-height:1.7;padding:13px 2px}
 <main>
   <h1>V2 Market Eşleşme Analizi</h1>
   <div class="subtitle">
-    Geçmiş maçları açılış oranlarına göre karşılaştırır. Her geçmiş maçta en az 3 marketin oranı eşleşmelidir.
-    Telefonda tabloyu yatay kaydırarak diğer sütunları görebilirsin.
+    Geçmiş maçlar yalnızca aynı ligde oynanmışsa ve en az 3 marketin açılış oranı iki ondalık basamakta eşleşiyorsa kullanılır.
+    Lig eşleşmesi zorunludur ve 3 market şartına dahil değildir. Telefonda tabloyu yatay kaydırabilirsin.
   </div>
 
   <section class="panel">
@@ -167,9 +168,9 @@ footer{font-size:11px;color:var(--muted);line-height:1.7;padding:13px 2px}
   </div>
 
   <footer>
-    Bitmiş maçlarda tik ve çarpılar gerçekleşen sonuçları, oynanmamış maçlarda tahminleri gösterir.
-    Geçmiş maçlar yalnızca en az 3 markette iki ondalık basamağa yuvarlanmış açılış oranları eşleştiğinde kullanılır.
-    Eşleşen oran değerleri gösterilmez; yalnızca market adları gösterilir.
+    Bitmiş maçlarda tik ve çarpılar gerçekleşen sonuçları, oynanmamış maçlarda geçmiş eşleşmelerden üretilen tahminleri gösterir.
+    Bir geçmiş maçın kullanılabilmesi için lig adlarının aynı olması ve en az 3 marketin açılış oranlarının iki ondalık basamakta eşleşmesi zorunludur.
+    Lig, market sayısına dahil edilmez. Lig bilgisi eksik maçlar eşleştirilmez. Eşleşen oran değerleri gösterilmez; yalnızca market adları gösterilir.
   </footer>
 </main>
 
@@ -336,8 +337,15 @@ function build(selected,days){
  });
  return matches.filter(m=>dateOf(m)===selected).map((m,i)=>{
   const history=[],union=new Set();
+  const targetLeague=norm(league(m));
   for(const p of past){
    if(norm(home(m))===norm(home(p))&&norm(away(m))===norm(away(p))&&dateOf(m)===dateOf(p))continue;
+
+   // ZORUNLU ŞART: Lig bilgisi iki maçta da bulunmalı ve aynı olmalı.
+   const pastLeague=norm(league(p));
+   if(!targetLeague||!pastLeague||targetLeague!==pastLeague)continue;
+
+   // Lig şartından ayrı olarak en az 3 market oranı eşleşmeli.
    const same=shared(m,p);
    if(same.length>=3){
     history.push({match:p,shared:same});
@@ -371,7 +379,7 @@ function historyHtml(r){
  }).join("");
  return `<tr class="details-row"><td colspan="10"><div class="details">
   <h3>Eşleşen geçmiş maçlar: ${r.history.length}</h3>
-  ${content||'<div class="empty">En az 3 market eşleşen geçmiş maç bulunamadı.</div>'}
+  ${content||'<div class="empty">Aynı ligde en az 3 market eşleşen geçmiş maç bulunamadı.</div>'}
  </div></td></tr>`;
 }
 function render(){
@@ -411,7 +419,7 @@ function analyze(){
  expanded.clear();
  rows=build(d,Number($("days").value));
  const total=rows.reduce((n,r)=>n+r.history.length,0);
- $("status").textContent=`${niceDate(d)}: ${rows.length} maç. Geçmiş eşleşme şartı en az 3 aynı market oranı. Toplam geçmiş eşleşme: ${total}. Oran değerleri gösterilmiyor.`;
+ $("status").textContent=`${niceDate(d)}: ${rows.length} maç. Zorunlu eşleşme: aynı lig + en az 3 aynı market oranı. Toplam geçmiş eşleşme: ${total}. Oran değerleri gösterilmiyor.`;
  render();
 }
 function downloadCsv(){
