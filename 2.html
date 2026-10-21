@@ -96,6 +96,7 @@ overflow-wrap:anywhere
 .league-option input{min-height:16px;width:16px;margin:0;flex:0 0 auto;accent-color:#70b7ff}
 .league-option span{line-height:1.4}
 .league-count{font-size:11px;color:var(–muted);margin-top:5px}
+
 @media(max-width:700px){
 main{padding:9px}
 h1{font-size:20px}
@@ -245,420 +246,436 @@ let expanded=new Set();
 let availableLeagues=[];
 let selectedLeagues=new Set();
 const ALIASES={
- ms1:"MS 1",msx:"MS 0",ms0:"MS 0",ms2:"MS 2",
- kgvar:"KG Var",kgyok:"KG Yok",kg:"KG",
- over25:"2.5 Üst",under25:"2.5 Alt",
- iy05:"İY 0.5 Üst",iy15:"İY 1.5 Üst",
- iykgvar:"İY KG Var",iykgyok:"İY KG Yok"
+  ms1:"MS 1",msx:"MS 0",ms0:"MS 0",ms2:"MS 2",
+  kgvar:"KG Var",kgyok:"KG Yok",kg:"KG",
+  over25:"2.5 Üst",under25:"2.5 Alt",
+  iy05:"İY 0.5 Üst",iy15:"İY 1.5 Üst",
+  iykgvar:"İY KG Var",iykgyok:"İY KG Yok"
 };
 function esc(v){
- return String(v??"").replace(/[&<>"']/g,c=>({
-  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
- }[c]));
+  return String(v??"").replace(/[&<>"']/g,c=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
 }
 function first(...a){
- return a.find(v=>v!==undefined&&v!==null&&v!=="");
+  return a.find(v=>v!==undefined&&v!==null&&v!=="");
 }
 function norm(v){
- return String(v??"")
-  .toLocaleLowerCase("tr-TR")
-  .normalize("NFD")
-  .replace(/[\u0300-\u036f]/g,"")
-  .replace(/[^a-z0-9]/g,"");
+  return String(v??"")
+    .toLocaleLowerCase("tr-TR")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]/g,"");
 }
 function dateOf(m){
- let s=String(first(m.date,m.matchDate,m.tarih,m.datetime,""));
- let x=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
- if(x)return `${x[1]}-${x[2].padStart(2,"0")}-${x[3].padStart(2,"0")}`;
- x=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
- if(x)return `${x[3]}-${x[2].padStart(2,"0")}-${x[1].padStart(2,"0")}`;
- const d=new Date(s);
- return s&&!isNaN(d)
-  ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
-  :"";
+  const s=String(first(m.date,m.matchDate,m.tarih,m.datetime,""));
+  let x=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(x)return `${x[1]}-${x[2].padStart(2,"0")}-${x[3].padStart(2,"0")}`;
+  x=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+  if(x)return `${x[3]}-${x[2].padStart(2,"0")}-${x[1].padStart(2,"0")}`;
+  const d=new Date(s);
+  return s&&!isNaN(d)
+    ?`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`
+    :"";
 }
 function timeOf(m){
- const s=String(first(m.time,m.hour,m.saat,m.startTime,""));
- const x=s.match(/(?:^|\s)(\d{1,2}):(\d{2})(?:\s|$)/);
- return x?`${x[1].padStart(2,"0")}:${x[2]}`:s;
+  const s=String(first(m.time,m.hour,m.saat,m.startTime,""));
+  const x=s.match(/(?:^|\s)(\d{1,2}):(\d{2})(?:\s|$)/);
+  return x?`${x[1].padStart(2,"0")}:${x[2]}`:s;
 }
 function home(m){
- return String(first(m.home,m.homeTeam,m.ev,m.evSahibi,m.team1,m.host,"Ev sahibi"));
+  return String(first(m.home,m.homeTeam,m.ev,m.evSahibi,m.team1,m.host,"Ev sahibi"));
 }
 function away(m){
- return String(first(m.away,m.awayTeam,m.deplasman,m.misafir,m.team2,m.guest,"Deplasman"));
+  return String(first(m.away,m.awayTeam,m.deplasman,m.misafir,m.team2,m.guest,"Deplasman"));
 }
 function league(m){
- return String(first(m.league,m.leagueName,m.lig,m.competition,""));
+  return String(first(m.league,m.leagueName,m.lig,m.competition,""));
 }
 function rawScore(m){
- return first(m.score,m.fullTimeScore,m.result,m.ftScore,m.macSonucu);
+  return first(m.score,m.fullTimeScore,m.result,m.ftScore,m.macSonucu);
 }
 function parseScore(v){
- if(v==null)return null;
- if(typeof v==="object"){
-  const h=first(v.home,v.homeGoals,v.h,v[0]);
-  const a=first(v.away,v.awayGoals,v.a,v[1]);
-  if(h!=null&&a!=null&&Number.isFinite(+h)&&Number.isFinite(+a)){
-   return [+h,+a];
+  if(v==null)return null;
+  if(typeof v==="object"){
+    const h=first(v.home,v.homeGoals,v.h,v[0]);
+    const a=first(v.away,v.awayGoals,v.a,v[1]);
+    if(h!=null&&a!=null&&Number.isFinite(+h)&&Number.isFinite(+a)){
+      return [+h,+a];
+    }
   }
- }
- const x=String(v).trim().match(/(?:^|\s)(\d{1,2})\s*[-:]\s*(\d{1,2})(?=\s|$|\()/);
- return x?[+x[1],+x[2]]:null;
+  const x=String(v).trim().match(/(?:^|\s)(\d{1,2})\s*[-:]\s*(\d{1,2})(?=\s|$|\()/);
+  return x?[+x[1],+x[2]]:null;
 }
 function ft(m){
- const s=parseScore(rawScore(m));
- if(s)return s;
- const h=first(m.homeScore,m.homeGoals,m.evSkor);
- const a=first(m.awayScore,m.awayGoals,m.depSkor);
- return h!=null&&a!=null&&Number.isFinite(+h)&&Number.isFinite(+a)
-  ?[+h,+a]:null;
+  const s=parseScore(rawScore(m));
+  if(s)return s;
+  const h=first(m.homeScore,m.homeGoals,m.evSkor);
+  const a=first(m.awayScore,m.awayGoals,m.depSkor);
+  return h!=null&&a!=null&&Number.isFinite(+h)&&Number.isFinite(+a)
+    ?[+h,+a]:null;
 }
 function ht(m){
- for(const v of [
-  m.halfTimeScore,m.htScore,m.half_score,
-  m.firstHalfScore,m.iyScore,m.firstHalfResult,m.iySkor
- ]){
-  const s=parseScore(v);
-  if(s)return s;
- }
- const x=String(rawScore(m)??"").match(/\((\d{1,2})\s*[-:]\s*(\d{1,2})\)/);
- return x?[+x[1],+x[2]]:null;
+  for(const v of [
+    m.halfTimeScore,m.htScore,m.half_score,
+    m.firstHalfScore,m.iyScore,m.firstHalfResult,m.iySkor
+  ]){
+    const s=parseScore(v);
+    if(s)return s;
+  }
+  const x=String(rawScore(m)??"").match(/\((\d{1,2})\s*[-:]\s*(\d{1,2})\)/);
+  return x?[+x[1],+x[2]]:null;
 }
 function odds(m){
- for(const o of [
-  m.odds,m.openingOdds,m.openOdds,m.opening,
-  m.marketOdds,m.oranlar,m.oddsData
- ]){
-  if(o&&typeof o==="object"&&!Array.isArray(o))return o;
- }
- return {};
+  for(const o of [
+    m.odds,m.openingOdds,m.openOdds,m.opening,
+    m.marketOdds,m.oranlar,m.oddsData
+  ]){
+    if(o&&typeof o==="object"&&!Array.isArray(o))return o;
+  }
+  return {};
 }
 function oddKey(v){
- if(v==null||v==="")return null;
- const n=typeof v==="number"?v:Number(String(v).trim().replace(",","."));
- return Number.isFinite(n)&&n>0?n.toFixed(2):null;
+  if(v==null||v==="")return null;
+  const n=typeof v==="number"?v:Number(String(v).trim().replace(",","."));
+  return Number.isFinite(n)&&n>0?n.toFixed(2):null;
 }
 function catalogName(k){
- if(Array.isArray(markets)){
-  const x=markets.find(v=>String(first(v.key,v.code,v.id,v.market,""))===k);
-  if(x)return String(first(x.name,x.label,x.title,k));
- }
- if(markets&&typeof markets==="object"&&markets[k]){
-  const x=markets[k];
-  return typeof x==="string"?x:String(first(x.name,x.label,x.title,k));
- }
- return ALIASES[norm(k)]||
-  String(k).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[_-]+/g," ");
+  if(Array.isArray(markets)){
+    const x=markets.find(v=>String(first(v.key,v.code,v.id,v.market,""))===k);
+    if(x)return String(first(x.name,x.label,x.title,k));
+  }
+  if(markets&&typeof markets==="object"&&markets[k]){
+    const x=markets[k];
+    return typeof x==="string"?x:String(first(x.name,x.label,x.title,k));
+  }
+  return ALIASES[norm(k)]||
+    String(k).replace(/([a-z])([A-Z])/g,"$1 $2").replace(/[_-]+/g," ");
 }
 function oddsMap(m){
- const out={};
- for(const [k,v] of Object.entries(odds(m))){
-  const n=oddKey(v);
-  if(n!==null)out[k]=n;
- }
- return out;
+  const out={};
+  for(const [k,v] of Object.entries(odds(m))){
+    const n=oddKey(v);
+    if(n!==null)out[k]=n;
+  }
+  return out;
 }
 function shared(a,b){
- const x=oddsMap(a),y=oddsMap(b);
- return Object.keys(x).filter(k=>Object.hasOwn(y,k)&&x[k]===y[k]);
+  const x=oddsMap(a),y=oddsMap(b);
+  return Object.keys(x).filter(k=>Object.hasOwn(y,k)&&x[k]===y[k]);
 }
 function isFinished(m){
- return !!ft(m);
+  return !!ft(m);
 }
 function ms(s){
- if(!s)return null;
- return s[0]>s[1]?"1":s[0]===s[1]?"0":"2";
+  if(!s)return null;
+  return s[0]>s[1]?"1":s[0]===s[1]?"0":"2";
 }
 function actual(m){
- const f=ft(m);
- if(!f)return null;
- const h=ht(m);
- return {
-  ms:ms(f),
-  kg:f[0]>0&&f[1]>0,
-  over:f[0]+f[1]>=3,
-  iy05:h?h[0]+h[1]>=1:null,
-  iy15:h?h[0]+h[1]>=2:null,
-  iyms:h?`${ms(h)}/${ms(f)}`:null
- };
+  const f=ft(m);
+  if(!f)return null;
+  const h=ht(m);
+  return {
+    ms:ms(f),
+    kg:f[0]>0&&f[1]>0,
+    over:f[0]+f[1]>=3,
+    iy05:h?h[0]+h[1]>=1:null,
+    iy15:h?h[0]+h[1]>=2:null,
+    iyms:h?`${ms(h)}/${ms(f)}`:null
+  };
 }
 function predictions(history){
- const keys=["ms","kg","over","iy05","iy15","iyms"];
- const counts=Object.fromEntries(keys.map(k=>[k,{}]));
- const totals=Object.fromEntries(keys.map(k=>[k,0]));
- for(const item of history){
-  const f=ft(item.match),h=ht(item.match);
-  if(!f)continue;
-  const vals={
-   ms:ms(f),
-   kg:f[0]>0&&f[1]>0,
-   over:f[0]+f[1]>=3,
-   iy05:h?h[0]+h[1]>=1:null,
-   iy15:h?h[0]+h[1]>=2:null,
-   iyms:h?`${ms(h)}/${ms(f)}`:null
-  };
+  const keys=["ms","kg","over","iy05","iy15","iyms"];
+  const counts=Object.fromEntries(keys.map(k=>[k,{}]));
+  const totals=Object.fromEntries(keys.map(k=>[k,0]));
+  for(const item of history){
+    const f=ft(item.match),h=ht(item.match);
+    if(!f)continue;
+    const vals={
+      ms:ms(f),
+      kg:f[0]>0&&f[1]>0,
+      over:f[0]+f[1]>=3,
+      iy05:h?h[0]+h[1]>=1:null,
+      iy15:h?h[0]+h[1]>=2:null,
+      iyms:h?`${ms(h)}/${ms(f)}`:null
+    };
+    for(const k of keys){
+      if(vals[k]===null)continue;
+      const v=String(vals[k]);
+      counts[k][v]=(counts[k][v]||0)+1;
+      totals[k]++;
+    }
+  }
+  const out={};
   for(const k of keys){
-   if(vals[k]===null)continue;
-   const v=String(vals[k]);
-   counts[k][v]=(counts[k][v]||0)+1;
-   totals[k]++;
+    const sorted=Object.entries(counts[k]).sort((a,b)=>b[1]-a[1]);
+    if(!sorted.length){
+      out[k]={value:null,rate:0};
+      continue;
+    }
+    const [v,n]=sorted[0];
+    out[k]={
+      value:["kg","over","iy05","iy15"].includes(k)?v==="true":v,
+      rate:n/totals[k]
+    };
   }
- }
- const out={};
- for(const k of keys){
-  const sorted=Object.entries(counts[k]).sort((a,b)=>b[1]-a[1]);
-  if(!sorted.length){
-   out[k]={value:null,rate:0};
-   continue;
-  }
-  const [v,n]=sorted[0];
-  out[k]={
-   value:["kg","over","iy05","iy15"].includes(k)?v==="true":v,
-   rate:n/totals[k]
-  };
- }
- return out;
+  return out;
 }
 function niceDate(s){
- const x=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
- return x?`${x[3]}.${x[2]}.${x[1]}`:s;
+  const x=s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  return x?`${x[3]}.${x[2]}.${x[1]}`:s;
 }
-/* Lig listesi veriden otomatik oluşturulur. */
+/* Lig filtresi */
 function buildLeagueOptions(){
- availableLeagues=[...new Set(matches.map(m=>league(m).trim()).filter(Boolean))]
-  .sort((a,b)=>a.localeCompare(b,"tr"));
- const q=norm($("leagueSearch").value);
- const filtered=availableLeagues.filter(name=>!q||norm(name).includes(q));
- $("leagueOptions").innerHTML=filtered.map(name=>`
-  <label class="league-option">
-   <input type="checkbox" data-league="${esc(name)}"
-    ${selectedLeagues.has(name)?"checked":""}>
-   <span>${esc(name)}</span>
-  </label>
- `).join("")||'<div class="empty">Bu aramayla eşleşen lig bulunamadı.</div>';
- updateLeagueSummary();
+  availableLeagues=[...new Set(
+    matches.map(m=>league(m).trim()).filter(Boolean)
+  )].sort((a,b)=>a.localeCompare(b,"tr"));
+  const q=norm($("leagueSearch").value);
+  const filtered=availableLeagues.filter(name=>!q||norm(name).includes(q));
+  $("leagueOptions").innerHTML=filtered.map(name=>`
+    <label class="league-option">
+      <input type="checkbox" data-league="${esc(name)}" ${selectedLeagues.has(name)?"checked":""}>
+      <span>${esc(name)}</span>
+    </label>
+  `).join("")||'<div class="empty">Bu aramayla eşleşen lig bulunamadı.</div>';
+  updateLeagueSummary();
 }
 function updateLeagueSummary(){
- const total=availableLeagues.length;
- const count=selectedLeagues.size;
- $("leagueSummary").textContent=count===0
-  ?"Tüm Ligler"
-  :count===1?[...selectedLeagues][0]
-  :`${count} lig seçildi`;
- $("leagueCount").textContent=count===0
-  ?`Tüm ligler gösteriliyor (${total} lig)`
-  :`${count} / ${total} lig seçildi`;
+  const total=availableLeagues.length;
+  const count=selectedLeagues.size;
+  $("leagueSummary").textContent=count===0
+    ?"Tüm Ligler"
+    :count===1?[...selectedLeagues][0]
+    :`${count} lig seçildi`;
+  $("leagueCount").textContent=count===0
+    ?`Tüm ligler gösteriliyor (${total} lig)`
+    :`${count} / ${total} lig seçildi`;
 }
 function selectAllLeagues(){
- selectedLeagues.clear();
- buildLeagueOptions();
- render();
+  selectedLeagues=new Set(availableLeagues);
+  buildLeagueOptions();
+  render();
 }
 function clearLeagues(){
- selectedLeagues.clear();
- buildLeagueOptions();
- render();
+  selectedLeagues.clear();
+  buildLeagueOptions();
+  render();
 }
-function leagueMatches(name){
- return selectedLeagues.size===0||selectedLeagues.has(league(name.match).trim());
+function leagueMatches(row){
+  return selectedLeagues.size===0||
+    selectedLeagues.has(league(row.match).trim());
 }
 function build(selected,days){
- const start=days===0?-Infinity:Date.parse(selected+"T00:00:00")-days*86400000;
- const past=matches.filter(m=>{
-  const d=dateOf(m);
-  if(!d||d>=selected||!isFinished(m))return false;
-  return Date.parse(d+"T00:00:00")>=start;
- });
- return matches.filter(m=>dateOf(m)===selected).map((m,i)=>{
-  const history=[],union=new Set(),targetLeague=norm(league(m));
-  for(const p of past){
-   if(norm(home(m))===norm(home(p))&&
-      norm(away(m))===norm(away(p))&&
-      dateOf(m)===dateOf(p))continue;
-   const pastLeague=norm(league(p));
-   if(!targetLeague||!pastLeague||targetLeague!==pastLeague)continue;
-   const same=shared(m,p);
-   if(same.length>=3){
-    history.push({match:p,shared:same});
-    same.forEach(k=>union.add(k));
-   }
-  }
-  return {
-   id:dateOf(m)+"|"+timeOf(m)+"|"+home(m)+"|"+away(m)+"|"+i,
-   match:m,
-   history,
-   actual:actual(m),
-   pred:predictions(history),
-   marketNames:[...union].map(catalogName).sort((a,b)=>a.localeCompare(b,"tr"))
-  };
- });
+  const start=days===0
+    ?-Infinity
+    :Date.parse(selected+"T00:00:00")-days*86400000;
+  const past=matches.filter(m=>{
+    const d=dateOf(m);
+    if(!d||d>=selected||!isFinished(m))return false;
+    return Date.parse(d+"T00:00:00")>=start;
+  });
+  return matches.filter(m=>dateOf(m)===selected).map((m,i)=>{
+    const history=[],union=new Set();
+    const targetLeague=norm(league(m));
+    for(const p of past){
+      if(
+        norm(home(m))===norm(home(p))&&
+        norm(away(m))===norm(away(p))&&
+        dateOf(m)===dateOf(p)
+      )continue;
+      const pastLeague=norm(league(p));
+      if(!targetLeague||!pastLeague||targetLeague!==pastLeague)continue;
+      const same=shared(m,p);
+      if(same.length>=3){
+        history.push({match:p,shared:same});
+        same.forEach(k=>union.add(k));
+      }
+    }
+    return {
+      id:dateOf(m)+"|"+timeOf(m)+"|"+home(m)+"|"+away(m)+"|"+i,
+      match:m,
+      history,
+      actual:actual(m),
+      pred:predictions(history),
+      marketNames:[...union].map(catalogName).sort((a,b)=>a.localeCompare(b,"tr"))
+    };
+  });
 }
 function sortRows(a,b){
- const mode=$("sort").value;
- if(mode==="league")return league(a.match).localeCompare(league(b.match),"tr");
- if(mode==="home")return home(a.match).localeCompare(home(b.match),"tr");
- if(mode==="history")return b.history.length-a.history.length;
- return dateOf(a.match).localeCompare(dateOf(b.match))||
-  timeOf(a.match).localeCompare(timeOf(b.match));
+  const mode=$("sort").value;
+  if(mode==="league")return league(a.match).localeCompare(league(b.match),"tr");
+  if(mode==="home")return home(a.match).localeCompare(home(b.match),"tr");
+  if(mode==="history")return b.history.length-a.history.length;
+  return dateOf(a.match).localeCompare(dateOf(b.match))||
+    timeOf(a.match).localeCompare(timeOf(b.match));
 }
 function historyHtml(r){
- if(!expanded.has(r.id))return "";
- const content=r.history.slice()
-  .sort((a,b)=>dateOf(b.match).localeCompare(dateOf(a.match)))
-  .map(x=>{
-   const m=x.match,f=ft(m),h=ht(m);
-   return `<div class="history-item">
-    <span class="history-date">${esc(niceDate(dateOf(m)))}</span>
-    <span>${esc(timeOf(m))}</span>
-    <span class="history-league">${esc(league(m))}</span>
-    <span class="history-teams">${esc(home(m))} - ${esc(away(m))}</span>
-    <span class="history-score">${f?`${f[0]} - ${f[1]}`:"Skor yok"}${h?` (İY ${h[0]}-${h[1]})`:""}</span>
-    <span class="shared-markets">Eşleşen marketler: ${esc(x.shared.map(catalogName).join(", "))}</span>
-   </div>`;
-  }).join("");
- return `<tr class="details-row"><td colspan="10"><div class="details">
-  <h3>Eşleşen geçmiş maçlar: ${r.history.length}</h3>
-  ${content||'<div class="empty">Aynı ligde en az 3 market eşleşen geçmiş maç bulunamadı.</div>'}
- </div></td></tr>`;
-}
-function filteredRows(){
- const q=norm($("search").value);
- return rows
-  .filter(r=>r.history.length>0)
-  .filter(leagueMatches)
-  .filter(r=>!q||norm([home(r.match),away(r.match),league(r.match)].join(" ")).includes(q))
-  .sort(sortRows);
-}
-function render(){
- const list=filteredRows();
- $("sMatches").textContent=list.length;
- $("sPred").textContent=list.filter(r=>!r.actual).length;
- $("sFinished").textContent=list.filter(r=>!!r.actual).length;
- $("sHistory").textContent=list.reduce((n,r)=>n+r.history.length,0);
- if(!list.length){
-  $("tbody").innerHTML='<tr><td colspan="10" class="empty">Seçili tarih ve lig filtrelerinde eşleşme bulunamadı.</td></tr>';
-  return;
- }
- $("tbody").innerHTML=list.map(r=>{
-  const m=r.match;
-  const mode=r.actual
-   ?'<span class="mode actual">GERÇEKLEŞEN</span>'
-   :'<span class="mode prediction">TAHMİN</span>';
-  return `<tr>
-   <td class="match-cell">
-    <div class="teams">${esc(home(m))} - ${esc(away(m))}</div>
-    <div class="match-meta">${esc(niceDate(dateOf(m)))} ${timeOf(m)?"· "+esc(timeOf(m)):""} ${league(m)?"· "+esc(league(m)):""}</div>
-    <div class="shared-markets">Aynı marketler: ${esc(r.marketNames.join(", ")||"Yeterli eşleşme yok")}</div>
-   </td>
-   <td>${mode}</td>
-   <td>${scoreHtml(m)}</td>
-   <td class="result-cell">${valueCell(r,"ms")}</td>
-   <td class="result-cell">${valueCell(r,"kg")}</td>
-   <td class="result-cell">${valueCell(r,"over")}</td>
-   <td class="result-cell">${valueCell(r,"iy05")}</td>
-   <td class="result-cell">${valueCell(r,"iy15")}</td>
-   <td class="result-cell">${valueCell(r,"iyms")}</td>
-   <td><button class="detail-btn" data-id="${esc(r.id)}">${expanded.has(r.id)?"Gizle":"Detay"} (${r.history.length})</button></td>
-  </tr>${historyHtml(r)}`;
- }).join("");
+  if(!expanded.has(r.id))return "";
+  const content=r.history.slice()
+    .sort((a,b)=>dateOf(b.match).localeCompare(dateOf(a.match)))
+    .map(x=>{
+      const m=x.match,f=ft(m),h=ht(m);
+      return `<div class="history-item">
+        <span class="history-date">${esc(niceDate(dateOf(m)))}</span>
+        <span>${esc(timeOf(m))}</span>
+        <span class="history-league">${esc(league(m))}</span>
+        <span class="history-teams">${esc(home(m))} - ${esc(away(m))}</span>
+        <span class="history-score">${f?`${f[0]} - ${f[1]}`:"Skor yok"}${h?` (İY ${h[0]}-${h[1]})`:""}</span>
+        <span class="shared-markets">Eşleşen marketler: ${esc(x.shared.map(catalogName).join(", "))}</span>
+      </div>`;
+    }).join("");
+  return `<tr class="details-row"><td colspan="10"><div class="details">
+    <h3>Eşleşen geçmiş maçlar: ${r.history.length}</h3>
+    ${content||'<div class="empty">Aynı ligde en az 3 market eşleşen geçmiş maç bulunamadı.</div>'}
+  </div></td></tr>`;
 }
 function symbol(v,label){
- let text="—",cls="unknown";
- if(v===true||v==="true"){text="✓";cls="yes";}
- else if(v===false||v==="false"){text="✕";cls="no";}
- else if(v!=null&&v!==""){text=String(v);}
- return `<span class="symbol ${cls}">${esc(text)}</span>
- <span class="cell-label">${esc(label)}</span>`;
+  let text="—",cls="unknown";
+  if(v===true||v==="true"){
+    text="✓";cls="yes";
+  }else if(v===false||v==="false"){
+    text="✕";cls="no";
+  }else if(v!=null&&v!==""){
+    text=String(v);
+  }
+  return `<span class="symbol ${cls}">${esc(text)}</span>
+    <span class="cell-label">${esc(label)}</span>`;
 }
 function scoreHtml(m){
- const f=ft(m),h=ht(m);
- if(!f)return '<div class="score">—</div>';
- return `<div class="score">${f[0]} - ${f[1]}</div>
- ${h?`<div class="ht-score">İY ${h[0]} - ${h[1]}</div>`:""}`;
+  const f=ft(m),h=ht(m);
+  if(!f)return '<div class="score">—</div>';
+  return `<div class="score">${f[0]} - ${f[1]}</div>
+    ${h?`<div class="ht-score">İY ${h[0]} - ${h[1]}</div>`:""}`;
 }
 function valueCell(r,k){
- const value=r.actual?r.actual[k]:r.pred[k]?.value;
- const label=r.actual?"Gerçekleşen":
-  value==null?"Tahmin yok":`Tahmin · ${Math.round((r.pred[k]?.rate||0)*100)}%`;
- return symbol(value,label);
+  const value=r.actual?r.actual[k]:r.pred[k]?.value;
+  const label=r.actual
+    ?"Gerçekleşen"
+    :value==null?"Tahmin yok":`Tahmin · ${Math.round((r.pred[k]?.rate||0)*100)}%`;
+  return symbol(value,label);
+}
+function filteredRows(){
+  const q=norm($("search").value);
+  return rows
+    .filter(r=>r.history.length>0)
+    .filter(leagueMatches)
+    .filter(r=>!q||norm([home(r.match),away(r.match),league(r.match)].join(" ")).includes(q))
+    .sort(sortRows);
+}
+function render(){
+  const list=filteredRows();
+  $("sMatches").textContent=list.length;
+  $("sPred").textContent=list.filter(r=>!r.actual).length;
+  $("sFinished").textContent=list.filter(r=>!!r.actual).length;
+  $("sHistory").textContent=list.reduce((n,r)=>n+r.history.length,0);
+  if(!list.length){
+    $("tbody").innerHTML='<tr><td colspan="10" class="empty">Seçili tarih ve lig filtrelerinde eşleşme bulunamadı.</td></tr>';
+    return;
+  }
+  $("tbody").innerHTML=list.map(r=>{
+    const m=r.match;
+    const mode=r.actual
+      ?'<span class="mode actual">GERÇEKLEŞEN</span>'
+      :'<span class="mode prediction">TAHMİN</span>';
+    return `<tr>
+      <td class="match-cell">
+        <div class="teams">${esc(home(m))} - ${esc(away(m))}</div>
+        <div class="match-meta">${esc(niceDate(dateOf(m)))} ${timeOf(m)?"· "+esc(timeOf(m)):""} ${league(m)?"· "+esc(league(m)):""}</div>
+        <div class="shared-markets">Aynı marketler: ${esc(r.marketNames.join(", ")||"Yeterli eşleşme yok")}</div>
+      </td>
+      <td>${mode}</td>
+      <td>${scoreHtml(m)}</td>
+      <td class="result-cell">${valueCell(r,"ms")}</td>
+      <td class="result-cell">${valueCell(r,"kg")}</td>
+      <td class="result-cell">${valueCell(r,"over")}</td>
+      <td class="result-cell">${valueCell(r,"iy05")}</td>
+      <td class="result-cell">${valueCell(r,"iy15")}</td>
+      <td class="result-cell">${valueCell(r,"iyms")}</td>
+      <td><button class="detail-btn" data-id="${esc(r.id)}">${expanded.has(r.id)?"Gizle":"Detay"} (${r.history.length})</button></td>
+    </tr>${historyHtml(r)}`;
+  }).join("");
 }
 function analyze(){
- const d=$("date").value;
- if(!d){$("status").textContent="Lütfen tarih seç.";return;}
- expanded.clear();
- rows=build(d,Number($("days").value));
- const total=rows.reduce((n,r)=>n+r.history.length,0);
- const visible=rows.filter(r=>r.history.length>0).length;
- $("status").textContent=
-  `${niceDate(d)}: ${visible} eşleşen maç bulundu. `+
-  `Şartlar: aynı lig ve en az 3 aynı market oranı. `+
-  `Eşleşmesi olmayan maçlar gizlenir. Toplam geçmiş eşleşme: ${total}. `+
-  `Oran değerleri gösterilmiyor. Lig filtresi sonuçları aşağıda daraltır.`;
- render();
+  const d=$("date").value;
+  if(!d){
+    $("status").textContent="Lütfen tarih seç.";
+    return;
+  }
+  expanded.clear();
+  rows=build(d,Number($("days").value));
+  const total=rows.reduce((n,r)=>n+r.history.length,0);
+  const visible=rows.filter(r=>r.history.length>0).length;
+  $("status").textContent=
+    `${niceDate(d)}: ${visible} eşleşen maç bulundu. `+
+    `Şartlar: aynı lig ve en az 3 aynı market oranı. `+
+    `Eşleşmesi olmayan maçlar gizlenir. Toplam geçmiş eşleşme: ${total}. `+
+    `Oran değerleri gösterilmiyor. Lig filtresi sonuçları aşağıda daraltır.`;
+  render();
 }
 function downloadCsv(){
- const headers=[
-  "Tarih","Saat","Lig","Ev Sahibi","Deplasman","Durum",
-  "Skor","İY Skor","Eşleşen Marketler","Geçmiş Maç",
-  "MS","KG Var","2.5 Üst","İY 0.5 Üst","İY 1.5 Üst","İY/MS"
- ];
- const list=filteredRows();
- const cv=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
- const data=[headers,...list.map(r=>{
-  const m=r.match,f=ft(m),h=ht(m);
-  const val=k=>r.actual?r.actual[k]:r.pred[k]?.value;
-  const pretty=v=>v==null?"":typeof v==="boolean"?(v?"Evet":"Hayır"):v;
-  return [
-   dateOf(m),timeOf(m),league(m),home(m),away(m),
-   r.actual?"Gerçekleşen":"Tahmin",
-   f?`${f[0]}-${f[1]}`:"",
-   h?`${h[0]}-${h[1]}`:"",
-   r.marketNames.join(", "),r.history.length,
-   pretty(val("ms")),pretty(val("kg")),pretty(val("over")),
-   pretty(val("iy05")),pretty(val("iy15")),pretty(val("iyms"))
+  const headers=[
+    "Tarih","Saat","Lig","Ev Sahibi","Deplasman","Durum",
+    "Skor","İY Skor","Eşleşen Marketler","Geçmiş Maç",
+    "MS","KG Var","2.5 Üst","İY 0.5 Üst","İY 1.5 Üst","İY/MS"
   ];
- })];
- const blob=new Blob(
-  ["\uFEFF"+data.map(row=>row.map(cv).join(";")).join("\r\n")],
-  {type:"text/csv;charset=utf-8"}
- );
- const url=URL.createObjectURL(blob);
- const a=document.createElement("a");
- a.href=url;
- a.download=`v2-eslesme-${$("date").value}.csv`;
- a.click();
- setTimeout(()=>URL.revokeObjectURL(url),1000);
+  const list=filteredRows();
+  const cv=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+  const data=[headers,...list.map(r=>{
+    const m=r.match,f=ft(m),h=ht(m);
+    const val=k=>r.actual?r.actual[k]:r.pred[k]?.value;
+    const pretty=v=>v==null?"":typeof v==="boolean"?(v?"Evet":"Hayır"):v;
+    return [
+      dateOf(m),timeOf(m),league(m),home(m),away(m),
+      r.actual?"Gerçekleşen":"Tahmin",
+      f?`${f[0]}-${f[1]}`:"",
+      h?`${h[0]}-${h[1]}`:"",
+      r.marketNames.join(", "),r.history.length,
+      pretty(val("ms")),pretty(val("kg")),pretty(val("over")),
+      pretty(val("iy05")),pretty(val("iy15")),pretty(val("iyms"))
+    ];
+  })];
+  const blob=new Blob(
+    ["\uFEFF"+data.map(row=>row.map(cv).join(";")).join("\r\n")],
+    {type:"text/csv;charset=utf-8"}
+  );
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download=`v2-eslesme-${$("date").value}.csv`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 async function load(){
- try{
-  const res=await fetch(DATA_URL,{cache:"no-store"});
-  if(!res.ok)throw new Error("HTTP "+res.status);
-  const data=await res.json();
-  if(Array.isArray(data)){
-   matches=data;
-   markets={};
-  }else{
-   matches=data.matches||data.data||data.fixtures||data.items||[];
-   markets=data.markets||data.marketCatalog||data.marketDefinitions||{};
+  try{
+    const res=await fetch(DATA_URL,{cache:"no-store"});
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const data=await res.json();
+    if(Array.isArray(data)){
+      matches=data;
+      markets={};
+    }else{
+      matches=data.matches||data.data||data.fixtures||data.items||[];
+      markets=data.markets||data.marketCatalog||data.marketDefinitions||{};
+    }
+    if(!matches.length)throw new Error("JSON içinde maç listesi bulunamadı.");
+    const dates=[...new Set(matches.map(dateOf).filter(Boolean))].sort();
+    if(!dates.length)throw new Error("Geçerli maç tarihi bulunamadı.");
+    buildLeagueOptions();
+    const now=new Date();
+    const today=[
+      now.getFullYear(),
+      String(now.getMonth()+1).padStart(2,"0"),
+      String(now.getDate()).padStart(2,"0")
+    ].join("-");
+    $("date").value=dates.includes(today)
+      ?today
+      :(dates.find(d=>d>=today)||dates[dates.length-1]);
+    analyze();
+  }catch(e){
+    console.error(e);
+    $("status").textContent="Veri yükleme hatası: "+e.message;
+    $("tbody").innerHTML=`<tr><td colspan="10" class="empty">${esc(e.message)}</td></tr>`;
   }
-  if(!matches.length)throw new Error("JSON içinde maç listesi bulunamadı.");
-  const dates=[...new Set(matches.map(dateOf).filter(Boolean))].sort();
-  if(!dates.length)throw new Error("Geçerli maç tarihi bulunamadı.");
-  buildLeagueOptions();
-  const now=new Date();
-  const today=[
-   now.getFullYear(),
-   String(now.getMonth()+1).padStart(2,"0"),
-   String(now.getDate()).padStart(2,"0")
-  ].join("-");
-  $("date").value=dates.includes(today)?today:(dates.find(d=>d>=today)||dates[dates.length-1]);
-  analyze();
- }catch(e){
-  console.error(e);
-  $("status").textContent="Veri yükleme hatası: "+e.message;
-  $("tbody").innerHTML=`<tr><td colspan="10" class="empty">${esc(e.message)}</td></tr>`;
- }
 }
 $("analyze").addEventListener("click",analyze);
 $("date").addEventListener("change",analyze);
@@ -667,24 +684,24 @@ $("sort").addEventListener("change",render);
 $("search").addEventListener("input",render);
 $("csv").addEventListener("click",downloadCsv);
 $("leagueOptions").addEventListener("change",e=>{
- const input=e.target.closest('input[data-league]');
- if(!input)return;
- const name=input.dataset.league;
- if(input.checked)selectedLeagues.add(name);
- else selectedLeagues.delete(name);
- updateLeagueSummary();
- render();
+  const input=e.target.closest('input[data-league]');
+  if(!input)return;
+  const name=input.dataset.league;
+  if(input.checked)selectedLeagues.add(name);
+  else selectedLeagues.delete(name);
+  updateLeagueSummary();
+  render();
 });
 $("leagueSearch").addEventListener("input",buildLeagueOptions);
 $("allLeagues").addEventListener("click",selectAllLeagues);
 $("clearLeagues").addEventListener("click",clearLeagues);
 $("tbody").addEventListener("click",e=>{
- const b=e.target.closest("[data-id]");
- if(!b)return;
- const id=b.dataset.id;
- if(expanded.has(id))expanded.delete(id);
- else expanded.add(id);
- render();
+  const b=e.target.closest("[data-id]");
+  if(!b)return;
+  const id=b.dataset.id;
+  if(expanded.has(id))expanded.delete(id);
+  else expanded.add(id);
+  render();
 });
 load();
 </script>
