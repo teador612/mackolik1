@@ -174,7 +174,7 @@ window.SPORT_TOTO_DATA = {
       {"number":15,"home":"Juventus","away":"Lazio","result":"2"},
     ],
     "11": [
-      {"number":1,"home":"Corendon Alanyaspor","away":"Kocaelispor","result":null},
+      {"number":1,"home":"Corendon Alanyaspor","away":"Kocaelispor","result":"2"},
       {"number":2,"home":"Eyüpspor","away":"Kasımpaşa","result":null},
       {"number":3,"home":"Gaziantep FK","away":"Erzurumspor FK","result":null},
       {"number":4,"home":"Samsunspor","away":"Amed Sportif Faaliyetler","result":null},
