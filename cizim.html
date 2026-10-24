@@ -5,430 +5,676 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101722">
-<title>Çizim Asistanı | Ücretsiz</title>
+<title>Perspektifli Çizim Asistanı</title>
 <style>
 :root {
   color-scheme: dark;
-  --bg: #101722;
-  --panel: #1b2635;
-  --border: #354357;
-  --text: #f4f7fb;
-  --muted: #aab7c8;
-  --accent: #55d6a2;
+  --bg:#101722;
+  --panel:#1b2635;
+  --border:#354357;
+  --text:#f4f7fb;
+  --muted:#aab7c8;
+  --accent:#55d6a2;
 }
-* { box-sizing: border-box; }
+* { box-sizing:border-box; }
 body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, sans-serif;
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,sans-serif;
 }
-button, input { font: inherit; }
-button, .upload {
-  border: 1px solid var(--border);
-  background: #253448;
-  color: white;
-  border-radius: 11px;
-  padding: 11px 13px;
-  cursor: pointer;
-  text-align: center;
-}
-button:active { transform: scale(.98); }
-button.primary, .upload {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #10251d;
-  font-weight: 700;
-}
-header {
-  padding: 15px 16px 12px;
-  border-bottom: 1px solid var(--border);
-}
-header h1 { font-size: 20px; margin: 0 0 4px; }
-header p { font-size: 12px; color: var(--muted); margin: 0; }
-main {
-  width: min(100%, 900px);
-  margin: auto;
-  padding: 12px;
-}
+header { padding:15px; border-bottom:1px solid var(--border); }
+h1 { font-size:20px; margin:0 0 4px; }
+header p,.small { color:var(--muted); font-size:12px; line-height:1.6; }
+header p { margin:0; }
+main { max-width:1000px; margin:auto; padding:12px; }
 .stage {
-  position: relative;
-  width: 100%;
-  height: min(57dvh, 600px);
-  min-height: 300px;
-  overflow: hidden;
-  background: #05080d;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  touch-action: none;
+  position:relative;
+  width:100%;
+  height:min(58dvh,650px);
+  min-height:320px;
+  overflow:hidden;
+  background:#05080d;
+  border:1px solid var(--border);
+  border-radius:14px;
+  touch-action:none;
 }
-#video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+canvas {
+  width:100%;
+  height:100%;
+  display:block;
+  touch-action:none;
 }
 #placeholder {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-content: center;
-  text-align: center;
-  padding: 25px;
-  color: var(--muted);
-  font-size: 14px;
-  pointer-events: none;
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-content:center;
+  text-align:center;
+  padding:24px;
+  color:var(--muted);
+  pointer-events:none;
 }
-#overlay {
-  position: absolute;
-  width: 75%;
-  height: auto;
-  max-height: none;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  opacity: .55;
-  display: none;
-  pointer-events: auto;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-drag: none;
+#placeholder strong { color:var(--text); }
+.panel {
+  padding:14px;
+  margin-top:12px;
+  border:1px solid var(--border);
+  background:var(--panel);
+  border-radius:14px;
 }
-#crosshair {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  display: none;
-  background:
-    linear-gradient(transparent calc(50% - .5px), #55d6a255 50%, transparent calc(50% + .5px)),
-    linear-gradient(90deg, transparent calc(50% - .5px), #55d6a255 50%, transparent calc(50% + .5px));
+h2 { font-size:15px; margin:0 0 12px; }
+button,.upload {
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:43px;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#253448;
+  color:white;
+  font:inherit;
+  font-size:13px;
+  text-align:center;
+  cursor:pointer;
+}
+button.primary,.upload {
+  background:var(--accent);
+  border-color:var(--accent);
+  color:#10251d;
+  font-weight:700;
+}
+button:disabled { opacity:.45; }
+.actions {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+#file { display:none; }
+.control { display:block; margin:15px 0; font-size:13px; }
+.control span {
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  margin-bottom:8px;
+}
+output { color:var(--accent); }
+input[type=range] {
+  width:100%;
+  accent-color:var(--accent);
+  min-height:24px;
 }
 .status {
-  font-size: 12px;
-  color: var(--muted);
-  margin: 9px 2px 12px;
-  min-height: 18px;
+  margin:9px 2px;
+  min-height:18px;
+  font-size:12px;
+  color:var(--muted);
 }
-.panel {
-  padding: 14px;
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  margin-bottom: 12px;
-}
-.actions {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-}
-label.control {
-  display: block;
-  font-size: 13px;
-  margin-bottom: 17px;
-}
-.control span {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-output { color: var(--accent); font-variant-numeric: tabular-nums; }
-input[type=range] {
-  width: 100%;
-  accent-color: var(--accent);
-  display: block;
-  min-height: 24px;
-}
-.row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-.small { color: var(--muted); font-size: 12px; line-height: 1.6; }
-h2 { font-size: 15px; margin: 0 0 14px; }
-#file { display: none; }
-footer { text-align: center; padding: 8px 12px 25px; }
-@media (min-width: 700px) {
-  main { display: grid; grid-template-columns: 1.3fr 1fr; gap: 12px; align-items: start; }
-  .stage { height: 65vh; }
-  .status { grid-column: 1; }
-  .controls { grid-column: 2; grid-row: 1 / span 2; }
+.row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+#resetCorners { width:100%; margin-top:8px; }
+footer { text-align:center; padding:8px 15px 24px; }
+@media(min-width:760px) {
+  main { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr); gap:12px; }
+  .viewer { min-width:0; }
+  .stage { height:70vh; }
+  .controls { min-width:0; }
+  .panel { margin-top:0; margin-bottom:12px; }
 }
 </style>
 </head>
 <body>
 <header>
-  <h1>✏️ Çizim Asistanı</h1>
-  <p>Resmini yükle, kamerayı aç ve kâğıdına bakarak çiz.</p>
+  <h1>✏️ Perspektifli Çizim Asistanı</h1>
+  <p>Resmini yükle, kâğıdın dört köşesini işaretle ve çizgileri takip et.</p>
 </header>
 
 <main>
-  <section>
+  <section class="viewer">
     <div class="stage" id="stage">
-      <video id="video" autoplay muted playsinline></video>
+      <canvas id="view"></canvas>
       <div id="placeholder">
-        <div style="font-size:42px;margin-bottom:10px">📷</div>
+        <div style="font-size:40px">📷</div>
         <strong>Kamerayı başlat</strong>
-        <p>Kâğıdını düz bir zemine yerleştir.</p>
+        <p>Önce resim yükle, sonra kâğıdını kameraya göster.</p>
       </div>
-      <img id="overlay" alt="Çizim şablonu">
-      <div id="crosshair"></div>
     </div>
-    <div class="status" id="status" role="status">
-      Önce resmini yükle ve kamerayı başlat.
+    <div id="status" class="status" role="status">
+      Resim yükle ve kamerayı aç.
     </div>
-    <div class="panel actions">
-      <label class="upload" for="file">＋ Resim yükle</label>
-      <input id="file" type="file" accept="image/*">
-      <button class="primary" id="camera">📷 Kamerayı aç</button>
-      <button id="flip">↻ Kamerayı değiştir</button>
-      <button id="fullscreen">⛶ Tam ekran</button>
-      <button id="grid">▦ Kılavuz çizgileri</button>
+    <div class="panel">
+      <div class="actions">
+        <label class="upload" for="file">＋ Resim yükle</label>
+        <input id="file" type="file" accept="image/*">
+        <button class="primary" id="camera">📷 Kamerayı aç</button>
+        <button id="flip">↻ Kamera değiştir</button>
+        <button id="fullscreen">⛶ Tam ekran</button>
+        <button id="corners">◈ Köşeleri düzenle</button>
+      </div>
+      <p class="small">
+        Köşeleri düzenle açıkken yeşil daireleri kâğıdının köşelerine
+        sürükle. Görsel bu dört noktaya perspektifli olarak oturur.
+      </p>
     </div>
   </section>
 
   <section class="controls">
     <div class="panel">
-      <h2>Resim ayarları</h2>
-
+      <h2>Görsel ayarları</h2>
       <label class="control">
         <span>Saydamlık <output id="opacityOut">55%</output></span>
-        <input id="opacity" type="range" min="10" max="100" value="55">
+        <input id="opacity" type="range" min="5" max="100" value="55">
       </label>
-
       <label class="control">
-        <span>Boyut <output id="sizeOut">75%</output></span>
-        <input id="size" type="range" min="15" max="180" value="75">
+        <span>Resim ölçeği <output id="scaleOut">100%</output></span>
+        <input id="scale" type="range" min="50" max="150" value="100">
       </label>
-
       <label class="control">
-        <span>Yatay konum <output id="xOut">0</output></span>
-        <input id="posX" type="range" min="-100" max="100" value="0">
+        <span>Yatay kaydırma <output id="xOut">0%</output></span>
+        <input id="shiftX" type="range" min="-40" max="40" value="0">
       </label>
-
       <label class="control">
-        <span>Dikey konum <output id="yOut">0</output></span>
-        <input id="posY" type="range" min="-100" max="100" value="0">
+        <span>Dikey kaydırma <output id="yOut">0%</output></span>
+        <input id="shiftY" type="range" min="-40" max="40" value="0">
       </label>
-
       <div class="row">
         <button id="minus">− Küçült</button>
         <button id="plus">＋ Büyüt</button>
       </div>
-      <div style="height:9px"></div>
-      <button id="reset" style="width:100%">↺ Ayarları sıfırla</button>
+      <button id="resetCorners">↺ Köşeleri sıfırla</button>
     </div>
 
     <div class="panel">
-      <h2>Nasıl kullanılır?</h2>
+      <h2>Çizim ipuçları</h2>
       <div class="small">
-        1. Resmini telefonundan seç.<br>
-        2. Kamerayı aç ve kâğıdı görüntüye al.<br>
-        3. Saydamlığı ayarlayıp çizgileri takip et.<br>
-        4. Boyut ve konum ayarlarıyla resmi kâğıda hizala.
+        <b>1.</b> Telefonu kâğıdın üstünde sabitle.<br>
+        <b>2.</b> Kâğıdın dört köşesini görüntüde işaretle.<br>
+        <b>3.</b> Saydamlığı çizgiler net görünecek şekilde ayarla.<br>
+        <b>4.</b> Resmin ölçeğini ve kaydırmasını ayarla.<br>
+        <b>5.</b> Köşeleri düzenlemeyi kapatıp çizime başla.
       </div>
     </div>
 
     <div class="panel">
-      <h2>Önemli bilgi</h2>
+      <h2>Gizlilik ve kullanım</h2>
       <div class="small">
-        Görsel ekranda kameranın üzerine bindirilir;
-        kâğıda fiziksel olarak yansıtılmaz. Telefonu sabitlemek
-        hizalamayı kolaylaştırır. En iyi sonuç için kamerayı
-        kâğıdın üstünde sabit tut.
+        Kamera görüntüsü ve yüklediğin resim bu sayfanın içinde işlenir.
+        Bu uygulama görüntüyü fiziksel olarak kâğıda yansıtmaz.
+        Perspektif düzeltme, kamerada seçtiğin dört nokta arasında
+        hesaplanır. Kamera izni için site HTTPS üzerinden açılmalıdır.
       </div>
     </div>
   </section>
 </main>
-<footer class="small">Ücretsiz • Hesap gerektirmez • Resimler cihazında işlenir</footer>
+<footer class="small">Ücretsiz • Hesap gerekmez • GitHub Pages uyumlu</footer>
 
 <script>
 (() => {
+  'use strict';
+
   const $ = id => document.getElementById(id);
-  const video = $('video');
   const stage = $('stage');
-  const overlay = $('overlay');
+  const canvas = $('view');
+  const ctx = canvas.getContext('2d', { alpha:false });
   const status = $('status');
   const placeholder = $('placeholder');
-  const crosshair = $('crosshair');
 
   let stream = null;
   let facing = 'environment';
+  let image = null;
   let imageUrl = null;
-  let size = 75;
-  let x = 0;
-  let y = 0;
-  let dragging = false;
-  let startX = 0;
-  let startY = 0;
-  let originX = 0;
-  let originY = 0;
+  let raf = 0;
+  let running = false;
+  let editingCorners = true;
+  let dragging = -1;
+  let corners = [];
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
 
-  function say(message) {
-    status.textContent = message;
+  const defaults = () => [
+    {x:width*.14,y:height*.10},
+    {x:width*.86,y:height*.10},
+    {x:width*.86,y:height*.90},
+    {x:width*.14,y:height*.90}
+  ];
+
+  function say(text) { status.textContent = text; }
+
+  function resize() {
+    const rect = stage.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    const oldW = width, oldH = height;
+    width = rect.width;
+    height = rect.height;
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(width*dpr);
+    canvas.height = Math.round(height*dpr);
+
+    if (corners.length && oldW && oldH) {
+      corners = corners.map(p => ({
+        x:p.x*width/oldW,
+        y:p.y*height/oldH
+      }));
+    } else {
+      corners = defaults();
+    }
+    draw();
   }
 
-  function update() {
-    overlay.style.width = size + '%';
-    overlay.style.left = `calc(50% + ${x}%)`;
-    overlay.style.top = `calc(50% + ${y}%)`;
-    overlay.style.opacity = $('opacity').value / 100;
+  function coverVideo() {
+    if (!stream || video.readyState < 2) return;
+    const vw = video.videoWidth, vh = video.videoHeight;
+    if (!vw || !vh) return;
 
-    $('sizeOut').textContent = size + '%';
-    $('xOut').textContent = x;
-    $('yOut').textContent = y;
-    $('opacityOut').textContent = $('opacity').value + '%';
-    $('size').value = size;
-    $('posX').value = x;
-    $('posY').value = y;
+    const scale = Math.max(width/vw, height/vh);
+    const sw = width/scale, sh = height/scale;
+    const sx = (vw-sw)/2, sy = (vh-sh)/2;
+
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, width, height);
   }
 
-  $('file').addEventListener('change', event => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const video = document.createElement('video');
+  video.autoplay = true;
+  video.playsInline = true;
+  video.muted = true;
 
-    if (!file.type.startsWith('image/')) {
-      say('Lütfen bir resim dosyası seç.');
-      return;
+  // Solve an 8x8 linear system for a projective homography.
+  function solveLinear(A, b) {
+    const n = b.length;
+    const M = A.map((row,i) => [...row,b[i]]);
+
+    for (let col=0; col<n; col++) {
+      let pivot = col;
+      for (let r=col+1; r<n; r++) {
+        if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot=r;
+      }
+      if (Math.abs(M[pivot][col]) < 1e-10) return null;
+      [M[col],M[pivot]] = [M[pivot],M[col]];
+
+      const divisor = M[col][col];
+      for (let j=col; j<=n; j++) M[col][j] /= divisor;
+
+      for (let r=0; r<n; r++) {
+        if (r===col) continue;
+        const factor = M[r][col];
+        for (let j=col; j<=n; j++) M[r][j] -= factor*M[col][j];
+      }
+    }
+    return M.map(row => row[n]);
+  }
+
+  function homography(src, dst) {
+    const A=[], b=[];
+    for (let i=0;i<4;i++) {
+      const {x,y}=src[i], {x:X,y:Y}=dst[i];
+      A.push([x,y,1,0,0,0,-X*x,-X*y]); b.push(X);
+      A.push([0,0,0,x,y,1,-Y*x,-Y*y]); b.push(Y);
+    }
+    const h=solveLinear(A,b);
+    return h ? [...h,1] : null;
+  }
+
+  function project(H,x,y) {
+    const den=H[6]*x+H[7]*y+H[8];
+    if (Math.abs(den)<1e-8) return null;
+    return {
+      x:(H[0]*x+H[1]*y+H[2])/den,
+      y:(H[3]*x+H[4]*y+H[5])/den
+    };
+  }
+
+  // Map each small source triangle to its projected triangle.
+  function triangle(source, target) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(target[0].x,target[0].y);
+    ctx.lineTo(target[1].x,target[1].y);
+    ctx.lineTo(target[2].x,target[2].y);
+    ctx.closePath();
+    ctx.clip();
+
+    const [p0,p1,p2]=source;
+    const [q0,q1,q2]=target;
+    const den =
+      p0.x*(p1.y-p2.y)+
+      p1.x*(p2.y-p0.y)+
+      p2.x*(p0.y-p1.y);
+
+    if (Math.abs(den)>1e-8) {
+      const a=(
+        q0.x*(p1.y-p2.y)+
+        q1.x*(p2.y-p0.y)+
+        q2.x*(p0.y-p1.y))/den;
+      const c=(
+        q0.x*(p2.x-p1.x)+
+        q1.x*(p0.x-p2.x)+
+        q2.x*(p1.x-p0.x))/den;
+      const e=(
+        q0.x*(p1.x*p2.y-p2.x*p1.y)+
+        q1.x*(p2.x*p0.y-p0.x*p2.y)+
+        q2.x*(p0.x*p1.y-p1.x*p0.y))/den;
+
+      const b=(
+        q0.y*(p1.y-p2.y)+
+        q1.y*(p2.y-p0.y)+
+        q2.y*(p0.y-p1.y))/den;
+      const d=(
+        q0.y*(p2.x-p1.x)+
+        q1.y*(p0.x-p2.x)+
+        q2.y*(p1.x-p0.x))/den;
+      const f=(
+        q0.y*(p1.x*p2.y-p2.x*p1.y)+
+        q1.y*(p2.x*p0.y-p0.x*p2.y)+
+        q2.y*(p0.x*p1.y-p1.x*p0.y))/den;
+
+      ctx.transform(a,b,c,d,e,f);
+      ctx.drawImage(image,0,0);
+    }
+    ctx.restore();
+  }
+
+  function drawPerspective() {
+    if (!image || corners.length!==4) return;
+
+    const scale = Number($('scale').value)/100;
+    const shiftX = Number($('shiftX').value)/100;
+    const shiftY = Number($('shiftY').value)/100;
+
+    const center = {
+      x:corners.reduce((s,p)=>s+p.x,0)/4,
+      y:corners.reduce((s,p)=>s+p.y,0)/4
+    };
+
+    // The image is fitted to the quadrilateral's average width/height.
+    const avgW = (
+      Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y)+
+      Math.hypot(corners[2].x-corners[3].x,corners[2].y-corners[3].y)
+    )/2;
+    const avgH = (
+      Math.hypot(corners[3].x-corners[0].x,corners[3].y-corners[0].y)+
+      Math.hypot(corners[2].x-corners[1].x,corners[2].y-corners[1].y)
+    )/2;
+
+    const targetW=avgW*scale, targetH=avgH*scale;
+    const targetCenter={
+      x:center.x+shiftX*avgW,
+      y:center.y+shiftY*avgH
+    };
+
+    const target=[
+      {x:targetCenter.x-targetW/2,y:targetCenter.y-targetH/2},
+      {x:targetCenter.x+targetW/2,y:targetCenter.y-targetH/2},
+      {x:targetCenter.x+targetW/2,y:targetCenter.y+targetH/2},
+      {x:targetCenter.x-targetW/2,y:targetCenter.y+targetH/2}
+    ];
+
+    const src=[
+      {x:0,y:0},
+      {x:image.naturalWidth,y:0},
+      {x:image.naturalWidth,y:image.naturalHeight},
+      {x:0,y:image.naturalHeight}
+    ];
+    const H=homography(src,target);
+    if (!H) return;
+
+    const n=18;
+    const points=[];
+    for(let j=0;j<=n;j++){
+      points[j]=[];
+      for(let i=0;i<=n;i++){
+        points[j][i]=project(
+          H,
+          image.naturalWidth*i/n,
+          image.naturalHeight*j/n
+        );
+      }
     }
 
-    if (imageUrl) URL.revokeObjectURL(imageUrl);
-    imageUrl = URL.createObjectURL(file);
-    overlay.onload = () => {
-      overlay.style.display = 'block';
-      size = 75;
-      x = 0;
-      y = 0;
-      update();
-      say('Resim yüklendi. Şimdi kamerayı açıp kâğıdını hizala.');
-    };
-    overlay.onerror = () => say('Resim açılamadı. Başka bir resim dene.');
-    overlay.src = imageUrl;
-  });
+    ctx.save();
+    ctx.globalAlpha=Number($('opacity').value)/100;
+
+    for(let j=0;j<n;j++){
+      for(let i=0;i<n;i++){
+        const sx0=image.naturalWidth*i/n;
+        const sx1=image.naturalWidth*(i+1)/n;
+        const sy0=image.naturalHeight*j/n;
+        const sy1=image.naturalHeight*(j+1)/n;
+
+        const p00={x:sx0,y:sy0}, p10={x:sx1,y:sy0};
+        const p01={x:sx0,y:sy1}, p11={x:sx1,y:sy1};
+        const q00=points[j][i], q10=points[j][i+1];
+        const q01=points[j+1][i], q11=points[j+1][i+1];
+
+        if(q00&&q10&&q01) triangle([p00,p10,p01],[q00,q10,q01]);
+        if(q10&&q11&&q01) triangle([p10,p11,p01],[q10,q11,q01]);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawHandles() {
+    if (!editingCorners) return;
+    ctx.save();
+    ctx.lineWidth=2;
+    ctx.strokeStyle='#55d6a2';
+    ctx.fillStyle='#10251d';
+
+    ctx.beginPath();
+    corners.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.closePath();
+    ctx.stroke();
+
+    corners.forEach((p,i)=>{
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,12,0,Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle='#ffffff';
+      ctx.font='bold 12px system-ui';
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.fillText(String(i+1),p.x,p.y);
+      ctx.fillStyle='#10251d';
+    });
+    ctx.restore();
+  }
+
+  function draw() {
+    if (!width || !height) return;
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,width,height);
+
+    if (running && video.readyState>=2) {
+      coverVideo();
+    } else {
+      ctx.fillStyle='#05080d';
+      ctx.fillRect(0,0,width,height);
+    }
+
+    drawPerspective();
+    drawHandles();
+  }
+
+  function loop() {
+    if (!running) return;
+    draw();
+    raf=requestAnimationFrame(loop);
+  }
+
+  function startLoop() {
+    if (raf) cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(loop);
+  }
 
   async function startCamera() {
     if (!navigator.mediaDevices?.getUserMedia) {
-      say('Kamera için HTTPS bağlantısı ve desteklenen bir tarayıcı gerekli.');
+      say('Kamera için HTTPS bağlantısı ve desteklenen tarayıcı gerekli.');
       return;
     }
 
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
-    }
+    if (stream) stream.getTracks().forEach(t=>t.stop());
+    running=false;
+    if (raf) cancelAnimationFrame(raf);
 
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: facing },
-          width: { ideal: 1920 },
-          height: { ideal: 1080 }
+      stream=await navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{
+          facingMode:{ideal:facing},
+          width:{ideal:1280},
+          height:{ideal:720}
         }
       });
-
-      video.srcObject = stream;
+      video.srcObject=stream;
       await video.play();
-      placeholder.style.display = 'none';
-      say('Kamera açık. Kâğıdını görüntüye al ve resmi hizala.');
-    } catch (error) {
-      const messages = {
-        NotAllowedError: 'Kamera izni verilmedi. Tarayıcı ayarlarından izin ver.',
-        NotFoundError: 'Kullanılabilir kamera bulunamadı.',
-        NotReadableError: 'Kamera başka bir uygulama tarafından kullanılıyor.'
+      running=true;
+      placeholder.style.display='none';
+      startLoop();
+      say('Kamera açık. Kâğıdın köşelerini yeşil işaretlere hizala.');
+    } catch(err) {
+      const messages={
+        NotAllowedError:'Kamera izni verilmedi. Tarayıcı ayarlarından izin ver.',
+        NotFoundError:'Kamera bulunamadı.',
+        NotReadableError:'Kamera başka bir uygulama tarafından kullanılıyor.'
       };
-      say(messages[error.name] || 'Kamera açılamadı. HTTPS ve kamera izinlerini kontrol et.');
+      say(messages[err.name] || 'Kamera açılamadı. HTTPS ve izinleri kontrol et.');
+      running=false;
+      draw();
     }
   }
 
-  $('camera').addEventListener('click', startCamera);
+  $('camera').addEventListener('click',startCamera);
 
-  $('flip').addEventListener('click', async () => {
-    facing = facing === 'environment' ? 'user' : 'environment';
-    if (stream) await startCamera();
-    else say(facing === 'environment' ? 'Arka kamera seçildi.' : 'Ön kamera seçildi.');
-  });
-
-  $('opacity').addEventListener('input', update);
-  $('size').addEventListener('input', e => {
-    size = Number(e.target.value);
-    update();
-  });
-  $('posX').addEventListener('input', e => {
-    x = Number(e.target.value);
-    update();
-  });
-  $('posY').addEventListener('input', e => {
-    y = Number(e.target.value);
-    update();
+  $('flip').addEventListener('click',async()=>{
+    facing=facing==='environment'?'user':'environment';
+    if(running) await startCamera();
+    else say(facing==='environment'?'Arka kamera seçildi.':'Ön kamera seçildi.');
   });
 
-  $('minus').addEventListener('click', () => {
-    size = Math.max(15, size - 5);
-    update();
-  });
-  $('plus').addEventListener('click', () => {
-    size = Math.min(180, size + 5);
-    update();
-  });
-  $('reset').addEventListener('click', () => {
-    size = 75;
-    x = 0;
-    y = 0;
-    $('opacity').value = 55;
-    update();
+  $('file').addEventListener('change',e=>{
+    const file=e.target.files?.[0];
+    if(!file) return;
+    if(!file.type.startsWith('image/')) {
+      say('Lütfen geçerli bir resim dosyası seç.');
+      return;
+    }
+
+    if(imageUrl) URL.revokeObjectURL(imageUrl);
+    imageUrl=URL.createObjectURL(file);
+    const next=new Image();
+
+    next.onload=()=>{
+      image=next;
+      if(!corners.length) corners=defaults();
+      draw();
+      say('Resim yüklendi. Kamerayı aç ve dört köşeyi kâğıdına hizala.');
+    };
+    next.onerror=()=>say('Resim açılamadı. Başka bir resim dene.');
+    next.src=imageUrl;
   });
 
-  $('grid').addEventListener('click', () => {
-    crosshair.style.display =
-      crosshair.style.display === 'block' ? 'none' : 'block';
+  $('opacity').addEventListener('input',()=>{
+    $('opacityOut').textContent=$('opacity').value+'%';
+    draw();
+  });
+  $('scale').addEventListener('input',()=>{
+    $('scaleOut').textContent=$('scale').value+'%';
+    draw();
+  });
+  $('shiftX').addEventListener('input',()=>{
+    $('xOut').textContent=$('shiftX').value+'%';
+    draw();
+  });
+  $('shiftY').addEventListener('input',()=>{
+    $('yOut').textContent=$('shiftY').value+'%';
+    draw();
   });
 
-  $('fullscreen').addEventListener('click', async () => {
+  $('minus').addEventListener('click',()=>{
+    $('scale').value=Math.max(50,Number($('scale').value)-5);
+    $('scale').dispatchEvent(new Event('input'));
+  });
+  $('plus').addEventListener('click',()=>{
+    $('scale').value=Math.min(150,Number($('scale').value)+5);
+    $('scale').dispatchEvent(new Event('input'));
+  });
+
+  $('corners').addEventListener('click',()=>{
+    editingCorners=!editingCorners;
+    $('corners').textContent=editingCorners?'◈ Köşeleri düzenle: açık':'◈ Köşeleri düzenle: kapalı';
+    draw();
+    say(editingCorners?'Köşeleri kâğıdına sürükleyerek hizala.':'Köşe düzenleme kapalı.');
+  });
+
+  $('resetCorners').addEventListener('click',()=>{
+    corners=defaults();
+    $('scale').value=100;
+    $('shiftX').value=0;
+    $('shiftY').value=0;
+    $('opacity').value=55;
+    $('scale').dispatchEvent(new Event('input'));
+    $('shiftX').dispatchEvent(new Event('input'));
+    $('shiftY').dispatchEvent(new Event('input'));
+    $('opacity').dispatchEvent(new Event('input'));
+    draw();
+  });
+
+  $('fullscreen').addEventListener('click',async()=>{
     try {
-      if (!document.fullscreenElement) {
-        await stage.requestFullscreen();
-      } else {
-        await document.exitFullscreen();
-      }
+      if(!document.fullscreenElement) await stage.requestFullscreen();
+      else await document.exitFullscreen();
     } catch {
-      say('Tam ekran bu tarayıcıda desteklenmiyor. Normal görünümde devam edebilirsin.');
+      say('Bu tarayıcıda tam ekran açılamadı.');
     }
   });
 
-  // Resmi ekranda parmakla sürükleyerek hizala.
-  overlay.addEventListener('pointerdown', event => {
-    dragging = true;
-    startX = event.clientX;
-    startY = event.clientY;
-    originX = x;
-    originY = y;
-    overlay.setPointerCapture(event.pointerId);
-    event.preventDefault();
-  });
-
-  overlay.addEventListener('pointermove', event => {
-    if (!dragging) return;
-    const rect = stage.getBoundingClientRect();
-    x = Math.max(-100, Math.min(100,
-      originX + (event.clientX - startX) / rect.width * 100));
-    y = Math.max(-100, Math.min(100,
-      originY + (event.clientY - startY) / rect.height * 100));
-    update();
-  });
-
-  function stopDragging() {
-    dragging = false;
+  function pointFromEvent(e) {
+    const r=canvas.getBoundingClientRect();
+    return {x:e.clientX-r.left,y:e.clientY-r.top};
   }
-  overlay.addEventListener('pointerup', stopDragging);
-  overlay.addEventListener('pointercancel', stopDragging);
 
-  window.addEventListener('pagehide', () => {
-    if (stream) stream.getTracks().forEach(track => track.stop());
-    if (imageUrl) URL.revokeObjectURL(imageUrl);
+  canvas.addEventListener('pointerdown',e=>{
+    if(!editingCorners) return;
+    const p=pointFromEvent(e);
+    let nearest=-1, distance=Infinity;
+
+    corners.forEach((c,i)=>{
+      const d=Math.hypot(c.x-p.x,c.y-p.y);
+      if(d<distance){distance=d;nearest=i;}
+    });
+
+    if(nearest!==-1 && distance<38) {
+      dragging=nearest;
+      canvas.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    }
   });
 
-  update();
+  canvas.addEventListener('pointermove',e=>{
+    if(dragging<0) return;
+    const p=pointFromEvent(e);
+    corners[dragging]={
+      x:Math.max(0,Math.min(width,p.x)),
+      y:Math.max(0,Math.min(height,p.y))
+    };
+    draw();
+  });
+
+  function stopDrag(){dragging=-1;}
+  canvas.addEventListener('pointerup',stopDrag);
+  canvas.addEventListener('pointercancel',stopDrag);
+
+  window.addEventListener('resize',resize);
+  document.addEventListener('fullscreenchange',resize);
+  window.addEventListener('pagehide',()=>{
+    running=false;
+    if(raf) cancelAnimationFrame(raf);
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    if(imageUrl) URL.revokeObjectURL(imageUrl);
+  });
+
+  resize();
 })();
 </script>
 </body>
