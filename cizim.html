@@ -1,680 +1,678 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#101722">
 <title>Perspektifli Çizim Asistanı</title>
 <style>
 :root {
   color-scheme: dark;
-  --bg:#101722;
-  --panel:#1b2635;
-  --border:#354357;
-  --text:#f4f7fb;
-  --muted:#aab7c8;
-  --accent:#55d6a2;
+  --bg: #101722;
+  --panel: #192331;
+  --border: #344357;
+  --text: #f3f6fb;
+  --muted: #aab7c8;
+  --accent: #4ade80;
 }
-* { box-sizing:border-box; }
-body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:system-ui,-apple-system,sans-serif;
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
-header { padding:15px; border-bottom:1px solid var(--border); }
-h1 { font-size:20px; margin:0 0 4px; }
-header p,.small { color:var(--muted); font-size:12px; line-height:1.6; }
-header p { margin:0; }
-main { max-width:1000px; margin:auto; padding:12px; }
-.stage {
-  position:relative;
-  width:100%;
-  height:min(58dvh,650px);
-  min-height:320px;
-  overflow:hidden;
-  background:#05080d;
-  border:1px solid var(--border);
-  border-radius:14px;
-  touch-action:none;
+body { padding: 14px; }
+h1 {
+  font-size: 23px;
+  margin: 4px 0 7px;
 }
-canvas {
-  width:100%;
-  height:100%;
-  display:block;
-  touch-action:none;
+.description {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 15px;
 }
-#placeholder {
-  position:absolute;
-  inset:0;
-  display:grid;
-  place-content:center;
-  text-align:center;
-  padding:24px;
-  color:var(--muted);
-  pointer-events:none;
-}
-#placeholder strong { color:var(--text); }
 .panel {
-  padding:14px;
-  margin-top:12px;
-  border:1px solid var(--border);
-  background:var(--panel);
-  border-radius:14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 13px;
+  margin-bottom: 12px;
 }
-h2 { font-size:15px; margin:0 0 12px; }
-button,.upload {
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-height:43px;
-  padding:10px 12px;
-  border:1px solid var(--border);
-  border-radius:10px;
-  background:#253448;
-  color:white;
-  font:inherit;
-  font-size:13px;
-  text-align:center;
-  cursor:pointer;
+.controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
 }
-button.primary,.upload {
-  background:var(--accent);
-  border-color:var(--accent);
-  color:#10251d;
-  font-weight:700;
+button, .file-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 43px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #263447;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
-button:disabled { opacity:.45; }
-.actions {
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:8px;
+button:active, .file-label:active { opacity: .75; }
+.primary {
+  background: #166534;
+  border-color: #228548;
 }
-#file { display:none; }
-.control { display:block; margin:15px 0; font-size:13px; }
-.control span {
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:8px;
+input[type="file"] { display: none; }
+.setting { margin-top: 15px; }
+.setting-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  margin-bottom: 8px;
 }
-output { color:var(--accent); }
-input[type=range] {
-  width:100%;
-  accent-color:var(--accent);
-  min-height:24px;
+.setting-head span:last-child {
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(60vh, 580px);
+  min-height: 300px;
+  overflow: hidden;
+  border: 1px solid #46566c;
+  border-radius: 14px;
+  background: #05080c;
+  touch-action: none;
+}
+#view {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 10px 1px 0;
 }
 .status {
-  margin:9px 2px;
-  min-height:18px;
-  font-size:12px;
-  color:var(--muted);
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--accent);
+  min-height: 18px;
+  overflow-wrap: anywhere;
 }
-.row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-#resetCorners { width:100%; margin-top:8px; }
-footer { text-align:center; padding:8px 15px 24px; }
-@media(min-width:760px) {
-  main { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(280px,.8fr); gap:12px; }
-  .viewer { min-width:0; }
-  .stage { height:70vh; }
-  .controls { min-width:0; }
-  .panel { margin-top:0; margin-bottom:12px; }
+.stage-exit {
+  display: none;
+  position: absolute;
+  top: max(12px, env(safe-area-inset-top));
+  right: 12px;
+  z-index: 100002;
+  background: rgba(10, 15, 23, .88);
+  border-color: #718096;
+  min-height: 43px;
+  padding: 10px 14px;
+}
+.stage.fake-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  background: #000;
+}
+.stage.fake-fullscreen #view {
+  width: 100%;
+  height: 100%;
+}
+.stage.fake-fullscreen .stage-exit { display: flex; }
+body.fake-fullscreen {
+  overflow: hidden;
+  padding: 0;
+}
+body.fake-fullscreen > *:not(#stage) {
+  visibility: hidden;
+}
+@media (min-width: 760px) {
+  body {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .stage { height: 560px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
 }
 </style>
 </head>
 <body>
-<header>
-  <h1>✏️ Perspektifli Çizim Asistanı</h1>
-  <p>Resmini yükle, kâğıdın dört köşesini işaretle ve çizgileri takip et.</p>
-</header>
-
-<main>
-  <section class="viewer">
-    <div class="stage" id="stage">
-      <canvas id="view"></canvas>
-      <div id="placeholder">
-        <div style="font-size:40px">📷</div>
-        <strong>Kamerayı başlat</strong>
-        <p>Önce resim yükle, sonra kâğıdını kameraya göster.</p>
-      </div>
+<h1>Perspektifli Çizim Asistanı</h1>
+<p class="description">
+Fotoğrafını yükle, kamerayı aç ve görselin dört köşesini kâğıdına göre ayarla.
+Saydam görselin üzerinden çizim yapabilirsin.
+</p>
+<div class="panel">
+  <div class="controls">
+    <label class="file-label primary" for="imageFile">🖼️ Görsel yükle</label>
+    <input id="imageFile" type="file" accept="image/*">
+    <button id="cameraButton" class="primary">📷 Kamerayı aç</button>
+    <button id="fullscreenButton">⛶ Ekranı kapla</button>
+    <button id="resetButton">↺ Köşeleri sıfırla</button>
+    <button id="flipButton">⇄ Kamera değiştir</button>
+  </div>
+  <div class="setting">
+    <div class="setting-head">
+      <label for="opacity">Görsel saydamlığı</label>
+      <span id="opacityValue">55%</span>
     </div>
-    <div id="status" class="status" role="status">
-      Resim yükle ve kamerayı aç.
+    <input id="opacity" type="range" min="5" max="100" value="55">
+  </div>
+  <div class="setting">
+    <div class="setting-head">
+      <label for="size">Görsel boyutu</label>
+      <span id="sizeValue">100%</span>
     </div>
-    <div class="panel">
-      <div class="actions">
-        <label class="upload" for="file">＋ Resim yükle</label>
-        <input id="file" type="file" accept="image/*">
-        <button class="primary" id="camera">📷 Kamerayı aç</button>
-        <button id="flip">↻ Kamera değiştir</button>
-        <button id="fullscreen">⛶ Tam ekran</button>
-        <button id="corners">◈ Köşeleri düzenle</button>
-      </div>
-      <p class="small">
-        Köşeleri düzenle açıkken yeşil daireleri kâğıdının köşelerine
-        sürükle. Görsel bu dört noktaya perspektifli olarak oturur.
-      </p>
+    <input id="size" type="range" min="30" max="160" value="100">
+  </div>
+  <div class="setting">
+    <div class="setting-head">
+      <label for="horizontal">Yatay konum</label>
+      <span id="horizontalValue">0</span>
     </div>
-  </section>
-
-  <section class="controls">
-    <div class="panel">
-      <h2>Görsel ayarları</h2>
-      <label class="control">
-        <span>Saydamlık <output id="opacityOut">55%</output></span>
-        <input id="opacity" type="range" min="5" max="100" value="55">
-      </label>
-      <label class="control">
-        <span>Resim ölçeği <output id="scaleOut">100%</output></span>
-        <input id="scale" type="range" min="50" max="150" value="100">
-      </label>
-      <label class="control">
-        <span>Yatay kaydırma <output id="xOut">0%</output></span>
-        <input id="shiftX" type="range" min="-40" max="40" value="0">
-      </label>
-      <label class="control">
-        <span>Dikey kaydırma <output id="yOut">0%</output></span>
-        <input id="shiftY" type="range" min="-40" max="40" value="0">
-      </label>
-      <div class="row">
-        <button id="minus">− Küçült</button>
-        <button id="plus">＋ Büyüt</button>
-      </div>
-      <button id="resetCorners">↺ Köşeleri sıfırla</button>
+    <input id="horizontal" type="range" min="-100" max="100" value="0">
+  </div>
+  <div class="setting">
+    <div class="setting-head">
+      <label for="vertical">Dikey konum</label>
+      <span id="verticalValue">0</span>
     </div>
-
-    <div class="panel">
-      <h2>Çizim ipuçları</h2>
-      <div class="small">
-        <b>1.</b> Telefonu kâğıdın üstünde sabitle.<br>
-        <b>2.</b> Kâğıdın dört köşesini görüntüde işaretle.<br>
-        <b>3.</b> Saydamlığı çizgiler net görünecek şekilde ayarla.<br>
-        <b>4.</b> Resmin ölçeğini ve kaydırmasını ayarla.<br>
-        <b>5.</b> Köşeleri düzenlemeyi kapatıp çizime başla.
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Gizlilik ve kullanım</h2>
-      <div class="small">
-        Kamera görüntüsü ve yüklediğin resim bu sayfanın içinde işlenir.
-        Bu uygulama görüntüyü fiziksel olarak kâğıda yansıtmaz.
-        Perspektif düzeltme, kamerada seçtiğin dört nokta arasında
-        hesaplanır. Kamera izni için site HTTPS üzerinden açılmalıdır.
-      </div>
-    </div>
-  </section>
-</main>
-<footer class="small">Ücretsiz • Hesap gerekmez • GitHub Pages uyumlu</footer>
-
+    <input id="vertical" type="range" min="-100" max="100" value="0">
+  </div>
+</div>
+<div id="stage" class="stage">
+  <canvas id="view"></canvas>
+  <button id="exitFullscreen" class="stage-exit">✕ Çık</button>
+</div>
+<p class="hint">
+<strong>Perspektif ayarı:</strong> Görselin dört köşesindeki daireleri parmağınla
+sürükle. Köşeleri kâğıdındaki alanın köşelerine hizala. Ekranı kapla düğmesi
+çizim alanını büyütür. Kameranın düzgün çalışması için sayfayı HTTPS üzerinden
+açmalısın; GitHub Pages bunu destekler.
+</p>
+<div id="status" class="status">Önce bir görsel yükleyebilirsin.</div>
 <script>
 (() => {
   'use strict';
-
   const $ = id => document.getElementById(id);
   const stage = $('stage');
   const canvas = $('view');
-  const ctx = canvas.getContext('2d', { alpha:false });
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const imageFile = $('imageFile');
+  const cameraButton = $('cameraButton');
+  const fullscreenButton = $('fullscreenButton');
+  const exitFullscreen = $('exitFullscreen');
+  const resetButton = $('resetButton');
+  const flipButton = $('flipButton');
+  const opacityInput = $('opacity');
+  const sizeInput = $('size');
+  const horizontalInput = $('horizontal');
+  const verticalInput = $('vertical');
+  const opacityValue = $('opacityValue');
+  const sizeValue = $('sizeValue');
+  const horizontalValue = $('horizontalValue');
+  const verticalValue = $('verticalValue');
   const status = $('status');
-  const placeholder = $('placeholder');
-
-  let stream = null;
-  let facing = 'environment';
   let image = null;
-  let imageUrl = null;
-  let raf = 0;
-  let running = false;
-  let editingCorners = true;
-  let dragging = -1;
+  let video = null;
+  let stream = null;
+  let facingMode = 'environment';
+  let animationFrame = 0;
+  let draggingCorner = -1;
   let corners = [];
-  let width = 0;
-  let height = 0;
-  let dpr = 1;
-
-  const defaults = () => [
-    {x:width*.14,y:height*.10},
-    {x:width*.86,y:height*.10},
-    {x:width*.86,y:height*.90},
-    {x:width*.14,y:height*.90}
-  ];
-
-  function say(text) { status.textContent = text; }
-
-  function resize() {
+  let viewWidth = 0;
+  let viewHeight = 0;
+  let lastDrawTime = 0;
+  let imageObjectUrl = null;
+  const CORNER_RADIUS = 17;
+  const GRID = 10;
+  function say(message) {
+    status.textContent = message;
+  }
+  function makeDefaultCorners() {
+    const w = viewWidth || stage.clientWidth || 360;
+    const h = viewHeight || stage.clientHeight || 420;
+    const width = w * 0.72;
+    const height = h * 0.72;
+    const left = (w - width) / 2;
+    const top = (h - height) / 2;
+    corners = [
+      { x: left + width * 0.08, y: top },
+      { x: left + width, y: top + height * 0.07 },
+      { x: left + width * 0.91, y: top + height },
+      { x: left, y: top + height * 0.91 }
+    ];
+  }
+  function resizeCanvas() {
     const rect = stage.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const oldW = width, oldH = height;
-    width = rect.width;
-    height = rect.height;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(width*dpr);
-    canvas.height = Math.round(height*dpr);
-
-    if (corners.length && oldW && oldH) {
-      corners = corners.map(p => ({
-        x:p.x*width/oldW,
-        y:p.y*height/oldH
-      }));
+    const oldWidth = viewWidth;
+    const oldHeight = viewHeight;
+    viewWidth = rect.width;
+    viewHeight = rect.height;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(viewWidth * dpr);
+    canvas.height = Math.round(viewHeight * dpr);
+    canvas.style.width = viewWidth + 'px';
+    canvas.style.height = viewHeight + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!corners.length || !oldWidth || !oldHeight) {
+      makeDefaultCorners();
     } else {
-      corners = defaults();
+      const sx = viewWidth / oldWidth;
+      const sy = viewHeight / oldHeight;
+      corners = corners.map(p => ({ x: p.x * sx, y: p.y * sy }));
     }
-    draw();
   }
-
-  function coverVideo() {
-    if (!stream || video.readyState < 2) return;
-    const vw = video.videoWidth, vh = video.videoHeight;
-    if (!vw || !vh) return;
-
-    const scale = Math.max(width/vw, height/vh);
-    const sw = width/scale, sh = height/scale;
-    const sx = (vw-sw)/2, sy = (vh-sh)/2;
-
-    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, width, height);
-  }
-
-  const video = document.createElement('video');
-  video.autoplay = true;
-  video.playsInline = true;
-  video.muted = true;
-
-  // Solve an 8x8 linear system for a projective homography.
-  function solveLinear(A, b) {
-    const n = b.length;
-    const M = A.map((row,i) => [...row,b[i]]);
-
-    for (let col=0; col<n; col++) {
-      let pivot = col;
-      for (let r=col+1; r<n; r++) {
-        if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot=r;
-      }
-      if (Math.abs(M[pivot][col]) < 1e-10) return null;
-      [M[col],M[pivot]] = [M[pivot],M[col]];
-
-      const divisor = M[col][col];
-      for (let j=col; j<=n; j++) M[col][j] /= divisor;
-
-      for (let r=0; r<n; r++) {
-        if (r===col) continue;
-        const factor = M[r][col];
-        for (let j=col; j<=n; j++) M[r][j] -= factor*M[col][j];
-      }
-    }
-    return M.map(row => row[n]);
-  }
-
-  function homography(src, dst) {
-    const A=[], b=[];
-    for (let i=0;i<4;i++) {
-      const {x,y}=src[i], {x:X,y:Y}=dst[i];
-      A.push([x,y,1,0,0,0,-X*x,-X*y]); b.push(X);
-      A.push([0,0,0,x,y,1,-Y*x,-Y*y]); b.push(Y);
-    }
-    const h=solveLinear(A,b);
-    return h ? [...h,1] : null;
-  }
-
-  function project(H,x,y) {
-    const den=H[6]*x+H[7]*y+H[8];
-    if (Math.abs(den)<1e-8) return null;
+  function fitRect(sourceWidth, sourceHeight, targetWidth, targetHeight, cover) {
+    const sx = targetWidth / sourceWidth;
+    const sy = targetHeight / sourceHeight;
+    const scale = cover ? Math.max(sx, sy) : Math.min(sx, sy);
+    const width = sourceWidth * scale;
+    const height = sourceHeight * scale;
     return {
-      x:(H[0]*x+H[1]*y+H[2])/den,
-      y:(H[3]*x+H[4]*y+H[5])/den
+      x: (targetWidth - width) / 2,
+      y: (targetHeight - height) / 2,
+      width,
+      height
     };
   }
-
-  // Map each small source triangle to its projected triangle.
-  function triangle(source, target) {
+  function drawCameraBackground() {
+    ctx.fillStyle = '#080b10';
+    ctx.fillRect(0, 0, viewWidth, viewHeight);
+    if (!video || video.readyState < 2 || !video.videoWidth || !video.videoHeight) {
+      ctx.fillStyle = '#d5dbe5';
+      ctx.font = '16px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Kamerayı aç veya görsel yükle', viewWidth / 2, viewHeight / 2);
+      return;
+    }
+    const rect = fitRect(video.videoWidth, video.videoHeight, viewWidth, viewHeight, true);
+    ctx.save();
+    if (facingMode === 'user') {
+      ctx.translate(viewWidth, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, -rect.x - rect.width, rect.y, rect.width, rect.height);
+    } else {
+      ctx.drawImage(video, rect.x, rect.y, rect.width, rect.height);
+    }
+    ctx.restore();
+  }
+  function solveLinearSystem(matrix, values) {
+    const n = values.length;
+    const a = matrix.map((row, i) => row.concat(values[i]));
+    for (let col = 0; col < n; col++) {
+      let pivot = col;
+      for (let row = col + 1; row < n; row++) {
+        if (Math.abs(a[row][col]) > Math.abs(a[pivot][col])) pivot = row;
+      }
+      if (Math.abs(a[pivot][col]) < 1e-10) return null;
+      [a[col], a[pivot]] = [a[pivot], a[col]];
+      const divisor = a[col][col];
+      for (let j = col; j <= n; j++) a[col][j] /= divisor;
+      for (let row = 0; row < n; row++) {
+        if (row === col) continue;
+        const factor = a[row][col];
+        for (let j = col; j <= n; j++) {
+          a[row][j] -= factor * a[col][j];
+        }
+      }
+    }
+    return a.map(row => row[n]);
+  }
+  function getHomography(points) {
+    const src = [
+      [0, 0], [1, 0], [1, 1], [0, 1]
+    ];
+    const matrix = [];
+    const values = [];
+    for (let i = 0; i < 4; i++) {
+      const u = src[i][0];
+      const v = src[i][1];
+      const x = points[i].x;
+      const y = points[i].y;
+      matrix.push([u, v, 1, 0, 0, 0, -u * x, -v * x]);
+      values.push(x);
+      matrix.push([0, 0, 0, u, v, 1, -u * y, -v * y]);
+      values.push(y);
+    }
+    const h = solveLinearSystem(matrix, values);
+    if (!h) return null;
+    return {
+      map(u, v) {
+        const denominator = h[6] * u + h[7] * v + 1;
+        if (Math.abs(denominator) < 1e-8) return { x: 0, y: 0 };
+        return {
+          x: (h[0] * u + h[1] * v + h[2]) / denominator,
+          y: (h[3] * u + h[4] * v + h[5]) / denominator
+        };
+      }
+    };
+  }
+  function drawTriangle(img, s1, s2, s3, d1, d2, d3) {
+    const x1 = s1.x, y1 = s1.y;
+    const x2 = s2.x, y2 = s2.y;
+    const x3 = s3.x, y3 = s3.y;
+    const u1 = d1.x, v1 = d1.y;
+    const u2 = d2.x, v2 = d2.y;
+    const u3 = d3.x, v3 = d3.y;
+    const denominator =
+      x1 * (y2 - y3) +
+      x2 * (y3 - y1) +
+      x3 * (y1 - y2);
+    if (Math.abs(denominator) < 1e-8) return;
+    const a = (
+      u1 * (y2 - y3) +
+      u2 * (y3 - y1) +
+      u3 * (y1 - y2)
+    ) / denominator;
+    const c = (
+      u1 * (x3 - x2) +
+      u2 * (x1 - x3) +
+      u3 * (x2 - x1)
+    ) / denominator;
+    const e = (
+      u1 * (x2 * y3 - x3 * y2) +
+      u2 * (x3 * y1 - x1 * y3) +
+      u3 * (x1 * y2 - x2 * y1)
+    ) / denominator;
+    const b = (
+      v1 * (y2 - y3) +
+      v2 * (y3 - y1) +
+      v3 * (y1 - y2)
+    ) / denominator;
+    const d = (
+      v1 * (x3 - x2) +
+      v2 * (x1 - x3) +
+      v3 * (x2 - x1)
+    ) / denominator;
+    const f = (
+      v1 * (x2 * y3 - x3 * y2) +
+      v2 * (x3 * y1 - x1 * y3) +
+      v3 * (x1 * y2 - x2 * y1)
+    ) / denominator;
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(target[0].x,target[0].y);
-    ctx.lineTo(target[1].x,target[1].y);
-    ctx.lineTo(target[2].x,target[2].y);
+    ctx.moveTo(u1, v1);
+    ctx.lineTo(u2, v2);
+    ctx.lineTo(u3, v3);
     ctx.closePath();
     ctx.clip();
-
-    const [p0,p1,p2]=source;
-    const [q0,q1,q2]=target;
-    const den =
-      p0.x*(p1.y-p2.y)+
-      p1.x*(p2.y-p0.y)+
-      p2.x*(p0.y-p1.y);
-
-    if (Math.abs(den)>1e-8) {
-      const a=(
-        q0.x*(p1.y-p2.y)+
-        q1.x*(p2.y-p0.y)+
-        q2.x*(p0.y-p1.y))/den;
-      const c=(
-        q0.x*(p2.x-p1.x)+
-        q1.x*(p0.x-p2.x)+
-        q2.x*(p1.x-p0.x))/den;
-      const e=(
-        q0.x*(p1.x*p2.y-p2.x*p1.y)+
-        q1.x*(p2.x*p0.y-p0.x*p2.y)+
-        q2.x*(p0.x*p1.y-p1.x*p0.y))/den;
-
-      const b=(
-        q0.y*(p1.y-p2.y)+
-        q1.y*(p2.y-p0.y)+
-        q2.y*(p0.y-p1.y))/den;
-      const d=(
-        q0.y*(p2.x-p1.x)+
-        q1.y*(p0.x-p2.x)+
-        q2.y*(p1.x-p0.x))/den;
-      const f=(
-        q0.y*(p1.x*p2.y-p2.x*p1.y)+
-        q1.y*(p2.x*p0.y-p0.x*p2.y)+
-        q2.y*(p0.x*p1.y-p1.x*p0.y))/den;
-
-      ctx.transform(a,b,c,d,e,f);
-      ctx.drawImage(image,0,0);
-    }
+    ctx.transform(a, b, c, d, e, f);
+    ctx.drawImage(img, 0, 0);
     ctx.restore();
   }
-
-  function drawPerspective() {
-    if (!image || corners.length!==4) return;
-
-    const scale = Number($('scale').value)/100;
-    const shiftX = Number($('shiftX').value)/100;
-    const shiftY = Number($('shiftY').value)/100;
-
-    const center = {
-      x:corners.reduce((s,p)=>s+p.x,0)/4,
-      y:corners.reduce((s,p)=>s+p.y,0)/4
-    };
-
-    // The image is fitted to the quadrilateral's average width/height.
-    const avgW = (
-      Math.hypot(corners[1].x-corners[0].x,corners[1].y-corners[0].y)+
-      Math.hypot(corners[2].x-corners[3].x,corners[2].y-corners[3].y)
-    )/2;
-    const avgH = (
-      Math.hypot(corners[3].x-corners[0].x,corners[3].y-corners[0].y)+
-      Math.hypot(corners[2].x-corners[1].x,corners[2].y-corners[1].y)
-    )/2;
-
-    const targetW=avgW*scale, targetH=avgH*scale;
-    const targetCenter={
-      x:center.x+shiftX*avgW,
-      y:center.y+shiftY*avgH
-    };
-
-    const target=[
-      {x:targetCenter.x-targetW/2,y:targetCenter.y-targetH/2},
-      {x:targetCenter.x+targetW/2,y:targetCenter.y-targetH/2},
-      {x:targetCenter.x+targetW/2,y:targetCenter.y+targetH/2},
-      {x:targetCenter.x-targetW/2,y:targetCenter.y+targetH/2}
-    ];
-
-    const src=[
-      {x:0,y:0},
-      {x:image.naturalWidth,y:0},
-      {x:image.naturalWidth,y:image.naturalHeight},
-      {x:0,y:image.naturalHeight}
-    ];
-    const H=homography(src,target);
-    if (!H) return;
-
-    const n=18;
-    const points=[];
-    for(let j=0;j<=n;j++){
-      points[j]=[];
-      for(let i=0;i<=n;i++){
-        points[j][i]=project(
-          H,
-          image.naturalWidth*i/n,
-          image.naturalHeight*j/n
-        );
-      }
-    }
-
+  function drawPerspectiveImage() {
+    if (!image || !corners.length) return;
+    const opacity = Number(opacityInput.value) / 100;
+    const scale = Number(sizeInput.value) / 100;
+    const dx = Number(horizontalInput.value) / 100 * viewWidth * 0.35;
+    const dy = Number(verticalInput.value) / 100 * viewHeight * 0.35;
+    const center = corners.reduce(
+      (acc, p) => ({ x: acc.x + p.x / 4, y: acc.y + p.y / 4 }),
+      { x: 0, y: 0 }
+    );
+    const adjusted = corners.map(p => ({
+      x: center.x + (p.x - center.x) * scale + dx,
+      y: center.y + (p.y - center.y) * scale + dy
+    }));
+    const homography = getHomography(adjusted);
+    if (!homography) return;
     ctx.save();
-    ctx.globalAlpha=Number($('opacity').value)/100;
-
-    for(let j=0;j<n;j++){
-      for(let i=0;i<n;i++){
-        const sx0=image.naturalWidth*i/n;
-        const sx1=image.naturalWidth*(i+1)/n;
-        const sy0=image.naturalHeight*j/n;
-        const sy1=image.naturalHeight*(j+1)/n;
-
-        const p00={x:sx0,y:sy0}, p10={x:sx1,y:sy0};
-        const p01={x:sx0,y:sy1}, p11={x:sx1,y:sy1};
-        const q00=points[j][i], q10=points[j][i+1];
-        const q01=points[j+1][i], q11=points[j+1][i+1];
-
-        if(q00&&q10&&q01) triangle([p00,p10,p01],[q00,q10,q01]);
-        if(q10&&q11&&q01) triangle([p10,p11,p01],[q10,q11,q01]);
+    ctx.globalAlpha = opacity;
+    const sourcePoints = (u, v) => ({
+      x: u * image.naturalWidth,
+      y: v * image.naturalHeight
+    });
+    for (let row = 0; row < GRID; row++) {
+      for (let col = 0; col < GRID; col++) {
+        const u0 = col / GRID;
+        const v0 = row / GRID;
+        const u1 = (col + 1) / GRID;
+        const v1 = (row + 1) / GRID;
+        const s00 = sourcePoints(u0, v0);
+        const s10 = sourcePoints(u1, v0);
+        const s11 = sourcePoints(u1, v1);
+        const s01 = sourcePoints(u0, v1);
+        const d00 = homography.map(u0, v0);
+        const d10 = homography.map(u1, v0);
+        const d11 = homography.map(u1, v1);
+        const d01 = homography.map(u0, v1);
+        drawTriangle(image, s00, s10, s11, d00, d10, d11);
+        drawTriangle(image, s00, s11, s01, d00, d11, d01);
       }
     }
     ctx.restore();
   }
-
-  function drawHandles() {
-    if (!editingCorners) return;
+  function drawCornerHandles() {
+    if (!corners.length) return;
     ctx.save();
-    ctx.lineWidth=2;
-    ctx.strokeStyle='#55d6a2';
-    ctx.fillStyle='#10251d';
-
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#4ade80';
+    ctx.fillStyle = 'rgba(74,222,128,.15)';
     ctx.beginPath();
-    corners.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));
+    ctx.moveTo(corners[0].x, corners[0].y);
+    for (let i = 1; i < corners.length; i++) {
+      ctx.lineTo(corners[i].x, corners[i].y);
+    }
     ctx.closePath();
+    ctx.fill();
     ctx.stroke();
-
-    corners.forEach((p,i)=>{
+    corners.forEach((p, i) => {
       ctx.beginPath();
-      ctx.arc(p.x,p.y,12,0,Math.PI*2);
+      ctx.arc(p.x, p.y, CORNER_RADIUS, 0, Math.PI * 2);
+      ctx.fillStyle = '#101722';
       ctx.fill();
+      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#4ade80';
       ctx.stroke();
-      ctx.fillStyle='#ffffff';
-      ctx.font='bold 12px system-ui';
-      ctx.textAlign='center';
-      ctx.textBaseline='middle';
-      ctx.fillText(String(i+1),p.x,p.y);
-      ctx.fillStyle='#10251d';
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(i + 1), p.x, p.y);
     });
     ctx.restore();
   }
-
-  function draw() {
-    if (!width || !height) return;
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,width,height);
-
-    if (running && video.readyState>=2) {
-      coverVideo();
-    } else {
-      ctx.fillStyle='#05080d';
-      ctx.fillRect(0,0,width,height);
+  function render(timestamp) {
+    if (timestamp - lastDrawTime >= 33) {
+      lastDrawTime = timestamp;
+      drawCameraBackground();
+      drawPerspectiveImage();
+      drawCornerHandles();
     }
-
-    drawPerspective();
-    drawHandles();
+    animationFrame = requestAnimationFrame(render);
   }
-
-  function loop() {
-    if (!running) return;
-    draw();
-    raf=requestAnimationFrame(loop);
+  function setFullscreen(active) {
+    stage.classList.toggle('fake-fullscreen', active);
+    document.body.classList.toggle('fake-fullscreen', active);
+    fullscreenButton.textContent = active ? '✕ Ekrandan çık' : '⛶ Ekranı kapla';
+    requestAnimationFrame(() => {
+      resizeCanvas();
+    });
   }
-
-  function startLoop() {
-    if (raf) cancelAnimationFrame(raf);
-    raf=requestAnimationFrame(loop);
-  }
-
-  async function startCamera() {
-    if (!navigator.mediaDevices?.getUserMedia) {
-      say('Kamera için HTTPS bağlantısı ve desteklenen tarayıcı gerekli.');
+  fullscreenButton.addEventListener('click', async () => {
+    const active = stage.classList.contains('fake-fullscreen');
+    if (active) {
+      if (document.fullscreenElement && document.exitFullscreen) {
+        try { await document.exitFullscreen(); } catch (_) {}
+      }
+      setFullscreen(false);
       return;
     }
-
-    if (stream) stream.getTracks().forEach(t=>t.stop());
-    running=false;
-    if (raf) cancelAnimationFrame(raf);
-
+    setFullscreen(true);
+    // Android ve destekleyen tarayıcılarda gerçek tam ekranı da dene.
+    // iPhone Safari için CSS tabanlı ekran kaplama yedek olarak kalır.
+    if (stage.requestFullscreen) {
+      try {
+        await stage.requestFullscreen();
+      } catch (_) {
+        // CSS tabanlı ekran kaplama kullanılmaya devam eder.
+      }
+    }
+  });
+  exitFullscreen.addEventListener('click', async () => {
+    if (document.fullscreenElement && document.exitFullscreen) {
+      try { await document.exitFullscreen(); } catch (_) {}
+    }
+    setFullscreen(false);
+  });
+  document.addEventListener('fullscreenchange', () => {
+    if (!document.fullscreenElement && !stage.classList.contains('fake-fullscreen')) {
+      fullscreenButton.textContent = '⛶ Ekranı kapla';
+    }
+    requestAnimationFrame(resizeCanvas);
+  });
+  imageFile.addEventListener('change', () => {
+    const file = imageFile.files && imageFile.files[0];
+    if (!file) return;
+    if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+    imageObjectUrl = URL.createObjectURL(file);
+    const newImage = new Image();
+    newImage.onload = () => {
+      image = newImage;
+      makeDefaultCorners();
+      say('Görsel yüklendi. Dört köşeyi sürükleyerek perspektifi ayarla.');
+      URL.revokeObjectURL(imageObjectUrl);
+      imageObjectUrl = null;
+    };
+    newImage.onerror = () => say('Görsel açılamadı. Başka bir fotoğraf dene.');
+    newImage.src = imageObjectUrl;
+  });
+  async function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      say('Kamera için HTTPS bağlantısı ve desteklenen bir tarayıcı gerekiyor.');
+      return;
+    }
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
     try {
-      stream=await navigator.mediaDevices.getUserMedia({
-        audio:false,
-        video:{
-          facingMode:{ideal:facing},
-          width:{ideal:1280},
-          height:{ideal:720}
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: facingMode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
       });
-      video.srcObject=stream;
+      video = document.createElement('video');
+      video.autoplay = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.srcObject = stream;
       await video.play();
-      running=true;
-      placeholder.style.display='none';
-      startLoop();
-      say('Kamera açık. Kâğıdın köşelerini yeşil işaretlere hizala.');
-    } catch(err) {
-      const messages={
-        NotAllowedError:'Kamera izni verilmedi. Tarayıcı ayarlarından izin ver.',
-        NotFoundError:'Kamera bulunamadı.',
-        NotReadableError:'Kamera başka bir uygulama tarafından kullanılıyor.'
-      };
-      say(messages[err.name] || 'Kamera açılamadı. HTTPS ve izinleri kontrol et.');
-      running=false;
-      draw();
+      cameraButton.textContent = '📷 Kamerayı yeniden aç';
+      say('Kamera açık. Kâğıdını kameranın önüne yerleştir.');
+    } catch (error) {
+      const message = error && error.name === 'NotAllowedError'
+        ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini aç.'
+        : 'Kamera açılamadı. HTTPS bağlantısını ve kamera izinlerini kontrol et.';
+      say(message);
     }
   }
-
-  $('camera').addEventListener('click',startCamera);
-
-  $('flip').addEventListener('click',async()=>{
-    facing=facing==='environment'?'user':'environment';
-    if(running) await startCamera();
-    else say(facing==='environment'?'Arka kamera seçildi.':'Ön kamera seçildi.');
+  cameraButton.addEventListener('click', startCamera);
+  flipButton.addEventListener('click', async () => {
+    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+    if (stream) await startCamera();
+    else say(facingMode === 'environment' ? 'Arka kamera seçildi.' : 'Ön kamera seçildi.');
   });
-
-  $('file').addEventListener('change',e=>{
-    const file=e.target.files?.[0];
-    if(!file) return;
-    if(!file.type.startsWith('image/')) {
-      say('Lütfen geçerli bir resim dosyası seç.');
-      return;
-    }
-
-    if(imageUrl) URL.revokeObjectURL(imageUrl);
-    imageUrl=URL.createObjectURL(file);
-    const next=new Image();
-
-    next.onload=()=>{
-      image=next;
-      if(!corners.length) corners=defaults();
-      draw();
-      say('Resim yüklendi. Kamerayı aç ve dört köşeyi kâğıdına hizala.');
+  resetButton.addEventListener('click', () => {
+    makeDefaultCorners();
+    sizeInput.value = 100;
+    horizontalInput.value = 0;
+    verticalInput.value = 0;
+    updateSettingLabels();
+    say('Köşeler ve konum ayarları sıfırlandı.');
+  });
+  function updateSettingLabels() {
+    opacityValue.textContent = opacityInput.value + '%';
+    sizeValue.textContent = sizeInput.value + '%';
+    horizontalValue.textContent = horizontalInput.value;
+    verticalValue.textContent = verticalInput.value;
+  }
+  [opacityInput, sizeInput, horizontalInput, verticalInput].forEach(input => {
+    input.addEventListener('input', updateSettingLabels);
+  });
+  function pointerPosition(event) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
     };
-    next.onerror=()=>say('Resim açılamadı. Başka bir resim dene.');
-    next.src=imageUrl;
-  });
-
-  $('opacity').addEventListener('input',()=>{
-    $('opacityOut').textContent=$('opacity').value+'%';
-    draw();
-  });
-  $('scale').addEventListener('input',()=>{
-    $('scaleOut').textContent=$('scale').value+'%';
-    draw();
-  });
-  $('shiftX').addEventListener('input',()=>{
-    $('xOut').textContent=$('shiftX').value+'%';
-    draw();
-  });
-  $('shiftY').addEventListener('input',()=>{
-    $('yOut').textContent=$('shiftY').value+'%';
-    draw();
-  });
-
-  $('minus').addEventListener('click',()=>{
-    $('scale').value=Math.max(50,Number($('scale').value)-5);
-    $('scale').dispatchEvent(new Event('input'));
-  });
-  $('plus').addEventListener('click',()=>{
-    $('scale').value=Math.min(150,Number($('scale').value)+5);
-    $('scale').dispatchEvent(new Event('input'));
-  });
-
-  $('corners').addEventListener('click',()=>{
-    editingCorners=!editingCorners;
-    $('corners').textContent=editingCorners?'◈ Köşeleri düzenle: açık':'◈ Köşeleri düzenle: kapalı';
-    draw();
-    say(editingCorners?'Köşeleri kâğıdına sürükleyerek hizala.':'Köşe düzenleme kapalı.');
-  });
-
-  $('resetCorners').addEventListener('click',()=>{
-    corners=defaults();
-    $('scale').value=100;
-    $('shiftX').value=0;
-    $('shiftY').value=0;
-    $('opacity').value=55;
-    $('scale').dispatchEvent(new Event('input'));
-    $('shiftX').dispatchEvent(new Event('input'));
-    $('shiftY').dispatchEvent(new Event('input'));
-    $('opacity').dispatchEvent(new Event('input'));
-    draw();
-  });
-
-  $('fullscreen').addEventListener('click',async()=>{
-    try {
-      if(!document.fullscreenElement) await stage.requestFullscreen();
-      else await document.exitFullscreen();
-    } catch {
-      say('Bu tarayıcıda tam ekran açılamadı.');
-    }
-  });
-
-  function pointFromEvent(e) {
-    const r=canvas.getBoundingClientRect();
-    return {x:e.clientX-r.left,y:e.clientY-r.top};
   }
-
-  canvas.addEventListener('pointerdown',e=>{
-    if(!editingCorners) return;
-    const p=pointFromEvent(e);
-    let nearest=-1, distance=Infinity;
-
-    corners.forEach((c,i)=>{
-      const d=Math.hypot(c.x-p.x,c.y-p.y);
-      if(d<distance){distance=d;nearest=i;}
+  canvas.addEventListener('pointerdown', event => {
+    const p = pointerPosition(event);
+    let nearest = -1;
+    let nearestDistance = Infinity;
+    corners.forEach((corner, index) => {
+      const distance = Math.hypot(p.x - corner.x, p.y - corner.y);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearest = index;
+      }
     });
-
-    if(nearest!==-1 && distance<38) {
-      dragging=nearest;
-      canvas.setPointerCapture(e.pointerId);
-      e.preventDefault();
+    if (nearest >= 0 && nearestDistance < 42) {
+      draggingCorner = nearest;
+      canvas.setPointerCapture(event.pointerId);
+      event.preventDefault();
     }
   });
-
-  canvas.addEventListener('pointermove',e=>{
-    if(dragging<0) return;
-    const p=pointFromEvent(e);
-    corners[dragging]={
-      x:Math.max(0,Math.min(width,p.x)),
-      y:Math.max(0,Math.min(height,p.y))
+  canvas.addEventListener('pointermove', event => {
+    if (draggingCorner < 0) return;
+    const p = pointerPosition(event);
+    corners[draggingCorner] = {
+      x: Math.max(0, Math.min(viewWidth, p.x)),
+      y: Math.max(0, Math.min(viewHeight, p.y))
     };
-    draw();
+    event.preventDefault();
   });
-
-  function stopDrag(){dragging=-1;}
-  canvas.addEventListener('pointerup',stopDrag);
-  canvas.addEventListener('pointercancel',stopDrag);
-
-  window.addEventListener('resize',resize);
-  document.addEventListener('fullscreenchange',resize);
-  window.addEventListener('pagehide',()=>{
-    running=false;
-    if(raf) cancelAnimationFrame(raf);
-    if(stream) stream.getTracks().forEach(t=>t.stop());
-    if(imageUrl) URL.revokeObjectURL(imageUrl);
+  function stopDragging() {
+    draggingCorner = -1;
+  }
+  canvas.addEventListener('pointerup', stopDragging);
+  canvas.addEventListener('pointercancel', stopDragging);
+  canvas.addEventListener('lostpointercapture', stopDragging);
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(resizeCanvas, 250);
   });
-
-  resize();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) resizeCanvas();
+  });
+  resizeCanvas();
+  makeDefaultCorners();
+  updateSettingLabels();
+  animationFrame = requestAnimationFrame(render);
 })();
 </script>
 </body>
