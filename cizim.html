@@ -24,10 +24,7 @@ html, body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 body { padding: 14px; }
-h1 {
-  font-size: 23px;
-  margin: 4px 0 7px;
-}
+h1 { font-size: 23px; margin: 4px 0 7px; }
 .description {
   color: var(--muted);
   font-size: 14px;
@@ -64,10 +61,7 @@ button, .file-label {
   -webkit-tap-highlight-color: transparent;
 }
 button:active, .file-label:active { opacity: .75; }
-.primary {
-  background: #166534;
-  border-color: #228548;
-}
+.primary { background: #166534; border-color: #228548; }
 input[type="file"] { display: none; }
 .setting { margin-top: 15px; }
 .setting-head {
@@ -121,7 +115,7 @@ input[type="range"] {
   top: max(12px, env(safe-area-inset-top));
   right: 12px;
   z-index: 100002;
-  background: rgba(10, 15, 23, .88);
+  background: rgba(10, 15, 23, .9);
   border-color: #718096;
   min-height: 43px;
   padding: 10px 14px;
@@ -140,35 +134,23 @@ input[type="range"] {
   margin: 0;
   background: #000;
 }
-.stage.fake-fullscreen #view {
-  width: 100%;
-  height: 100%;
-}
+.stage.fake-fullscreen #view { width: 100%; height: 100%; }
 .stage.fake-fullscreen .stage-exit { display: flex; }
 body.fake-fullscreen {
   overflow: hidden;
   padding: 0;
 }
-body.fake-fullscreen > *:not(#stage) {
-  visibility: hidden;
-}
+body.fake-fullscreen > *:not(#stage) { visibility: hidden; }
 @media (min-width: 760px) {
-  body {
-    max-width: 900px;
-    margin: 0 auto;
-  }
+  body { max-width: 900px; margin: 0 auto; }
   .stage { height: 560px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  * { scroll-behavior: auto !important; }
 }
 </style>
 </head>
 <body>
 <h1>Perspektifli Çizim Asistanı</h1>
 <p class="description">
-Fotoğrafını yükle, kamerayı aç ve görselin dört köşesini kâğıdına göre ayarla.
-Saydam görselin üzerinden çizim yapabilirsin.
+Görselini yükle, kamerayı aç ve dört köşeyi kâğıdına göre hizala.
 </p>
 <div class="panel">
   <div class="controls">
@@ -178,6 +160,14 @@ Saydam görselin üzerinden çizim yapabilirsin.
     <button id="fullscreenButton">⛶ Ekranı kapla</button>
     <button id="resetButton">↺ Köşeleri sıfırla</button>
     <button id="flipButton">⇄ Kamera değiştir</button>
+  </div>
+  <div class="setting">
+    <div class="setting-head">
+      <label for="zoom">Kamera uzaklaştırma</label>
+      <span id="zoomValue">1,0×</span>
+    </div>
+    <input id="zoom" type="range" min="0.5" max="1" step="0.05" value="1">
+    <div class="hint">0,5× daha geniş görünüm, 1× normal görünüm.</div>
   </div>
   <div class="setting">
     <div class="setting-head">
@@ -213,10 +203,8 @@ Saydam görselin üzerinden çizim yapabilirsin.
   <button id="exitFullscreen" class="stage-exit">✕ Çık</button>
 </div>
 <p class="hint">
-<strong>Perspektif ayarı:</strong> Görselin dört köşesindeki daireleri parmağınla
-sürükle. Köşeleri kâğıdındaki alanın köşelerine hizala. Ekranı kapla düğmesi
-çizim alanını büyütür. Kameranın düzgün çalışması için sayfayı HTTPS üzerinden
-açmalısın; GitHub Pages bunu destekler.
+<strong>Perspektif:</strong> Yeşil numaralı köşeleri parmağınla sürükleyerek
+kâğıdındaki alanın köşelerine hizala. Uzaklaştırma desteği telefona göre değişir.
 </p>
 <div id="status" class="status">Önce bir görsel yükleyebilirsin.</div>
 <script>
@@ -226,37 +214,22 @@ açmalısın; GitHub Pages bunu destekler.
   const stage = $('stage');
   const canvas = $('view');
   const ctx = canvas.getContext('2d', { alpha: false });
-  const imageFile = $('imageFile');
-  const cameraButton = $('cameraButton');
-  const fullscreenButton = $('fullscreenButton');
-  const exitFullscreen = $('exitFullscreen');
-  const resetButton = $('resetButton');
-  const flipButton = $('flipButton');
-  const opacityInput = $('opacity');
-  const sizeInput = $('size');
-  const horizontalInput = $('horizontal');
-  const verticalInput = $('vertical');
-  const opacityValue = $('opacityValue');
-  const sizeValue = $('sizeValue');
-  const horizontalValue = $('horizontalValue');
-  const verticalValue = $('verticalValue');
-  const status = $('status');
   let image = null;
   let video = null;
   let stream = null;
   let facingMode = 'environment';
-  let animationFrame = 0;
-  let draggingCorner = -1;
   let corners = [];
   let viewWidth = 0;
   let viewHeight = 0;
+  let draggingCorner = -1;
   let lastDrawTime = 0;
   let imageObjectUrl = null;
+  let realZoomSupported = false;
+  let realZoomMin = 1;
+  let realZoomMax = 1;
   const CORNER_RADIUS = 17;
-  const GRID = 10;
-  function say(message) {
-    status.textContent = message;
-  }
+  const GRID = 12;
+  function say(message) { $('status').textContent = message; }
   function makeDefaultCorners() {
     const w = viewWidth || stage.clientWidth || 360;
     const h = viewHeight || stage.clientHeight || 420;
@@ -274,8 +247,7 @@ açmalısın; GitHub Pages bunu destekler.
   function resizeCanvas() {
     const rect = stage.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
-    const oldWidth = viewWidth;
-    const oldHeight = viewHeight;
+    const oldW = viewWidth, oldH = viewHeight;
     viewWidth = rect.width;
     viewHeight = rect.height;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -284,26 +256,18 @@ açmalısın; GitHub Pages bunu destekler.
     canvas.style.width = viewWidth + 'px';
     canvas.style.height = viewHeight + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (!corners.length || !oldWidth || !oldHeight) {
-      makeDefaultCorners();
-    } else {
-      const sx = viewWidth / oldWidth;
-      const sy = viewHeight / oldHeight;
-      corners = corners.map(p => ({ x: p.x * sx, y: p.y * sy }));
+    if (!corners.length || !oldW || !oldH) makeDefaultCorners();
+    else {
+      corners = corners.map(p => ({
+        x: p.x * viewWidth / oldW,
+        y: p.y * viewHeight / oldH
+      }));
     }
   }
-  function fitRect(sourceWidth, sourceHeight, targetWidth, targetHeight, cover) {
-    const sx = targetWidth / sourceWidth;
-    const sy = targetHeight / sourceHeight;
-    const scale = cover ? Math.max(sx, sy) : Math.min(sx, sy);
-    const width = sourceWidth * scale;
-    const height = sourceHeight * scale;
-    return {
-      x: (targetWidth - width) / 2,
-      y: (targetHeight - height) / 2,
-      width,
-      height
-    };
+  function fitRect(sw, sh, tw, th, cover) {
+    const scale = cover ? Math.max(tw / sw, th / sh) : Math.min(tw / sw, th / sh);
+    const width = sw * scale, height = sh * scale;
+    return { x: (tw - width) / 2, y: (th - height) / 2, width, height };
   }
   function drawCameraBackground() {
     ctx.fillStyle = '#080b10';
@@ -315,14 +279,19 @@ açmalısın; GitHub Pages bunu destekler.
       ctx.fillText('Kamerayı aç veya görsel yükle', viewWidth / 2, viewHeight / 2);
       return;
     }
+    const zoom = Number($('zoom').value);
     const rect = fitRect(video.videoWidth, video.videoHeight, viewWidth, viewHeight, true);
+    const displayW = rect.width * zoom;
+    const displayH = rect.height * zoom;
+    const x = (viewWidth - displayW) / 2;
+    const y = (viewHeight - displayH) / 2;
     ctx.save();
     if (facingMode === 'user') {
       ctx.translate(viewWidth, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(video, -rect.x - rect.width, rect.y, rect.width, rect.height);
+      ctx.drawImage(video, viewWidth - x - displayW, y, displayW, displayH);
     } else {
-      ctx.drawImage(video, rect.x, rect.y, rect.width, rect.height);
+      ctx.drawImage(video, x, y, displayW, displayH);
     }
     ctx.restore();
   }
@@ -341,133 +310,78 @@ açmalısın; GitHub Pages bunu destekler.
       for (let row = 0; row < n; row++) {
         if (row === col) continue;
         const factor = a[row][col];
-        for (let j = col; j <= n; j++) {
-          a[row][j] -= factor * a[col][j];
-        }
+        for (let j = col; j <= n; j++) a[row][j] -= factor * a[col][j];
       }
     }
     return a.map(row => row[n]);
   }
   function getHomography(points) {
-    const src = [
-      [0, 0], [1, 0], [1, 1], [0, 1]
-    ];
-    const matrix = [];
-    const values = [];
+    const src = [[0,0],[1,0],[1,1],[0,1]];
+    const matrix = [], values = [];
     for (let i = 0; i < 4; i++) {
-      const u = src[i][0];
-      const v = src[i][1];
-      const x = points[i].x;
-      const y = points[i].y;
-      matrix.push([u, v, 1, 0, 0, 0, -u * x, -v * x]);
-      values.push(x);
-      matrix.push([0, 0, 0, u, v, 1, -u * y, -v * y]);
-      values.push(y);
+      const u = src[i][0], v = src[i][1];
+      const x = points[i].x, y = points[i].y;
+      matrix.push([u,v,1,0,0,0,-u*x,-v*x]); values.push(x);
+      matrix.push([0,0,0,u,v,1,-u*y,-v*y]); values.push(y);
     }
     const h = solveLinearSystem(matrix, values);
     if (!h) return null;
     return {
       map(u, v) {
-        const denominator = h[6] * u + h[7] * v + 1;
-        if (Math.abs(denominator) < 1e-8) return { x: 0, y: 0 };
+        const z = h[6] * u + h[7] * v + 1;
+        if (Math.abs(z) < 1e-8) return { x: 0, y: 0 };
         return {
-          x: (h[0] * u + h[1] * v + h[2]) / denominator,
-          y: (h[3] * u + h[4] * v + h[5]) / denominator
+          x: (h[0]*u + h[1]*v + h[2]) / z,
+          y: (h[3]*u + h[4]*v + h[5]) / z
         };
       }
     };
   }
   function drawTriangle(img, s1, s2, s3, d1, d2, d3) {
-    const x1 = s1.x, y1 = s1.y;
-    const x2 = s2.x, y2 = s2.y;
-    const x3 = s3.x, y3 = s3.y;
-    const u1 = d1.x, v1 = d1.y;
-    const u2 = d2.x, v2 = d2.y;
-    const u3 = d3.x, v3 = d3.y;
-    const denominator =
-      x1 * (y2 - y3) +
-      x2 * (y3 - y1) +
-      x3 * (y1 - y2);
-    if (Math.abs(denominator) < 1e-8) return;
-    const a = (
-      u1 * (y2 - y3) +
-      u2 * (y3 - y1) +
-      u3 * (y1 - y2)
-    ) / denominator;
-    const c = (
-      u1 * (x3 - x2) +
-      u2 * (x1 - x3) +
-      u3 * (x2 - x1)
-    ) / denominator;
-    const e = (
-      u1 * (x2 * y3 - x3 * y2) +
-      u2 * (x3 * y1 - x1 * y3) +
-      u3 * (x1 * y2 - x2 * y1)
-    ) / denominator;
-    const b = (
-      v1 * (y2 - y3) +
-      v2 * (y3 - y1) +
-      v3 * (y1 - y2)
-    ) / denominator;
-    const d = (
-      v1 * (x3 - x2) +
-      v2 * (x1 - x3) +
-      v3 * (x2 - x1)
-    ) / denominator;
-    const f = (
-      v1 * (x2 * y3 - x3 * y2) +
-      v2 * (x3 * y1 - x1 * y3) +
-      v3 * (x1 * y2 - x2 * y1)
-    ) / denominator;
+    const x1=s1.x,y1=s1.y,x2=s2.x,y2=s2.y,x3=s3.x,y3=s3.y;
+    const u1=d1.x,v1=d1.y,u2=d2.x,v2=d2.y,u3=d3.x,v3=d3.y;
+    const den=x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2);
+    if (Math.abs(den) < 1e-8) return;
+    const a=(u1*(y2-y3)+u2*(y3-y1)+u3*(y1-y2))/den;
+    const c=(u1*(x3-x2)+u2*(x1-x3)+u3*(x2-x1))/den;
+    const e=(u1*(x2*y3-x3*y2)+u2*(x3*y1-x1*y3)+u3*(x1*y2-x2*y1))/den;
+    const b=(v1*(y2-y3)+v2*(y3-y1)+v3*(y1-y2))/den;
+    const d=(v1*(x3-x2)+v2*(x1-x3)+v3*(x2-x1))/den;
+    const f=(v1*(x2*y3-x3*y2)+v2*(x3*y1-x1*y3)+v3*(x1*y2-x2*y1))/den;
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(u1, v1);
-    ctx.lineTo(u2, v2);
-    ctx.lineTo(u3, v3);
-    ctx.closePath();
-    ctx.clip();
-    ctx.transform(a, b, c, d, e, f);
-    ctx.drawImage(img, 0, 0);
+    ctx.moveTo(u1,v1); ctx.lineTo(u2,v2); ctx.lineTo(u3,v3);
+    ctx.closePath(); ctx.clip();
+    ctx.transform(a,b,c,d,e,f);
+    ctx.drawImage(img,0,0);
     ctx.restore();
   }
   function drawPerspectiveImage() {
     if (!image || !corners.length) return;
-    const opacity = Number(opacityInput.value) / 100;
-    const scale = Number(sizeInput.value) / 100;
-    const dx = Number(horizontalInput.value) / 100 * viewWidth * 0.35;
-    const dy = Number(verticalInput.value) / 100 * viewHeight * 0.35;
-    const center = corners.reduce(
-      (acc, p) => ({ x: acc.x + p.x / 4, y: acc.y + p.y / 4 }),
-      { x: 0, y: 0 }
-    );
+    const opacity = Number($('opacity').value) / 100;
+    const scale = Number($('size').value) / 100;
+    const dx = Number($('horizontal').value) / 100 * viewWidth * 0.35;
+    const dy = Number($('vertical').value) / 100 * viewHeight * 0.35;
+    const center = corners.reduce((a,p) => ({
+      x: a.x + p.x/4, y: a.y + p.y/4
+    }), { x: 0, y: 0 });
     const adjusted = corners.map(p => ({
-      x: center.x + (p.x - center.x) * scale + dx,
-      y: center.y + (p.y - center.y) * scale + dy
+      x: center.x + (p.x-center.x)*scale + dx,
+      y: center.y + (p.y-center.y)*scale + dy
     }));
     const homography = getHomography(adjusted);
     if (!homography) return;
     ctx.save();
     ctx.globalAlpha = opacity;
-    const sourcePoints = (u, v) => ({
-      x: u * image.naturalWidth,
-      y: v * image.naturalHeight
-    });
-    for (let row = 0; row < GRID; row++) {
-      for (let col = 0; col < GRID; col++) {
-        const u0 = col / GRID;
-        const v0 = row / GRID;
-        const u1 = (col + 1) / GRID;
-        const v1 = (row + 1) / GRID;
-        const s00 = sourcePoints(u0, v0);
-        const s10 = sourcePoints(u1, v0);
-        const s11 = sourcePoints(u1, v1);
-        const s01 = sourcePoints(u0, v1);
-        const d00 = homography.map(u0, v0);
-        const d10 = homography.map(u1, v0);
-        const d11 = homography.map(u1, v1);
-        const d01 = homography.map(u0, v1);
-        drawTriangle(image, s00, s10, s11, d00, d10, d11);
-        drawTriangle(image, s00, s11, s01, d00, d11, d01);
+    const src = (u,v) => ({ x:u*image.naturalWidth, y:v*image.naturalHeight });
+    for (let r=0; r<GRID; r++) {
+      for (let c=0; c<GRID; c++) {
+        const u0=c/GRID,v0=r/GRID,u1=(c+1)/GRID,v1=(r+1)/GRID;
+        const s00=src(u0,v0),s10=src(u1,v0),s11=src(u1,v1),s01=src(u0,v1);
+        const d00=homography.map(u0,v0),d10=homography.map(u1,v0);
+        const d11=homography.map(u1,v1),d01=homography.map(u0,v1);
+        drawTriangle(image,s00,s10,s11,d00,d10,d11);
+        drawTriangle(image,s00,s11,s01,d00,d11,d01);
       }
     }
     ctx.restore();
@@ -475,204 +389,204 @@ açmalısın; GitHub Pages bunu destekler.
   function drawCornerHandles() {
     if (!corners.length) return;
     ctx.save();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#4ade80';
-    ctx.fillStyle = 'rgba(74,222,128,.15)';
+    ctx.lineWidth=2;
+    ctx.strokeStyle='#4ade80';
+    ctx.fillStyle='rgba(74,222,128,.15)';
     ctx.beginPath();
-    ctx.moveTo(corners[0].x, corners[0].y);
-    for (let i = 1; i < corners.length; i++) {
-      ctx.lineTo(corners[i].x, corners[i].y);
-    }
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    corners.forEach((p, i) => {
+    ctx.moveTo(corners[0].x,corners[0].y);
+    for (let i=1;i<corners.length;i++) ctx.lineTo(corners[i].x,corners[i].y);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+    corners.forEach((p,i) => {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, CORNER_RADIUS, 0, Math.PI * 2);
-      ctx.fillStyle = '#101722';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#4ade80';
-      ctx.stroke();
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 14px -apple-system, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(String(i + 1), p.x, p.y);
+      ctx.arc(p.x,p.y,CORNER_RADIUS,0,Math.PI*2);
+      ctx.fillStyle='#101722'; ctx.fill();
+      ctx.lineWidth=3; ctx.strokeStyle='#4ade80'; ctx.stroke();
+      ctx.fillStyle='#fff';
+      ctx.font='bold 14px -apple-system, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(String(i+1),p.x,p.y);
     });
     ctx.restore();
   }
   function render(timestamp) {
-    if (timestamp - lastDrawTime >= 33) {
-      lastDrawTime = timestamp;
+    if (timestamp-lastDrawTime >= 33) {
+      lastDrawTime=timestamp;
       drawCameraBackground();
       drawPerspectiveImage();
       drawCornerHandles();
     }
-    animationFrame = requestAnimationFrame(render);
+    requestAnimationFrame(render);
+  }
+  async function applyZoom() {
+    const desired = Number($('zoom').value);
+    $('zoomValue').textContent = desired.toLocaleString('tr-TR', {
+      minimumFractionDigits: 1, maximumFractionDigits: 2
+    }) + '×';
+    if (!stream || !realZoomSupported) return;
+    try {
+      const track = stream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities();
+      if (capabilities.zoom) {
+        const actual = Math.max(realZoomMin, Math.min(realZoomMax, desired));
+        await track.applyConstraints({ advanced: [{ zoom: actual }] });
+      }
+    } catch (_) {
+      // Kaydırıcı yazılımsal uzaklaştırmayı yine uygular.
+    }
+  }
+  function updateLabels() {
+    $('opacityValue').textContent=$('opacity').value+'%';
+    $('sizeValue').textContent=$('size').value+'%';
+    $('horizontalValue').textContent=$('horizontal').value;
+    $('verticalValue').textContent=$('vertical').value;
   }
   function setFullscreen(active) {
-    stage.classList.toggle('fake-fullscreen', active);
-    document.body.classList.toggle('fake-fullscreen', active);
-    fullscreenButton.textContent = active ? '✕ Ekrandan çık' : '⛶ Ekranı kapla';
-    requestAnimationFrame(() => {
-      resizeCanvas();
-    });
+    stage.classList.toggle('fake-fullscreen',active);
+    document.body.classList.toggle('fake-fullscreen',active);
+    $('fullscreenButton').textContent=active?'✕ Ekrandan çık':'⛶ Ekranı kapla';
+    requestAnimationFrame(resizeCanvas);
   }
-  fullscreenButton.addEventListener('click', async () => {
-    const active = stage.classList.contains('fake-fullscreen');
+  $('fullscreenButton').addEventListener('click', async () => {
+    const active=stage.classList.contains('fake-fullscreen');
     if (active) {
       if (document.fullscreenElement && document.exitFullscreen) {
         try { await document.exitFullscreen(); } catch (_) {}
       }
       setFullscreen(false);
-      return;
-    }
-    setFullscreen(true);
-    // Android ve destekleyen tarayıcılarda gerçek tam ekranı da dene.
-    // iPhone Safari için CSS tabanlı ekran kaplama yedek olarak kalır.
-    if (stage.requestFullscreen) {
-      try {
-        await stage.requestFullscreen();
-      } catch (_) {
-        // CSS tabanlı ekran kaplama kullanılmaya devam eder.
+    } else {
+      setFullscreen(true);
+      if (stage.requestFullscreen) {
+        try { await stage.requestFullscreen(); } catch (_) {}
       }
     }
   });
-  exitFullscreen.addEventListener('click', async () => {
+  $('exitFullscreen').addEventListener('click', async () => {
     if (document.fullscreenElement && document.exitFullscreen) {
       try { await document.exitFullscreen(); } catch (_) {}
     }
     setFullscreen(false);
   });
-  document.addEventListener('fullscreenchange', () => {
-    if (!document.fullscreenElement && !stage.classList.contains('fake-fullscreen')) {
-      fullscreenButton.textContent = '⛶ Ekranı kapla';
-    }
-    requestAnimationFrame(resizeCanvas);
-  });
-  imageFile.addEventListener('change', () => {
-    const file = imageFile.files && imageFile.files[0];
+  document.addEventListener('fullscreenchange', () => requestAnimationFrame(resizeCanvas));
+  $('imageFile').addEventListener('change', () => {
+    const file=$('imageFile').files && $('imageFile').files[0];
     if (!file) return;
     if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
-    imageObjectUrl = URL.createObjectURL(file);
-    const newImage = new Image();
-    newImage.onload = () => {
-      image = newImage;
+    imageObjectUrl=URL.createObjectURL(file);
+    const newImage=new Image();
+    newImage.onload=() => {
+      image=newImage;
       makeDefaultCorners();
-      say('Görsel yüklendi. Dört köşeyi sürükleyerek perspektifi ayarla.');
-      URL.revokeObjectURL(imageObjectUrl);
-      imageObjectUrl = null;
+      say('Görsel yüklendi. Yeşil köşeleri sürükleyerek perspektifi ayarla.');
+      if (imageObjectUrl) URL.revokeObjectURL(imageObjectUrl);
+      imageObjectUrl=null;
     };
-    newImage.onerror = () => say('Görsel açılamadı. Başka bir fotoğraf dene.');
-    newImage.src = imageObjectUrl;
+    newImage.onerror=() => say('Görsel açılamadı. Başka bir fotoğraf dene.');
+    newImage.src=imageObjectUrl;
   });
   async function startCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      say('Kamera için HTTPS bağlantısı ve desteklenen bir tarayıcı gerekiyor.');
+      say('Kamera için HTTPS bağlantısı ve tarayıcı izni gerekiyor.');
       return;
     }
     if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
+      stream.getTracks().forEach(track=>track.stop());
+      stream=null;
     }
     try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: facingMode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+      stream=await navigator.mediaDevices.getUserMedia({
+        audio:false,
+        video:{
+          facingMode:{ ideal:facingMode },
+          width:{ ideal:1920 },
+          height:{ ideal:1080 }
         }
       });
-      video = document.createElement('video');
-      video.autoplay = true;
-      video.muted = true;
-      video.playsInline = true;
-      video.srcObject = stream;
+      video=document.createElement('video');
+      video.autoplay=true;
+      video.muted=true;
+      video.playsInline=true;
+      video.srcObject=stream;
       await video.play();
-      cameraButton.textContent = '📷 Kamerayı yeniden aç';
-      say('Kamera açık. Kâğıdını kameranın önüne yerleştir.');
+      const track=stream.getVideoTracks()[0];
+      realZoomSupported=false;
+      realZoomMin=1;
+      realZoomMax=1;
+      try {
+        const capabilities=track.getCapabilities();
+        if (capabilities.zoom) {
+          realZoomSupported=true;
+          realZoomMin=capabilities.zoom.min;
+          realZoomMax=capabilities.zoom.max;
+        }
+      } catch (_) {}
+      $('cameraButton').textContent='📷 Kamerayı yeniden aç';
+      await applyZoom();
+      if (realZoomSupported && realZoomMin < 1) {
+        say('Kamera açıldı. Gerçek kamera uzaklaştırması destekleniyor.');
+      } else {
+        say('Kamera açıldı. Uzaklaştırma kaydırıcısı görüntüyü yazılımsal küçültür.');
+      }
     } catch (error) {
-      const message = error && error.name === 'NotAllowedError'
+      say(error && error.name==='NotAllowedError'
         ? 'Kamera izni verilmedi. Tarayıcı ayarlarından kamera iznini aç.'
-        : 'Kamera açılamadı. HTTPS bağlantısını ve kamera izinlerini kontrol et.';
-      say(message);
+        : 'Kamera açılamadı. HTTPS bağlantısını ve kamera izinlerini kontrol et.');
     }
   }
-  cameraButton.addEventListener('click', startCamera);
-  flipButton.addEventListener('click', async () => {
-    facingMode = facingMode === 'environment' ? 'user' : 'environment';
+  $('cameraButton').addEventListener('click',startCamera);
+  $('flipButton').addEventListener('click',async () => {
+    facingMode=facingMode==='environment'?'user':'environment';
     if (stream) await startCamera();
-    else say(facingMode === 'environment' ? 'Arka kamera seçildi.' : 'Ön kamera seçildi.');
+    else say(facingMode==='environment'?'Arka kamera seçildi.':'Ön kamera seçildi.');
   });
-  resetButton.addEventListener('click', () => {
+  $('resetButton').addEventListener('click',() => {
     makeDefaultCorners();
-    sizeInput.value = 100;
-    horizontalInput.value = 0;
-    verticalInput.value = 0;
-    updateSettingLabels();
-    say('Köşeler ve konum ayarları sıfırlandı.');
+    $('size').value=100;
+    $('horizontal').value=0;
+    $('vertical').value=0;
+    updateLabels();
+    say('Köşeler ve görsel konumu sıfırlandı.');
   });
-  function updateSettingLabels() {
-    opacityValue.textContent = opacityInput.value + '%';
-    sizeValue.textContent = sizeInput.value + '%';
-    horizontalValue.textContent = horizontalInput.value;
-    verticalValue.textContent = verticalInput.value;
-  }
-  [opacityInput, sizeInput, horizontalInput, verticalInput].forEach(input => {
-    input.addEventListener('input', updateSettingLabels);
+  ['opacity','size','horizontal','vertical'].forEach(id => {
+    $(id).addEventListener('input',updateLabels);
   });
+  $('zoom').addEventListener('input',applyZoom);
   function pointerPosition(event) {
-    const rect = canvas.getBoundingClientRect();
-    return {
-      x: event.clientX - rect.left,
-      y: event.clientY - rect.top
-    };
+    const rect=canvas.getBoundingClientRect();
+    return { x:event.clientX-rect.left, y:event.clientY-rect.top };
   }
-  canvas.addEventListener('pointerdown', event => {
-    const p = pointerPosition(event);
-    let nearest = -1;
-    let nearestDistance = Infinity;
-    corners.forEach((corner, index) => {
-      const distance = Math.hypot(p.x - corner.x, p.y - corner.y);
-      if (distance < nearestDistance) {
-        nearestDistance = distance;
-        nearest = index;
-      }
+  canvas.addEventListener('pointerdown',event => {
+    const p=pointerPosition(event);
+    let nearest=-1, distance=Infinity;
+    corners.forEach((corner,index) => {
+      const d=Math.hypot(p.x-corner.x,p.y-corner.y);
+      if (d<distance) { distance=d; nearest=index; }
     });
-    if (nearest >= 0 && nearestDistance < 42) {
-      draggingCorner = nearest;
+    if (nearest>=0 && distance<42) {
+      draggingCorner=nearest;
       canvas.setPointerCapture(event.pointerId);
       event.preventDefault();
     }
   });
-  canvas.addEventListener('pointermove', event => {
-    if (draggingCorner < 0) return;
-    const p = pointerPosition(event);
-    corners[draggingCorner] = {
-      x: Math.max(0, Math.min(viewWidth, p.x)),
-      y: Math.max(0, Math.min(viewHeight, p.y))
+  canvas.addEventListener('pointermove',event => {
+    if (draggingCorner<0) return;
+    const p=pointerPosition(event);
+    corners[draggingCorner]={
+      x:Math.max(0,Math.min(viewWidth,p.x)),
+      y:Math.max(0,Math.min(viewHeight,p.y))
     };
     event.preventDefault();
   });
-  function stopDragging() {
-    draggingCorner = -1;
-  }
-  canvas.addEventListener('pointerup', stopDragging);
-  canvas.addEventListener('pointercancel', stopDragging);
-  canvas.addEventListener('lostpointercapture', stopDragging);
-  window.addEventListener('resize', resizeCanvas);
-  window.addEventListener('orientationchange', () => {
-    setTimeout(resizeCanvas, 250);
-  });
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) resizeCanvas();
-  });
+  function stopDragging() { draggingCorner=-1; }
+  canvas.addEventListener('pointerup',stopDragging);
+  canvas.addEventListener('pointercancel',stopDragging);
+  canvas.addEventListener('lostpointercapture',stopDragging);
+  window.addEventListener('resize',resizeCanvas);
+  window.addEventListener('orientationchange',()=>setTimeout(resizeCanvas,250));
+  document.addEventListener('visibilitychange',()=>{ if (!document.hidden) resizeCanvas(); });
   resizeCanvas();
   makeDefaultCorners();
-  updateSettingLabels();
-  animationFrame = requestAnimationFrame(render);
+  updateLabels();
+  requestAnimationFrame(render);
 })();
 </script>
 </body>
