@@ -187,7 +187,7 @@ window.SPORT_TOTO_DATA = {
       {"number":11,"home":"Monaco","away":"Lille","result":"X"},
       {"number":12,"home":"Paris St Germain","away":"Olympique Lyon","result":null},
       {"number":13,"home":"Chelsea","away":"Tottenham Hotspur","result":"2"},
-      {"number":14,"home":"Barcelona","away":"Real Madrid","result":null},
+      {"number":14,"home":"Barcelona","away":"Real Madrid","result":"2"},
       {"number":15,"home":"Napoli","away":"Roma","result":"X"},
     ],
   }
