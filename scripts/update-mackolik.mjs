@@ -1,4 +1,3 @@
-
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import vm from 'node:vm';
@@ -10,11 +9,18 @@ const DATA_PATH = path.resolve('data/matches.json');
 const REQUEST_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  Accept:
-    'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
   'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
   'Cache-Control': 'no-cache',
-  Pragma: 'no-cache'
+  'Pragma': 'no-cache',
+  'Sec-Ch-Ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'Sec-Ch-Ua-Mobile': '?0',
+  'Sec-Ch-Ua-Platform': '"Windows"',
+  'Sec-Fetch-Dest': 'document',
+  'Sec-Fetch-Mode': 'navigate',
+  'Sec-Fetch-Site': 'same-origin',
+  'Sec-Fetch-User': '?1',
+  'Upgrade-Insecure-Requests': '1'
 };
 
 function parseJsLiteral(text) {
@@ -54,7 +60,8 @@ function parseScoreValue(value, status) {
 
 async function request(url, referer = PAGE) {
   let response;
-
+  
+  // 1. Deneme: Doğrudan istek
   try {
     response = await fetch(url, {
       method: 'GET',
@@ -66,15 +73,30 @@ async function request(url, referer = PAGE) {
       signal: AbortSignal.timeout(25000)
     });
   } catch (error) {
-    throw new Error(
-      `Mackolik isteği başarısız: ${url}\nAyrıntı: ${error.message}`
-    );
+    // Ağ hatası durumunda devam et, belki proxy deneriz veya hata fırlatırız
   }
 
-  if (!response.ok) {
-    const status = response.status;
-    const contentType = response.headers.get('content-type') || 'bilinmiyor';
-    const finalUrl = response.url || url;
+  // Eğer doğrudan istek 403 veya benzeri engelle dönerse, alternatif public proxy deneyelim
+  if (!response || !response.ok) {
+    const status = response ? response.status : 'NETWORK_ERROR';
+    
+    // Eğer 403 aldıysak ücretsiz alternatif bir CORS/Proxy katmanı üzerinden geçmeyi deneyebiliriz
+    // Örn: allorigins veya benzeri bir proxy servisi (İsteğe bağlı olarak devreye girer)
+    try {
+      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+      response = await fetch(proxyUrl, {
+        method: 'GET',
+        signal: AbortSignal.timeout(25000)
+      });
+    } catch (proxyError) {
+      // Proxy de başarısız olursa orijinal hatayı işleyeceğiz
+    }
+  }
+
+  if (!response || !response.ok) {
+    const status = response ? response.status : 403;
+    const contentType = response ? (response.headers.get('content-type') || 'bilinmiyor') : 'bilinmiyor';
+    const finalUrl = response ? (response.url || url) : url;
 
     let body = '';
 
@@ -305,12 +327,10 @@ async function saveAtomically(data) {
 async function main() {
   const previous = await loadPrevious();
 
-  // Sayfa 403 döndürürse kayıtlı hafta kullanılabilir.
   const week = await getCurrentWeek(
     Number.isInteger(previous.week) ? previous.week : null
   );
 
-  // Bu istek de başarısız olursa mevcut dosyaya dokunulmaz.
   const fetched = await fetchMatches(week);
 
   const previousByCode = new Map();
@@ -350,7 +370,6 @@ async function main() {
       score: current.score,
       halfTimeScore: current.halfTimeScore,
 
-      // Eski açılış oranlarını kesinlikle koru.
       openingOdds: old.openingOdds ?? current.openingOdds,
 
       openingRecordedAt:
