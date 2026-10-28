@@ -10,18 +10,18 @@ const DATA_PATH = path.resolve('data/matches.json');
 const REQUEST_HEADERS = {
   'User-Agent':
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Accept':
+  Accept:
     'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
   'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
   'Cache-Control': 'no-cache',
-  'Pragma': 'no-cache'
+  Pragma: 'no-cache'
 };
 
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
 
   return vm.runInNewContext(
-    '(' + cleanText + ')',
+    `(${cleanText})`,
     Object.create(null)
   );
 }
@@ -36,28 +36,19 @@ function numberOrNull(value) {
     return null;
   }
 
-  const number = Number(
-    String(value).replace(',', '.')
-  );
+  const number = Number(String(value).replace(',', '.'));
 
   return Number.isFinite(number) ? number : null;
 }
 
 function parseScoreValue(value, status) {
-  if (Number(status) === 0) {
-    return null;
-  }
+  if (Number(status) === 0) return null;
 
-  if (
-    value === '' ||
-    value === null ||
-    value === undefined
-  ) {
+  if (value === '' || value === null || value === undefined) {
     return null;
   }
 
   const result = String(value).trim();
-
   return result === '' ? null : result;
 }
 
@@ -76,31 +67,57 @@ async function request(url, referer = PAGE) {
     });
   } catch (error) {
     throw new Error(
-      `Mackolik isteği başarısız: ${url}\n` +
-      `Ayrıntı: ${error.message}`
+      `Mackolik isteği başarısız: ${url}\nAyrıntı: ${error.message}`
     );
   }
 
   if (!response.ok) {
-    const detail =
-      response.status === 403
-        ? 'Sunucu erişimi reddetti. İstek başlıkları eklenmiş olsa da IP veya bot koruması engeli olabilir.'
-        : response.status === 429
-          ? 'İstek sınırına ulaşıldı.'
-          : 'Sunucu başarılı yanıt vermedi.';
+    const status = response.status;
+    const contentType = response.headers.get('content-type') || 'bilinmiyor';
+    const finalUrl = response.url || url;
 
-    throw new Error(
-      `${detail}\n` +
-      `HTTP ${response.status}\n` +
-      `URL: ${url}`
+    let body = '';
+
+    try {
+      body = (await response.text()).slice(0, 700);
+    } catch {
+      body = 'Yanıt gövdesi okunamadı.';
+    }
+
+    const error = new Error(
+      `Mackolik isteği başarısız.\n` +
+      `HTTP: ${status}\n` +
+      `İstenen URL: ${url}\n` +
+      `Son URL: ${finalUrl}\n` +
+      `Content-Type: ${contentType}\n` +
+      `Yanıt özeti: ${body.replace(/\s+/g, ' ')}`
     );
+
+    error.status = status;
+    error.url = url;
+    throw error;
   }
 
   return response.text();
 }
 
-async function getCurrentWeek() {
-  const html = await request(PAGE);
+async function getCurrentWeek(fallbackWeek = null) {
+  let html;
+
+  try {
+    html = await request(PAGE);
+  } catch (error) {
+    if (error.status === 403 && Number.isInteger(fallbackWeek)) {
+      console.warn(
+        `⚠️ Güncel hafta sayfası HTTP 403 döndürdü. ` +
+        `Kayıtlı hafta (${fallbackWeek}) kullanılacak.`
+      );
+
+      return fallbackWeek;
+    }
+
+    throw error;
+  }
 
   const patterns = [
     /\bcurrentWeek\s*=\s*["']?(\d+)["']?/i,
@@ -110,20 +127,26 @@ async function getCurrentWeek() {
   for (const pattern of patterns) {
     const match = html.match(pattern);
 
-    if (match) {
-      return Number(match[1]);
-    }
+    if (match) return Number(match[1]);
+  }
+
+  if (Number.isInteger(fallbackWeek)) {
+    console.warn(
+      `⚠️ Sayfada hafta numarası bulunamadı. ` +
+      `Kayıtlı hafta (${fallbackWeek}) kullanılacak.`
+    );
+
+    return fallbackWeek;
   }
 
   throw new Error(
-    'Mackolik sayfası alındı ancak güncel bülten haftası bulunamadı.'
+    'Güncel bülten haftası bulunamadı ve kullanılabilecek kayıtlı hafta yok.'
   );
 }
 
 async function fetchMatches(week) {
   const url =
-    SITE +
-    '/AjaxHandlers/ProgramDataHandler.ashx' +
+    `${SITE}/AjaxHandlers/ProgramDataHandler.ashx` +
     '?type=6' +
     '&sortValue=DATE' +
     '&day=-1' +
@@ -142,8 +165,7 @@ async function fetchMatches(week) {
   } catch (error) {
     throw new Error(
       'Mackolik yanıtı beklenen veri formatında değil. ' +
-      'Yanıt HTML veya başka bir içerik olabilir. ' +
-      `Ayrıntı: ${error.message}`
+      `Yanıt HTML veya başka bir içerik olabilir. Ayrıntı: ${error.message}`
     );
   }
 
@@ -263,12 +285,32 @@ async function loadPrevious() {
   }
 }
 
+async function saveAtomically(data) {
+  await fs.mkdir(path.dirname(DATA_PATH), {
+    recursive: true
+  });
+
+  const tempPath = `${DATA_PATH}.tmp`;
+  const output = JSON.stringify(data, null, 2) + '\n';
+
+  try {
+    await fs.writeFile(tempPath, output, 'utf8');
+    await fs.rename(tempPath, DATA_PATH);
+  } catch (error) {
+    await fs.rm(tempPath, { force: true }).catch(() => {});
+    throw error;
+  }
+}
+
 async function main() {
-  // Önceki dosyayı yükle; hatalı JSON durumunda dur.
   const previous = await loadPrevious();
 
-  // Her iki veri isteği de başarılı olmadan dosyaya yazılmaz.
-  const week = await getCurrentWeek();
+  // Sayfa 403 döndürürse kayıtlı hafta kullanılabilir.
+  const week = await getCurrentWeek(
+    Number.isInteger(previous.week) ? previous.week : null
+  );
+
+  // Bu istek de başarısız olursa mevcut dosyaya dokunulmaz.
   const fetched = await fetchMatches(week);
 
   const previousByCode = new Map();
@@ -308,7 +350,7 @@ async function main() {
       score: current.score,
       halfTimeScore: current.halfTimeScore,
 
-      // Kaydedilmiş açılış oranlarını değiştirme.
+      // Eski açılış oranlarını kesinlikle koru.
       openingOdds: old.openingOdds ?? current.openingOdds,
 
       openingRecordedAt:
@@ -318,7 +360,10 @@ async function main() {
     if (
       !sameJson(old.score, merged.score) ||
       !sameJson(old.halfTimeScore, merged.halfTimeScore) ||
-      Number(old.status) !== Number(merged.status)
+      Number(old.status) !== Number(merged.status) ||
+      old.week !== merged.week ||
+      old.date !== merged.date ||
+      old.time !== merged.time
     ) {
       changed = true;
     }
@@ -341,24 +386,8 @@ async function main() {
     matches
   };
 
-  if (
-    changed ||
-    previous.matches.length === 0
-  ) {
-    await fs.mkdir(path.dirname(DATA_PATH), {
-      recursive: true
-    });
-
-    const output = JSON.stringify(next, null, 2) + '\n';
-    const tempPath = DATA_PATH + '.tmp';
-
-    try {
-      await fs.writeFile(tempPath, output, 'utf8');
-      await fs.rename(tempPath, DATA_PATH);
-    } catch (error) {
-      await fs.rm(tempPath, { force: true }).catch(() => {});
-      throw error;
-    }
+  if (changed || previous.matches.length === 0) {
+    await saveAtomically(next);
   }
 
   console.log(JSON.stringify({
