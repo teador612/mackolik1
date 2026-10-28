@@ -1,32 +1,28 @@
-- name: Mackolik erişim testi
-  run: |
-    node --input-type=module <<'NODE'
-    const urls = [
-      'https://arsiv.mackolik.com/Genis-Iddaa-Programi',
-      'https://arsiv.mackolik.com/AjaxHandlers/ProgramDataHandler.ashx?type=6&sortValue=DATE&day=-1&sort=-1&sortDir=-1&groupId=-1&np=0&sport=1'
-    ];
 
-    for (const url of urls) {
-      try {
-        const response = await fetch(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0',
-            'Accept': '*/*',
-            'Referer': 'https://arsiv.mackolik.com/Genis-Iddaa-Programi',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          signal: AbortSignal.timeout(20000)
-        });
+      - name: Mackolik erişim testi
+        shell: bash
+        run: |
+          node --input-type=module -e '
+            const url = "https://arsiv.mackolik.com/Genis-Iddaa-Programi";
 
-        console.log(
-          `URL: ${url}\n` +
-          `HTTP: ${response.status}\n` +
-          `Content-Type: ${response.headers.get('content-type')}\n`
-        );
+            try {
+              const response = await fetch(url, {
+                headers: {
+                  "User-Agent": "Mozilla/5.0",
+                  "Accept": "text/html,application/xhtml+xml",
+                  "Referer": url
+                },
+                signal: AbortSignal.timeout(20000)
+              });
 
-        await response.body?.cancel();
-      } catch (error) {
-        console.log(`URL: ${url}\nHata: ${error.message}`);
-      }
-    }
-    NODE
+              console.log("HTTP:", response.status);
+              console.log("URL:", response.url);
+              console.log(
+                "Content-Type:",
+                response.headers.get("content-type")
+              );
+            } catch (error) {
+              console.error("Erişim hatası:", error.message);
+              process.exitCode = 1;
+            }
+          '
