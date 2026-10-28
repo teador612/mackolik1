@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -572,8 +571,6 @@
       <select id="leagueFilter">
         <option value="all">Tüm ligler</option>
         <option value="NBA">NBA</option>
-        <option value="EuroLeague">EuroLeague</option>
-        <option value="EuroCup">EuroCup</option>
       </select>
     </div>
     <div class="filter">
@@ -1062,11 +1059,18 @@ async function loadData() {
 
     const data = await response.json();
 
+    let rawPredictions = [];
     if (Array.isArray(data)) {
-      predictions = data;
+      rawPredictions = data;
     } else {
-      predictions = Array.isArray(data.predictions) ? data.predictions : [];
+      rawPredictions = Array.isArray(data.predictions) ? data.predictions : [];
     }
+
+    // EuroLeague ve EuroCup maçlarını tamamen sistemden temizle
+    predictions = rawPredictions.filter(p => {
+      const leagueName = String(p.league ?? "").trim().toLowerCase();
+      return leagueName !== "euroleague" && leagueName !== "eurocup";
+    });
 
     if (!predictions.length) {
       content.innerHTML = '<div class="empty">Tahmin verisi bulunamadı.</div>';
