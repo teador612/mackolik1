@@ -7,61 +7,46 @@ const PAGE = `${SITE}/Genis-Iddaa-Programi`;
 const DATA_PATH = path.resolve('data/matches.json');
 
 const REQUEST_HEADERS = {
-  'User-Agent':
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
   'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
   'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
   'Cache-Control': 'no-cache',
   'Pragma': 'no-cache',
-  'Sec-Ch-Ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+  'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
   'Sec-Ch-Ua-Mobile': '?0',
   'Sec-Ch-Ua-Platform': '"Windows"',
   'Sec-Fetch-Dest': 'document',
   'Sec-Fetch-Mode': 'navigate',
-  'Sec-Fetch-Site': 'same-origin',
+  'Sec-Fetch-Site': 'none',
   'Sec-Fetch-User': '?1',
   'Upgrade-Insecure-Requests': '1'
 };
 
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
-
-  return vm.runInNewContext(
-    `(${cleanText})`,
-    Object.create(null)
-  );
+  return vm.runInNewContext(`(${cleanText})`, Object.create(null));
 }
 
 function numberOrNull(value) {
-  if (
-    value === '' ||
-    value === null ||
-    value === undefined ||
-    typeof value === 'object'
-  ) {
+  if (value === '' || value === null || value === undefined || typeof value === 'object') {
     return null;
   }
-
   const number = Number(String(value).replace(',', '.'));
-
   return Number.isFinite(number) ? number : null;
 }
 
 function parseScoreValue(value, status) {
   if (Number(status) === 0) return null;
-
   if (value === '' || value === null || value === undefined) {
     return null;
   }
-
   const result = String(value).trim();
   return result === '' ? null : result;
 }
 
 async function request(url, referer = PAGE) {
   let response;
-  
-  // 1. Deneme: Doğrudan istek
+
   try {
     response = await fetch(url, {
       method: 'GET',
@@ -70,36 +55,20 @@ async function request(url, referer = PAGE) {
         Referer: referer
       },
       redirect: 'follow',
-      signal: AbortSignal.timeout(25000)
+      signal: AbortSignal.timeout(30000)
     });
   } catch (error) {
-    // Ağ hatası durumunda devam et, belki proxy deneriz veya hata fırlatırız
+    throw new Error(
+      `Mackolik ağına bağlanılamadı (Zaman aşımı veya ağ hatası): ${url}\nAyrıntı: ${error.message}`
+    );
   }
 
-  // Eğer doğrudan istek 403 veya benzeri engelle dönerse, alternatif public proxy deneyelim
-  if (!response || !response.ok) {
-    const status = response ? response.status : 'NETWORK_ERROR';
-    
-    // Eğer 403 aldıysak ücretsiz alternatif bir CORS/Proxy katmanı üzerinden geçmeyi deneyebiliriz
-    // Örn: allorigins veya benzeri bir proxy servisi (İsteğe bağlı olarak devreye girer)
-    try {
-      const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
-      response = await fetch(proxyUrl, {
-        method: 'GET',
-        signal: AbortSignal.timeout(25000)
-      });
-    } catch (proxyError) {
-      // Proxy de başarısız olursa orijinal hatayı işleyeceğiz
-    }
-  }
-
-  if (!response || !response.ok) {
-    const status = response ? response.status : 403;
-    const contentType = response ? (response.headers.get('content-type') || 'bilinmiyor') : 'bilinmiyor';
-    const finalUrl = response ? (response.url || url) : url;
+  if (!response.ok) {
+    const status = response.status;
+    const contentType = response.headers.get('content-type') || 'bilinmiyor';
+    const finalUrl = response.url || url;
 
     let body = '';
-
     try {
       body = (await response.text()).slice(0, 700);
     } catch {
@@ -130,14 +99,9 @@ async function getCurrentWeek(fallbackWeek = null) {
     html = await request(PAGE);
   } catch (error) {
     if (error.status === 403 && Number.isInteger(fallbackWeek)) {
-      console.warn(
-        `⚠️ Güncel hafta sayfası HTTP 403 döndürdü. ` +
-        `Kayıtlı hafta (${fallbackWeek}) kullanılacak.`
-      );
-
+      console.warn(`⚠️ Güncel hafta sayfası HTTP 403 döndürdü. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
       return fallbackWeek;
     }
-
     throw error;
   }
 
@@ -148,22 +112,15 @@ async function getCurrentWeek(fallbackWeek = null) {
 
   for (const pattern of patterns) {
     const match = html.match(pattern);
-
     if (match) return Number(match[1]);
   }
 
   if (Number.isInteger(fallbackWeek)) {
-    console.warn(
-      `⚠️ Sayfada hafta numarası bulunamadı. ` +
-      `Kayıtlı hafta (${fallbackWeek}) kullanılacak.`
-    );
-
+    console.warn(`⚠️ Sayfada hafta numarası bulunamadı. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
     return fallbackWeek;
   }
 
-  throw new Error(
-    'Güncel bülten haftası bulunamadı ve kullanılabilecek kayıtlı hafta yok.'
-  );
+  throw new Error('Güncel bülten haftası bulunamadı ve kullanılabilecek kayıtlı hafta yok.');
 }
 
 async function fetchMatches(week) {
@@ -179,22 +136,16 @@ async function fetchMatches(week) {
     '&sport=1';
 
   const text = await request(url, PAGE);
-
   let payload;
 
   try {
     payload = parseJsLiteral(text);
   } catch (error) {
-    throw new Error(
-      'Mackolik yanıtı beklenen veri formatında değil. ' +
-      `Yanıt HTML veya başka bir içerik olabilir. Ayrıntı: ${error.message}`
-    );
+    throw new Error(`Mackolik yanıtı beklenen veri formatında değil. Ayrıntı: ${error.message}`);
   }
 
   if (!payload || !Array.isArray(payload.m)) {
-    throw new Error(
-      'Mackolik yanıtında beklenen maç listesi bulunamadı.'
-    );
+    throw new Error('Mackolik yanıtında beklenen maç listesi bulunamadı.');
   }
 
   const matches = [];
@@ -268,10 +219,7 @@ async function fetchMatches(week) {
   }
 
   if (matches.length === 0) {
-    throw new Error(
-      'Mackolik yanıtı boş maç listesi içeriyor. ' +
-      'Mevcut veri dosyası korunacak.'
-    );
+    throw new Error('Mackolik yanıtı boş maç listesi içeriyor. Mevcut veri dosyası korunacak.');
   }
 
   return matches;
@@ -287,9 +235,7 @@ async function loadPrevious() {
     const data = JSON.parse(text);
 
     if (!Array.isArray(data.matches)) {
-      throw new Error(
-        'Mevcut matches.json içinde matches listesi bulunamadı.'
-      );
+      throw new Error('Mevcut matches.json içinde matches listesi bulunamadı.');
     }
 
     return data;
@@ -302,15 +248,12 @@ async function loadPrevious() {
         matches: []
       };
     }
-
     throw error;
   }
 }
 
 async function saveAtomically(data) {
-  await fs.mkdir(path.dirname(DATA_PATH), {
-    recursive: true
-  });
+  await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
 
   const tempPath = `${DATA_PATH}.tmp`;
   const output = JSON.stringify(data, null, 2) + '\n';
@@ -326,15 +269,10 @@ async function saveAtomically(data) {
 
 async function main() {
   const previous = await loadPrevious();
-
-  const week = await getCurrentWeek(
-    Number.isInteger(previous.week) ? previous.week : null
-  );
-
+  const week = await getCurrentWeek(Number.isInteger(previous.week) ? previous.week : null);
   const fetched = await fetchMatches(week);
 
   const previousByCode = new Map();
-
   for (const match of previous.matches) {
     previousByCode.set(String(match.code), match);
   }
@@ -350,14 +288,12 @@ async function main() {
         ...current,
         openingRecordedAt: new Date().toISOString()
       });
-
       changed = true;
       continue;
     }
 
     const merged = {
       ...old,
-
       week: current.week,
       date: current.date,
       time: current.time,
@@ -365,15 +301,11 @@ async function main() {
       home: current.home,
       away: current.away,
       mbs: current.mbs,
-
       status: current.status,
       score: current.score,
       halfTimeScore: current.halfTimeScore,
-
       openingOdds: old.openingOdds ?? current.openingOdds,
-
-      openingRecordedAt:
-        old.openingRecordedAt ?? 'previous-record'
+      openingRecordedAt: old.openingRecordedAt ?? 'previous-record'
     };
 
     if (
@@ -399,9 +331,7 @@ async function main() {
   const next = {
     source: PAGE,
     week,
-    updatedAt: changed
-      ? new Date().toISOString()
-      : previous.updatedAt,
+    updatedAt: changed ? new Date().toISOString() : previous.updatedAt,
     matches
   };
 
