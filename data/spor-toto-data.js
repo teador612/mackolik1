@@ -1,7 +1,7 @@
 /* Otomatik oluşturulan Spor Toto verisi. */
 window.SPORT_TOTO_DATA = {
   season: "2026-2027",
-  currentWeek: 11,
+  currentWeek: 12,
   weeks: {
     "1": [
       {"number":1,"home":"Galatasaray","away":"Çorum FK","result":"X"},
@@ -190,12 +190,29 @@ window.SPORT_TOTO_DATA = {
       {"number":14,"home":"Barcelona","away":"Real Madrid","result":"2"},
       {"number":15,"home":"Napoli","away":"Roma","result":"X"},
     ],
+    "12": [
+      {"number":1,"home":"Tümosan Konyaspor","away":"Galatasaray","result":null},
+      {"number":2,"home":"Erzurumspor FK","away":"Arca Çorum FK","result":null},
+      {"number":3,"home":"Kocaelispor","away":"Çaykur Rizespor","result":null},
+      {"number":4,"home":"Fenerbahçe","away":"Göztepe","result":null},
+      {"number":5,"home":"Amed Sportif Faaliyetler","away":"Eyüpspor","result":null},
+      {"number":6,"home":"İstanbul Başakşehir","away":"Samsunspor","result":null},
+      {"number":7,"home":"Trabzonspor","away":"Gaziantep FK","result":null},
+      {"number":8,"home":"Kasımpaşa","away":"Beşiktaş","result":null},
+      {"number":9,"home":"Gençlerbirliği","away":"Corendon Alanyaspor","result":null},
+      {"number":10,"home":"Bayern Münih","away":"Borussia Dortmund","result":null},
+      {"number":11,"home":"Chelsea","away":"Manchester Utd.","result":null},
+      {"number":12,"home":"Liverpool","away":"Arsenal","result":null},
+      {"number":13,"home":"Athletic Bilbao","away":"Real Sociedad","result":null},
+      {"number":14,"home":"Milan","away":"Inter","result":null},
+      {"number":15,"home":"Juventus","away":"Napoli","result":null},
+    ],
   }
 };
 
 window.SPORT_TOTO_META = {
   season: "2026-2027",
-  currentWeek: 11,
+  currentWeek: 12,
   matchesPerWeek: 15,
   historyDays: 60,
   exactOdds: true,
