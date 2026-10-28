@@ -537,7 +537,7 @@
   <div class="header">
     <div>
       <div class="title">🏀 Basketbol Tahmin</div>
-      <div class="subtitle">MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ</div>
+      <div class="subtitle">MAÇ TOPLAM ALT / ÜST · 1X2 · PERİYOT ANALİZİ</div>
     </div>
     <a href="https://teador612.github.io/mackolik1/" class="mackolik-btn">⚽ Mackolik</a>
   </div>
@@ -758,7 +758,7 @@ function oneXTwoBadge(p) {
 
   return `
     <div class="prediction-1x2 ${pendingClass}">
-      Maç Sonu: <strong>${escapeHtml(resultText)}</strong>
+      1X2 <strong>${escapeHtml(resultText)}</strong>
     </div>`;
 }
 
@@ -861,7 +861,7 @@ function buildDetails(p) {
       </div>
 
       ${x2 ? `
-        <div class="detail-title">Maç Sonucu Tahmini</div>
+        <div class="detail-title">1X2 Tahmini</div>
         <div class="x2-grid">
           <div class="x2-card ${x2.prediction === "1" ? "x2-predicted" : ""}">
             <div class="x2-name">1 · Ev sahibi</div>
@@ -878,11 +878,11 @@ function buildDetails(p) {
         </div>
         <div class="detail-top">
           <div class="detail-box">
-            <div class="detail-label">Tahmin</div>
+            <div class="detail-label">1X2 Tahmini</div>
             <div class="detail-value">${escapeHtml(x2.prediction)}</div>
           </div>
           <div class="detail-box">
-            <div class="detail-label">Güven</div>
+            <div class="detail-label">1X2 Güven</div>
             <div class="detail-value">${x2.confidence !== null ? "%" + x2.confidence.toFixed(1) : "-"}</div>
           </div>
           <div class="detail-box">
