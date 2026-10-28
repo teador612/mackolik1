@@ -115,11 +115,20 @@
       white-space: nowrap;
     }
 
+    .section-title {
+      margin: 14px 2px 6px;
+      color: var(--orange-light);
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+
     .summary {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 7px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .summary-card {
@@ -537,11 +546,12 @@
   <div class="header">
     <div>
       <div class="title">🏀 Basketbol Tahmin</div>
-      <div class="subtitle">MAÇ TOPLAM ALT / ÜST · 1X2 · PERİYOT ANALİZİ</div>
+      <div class="subtitle">MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ</div>
     </div>
     <a href="https://teador612.github.io/mackolik1/" class="mackolik-btn">⚽ Mackolik</a>
   </div>
 
+  <div class="section-title">📊 Maç Toplam Alt / Üst Başarısı</div>
   <div class="summary">
     <div class="summary-card">
       <div class="summary-value" id="successRate">-</div>
@@ -557,6 +567,26 @@
     </div>
     <div class="summary-card">
       <div class="summary-value" id="completed">-</div>
+      <div class="summary-label">Biten</div>
+    </div>
+  </div>
+
+  <div class="section-title">🎯 Maç Sonucu (1X2) Başarısı</div>
+  <div class="summary">
+    <div class="summary-card">
+      <div class="summary-value" id="successRate1X2">-</div>
+      <div class="summary-label">Başarı</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value" id="successful1X2">-</div>
+      <div class="summary-label">Başarılı</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value" id="failed1X2">-</div>
+      <div class="summary-label">Başarısız</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-value" id="completed1X2">-</div>
       <div class="summary-label">Biten</div>
     </div>
   </div>
@@ -744,21 +774,28 @@ function get1X2(p) {
   };
 }
 
+function get1X2Status(p) {
+  if (!isFinished(p)) return "pending";
+  if (p.success1X2 === true || p.result1X2 === "successful") return "success";
+  if (p.success1X2 === false || p.result1X2 === "failed") return "failed";
+  return "pending";
+}
+
 function oneXTwoBadge(p) {
   const data = get1X2(p);
   if (!data) return "";
 
-  const status = getStatus(p);
+  const status1X2 = get1X2Status(p);
   let resultText = data.prediction;
 
-  if (status === "success") resultText = "✓ " + data.prediction;
-  if (status === "failed") resultText = "✕ " + data.prediction;
+  if (status1X2 === "success") resultText = "✓ " + data.prediction;
+  if (status1X2 === "failed") resultText = "✕ " + data.prediction;
 
-  const pendingClass = status === "pending" ? "pending-1x2" : "";
+  const pendingClass = status1X2 === "pending" ? "pending-1x2" : "";
 
   return `
     <div class="prediction-1x2 ${pendingClass}">
-      1X2 <strong>${escapeHtml(resultText)}</strong>
+      Maç Sonu: <strong>${escapeHtml(resultText)}</strong>
     </div>`;
 }
 
@@ -861,7 +898,7 @@ function buildDetails(p) {
       </div>
 
       ${x2 ? `
-        <div class="detail-title">1X2 Tahmini</div>
+        <div class="detail-title">Maç Sonucu Tahmini</div>
         <div class="x2-grid">
           <div class="x2-card ${x2.prediction === "1" ? "x2-predicted" : ""}">
             <div class="x2-name">1 · Ev sahibi</div>
@@ -878,11 +915,11 @@ function buildDetails(p) {
         </div>
         <div class="detail-top">
           <div class="detail-box">
-            <div class="detail-label">1X2 Tahmini</div>
+            <div class="detail-label">Tahmin</div>
             <div class="detail-value">${escapeHtml(x2.prediction)}</div>
           </div>
           <div class="detail-box">
-            <div class="detail-label">1X2 Güven</div>
+            <div class="detail-label">Güven</div>
             <div class="detail-value">${x2.confidence !== null ? "%" + x2.confidence.toFixed(1) : "-"}</div>
           </div>
           <div class="detail-box">
@@ -985,9 +1022,13 @@ function updateSummary() {
   let successful = 0;
   let failed = 0;
 
-  for (const p of predictions) {
-    const status = getStatus(p);
+  let completed1X2 = 0;
+  let successful1X2 = 0;
+  let failed1X2 = 0;
 
+  for (const p of predictions) {
+    // Alt/Üst başarı istatistiği
+    const status = getStatus(p);
     if (status === "success") {
       completed++;
       successful++;
@@ -997,15 +1038,35 @@ function updateSummary() {
     } else if (status === "push") {
       completed++;
     }
+
+    // 1X2 Maç Sonucu başarı istatistiği
+    const status1X2 = get1X2Status(p);
+    if (status1X2 === "success") {
+      completed1X2++;
+      successful1X2++;
+    } else if (status1X2 === "failed") {
+      completed1X2++;
+      failed1X2++;
+    }
   }
 
+  // Alt/Üst Oran
   const denominator = successful + failed;
-  const rate = denominator > 0 ? successful / denominator * 100 : 0;
+  const rate = denominator > 0 ? (successful / denominator) * 100 : 0;
 
   document.getElementById("successRate").textContent = "%" + rate.toFixed(1);
   document.getElementById("successful").textContent = successful;
   document.getElementById("failed").textContent = failed;
   document.getElementById("completed").textContent = completed;
+
+  // 1X2 Oran
+  const denominator1X2 = successful1X2 + failed1X2;
+  const rate1X2 = denominator1X2 > 0 ? (successful1X2 / denominator1X2) * 100 : 0;
+
+  document.getElementById("successRate1X2").textContent = "%" + rate1X2.toFixed(1);
+  document.getElementById("successful1X2").textContent = successful1X2;
+  document.getElementById("failed1X2").textContent = failed1X2;
+  document.getElementById("completed1X2").textContent = completed1X2;
 }
 
 function setDefaultDate() {
