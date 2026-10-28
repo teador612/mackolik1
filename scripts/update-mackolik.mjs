@@ -31,17 +31,12 @@ function parseScoreValue(value, status) {
 async function request(url, referer = PAGE) {
   let response;
 
-  // Cloudflare/GitHub IP engellerini aşmak için proxy katmanı kullanıyoruz
-  const proxiedUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
+  // Ücretsiz, API key istemeyen ve Cloudflare engelini aşan AllOrigins proxy servisi
+  const proxiedUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(url);
 
   try {
     response = await fetch(proxiedUrl, {
       method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/javascript, */*; q=0.01',
-        'Referer': referer
-      },
       signal: AbortSignal.timeout(30000)
     });
   } catch (error) {
@@ -51,32 +46,17 @@ async function request(url, referer = PAGE) {
   }
 
   if (!response.ok) {
-    const status = response.status;
-    const contentType = response.headers.get('content-type') || 'bilinmiyor';
-    const finalUrl = response.url || url;
-
-    let body = '';
-    try {
-      body = (await response.text()).slice(0, 700);
-    } catch {
-      body = 'Yanıt gövdesi okunamadı.';
-    }
-
-    const error = new Error(
-      `Mackolik isteği başarısız.\n` +
-      `HTTP: ${status}\n` +
-      `İstenen URL: ${url}\n` +
-      `Son URL: ${finalUrl}\n` +
-      `Content-Type: ${contentType}\n` +
-      `Yanıt özeti: ${body.replace(/\s+/g, ' ')}`
-    );
-
-    error.status = status;
-    error.url = url;
-    throw error;
+    throw new Error(`Proxy isteği başarısız. HTTP Status: ${response.status}`);
   }
 
-  return response.text();
+  const json = await response.json();
+  
+  if (!json || typeof json.contents !== 'string') {
+    throw new Error('Proxy servisinden geçerli içerik alınamadı.');
+  }
+
+  // AllOrigins içeriği .contents içinde string olarak döner
+  return json.contents;
 }
 
 async function getCurrentWeek(fallbackWeek = null) {
@@ -85,8 +65,8 @@ async function getCurrentWeek(fallbackWeek = null) {
   try {
     html = await request(PAGE);
   } catch (error) {
-    if (error.status === 403 && Number.isInteger(fallbackWeek)) {
-      console.warn(`⚠️ Güncel hafta sayfası HTTP 403 döndürdü. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
+    if (Number.isInteger(fallbackWeek)) {
+      console.warn(`⚠️ Güncel hafta sayfası alınamadı. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
       return fallbackWeek;
     }
     throw error;
