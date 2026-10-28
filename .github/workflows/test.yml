@@ -1,28 +1,17 @@
 
-      - name: Mackolik erişim testi
-        shell: bash
+name: Mackolik erişim testi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Mackolik sayfasına erişimi kontrol et
         run: |
-          node --input-type=module -e '
-            const url = "https://arsiv.mackolik.com/Genis-Iddaa-Programi";
-
-            try {
-              const response = await fetch(url, {
-                headers: {
-                  "User-Agent": "Mozilla/5.0",
-                  "Accept": "text/html,application/xhtml+xml",
-                  "Referer": url
-                },
-                signal: AbortSignal.timeout(20000)
-              });
-
-              console.log("HTTP:", response.status);
-              console.log("URL:", response.url);
-              console.log(
-                "Content-Type:",
-                response.headers.get("content-type")
-              );
-            } catch (error) {
-              console.error("Erişim hatası:", error.message);
-              process.exitCode = 1;
-            }
-          '
+          curl -sS -L -o /dev/null \
+            -w "HTTP: %{http_code}\n" \
+            --max-time 20 \
+            "https://arsiv.mackolik.com/Genis-Iddaa-Programi"
