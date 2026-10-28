@@ -6,25 +6,6 @@ const SITE = 'https://arsiv.mackolik.com';
 const PAGE = `${SITE}/Genis-Iddaa-Programi`;
 const DATA_PATH = path.resolve('data/matches.json');
 
-const REQUEST_HEADERS = {
-  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-  'Accept-Language': 'tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7',
-  'Cache-Control': 'no-cache',
-  'Pragma': 'no-cache',
-  'X-Requested-With': 'XMLHttpRequest',
-  'Sec-Ch-Ua': '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
-  'Sec-Ch-Ua-Mobile': '?0',
-  'Sec-Ch-Ua-Platform': '"Windows"',
-  'Sec-Fetch-Dest': 'empty',
-  'Sec-Fetch-Mode': 'cors',
-  'Sec-Fetch-Site': 'same-origin',
-  'Upgrade-Insecure-Requests': '1'
-};
-
-// Oturum çerezlerini (cookies) saklamak için basit bir havuz
-let cookieJar = '';
-
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
   return vm.runInNewContext(`(${cleanText})`, Object.create(null));
@@ -50,47 +31,23 @@ function parseScoreValue(value, status) {
 async function request(url, referer = PAGE) {
   let response;
 
-  const headers = {
-    ...REQUEST_HEADERS,
-    Referer: referer
-  };
-
-  if (cookieJar) {
-    headers['Cookie'] = cookieJar;
-  }
+  // Cloudflare/GitHub IP engellerini aşmak için proxy katmanı kullanıyoruz
+  const proxiedUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
 
   try {
-    response = await fetch(url, {
+    response = await fetch(proxiedUrl, {
       method: 'GET',
-      headers,
-      redirect: 'follow',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/javascript, */*; q=0.01',
+        'Referer': referer
+      },
       signal: AbortSignal.timeout(30000)
     });
   } catch (error) {
     throw new Error(
-      `Mackolik ağına bağlanılamadı (Zaman aşımı veya ağ hatası): ${url}\nAyrıntı: ${error.message}`
+      `Proxy üzerinden bağlantı kurulamadı: ${url}\nAyrıntı: ${error.message}`
     );
-  }
-
-  // Sunucudan gelen Set-Cookie başlıklarını yakalayıp cookieJar içine kaydedelim
-  const setCookie = response.headers.get('set-cookie');
-  if (setCookie) {
-    const cookies = setCookie.split(',').map(c => c.split(';')[0].trim());
-    const cookieMap = new Map();
-    
-    if (cookieJar) {
-      cookieJar.split(';').forEach(c => {
-        const [k, ...v] = c.trim().split('=');
-        if (k) cookieMap.set(k, v.join('='));
-      });
-    }
-    
-    cookies.forEach(c => {
-      const [k, ...v] = c.split('=');
-      if (k) cookieMap.set(k.trim(), v.join('=').trim());
-    });
-    
-    cookieJar = Array.from(cookieMap.entries()).map(([k, v]) => `${k}=${v}`).join('; ');
   }
 
   if (!response.ok) {
