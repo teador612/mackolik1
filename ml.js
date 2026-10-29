@@ -153,7 +153,7 @@
       String(a.match.time || "").localeCompare(String(b.match.time || ""))
     );
 
-    return picks.slice(0, MAX_DAILY_PICKS);
+    return picks;
   }
 
   function renderSummary() {
