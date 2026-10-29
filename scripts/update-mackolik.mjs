@@ -6,11 +6,17 @@ const SITE = 'https://arsiv.mackolik.com';
 const PAGE = `${SITE}/Genis-Iddaa-Programi`;
 const DATA_PATH = path.resolve('data/matches.json');
 
+/**
+ * Metin tabanlı JavaScript literal verisini güvenli bir şekilde objeye çevirir.
+ */
 function parseJsLiteral(text) {
   const cleanText = text.replace(/^\uFEFF/, '');
   return vm.runInNewContext(`(${cleanText})`, Object.create(null));
 }
 
+/**
+ * Değeri sayıya çevirir, geçersizse null döner.
+ */
 function numberOrNull(value) {
   if (value === '' || value === null || value === undefined || typeof value === 'object') {
     return null;
@@ -19,54 +25,54 @@ function numberOrNull(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+/**
+ * Maç skorunu durumuna göre ayrıştırır.
+ */
 function parseScoreValue(value, status) {
-  if (Number(status) === 0) return null;
-  if (value === '' || value === null || value === undefined) {
+  if (Number(status) === 0 || value === '' || value === null || value === undefined) {
     return null;
   }
   const result = String(value).trim();
   return result === '' ? null : result;
 }
 
+/**
+ * Belirtilen URL'ye corsproxy üzerinden güvenli HTTP isteği yapar.
+ */
 async function request(url, referer = PAGE) {
+  const proxiedUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
+
   let response;
-
-  // Ücretsiz, API key istemeyen ve Cloudflare engelini aşan AllOrigins proxy servisi
-  const proxiedUrl = `https://api.allorigins.win/get?url=` + encodeURIComponent(url);
-
   try {
     response = await fetch(proxiedUrl, {
       method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': referer
+      },
       signal: AbortSignal.timeout(30000)
     });
   } catch (error) {
-    throw new Error(
-      `Proxy üzerinden bağlantı kurulamadı: ${url}\nAyrıntı: ${error.message}`
-    );
+    throw new Error(`Bağlantı kurulamadı: ${url}\nAyrıntı: ${error.message}`);
   }
 
   if (!response.ok) {
-    throw new Error(`Proxy isteği başarısız. HTTP Status: ${response.status}`);
+    throw new Error(`İstek başarısız. HTTP Status: ${response.status}`);
   }
 
-  const json = await response.json();
-  
-  if (!json || typeof json.contents !== 'string') {
-    throw new Error('Proxy servisinden geçerli içerik alınamadı.');
-  }
-
-  // AllOrigins içeriği .contents içinde string olarak döner
-  return json.contents;
+  return await response.text();
 }
 
+/**
+  * Güncel bülten haftasını sayfadan çeker.
+  */
 async function getCurrentWeek(fallbackWeek = null) {
   let html;
-
   try {
     html = await request(PAGE);
   } catch (error) {
     if (Number.isInteger(fallbackWeek)) {
-      console.warn(`⚠️ Güncel hafta sayfası alınamadı. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
+      console.warn(`⚠️ Güncel hafta alınamadı. Kayıtlı hafta (${fallbackWeek}) kullanılıyor.`);
       return fallbackWeek;
     }
     throw error;
@@ -83,36 +89,29 @@ async function getCurrentWeek(fallbackWeek = null) {
   }
 
   if (Number.isInteger(fallbackWeek)) {
-    console.warn(`⚠️ Sayfada hafta numarası bulunamadı. Kayıtlı hafta (${fallbackWeek}) kullanılacak.`);
+    console.warn(`⚠️ Sayfada hafta bulunamadı. Kayıtlı hafta (${fallbackWeek}) kullanılıyor.`);
     return fallbackWeek;
   }
 
-  throw new Error('Güncel bülten haftası bulunamadı ve kullanılabilecek kayıtlı hafta yok.');
+  throw new Error('Güncel bülten haftası bulunamadı.');
 }
 
+/**
+ * Mackolik üzerinden maç listesini çeker ve yapılandırır.
+ */
 async function fetchMatches(week) {
-  const url =
-    `${SITE}/AjaxHandlers/ProgramDataHandler.ashx` +
-    '?type=6' +
-    '&sortValue=DATE' +
-    '&day=-1' +
-    '&sort=-1' +
-    '&sortDir=-1' +
-    '&groupId=-1' +
-    '&np=0' +
-    '&sport=1';
-
+  const url = `${SITE}/AjaxHandlers/ProgramDataHandler.ashx?type=6&sortValue=DATE&day=-1&sort=-1&sortDir=-1&groupId=-1&np=0&sport=1`;
   const text = await request(url, PAGE);
+  
   let payload;
-
   try {
     payload = parseJsLiteral(text);
   } catch (error) {
-    throw new Error(`Mackolik yanıtı beklenen veri formatında değil. Ayrıntı: ${error.message}`);
+    throw new Error(`Veri formatı geçersiz. Ayrıntı: ${error.message}`);
   }
 
   if (!payload || !Array.isArray(payload.m)) {
-    throw new Error('Mackolik yanıtında beklenen maç listesi bulunamadı.');
+    throw new Error('Maç listesi bulunamadı.');
   }
 
   const matches = [];
@@ -131,52 +130,39 @@ async function fetchMatches(week) {
         away: row[3] || '',
         mbs: numberOrNull(row[13]),
         status: matchStatus,
-
         score: {
           home: parseScoreValue(row[8], matchStatus),
           away: parseScoreValue(row[9], matchStatus)
         },
-
         halfTimeScore: {
           home: parseScoreValue(row[11], matchStatus),
           away: parseScoreValue(row[12], matchStatus)
         },
-
         openingOdds: {
           ms1: numberOrNull(row[16]),
           msX: numberOrNull(row[17]),
           ms2: numberOrNull(row[18]),
-
           cs1X: numberOrNull(row[19]),
           cs12: numberOrNull(row[20]),
           csX2: numberOrNull(row[21]),
-
           au25Alt: numberOrNull(row[22]),
           au25Ust: numberOrNull(row[23]),
-
           handicap: row[14] || null,
-
           handicap1: numberOrNull(row[36]),
           handicapX: numberOrNull(row[37]),
           handicap2: numberOrNull(row[38]),
-
           kgVar: numberOrNull(row[39]),
           kgYok: numberOrNull(row[40]),
-
           iy15Alt: numberOrNull(row[42]),
           iy15Ust: numberOrNull(row[43]),
-
           au15Alt: numberOrNull(row[44]),
           au15Ust: numberOrNull(row[45]),
-
           au35Alt: numberOrNull(row[46]),
           au35Ust: numberOrNull(row[47]),
-
           gol01: numberOrNull(row[29]),
           gol23: numberOrNull(row[30]),
           gol46: numberOrNull(row[31]),
           gol7: numberOrNull(row[32]),
-
           iy1: numberOrNull(row[33]),
           iyX: numberOrNull(row[34]),
           iy2: numberOrNull(row[35])
@@ -186,7 +172,7 @@ async function fetchMatches(week) {
   }
 
   if (matches.length === 0) {
-    throw new Error('Mackolik yanıtı boş maç listesi içeriyor. Mevcut veri dosyası korunacak.');
+    throw new Error('Boş maç listesi alındı.');
   }
 
   return matches;
@@ -200,28 +186,15 @@ async function loadPrevious() {
   try {
     const text = await fs.readFile(DATA_PATH, 'utf8');
     const data = JSON.parse(text);
-
-    if (!Array.isArray(data.matches)) {
-      throw new Error('Mevcut matches.json içinde matches listesi bulunamadı.');
-    }
-
+    if (!Array.isArray(data.matches)) throw new Error();
     return data;
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      return {
-        source: PAGE,
-        week: null,
-        updatedAt: null,
-        matches: []
-      };
-    }
-    throw error;
+  } catch {
+    return { source: PAGE, week: null, updatedAt: null, matches: [] };
   }
 }
 
 async function saveAtomically(data) {
   await fs.mkdir(path.dirname(DATA_PATH), { recursive: true });
-
   const tempPath = `${DATA_PATH}.tmp`;
   const output = JSON.stringify(data, null, 2) + '\n';
 
@@ -239,11 +212,7 @@ async function main() {
   const week = await getCurrentWeek(Number.isInteger(previous.week) ? previous.week : null);
   const fetched = await fetchMatches(week);
 
-  const previousByCode = new Map();
-  for (const match of previous.matches) {
-    previousByCode.set(String(match.code), match);
-  }
-
+  const previousByCode = new Map(previous.matches.map(m => [String(m.code), m]));
   let changed = false;
 
   for (const current of fetched) {
@@ -251,10 +220,7 @@ async function main() {
     const old = previousByCode.get(code);
 
     if (!old) {
-      previousByCode.set(code, {
-        ...current,
-        openingRecordedAt: new Date().toISOString()
-      });
+      previousByCode.set(code, { ...current, openingRecordedAt: new Date().toISOString() });
       changed = true;
       continue;
     }
@@ -290,10 +256,7 @@ async function main() {
   }
 
   const matches = Array.from(previousByCode.values());
-
-  if (matches.length !== previous.matches.length) {
-    changed = true;
-  }
+  if (matches.length !== previous.matches.length) changed = true;
 
   const next = {
     source: PAGE,
@@ -316,7 +279,6 @@ async function main() {
 }
 
 main().catch(error => {
-  console.error('Mackolik güncelleme hatası:');
-  console.error(error.stack || error.message);
+  console.error('Mackolik güncelleme hatası:\n', error.stack || error.message);
   process.exitCode = 1;
 });
