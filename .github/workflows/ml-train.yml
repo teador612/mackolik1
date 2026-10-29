@@ -1,3 +1,4 @@
+
 name: ML Model Training
 
 on:
@@ -69,6 +70,12 @@ jobs:
       - name: Modelleri yükle veya eğit ve tahminleri üret
         run: python scripts/train_ml.py
 
+      - name: Tahmin geçmişini güncelle
+        run: |
+          node --version
+          test -s scripts/update-ml-history.mjs
+          node scripts/update-ml-history.mjs
+
       - name: Çıktıları kontrol et
         run: |
           python - <<'PY'
@@ -77,6 +84,7 @@ jobs:
 
           required = [
               Path("outputs/ml-predictions.json"),
+              Path("outputs/ml-prediction-history.json"),
               Path("models/ml-models.joblib"),
               Path("models/ml-models-meta.json"),
           ]
@@ -105,10 +113,11 @@ jobs:
           git add models/ml-models.joblib
           git add models/ml-models-meta.json
           git add outputs/ml-predictions.json
+          git add outputs/ml-prediction-history.json
 
           if git diff --cached --quiet; then
             echo "Kaydedilecek değişiklik yok."
           else
-            git commit -m "ML modellerini ve tahminleri güncelle"
+            git commit -m "ML modellerini, tahminleri ve geçmişi güncelle"
             git push
           fi
