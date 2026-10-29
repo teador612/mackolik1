@@ -3,12 +3,12 @@
   "use strict";
 
   const DATA_URL = "./outputs/ml-predictions.json";
+  const RESULTS_URL = "./data/matches.json";
+  const HISTORY_KEY = "ml-main-prediction-history-v1";
 
-  // Tahmin filtreleri
   const MIN_PROBABILITY = 65;
   const MIN_VALIDATION_SAMPLES = 200;
 
-  // Market bazında asgari zaman sıralı test doğruluğu
   const MIN_VALIDATION_ACCURACY = {
     MS: 0.45,
     KG: 0.55,
@@ -29,8 +29,8 @@
 
   let payload = null;
   let selectedPicks = [];
-
-  // Açık maç detaylarını yenileme sırasında koru
+  let history = [];
+  let results = [];
   const openDetails = new Set();
 
   const esc = value =>
@@ -42,42 +42,27 @@
       "'": "&#39;"
     })[ch]);
 
-  const fmt = value =>
-    Number.isFinite(Number(value))
-      ? Number(value).toLocaleString("tr-TR")
-      : "—";
-
   const pct = value =>
     Number.isFinite(Number(value))
       ? `${Number(value).toFixed(1)}%`
       : "—";
 
-  // Olasılık 0–1 veya 0–100 biçiminde gelebilir.
   function probabilityPct(value) {
     if (value == null || value === "") return null;
 
-    const number = Number(value);
-    if (!Number.isFinite(number)) return null;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
 
-    return number >= 0 && number <= 1
-      ? number * 100
-      : number;
-  }
-
-  function validationPct(value) {
-    const number = validationFraction(value);
-    return number == null
-      ? "Hesaplanamadı"
-      : pct(number * 100);
+    return n >= 0 && n <= 1 ? n * 100 : n;
   }
 
   function validationFraction(value) {
     if (value == null || value === "") return null;
 
-    const number = Number(value);
-    if (!Number.isFinite(number)) return null;
+    const n = Number(value);
+    if (!Number.isFinite(n)) return null;
 
-    return number > 1 ? number / 100 : number;
+    return n > 1 ? n / 100 : n;
   }
 
   function localDateKey(date = new Date()) {
@@ -89,28 +74,27 @@
   }
 
   function parseDate(value) {
-    const string = String(value ?? "").trim();
-    if (!string) return "";
+    const s = String(value ?? "").trim();
+    if (!s) return "";
 
-    let match = string.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
 
-    if (match) {
-      return `${match[1]}-${match[2]}-${match[3]}`;
-    }
-
-    match = string.match(
-      /^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/
-    );
-
-    if (match) {
-      return [
-        match[3],
-        match[2].padStart(2, "0"),
-        match[1].padStart(2, "0")
-      ].join("-");
+    m = s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
+    if (m) {
+      return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
     }
 
     return "";
+  }
+
+  function normalizeText(value) {
+    return String(value ?? "")
+      .toLocaleLowerCase("tr-TR")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/ı/g, "i")
+      .replace(/[^a-z0-9]/g, "");
   }
 
   function getValidation(key) {
@@ -120,21 +104,17 @@
   function marketPassesValidation(key) {
     const metrics = getValidation(key);
     const samples = Number(metrics.validationSamples || 0);
-    const accuracy = validationFraction(
-      metrics.validationAccuracy
-    );
+    const accuracy = validationFraction(metrics.validationAccuracy);
     const required = MIN_VALIDATION_ACCURACY[key];
 
-    if (accuracy == null || required == null) return false;
-    if (samples < MIN_VALIDATION_SAMPLES) return false;
-
-    return accuracy >= required;
+    return accuracy != null &&
+      required != null &&
+      samples >= MIN_VALIDATION_SAMPLES &&
+      accuracy >= required;
   }
 
   function getMarketOptions(market) {
-    if (!market || !Array.isArray(market.options)) {
-      return [];
-    }
+    if (!Array.isArray(market?.options)) return [];
 
     return market.options
       .map(option => ({
@@ -152,55 +132,21 @@
     const options = getMarketOptions(market);
     if (!options.length) return null;
 
-    // Önce modelin seçtiği seçeneği kullan.
-    const picked = options.find(option =>
-      String(option.title ?? "") ===
-      String(market.pick ?? "")
+    const selected = options.find(option =>
+      String(option.title ?? "") === String(market.pick ?? "")
     );
 
-    // Model seçimi yoksa en yüksek olasılığı kullan.
-    return picked || options.reduce((best, option) =>
-      option.probability > best.probability
-        ? option
-        : best
+    return selected || options.reduce((best, option) =>
+      option.probability > best.probability ? option : best
     );
   }
 
   function getMatchKey(match) {
-    return JSON.stringify([
+    return [
       parseDate(match.date),
-      String(match.time || ""),
-      String(match.league || ""),
-      String(match.home || ""),
-      String(match.away || "")
-    ]);
-  }
-
-  function getEligibleMarketPicks(match) {
-    const picks = [];
-
-    for (const [key, market] of Object.entries(
-      match.markets || {}
-    )) {
-      if (!MARKET_NAMES[key]) continue;
-      if (!marketPassesValidation(key)) continue;
-
-      const option = getBestOption(market);
-      if (!option) continue;
-
-      if (option.probability < MIN_PROBABILITY) continue;
-
-      picks.push({
-        key,
-        market,
-        option,
-        probability: option.probability
-      });
-    }
-
-    return picks.sort((a, b) =>
-      b.probability - a.probability
-    );
+      normalizeText(match.home),
+      normalizeText(match.away)
+    ].join("|");
   }
 
   function collectPicks() {
@@ -210,112 +156,288 @@
     for (const match of payload?.predictions || []) {
       if (parseDate(match.date) !== today) continue;
 
-      const matchKey = getMatchKey(match);
-      const eligiblePicks = getEligibleMarketPicks(match);
+      const key = getMatchKey(match);
+      const picks = [];
 
-      if (!eligiblePicks.length) continue;
+      for (const [marketKey, market] of Object.entries(match.markets || {})) {
+        if (!MARKET_NAMES[marketKey]) continue;
+        if (!marketPassesValidation(marketKey)) continue;
 
-      if (!grouped.has(matchKey)) {
-        grouped.set(matchKey, {
-          key: matchKey,
-          match,
-          picks: eligiblePicks
+        const option = getBestOption(market);
+        if (!option || option.probability < MIN_PROBABILITY) continue;
+
+        picks.push({
+          key: marketKey,
+          market,
+          option,
+          probability: option.probability
         });
-      } else {
-        // Aynı maç birden fazla kayıtta bulunursa
-        // mevcut marketleri birleştir.
-        const existing = grouped.get(matchKey);
-        const existingKeys = new Set(
-          existing.picks.map(pick => pick.key)
-        );
+      }
 
-        for (const pick of eligiblePicks) {
-          if (!existingKeys.has(pick.key)) {
-            existing.picks.push(pick);
-          }
+      if (!picks.length) continue;
+
+      picks.sort((a, b) => b.probability - a.probability);
+
+      if (!grouped.has(key)) {
+        grouped.set(key, { key, match, picks });
+      } else {
+        const group = grouped.get(key);
+        const existing = new Set(group.picks.map(p => p.key));
+
+        for (const pick of picks) {
+          if (!existing.has(pick.key)) group.picks.push(pick);
         }
 
-        existing.picks.sort((a, b) =>
-          b.probability - a.probability
-        );
+        group.picks.sort((a, b) => b.probability - a.probability);
       }
     }
 
-    const matches = Array.from(grouped.values());
-
-    // Her maçın ana tahmini, uygun marketler arasındaki
-    // en yüksek olasılıklı tahmindir.
-    matches.sort((a, b) =>
+    return Array.from(grouped.values()).sort((a, b) =>
       b.picks[0].probability - a.picks[0].probability ||
-      String(a.match.time || "").localeCompare(
-        String(b.match.time || "")
-      )
+      String(a.match.time || "").localeCompare(String(b.match.time || ""))
+    );
+  }
+
+  // Tahmin ilk kaydedildiğinde ana tahmin sabitlenir.
+  // Sayfa sonraki günlerde açıldığında eski tahmin değiştirilmez.
+  function readHistory() {
+    try {
+      const value = JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]");
+      return Array.isArray(value) ? value : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistory() {
+    try {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+      return true;
+    } catch (error) {
+      console.error("Tahmin geçmişi kaydedilemedi:", error);
+      return false;
+    }
+  }
+
+  function snapshotTodayPicks() {
+    const known = new Set(history.map(item => item.id));
+    const now = new Date().toISOString();
+
+    for (const group of selectedPicks) {
+      const main = group.picks[0];
+      const id = `${group.key}|${main.key}`;
+
+      if (known.has(id)) continue;
+
+      history.push({
+        id,
+        date: parseDate(group.match.date),
+        time: String(group.match.time || ""),
+        league: String(group.match.league || ""),
+        home: String(group.match.home || ""),
+        away: String(group.match.away || ""),
+        market: main.key,
+        marketName: MARKET_NAMES[main.key],
+        pick: String(main.option.title || ""),
+        probability: main.probability,
+        savedAt: now,
+        outcome: null,
+        actualScore: null,
+        resultChecked: false
+      });
+
+      known.add(id);
+    }
+
+    saveHistory();
+  }
+
+  function scorePair(value) {
+    if (value == null) return null;
+
+    if (typeof value === "object") {
+      const home = Number(value.home ?? value.homeScore);
+      const away = Number(value.away ?? value.awayScore);
+
+      if (Number.isFinite(home) && Number.isFinite(away)) {
+        return [home, away];
+      }
+
+      return null;
+    }
+
+    const match = String(value).match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
+    if (!match) return null;
+
+    return [Number(match[1]), Number(match[2])];
+  }
+
+  function isFinished(match) {
+    const status = match.status;
+
+    if (typeof status === "number" || /^\d+$/.test(String(status ?? ""))) {
+      return Number(status) === 4;
+    }
+
+    const text = normalizeText(status);
+    return [
+      "ft", "finished", "ended", "fulltime",
+      "macbitti", "tamamlandi", "sonaerdi"
+    ].includes(text);
+  }
+
+  function findResult(historyItem) {
+    const targetDate = parseDate(historyItem.date);
+    const targetHome = normalizeText(historyItem.home);
+    const targetAway = normalizeText(historyItem.away);
+
+    return results.find(match =>
+      parseDate(match.date) === targetDate &&
+      normalizeText(match.home) === targetHome &&
+      normalizeText(match.away) === targetAway &&
+      isFinished(match)
+    ) || null;
+  }
+
+  function normalizeOutcome(key, title) {
+    const text = normalizeText(title);
+
+    if (key === "KG") {
+      if (["var", "kgvar", "yes", "bothteamscore"].includes(text)) return "yes";
+      if (["yok", "kgyok", "no", "bothteamsdontscore"].includes(text)) return "no";
+      return null;
+    }
+
+    if (key === "U25" || key === "IY15U") {
+      if (text.includes("ust") || text.includes("over")) return "over";
+      if (text.includes("alt") || text.includes("under")) return "under";
+      return null;
+    }
+
+    // Maç sonucu ve ilk yarı sonucu: 1 / X / 2
+    if (["1", "ms1", "iy1", "evsahibi", "home"].includes(text)) return "1";
+    if (["x", "0", "msx", "ms0", "iyx", "iy0", "beraberlik", "draw"].includes(text)) return "X";
+    if (["2", "ms2", "iy2", "deplasman", "away"].includes(text)) return "2";
+
+    return null;
+  }
+
+  function evaluatePrediction(item, match) {
+    const fullScore = scorePair(match.score);
+    if (!fullScore) return null;
+
+    const [home, away] = fullScore;
+    let actual;
+
+    if (item.market === "MS") {
+      actual = home > away ? "1" : home < away ? "2" : "X";
+    } else if (item.market === "KG") {
+      actual = home > 0 && away > 0 ? "yes" : "no";
+    } else if (item.market === "U25") {
+      actual = home + away > 2.5 ? "over" : "under";
+    } else if (item.market === "IY15U") {
+      const half = scorePair(match.halfTimeScore);
+      if (!half) return null;
+      actual = half[0] + half[1] > 1.5 ? "over" : "under";
+    } else if (item.market === "IY") {
+      const half = scorePair(match.halfTimeScore);
+      if (!half) return null;
+      actual = half[0] > half[1] ? "1" : half[0] < half[1] ? "2" : "X";
+    } else {
+      return null;
+    }
+
+    const predicted = normalizeOutcome(item.market, item.pick);
+    if (predicted == null) return null;
+
+    return {
+      outcome: predicted === actual,
+      actualScore: String(match.score),
+      actualHalfTimeScore: match.halfTimeScore == null
+        ? null
+        : String(match.halfTimeScore)
+    };
+  }
+
+  function updateHistoryResults() {
+    let changed = false;
+
+    for (const item of history) {
+      if (item.outcome !== null) continue;
+
+      const result = findResult(item);
+      if (!result) continue;
+
+      const evaluation = evaluatePrediction(item, result);
+      if (!evaluation) continue;
+
+      item.outcome = evaluation.outcome;
+      item.actualScore = evaluation.actualScore;
+      item.actualHalfTimeScore = evaluation.actualHalfTimeScore;
+      item.resultChecked = true;
+      changed = true;
+    }
+
+    if (changed) saveHistory();
+  }
+
+  function last30DayStart() {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    date.setDate(date.getDate() - 29);
+    return localDateKey(date);
+  }
+
+  function getStats(items) {
+    const finished = items.filter(item =>
+      item.outcome === true || item.outcome === false
     );
 
-    return matches;
+    const correct = finished.filter(item => item.outcome === true).length;
+    const wrong = finished.length - correct;
+
+    return {
+      correct,
+      wrong,
+      total: finished.length,
+      percentage: finished.length
+        ? correct / finished.length * 100
+        : null
+    };
+  }
+
+  function statsCard(title, stats) {
+    return `<div class="card ml-success-card">
+      <div class="label">${esc(title)}</div>
+      <div class="value">${stats.percentage == null ? "—" : pct(stats.percentage)}</div>
+      <div class="ml-success-sub">
+        <span class="ml-green-text">${stats.correct} başarılı</span>
+        <span class="ml-red-text">${stats.wrong} başarısız</span>
+      </div>
+      <div class="ml-success-foot">
+        Sonucu belli ${stats.total} ana tahmin
+      </div>
+    </div>`;
   }
 
   function renderSummary() {
-    const cards = [
-      ["Eğitim maçı", fmt(payload?.trainingMatches)],
-      ["Bugünkü maç", fmt(selectedPicks.length)],
-      ["Asgari tahmin olasılığı", `${MIN_PROBABILITY}%`],
-      [
-        "Son üretim",
-        payload?.generatedAt
-          ? new Date(payload.generatedAt).toLocaleString("tr-TR")
-          : "—"
-      ]
-    ];
+    const today = localDateKey();
+    const start = last30DayStart();
 
-    $("summary").innerHTML = cards.map(([label, value]) =>
-      `<div class="card">
-        <div class="label">${esc(label)}</div>
-        <div class="value">${esc(value)}</div>
-      </div>`
-    ).join("");
-  }
+    const daily = getStats(history.filter(item =>
+      item.date === today
+    ));
 
-  function renderMetrics() {
-    const validation = payload?.validation || {};
+    const monthly = getStats(history.filter(item =>
+      item.date >= start && item.date <= today
+    ));
 
-    $("metrics").innerHTML = Object.keys(MARKET_NAMES)
-      .map(key => {
-        const metrics = validation[key] || {};
-        const accuracy = validationFraction(
-          metrics.validationAccuracy
-        );
-        const threshold = MIN_VALIDATION_ACCURACY[key];
+    $("summary").innerHTML =
+      statsCard("Günlük tahmin başarı oranı", daily) +
+      statsCard("Son 30 gün başarı oranı", monthly);
 
-        const enoughSamples =
-          Number(metrics.validationSamples || 0) >=
-          MIN_VALIDATION_SAMPLES;
-
-        const passes =
-          accuracy != null &&
-          threshold != null &&
-          accuracy >= threshold &&
-          enoughSamples;
-
-        return `<div class="metric">
-          <h3>${esc(MARKET_NAMES[key])}</h3>
-          <p>Eğitim örneği: <b>${fmt(metrics.samples)}</b></p>
-          <p>Zaman sıralı test doğruluğu:
-            <b>${validationPct(metrics.validationAccuracy)}</b>
-          </p>
-          <p>Test maçı:
-            <b>${fmt(metrics.validationSamples)}</b>
-          </p>
-          <p>Filtre durumu:
-            <b>${passes ? "Filtreyi geçiyor" : "Yeterli destek yok"}</b>
-          </p>
-          <p>Geçmiş test başarısı gelecekteki sonucu garanti etmez.</p>
-          ${metrics.message
-            ? `<p>${esc(metrics.message)}</p>`
-            : ""}
-        </div>`;
-      })
-      .join("");
+    // Eski model doğrulama kartlarını kaldır.
+    if ($("metrics")) $("metrics").innerHTML = "";
   }
 
   function ensureMarketOptions() {
@@ -340,24 +462,22 @@
     return group.picks.map(pick => {
       const options = getMarketOptions(pick.market);
 
-      const optionRows = options.map(option => {
-        const isBest =
-          String(option.title ?? "") ===
-          String(pick.option.title ?? "");
-
-        return `<div class="ml-detail-option${isBest ? " ml-detail-best" : ""}">
-          <span>${esc(option.title || "Seçenek")}</span>
-          <strong>${pct(option.probability)}</strong>
-        </div>`;
-      }).join("");
-
       return `<section class="ml-detail-market">
         <div class="ml-detail-heading">
           <strong>${esc(MARKET_NAMES[pick.key])}</strong>
           <span>${pct(pick.probability)}</span>
         </div>
         <div class="ml-detail-options">
-          ${optionRows}
+          ${options.map(option => {
+            const isBest =
+              String(option.title ?? "") ===
+              String(pick.option.title ?? "");
+
+            return `<div class="ml-detail-option${isBest ? " ml-detail-best" : ""}">
+              <span>${esc(option.title || "Seçenek")}</span>
+              <strong>${pct(option.probability)}</strong>
+            </div>`;
+          }).join("")}
         </div>
       </section>`;
     }).join("");
@@ -375,41 +495,26 @@
 
     const rows = selectedPicks.filter(group => {
       const match = group.match;
+      const text = `${match.home || ""} ${match.away || ""} ${match.league || ""}`
+        .toLocaleLowerCase("tr-TR");
 
-      const searchText = [
-        match.home || "",
-        match.away || "",
-        match.league || ""
-      ].join(" ").toLocaleLowerCase("tr-TR");
-
-      const matchesSearch =
-        !query || searchText.includes(query);
-
-      const matchesMarket =
-        marketFilter === "all" ||
-        group.picks.some(pick => pick.key === marketFilter);
-
-      return matchesSearch && matchesMarket;
+      return (!query || text.includes(query)) &&
+        (marketFilter === "all" ||
+          group.picks.some(pick => pick.key === marketFilter));
     });
 
     if (!rows.length) {
       container.innerHTML =
-        '<div class="empty">Bugün belirlenen olasılık ve doğrulama filtrelerini geçen maç bulunamadı. Filtreler otomatik olarak düşürülmedi.</div>';
+        '<div class="empty">Bugün filtreleri geçen ana tahmin bulunamadı.</div>';
+      renderPastPredictions();
       return;
     }
 
     container.innerHTML = rows.map(group => {
       const match = group.match;
-      const mainPick = group.picks[0];
-      const isOpen = openDetails.has(group.key);
-      const dateTime = [
-        match.date,
-        match.time
-      ].filter(Boolean).join(" · ");
-
-      const detailButtonLabel = isOpen
-        ? "Maç Detaylarını Gizle"
-        : `Maç Detayları (${group.picks.length} market)`;
+      const main = group.picks[0];
+      const opened = openDetails.has(group.key);
+      const dateTime = [match.date, match.time].filter(Boolean).join(" · ");
 
       return `<article class="match">
         <div class="match-head">
@@ -425,97 +530,225 @@
 
         <div class="market">
           <div class="market-title">ANA TAHMİN</div>
-
           <div class="options">
             <div class="option best">
-              <div>${esc(MARKET_NAMES[mainPick.key])}</div>
-              <div class="pct">${esc(mainPick.option.title || "Seçim belirtilmemiş")}</div>
-              <div class="pick">${pct(mainPick.probability)} model olasılığı</div>
+              <div>${esc(MARKET_NAMES[main.key])}</div>
+              <div class="pct">${esc(main.option.title || "Seçim belirtilmemiş")}</div>
+              <div class="pick">${pct(main.probability)} model olasılığı</div>
             </div>
           </div>
         </div>
 
-        <button
-          type="button"
+        <button type="button"
           class="ml-details-button"
           data-match-key="${esc(group.key)}"
-          aria-expanded="${isOpen ? "true" : "false"}"
-        >${esc(detailButtonLabel)}</button>
+          aria-expanded="${opened ? "true" : "false"}">
+          ${opened ? "Maç Detaylarını Gizle" : `Maç Detayları (${group.picks.length} market)`}
+        </button>
 
-        <div
-          class="ml-details-panel"
-          ${isOpen ? "" : "hidden"}
-        >
-          <div class="ml-details-title">
-            Diğer marketlerin tahmin yüzdeleri
-          </div>
-
+        <div class="ml-details-panel" ${opened ? "" : "hidden"}>
+          <div class="ml-details-title">Market tahmin yüzdeleri</div>
           ${renderDetails(group)}
-
-          <p class="ml-disclaimer">
-            Yalnızca asgari olasılık ve geçmiş doğrulama filtrelerini
-            geçen marketler gösterilir. Yüzdeler kesin sonuç garantisi
-            değildir.
-          </p>
+          <p class="ml-disclaimer">Yüzdeler kesin sonuç garantisi değildir.</p>
         </div>
       </article>`;
     }).join("");
+
+    renderPastPredictions();
   }
 
-  function render() {
-    ensureMarketOptions();
-    selectedPicks = collectPicks();
+  function renderPastPredictions() {
+    let container = $("ml-history");
+    if (!container) {
+      container = document.createElement("section");
+      container.id = "ml-history";
+      container.className = "ml-history";
+      $("matches")?.insertAdjacentElement("afterend", container);
+    }
 
-    renderSummary();
-    renderMetrics();
-    renderMatches();
+    const start = last30DayStart();
+    const today = localDateKey();
 
-    $("status").textContent =
-      `Bugünün tarihi: ${new Date().toLocaleDateString("tr-TR")} · ` +
-      `Gösterilen maç: ${selectedPicks.length} · ` +
-      `Asgari olasılık: %${MIN_PROBABILITY} · ` +
-      `Günlük maç sınırı yok · ` +
-      `Kaynak: outputs/ml-predictions.json`;
-  }
-
-  async function load() {
-    $("status").textContent = "Tahmin dosyası yükleniyor...";
-
-    try {
-      const response = await fetch(
-        `${DATA_URL}?v=${Date.now()}`,
-        { cache: "no-store" }
+    const items = history
+      .filter(item => item.date >= start && item.date <= today)
+      .sort((a, b) =>
+        `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`)
       );
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+    container.innerHTML = `
+      <h2>Geçmiş Ana Tahminler</h2>
+      <p class="ml-history-note">
+        Yeşil: doğru tahmin · Kırmızı: yanlış tahmin · Gri: sonuç bekleniyor
+      </p>
+      ${items.length ? items.map(item => {
+        const state = item.outcome === true
+          ? "ml-history-correct"
+          : item.outcome === false
+            ? "ml-history-wrong"
+            : "ml-history-pending";
+
+        const stateText = item.outcome === true
+          ? "Başarılı"
+          : item.outcome === false
+            ? "Başarısız"
+            : "Sonuç bekleniyor";
+
+        return `<article class="ml-history-item ${state}">
+          <div class="ml-history-top">
+            <strong>${esc(item.home)} – ${esc(item.away)}</strong>
+            <span>${esc(item.date)} ${esc(item.time)}</span>
+          </div>
+          <div class="ml-history-pick">
+            ${esc(item.marketName)}: <strong>${esc(item.pick)}</strong>
+            <span>${pct(item.probability)}</span>
+          </div>
+          <div class="ml-history-bottom">
+            <span class="ml-history-state">${stateText}</span>
+            ${item.actualScore
+              ? `<span>Skor: ${esc(item.actualScore)}</span>`
+              : ""}
+          </div>
+        </article>`;
+      }).join("") : '<div class="empty">Henüz kayıtlı geçmiş tahmin yok.</div>'}
+    `;
+  }
+
+  function installStyles() {
+    if (document.getElementById("ml-history-styles")) return;
+
+    const style = document.createElement("style");
+    style.id = "ml-history-styles";
+    style.textContent = `
+      .ml-success-card { min-width: 0; }
+      .ml-success-sub {
+        display: flex; flex-wrap: wrap; gap: 12px;
+        margin-top: 8px; font-size: .9em;
       }
+      .ml-success-foot, .ml-history-note {
+        margin-top: 7px; font-size: .85em; opacity: .75;
+      }
+      .ml-green-text { color: #18864b; font-weight: 700; }
+      .ml-red-text { color: #d63b45; font-weight: 700; }
 
-      payload = await response.json();
-      render();
+      .ml-details-button {
+        display: block; width: 100%; margin-top: 14px;
+        padding: 11px 14px; border: 1px solid var(--border, #555);
+        border-radius: 10px; background: var(--card, transparent);
+        color: inherit; font: inherit; font-weight: 600; cursor: pointer;
+      }
+      .ml-details-panel {
+        margin-top: 12px; padding: 14px;
+        border: 1px solid var(--border, #555); border-radius: 10px;
+      }
+      .ml-details-panel[hidden] { display: none !important; }
+      .ml-details-title { margin-bottom: 12px; font-weight: 700; }
+      .ml-detail-market { padding: 12px 0; border-top: 1px solid var(--border, #555); }
+      .ml-detail-heading, .ml-detail-option {
+        display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      }
+      .ml-detail-heading { margin-bottom: 8px; }
+      .ml-detail-options { display: grid; gap: 7px; }
+      .ml-detail-option {
+        padding: 8px 10px; border-radius: 7px;
+        background: var(--surface, rgba(127,127,127,.08));
+      }
+      .ml-detail-best { outline: 1px solid var(--accent, #5b9b70); }
+      .ml-disclaimer { margin: 12px 0 0; font-size: .85em; opacity: .8; line-height: 1.5; }
+
+      .ml-history { margin-top: 28px; }
+      .ml-history h2 { margin-bottom: 6px; }
+      .ml-history-item {
+        margin: 10px 0; padding: 13px; border: 1px solid #888;
+        border-left: 5px solid #888; border-radius: 10px;
+      }
+      .ml-history-correct {
+        border-color: #249653; border-left-color: #249653;
+        background: rgba(36,150,83,.09);
+      }
+      .ml-history-wrong {
+        border-color: #d63b45; border-left-color: #d63b45;
+        background: rgba(214,59,69,.09);
+      }
+      .ml-history-pending { border-left-color: #888; }
+      .ml-history-top, .ml-history-pick, .ml-history-bottom {
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: 8px;
+      }
+      .ml-history-top { margin-bottom: 10px; }
+      .ml-history-top span, .ml-history-bottom { font-size: .88em; opacity: .85; }
+      .ml-history-pick { margin-bottom: 8px; }
+      .ml-history-correct .ml-history-state { color: #18864b; font-weight: 700; }
+      .ml-history-wrong .ml-history-state { color: #d63b45; font-weight: 700; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  async function loadResults() {
+    try {
+      const response = await fetch(`${RESULTS_URL}?v=${Date.now()}`, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      const data = await response.json();
+      results = Array.isArray(data)
+        ? data
+        : Array.isArray(data.matches)
+          ? data.matches
+          : [];
     } catch (error) {
-      $("status").textContent =
-        `Veri yüklenemedi: ${error.message}. ` +
-        "Önce ML eğitim iş akışını çalıştırın.";
-
-      $("summary").innerHTML = "";
-      $("metrics").innerHTML = "";
-      $("matches").innerHTML = "";
+      results = [];
+      console.warn("Maç sonuçları yüklenemedi:", error);
     }
   }
 
-  // Detay düğmeleri için tek olay dinleyicisi
+  async function load() {
+    $("status").textContent = "Tahminler yükleniyor...";
+
+    try {
+      const response = await fetch(`${DATA_URL}?v=${Date.now()}`, {
+        cache: "no-store"
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      payload = await response.json();
+      history = readHistory();
+
+      await loadResults();
+
+      selectedPicks = collectPicks();
+      snapshotTodayPicks();
+      updateHistoryResults();
+
+      installStyles();
+      ensureMarketOptions();
+      renderSummary();
+      renderMatches();
+
+      $("status").textContent =
+        `Bugünün tarihi: ${new Date().toLocaleDateString("tr-TR")} · ` +
+        `Bugünkü ana tahmin: ${selectedPicks.length} · ` +
+        `Başarı oranları yalnızca sonucu belli ana tahminlerden hesaplanır.`;
+    } catch (error) {
+      $("status").textContent =
+        `Veri yüklenemedi: ${error.message}. ML eğitim iş akışını ve JSON dosyasını kontrol edin.`;
+
+      if ($("summary")) $("summary").innerHTML = "";
+      if ($("metrics")) $("metrics").innerHTML = "";
+      if ($("matches")) $("matches").innerHTML = "";
+    }
+  }
+
   $("matches")?.addEventListener("click", event => {
     const button = event.target.closest("[data-match-key]");
     if (!button) return;
 
     const key = button.dataset.matchKey;
 
-    if (openDetails.has(key)) {
-      openDetails.delete(key);
-    } else {
-      openDetails.add(key);
-    }
+    if (openDetails.has(key)) openDetails.delete(key);
+    else openDetails.add(key);
 
     renderMatches();
   });
@@ -523,92 +756,6 @@
   $("search")?.addEventListener("input", renderMatches);
   $("market")?.addEventListener("change", renderMatches);
   $("refresh")?.addEventListener("click", load);
-
-  // Detay paneli için temel stiller
-  if (!document.getElementById("ml-details-styles")) {
-    const style = document.createElement("style");
-    style.id = "ml-details-styles";
-    style.textContent = `
-      .ml-details-button {
-        display: block;
-        width: 100%;
-        margin-top: 14px;
-        padding: 11px 14px;
-        border: 1px solid var(--border, #555);
-        border-radius: 10px;
-        background: var(--card, transparent);
-        color: inherit;
-        font: inherit;
-        font-weight: 600;
-        cursor: pointer;
-      }
-
-      .ml-details-button:hover {
-        opacity: .85;
-      }
-
-      .ml-details-panel {
-        margin-top: 12px;
-        padding: 14px;
-        border: 1px solid var(--border, #555);
-        border-radius: 10px;
-      }
-
-      .ml-details-panel[hidden] {
-        display: none !important;
-      }
-
-      .ml-details-title {
-        margin-bottom: 12px;
-        font-weight: 700;
-      }
-
-      .ml-detail-market {
-        padding: 12px 0;
-        border-top: 1px solid var(--border, #555);
-      }
-
-      .ml-detail-heading,
-      .ml-detail-option {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-      }
-
-      .ml-detail-heading {
-        margin-bottom: 8px;
-      }
-
-      .ml-detail-heading > span {
-        font-weight: 700;
-      }
-
-      .ml-detail-options {
-        display: grid;
-        gap: 7px;
-      }
-
-      .ml-detail-option {
-        padding: 8px 10px;
-        border-radius: 7px;
-        background: var(--surface, rgba(127,127,127,.08));
-      }
-
-      .ml-detail-best {
-        outline: 1px solid var(--accent, #5b9b70);
-      }
-
-      .ml-disclaimer {
-        margin: 12px 0 0;
-        font-size: .85em;
-        opacity: .8;
-        line-height: 1.5;
-      }
-    `;
-
-    document.head.appendChild(style);
-  }
 
   load();
 })();
