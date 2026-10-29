@@ -37,35 +37,56 @@ function parseScoreValue(value, status) {
 }
 
 /**
- * Belirtilen URL'ye corsproxy üzerinden güvenli HTTP isteği yapar.
+ * Çoklu proxy desteği ile güvenli HTTP isteği yapar.
+ * Biri başarısız olursa sıradakini dener (Fallback).
  */
 async function request(url, referer = PAGE) {
-  const proxiedUrl = `https://corsproxy.io/?` + encodeURIComponent(url);
+  const proxyStrategies = [
+    // 1. Alternatif: corsproxy.io
+    async (targetUrl) => {
+      const res = await fetch(`https://corsproxy.io/?` + encodeURIComponent(targetUrl), {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': referer
+        },
+        signal: AbortSignal.timeout(15000)
+      });
+      if (!res.ok) throw new Error(`HTTP Status: ${res.status}`);
+      return await res.text();
+    },
+    // 2. Alternatif: AllOrigins (Raw text endpoint)
+    async (targetUrl) => {
+      const res = await fetch(`https://api.allorigins.win/raw?url=` + encodeURIComponent(targetUrl), {
+        signal: AbortSignal.timeout(15000)
+      });
+      if (!res.ok) throw new Error(`HTTP Status: ${res.status}`);
+      return await res.text();
+    },
+    // 3. Alternatif: CodeTabs Proxy
+    async (targetUrl) => {
+      const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=` + encodeURIComponent(targetUrl), {
+        signal: AbortSignal.timeout(15000)
+      });
+      if (!res.ok) throw new Error(`HTTP Status: ${res.status}`);
+      return await res.text();
+    }
+  ];
 
-  let response;
-  try {
-    response = await fetch(proxiedUrl, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Referer': referer
-      },
-      signal: AbortSignal.timeout(30000)
-    });
-  } catch (error) {
-    throw new Error(`Bağlantı kurulamadı: ${url}\nAyrıntı: ${error.message}`);
+  let lastError;
+  for (const strategy of proxyStrategies) {
+    try {
+      return await strategy(url);
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  if (!response.ok) {
-    throw new Error(`İstek başarısız. HTTP Status: ${response.status}`);
-  }
-
-  return await response.text();
+  throw new Error(`Tüm proxy servisleri başarısız oldu. Son hata: ${lastError?.message}`);
 }
 
 /**
-  * Güncel bülten haftasını sayfadan çeker.
-  */
+ * Güncel bülten haftasını sayfadan çeker.
+ */
 async function getCurrentWeek(fallbackWeek = null) {
   let html;
   try {
