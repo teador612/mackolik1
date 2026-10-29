@@ -102,6 +102,7 @@ def num(value):
         match = re.search(r"\d+(?:\.\d+)?", value)
         if not match:
             return None
+
         number = float(match.group(0))
 
     return number if math.isfinite(number) and 1.01 <= number <= 100 else None
@@ -130,9 +131,13 @@ def get_nested(obj, keys):
 
 
 def get_date(match):
-    for key in ("date", "matchDate", "match_date", "tarih", "datetime", "kickoff"):
+    for key in (
+        "date", "matchDate", "match_date",
+        "tarih", "datetime", "kickoff",
+    ):
         if match.get(key):
             return str(match[key])
+
     return ""
 
 
@@ -144,8 +149,10 @@ def parse_score(value):
         try:
             home = int(home)
             away = int(away)
+
             if home < 0 or away < 0:
                 return None
+
             return home, away
         except (ValueError, TypeError):
             return None
@@ -173,6 +180,7 @@ def full_score(match):
             parsed = parse_score(match[key])
             if parsed is not None:
                 return parsed
+
     return None
 
 
@@ -185,6 +193,7 @@ def half_score(match):
             parsed = parse_score(match[key])
             if parsed is not None:
                 return parsed
+
     return None
 
 
@@ -195,6 +204,7 @@ def feature_row(match):
     for aliases in ODDS_ALIASES.values():
         value = get_nested(match, aliases)
         row.append(value if value is not None else np.nan)
+
         if value is not None:
             found += 1
 
@@ -215,6 +225,7 @@ def feature_row(match):
 
 def targets(match):
     ft = full_score(match)
+
     if ft is None:
         return None
 
@@ -302,8 +313,13 @@ def create_model(algo, target, seed):
     else:
         return None
 
+    # Boş sütunlar eğitim öncesinde çıkarıldığı için medyan uyarısı
+    # oluşmamalıdır. add_indicator mevcut eksiklik bilgisini korur.
     return Pipeline([
-        ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
+        (
+            "imputer",
+            SimpleImputer(strategy="median", add_indicator=True),
+        ),
         ("model", estimator),
     ])
 
@@ -311,11 +327,16 @@ def create_model(algo, target, seed):
 def aligned_probabilities(model, X, expected_classes):
     """Model olasılıklarını beklenen sınıf sırasına göre hizala."""
     raw = model.predict_proba(X)
+
     model_classes = [
         int(value) for value in model.named_steps["model"].classes_
     ]
 
-    aligned = np.zeros((len(X), len(expected_classes)), dtype=float)
+    aligned = np.zeros(
+        (len(X), len(expected_classes)),
+        dtype=float,
+    )
+
     expected_index = {
         class_value: idx
         for idx, class_value in enumerate(expected_classes)
@@ -351,8 +372,14 @@ def train_target(rows, target):
             "message": f"Eğitim için en az {MIN_TRAIN} maç gerekli.",
         }
 
-    X = np.asarray([features for features, _ in eligible], dtype=float)
-    y = np.asarray([label for _, label in eligible], dtype=int)
+    X = np.asarray(
+        [features for features, _ in eligible],
+        dtype=float,
+    )
+    y = np.asarray(
+        [label for _, label in eligible],
+        dtype=int,
+    )
 
     overall_classes = set(int(value) for value in np.unique(y))
 
@@ -374,12 +401,11 @@ def train_target(rows, target):
             "message": "Doğrulama kümesi oluşturulamadı.",
         }
 
-    X_train, X_val = X[:split], X[split:]
+    X_train_full, X_val_full = X[:split], X[split:]
     y_train, y_val = y[:split], y[split:]
 
     train_classes = set(int(value) for value in np.unique(y_train))
 
-    # Üç sınıflı pazarda eğitim verisinde 0, 1 ve 2 bulunmalı.
     if not set(expected).issubset(train_classes):
         return None, {
             "samples": len(y),
@@ -392,9 +418,31 @@ def train_target(rows, target):
             ),
         }
 
+    # ÖNEMLİ DÜZELTME:
+    # Sadece kronolojik eğitim bölümüne bakılır.
+    # Bu bölümde tamamı NaN olan sütunlar modelden çıkarılır.
+    # Aynı sütun seçimi doğrulama, final eğitim ve canlı tahminde kullanılır.
+    feature_indices = np.flatnonzero(
+        np.isfinite(X_train_full).any(axis=0)
+    )
+
+    if len(feature_indices) == 0:
+        return None, {
+            "samples": len(y),
+            "message": "Eğitim bölümünde kullanılabilir oran özelliği yok.",
+        }
+
+    X_train = X_train_full[:, feature_indices]
+    X_val = X_val_full[:, feature_indices]
+    X_final = X[:, feature_indices]
+
+    removed_features = int(X.shape[1] - len(feature_indices))
+
     algos = ["rf"]
+
     if HAS_XGB:
         algos.append("xgb")
+
     if HAS_LGB:
         algos.append("lgb")
 
@@ -403,20 +451,25 @@ def train_target(rows, target):
     # Modeller yalnızca eğitim bölümünde eğitilir.
     for algo in algos:
         model = create_model(algo, target, RANDOM_STATE)
+
         if model is None:
             continue
 
         try:
             model.fit(X_train, y_train)
 
-            # Eksik doğrulama sınıfları da doğru sınıf uzayında değerlendirilir.
-            probabilities = aligned_probabilities(model, X_val, expected)
+            probabilities = aligned_probabilities(
+                model,
+                X_val,
+                expected,
+            )
 
             loss = float(log_loss(
                 y_val,
                 probabilities,
                 labels=expected,
             ))
+
             accuracy = float(accuracy_score(
                 y_val,
                 model.predict(X_val),
@@ -441,6 +494,7 @@ def train_target(rows, target):
             "samples": len(y),
             "trainSamples": len(y_train),
             "validationSamples": len(y_val),
+            "removedEmptyFeatures": removed_features,
             "message": "Hiçbir model doğrulama aşamasını geçemedi.",
         }
 
@@ -463,17 +517,20 @@ def train_target(rows, target):
             for algo, score in inverse_scores.items()
         }
 
-    # Final modeller tüm uygun tarihsel veride eğitilir.
+    # Final modeller tüm uygun tarihsel veriyle eğitilir.
+    # Özellik sütunları, eğitim bölümünde seçilenlerle aynı kalır.
     final_models = {}
 
     for algo in weights:
         model = create_model(algo, target, RANDOM_STATE)
+
         if model is None:
             continue
 
         try:
-            model.fit(X, y)
+            model.fit(X_final, y)
             final_models[algo] = model
+
         except Exception as exc:
             print(
                 f"[{target}] {algo.upper()} final eğitim hatası: {exc}",
@@ -483,6 +540,7 @@ def train_target(rows, target):
     if not final_models:
         return None, {
             "samples": len(y),
+            "removedEmptyFeatures": removed_features,
             "message": "Final eğitim aşamasında hiçbir model çalışmadı.",
         }
 
@@ -510,6 +568,9 @@ def train_target(rows, target):
         "trainSamples": len(y_train),
         "validationSamples": len(y_val),
         "classes": expected,
+        "inputFeatures": int(X.shape[1]),
+        "usedFeatures": int(len(feature_indices)),
+        "removedEmptyFeatures": removed_features,
         "subModels": {
             algo: {
                 "validationAccuracy": round(
@@ -529,12 +590,24 @@ def train_target(rows, target):
         "models": final_models,
         "weights": weights,
         "classes": expected,
+        "featureIndices": feature_indices.tolist(),
     }, report
 
 
 def get_ensemble_probabilities(ensemble, features):
     expected = ensemble["classes"]
-    combined = {int(class_value): 0.0 for class_value in expected}
+
+    # Eğitimde kullanılan sütunları aynı sırayla seç.
+    feature_indices = ensemble["featureIndices"]
+    selected_features = np.asarray(
+        features,
+        dtype=float,
+    )[feature_indices]
+
+    combined = {
+        int(class_value): 0.0
+        for class_value in expected
+    }
 
     for algo, model in ensemble["models"].items():
         weight = ensemble["weights"].get(algo, 0.0)
@@ -545,7 +618,7 @@ def get_ensemble_probabilities(ensemble, features):
         try:
             probabilities = aligned_probabilities(
                 model,
-                np.asarray([features], dtype=float),
+                np.asarray([selected_features], dtype=float),
                 expected,
             )[0]
 
@@ -613,6 +686,7 @@ def main():
 
     for match in v2:
         valid, features, labels, _ = valid_train_row(match)
+
         if valid:
             training.append((features, labels, get_date(match)))
 
@@ -658,6 +732,7 @@ def main():
         home = str(
             match.get("home", match.get("homeTeam", ""))
         ).strip()
+
         away = str(
             match.get("away", match.get("awayTeam", ""))
         ).strip()
@@ -683,7 +758,6 @@ def main():
         for target, title in market_labels:
             ensemble = trained_models.get(target)
 
-            # Yeterli eğitim verisi olmayan pazar atlanır.
             if ensemble is None:
                 continue
 
@@ -813,6 +887,7 @@ def main():
             "Ağırlıklar kronolojik doğrulama kümesindeki Log Loss değerlerine dayanır.",
             "Final modeller tüm uygun tarihsel veriyle yeniden eğitilir.",
             "Sınıf olasılıkları beklenen sınıf sırasına hizalanır.",
+            "Eğitim bölümünde tamamen boş olan özellik sütunları otomatik çıkarılır.",
         ],
     }
 
@@ -846,6 +921,7 @@ def main():
         f"tahmin={len(predictions)}, "
         f"atlanan={skipped}"
     )
+
     print(f"Kullanılan algoritmalar: {used_algorithm_names}")
     print(f"Çıktı: {OUT_PATH.relative_to(ROOT)}")
 
