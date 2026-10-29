@@ -1,43 +1,33 @@
 #!/usr/bin/env python3
-# Mackolik ML - Log Loss Weighted Ensemble
-# Marketler: MS, KG, U25, IY15U, IY
+import hashlib
 import json
 import math
 import re
 import sys
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
+import joblib
 import numpy as np
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score, log_loss
 ROOT = Path(__file__).resolve().parents[1]
-V2_PATH = ROOT / "data" / "v2-data.json"
-LIVE_PATH = ROOT / "data" / "matches.json"
+DATA_PATH = ROOT / "data" / "v2-data.json"
+MODEL_PATH = ROOT / "models" / "ml-models.joblib"
+META_PATH = ROOT / "models" / "ml-models-meta.json"
 OUT_PATH = ROOT / "outputs" / "ml-predictions.json"
 MIN_TRAIN = 80
 RANDOM_STATE = 42
 MIN_LOG_LOSS = 0.01
 try:
-    from sklearn.ensemble import RandomForestClassifier
-    from sklearn.impute import SimpleImputer
-    from sklearn.pipeline import Pipeline
-    from sklearn.metrics import accuracy_score, log_loss
-except ImportError:
-    print("HATA: numpy ve scikit-learn kurulu değil.", file=sys.stderr)
-    raise
-ACTIVE_ALGORITHMS = ["RandomForestClassifier"]
-HAS_XGB = False
-HAS_LGB = False
-try:
     import xgboost as xgb
-    HAS_XGB = True
-    ACTIVE_ALGORITHMS.append("XGBoost")
 except ImportError:
-    pass
+    xgb = None
 try:
     import lightgbm as lgb
-    HAS_LGB = True
-    ACTIVE_ALGORITHMS.append("LightGBM")
 except ImportError:
-    pass
+    lgb = None
 ODDS_ALIASES = {
     "ms1": ["ms1", "MS1", "1", "home", "homeWin", "odds1"],
     "msx": ["msX", "msx", "MSX", "X", "draw", "oddsX"],
@@ -57,69 +47,77 @@ ODDS_ALIASES = {
     "ht_over15": ["iy15Ust", "iy15U", "iy1_5U", "IY15U"],
     "ht_under15": ["iy15Alt", "iy15A", "iy1_5Alt", "IY15A"],
 }
-def load_json(path):
-    if not path.exists():
-        print(f"UYARI: dosya bulunamadı: {path}")
-        return []
-    with path.open("r", encoding="utf-8-sig") as file:
-        obj = json.load(file)
-    if isinstance(obj, list):
-        return obj
-    if isinstance(obj, dict):
-        for key in ("matches", "data", "items", "results"):
-            if isinstance(obj.get(key), list):
-                return obj[key]
-    raise ValueError(f"{path} içinde maç listesi bulunamadı.")
-def num(value):
+TARGETS = ("MS", "KG", "U25", "IY15U", "IY")
+TARGET_TITLES = {
+    "MS": "Maç Sonucu",
+    "KG": "Karşılıklı Gol",
+    "U25": "2.5 Gol Alt/Üst",
+    "IY15U": "İlk Yarı 1.5 Gol Alt/Üst",
+    "IY": "İlk Yarı Sonucu",
+}
+def load_data():
+    if not DATA_PATH.exists():
+        raise FileNotFoundError(f"Veri dosyası bulunamadı: {DATA_PATH}")
+    with DATA_PATH.open("r", encoding="utf-8-sig") as file:
+        data = json.load(file)
+    if isinstance(data, list):
+        rows = data
+    elif isinstance(data, dict):
+        rows = next(
+            (
+                data[key]
+                for key in ("matches", "data", "items", "results")
+                if isinstance(data.get(key), list)
+            ),
+            None,
+        )
+    else:
+        rows = None
+    if not isinstance(rows, list):
+        raise ValueError("v2-data.json içinde maç listesi bulunamadı.")
+    return [row for row in rows if isinstance(row, dict)]
+def number(value):
     if value is None or isinstance(value, bool):
         return None
-    if isinstance(value, (int, float)):
-        number = float(value)
-    else:
-        value = str(value).strip().replace(",", ".")
-        if not value or value in ("-", "—", "null", "None", "0.00"):
-            return None
-        match = re.search(r"\d+(?:\.\d+)?", value)
-        if not match:
-            return None
-        number = float(match.group(0))
-    return number if math.isfinite(number) and 1.01 <= number <= 100 else None
-def get_nested(obj, keys):
-    containers = (
-        obj,
-        obj.get("openingOdds"),
-        obj.get("odds"),
-        obj.get("markets"),
-        obj.get("opening_odds"),
-    )
+    try:
+        if isinstance(value, str):
+            value = value.strip().replace(",", ".")
+            match = re.search(r"\d+(?:\.\d+)?", value)
+            if not match:
+                return None
+            value = match.group(0)
+        result = float(value)
+        if math.isfinite(result) and 1.01 <= result <= 100:
+            return result
+    except (ValueError, TypeError):
+        pass
+    return None
+def get_odd(match, aliases):
+    containers = [
+        match,
+        match.get("openingOdds"),
+        match.get("odds"),
+        match.get("markets"),
+        match.get("opening_odds"),
+    ]
     for container in containers:
         if not isinstance(container, dict):
             continue
-        for key in keys:
+        for key in aliases:
             if key in container:
-                value = num(container.get(key))
+                value = number(container[key])
                 if value is not None:
                     return value
     return None
-def get_date(match):
-    for key in (
-        "date", "matchDate", "match_date",
-        "tarih", "datetime", "kickoff",
-    ):
-        if match.get(key):
-            return str(match[key])
-    return ""
 def parse_score(value):
     if isinstance(value, dict):
         home = value.get("home", value.get("h", value.get("homeScore")))
         away = value.get("away", value.get("a", value.get("awayScore")))
         try:
-            home = int(home)
-            away = int(away)
-            if home < 0 or away < 0:
-                return None
-            return home, away
-        except (ValueError, TypeError):
+            home, away = int(home), int(away)
+            if home >= 0 and away >= 0:
+                return home, away
+        except (TypeError, ValueError):
             return None
     if value is None:
         return None
@@ -130,107 +128,96 @@ def parse_score(value):
     if match:
         return int(match.group(1)), int(match.group(2))
     return None
-def full_score(match):
+def get_full_score(match):
     for key in (
         "score", "fullTimeScore", "full_time_score",
         "ft", "resultScore", "skor", "sonuc",
     ):
         if key in match:
-            parsed = parse_score(match[key])
-            if parsed is not None:
-                return parsed
+            result = parse_score(match[key])
+            if result is not None:
+                return result
     return None
-def half_score(match):
+def get_half_score(match):
     for key in (
         "halfTimeScore", "half_time_score", "ht",
         "iySkor", "halfScore", "devreSkoru",
     ):
         if key in match:
-            parsed = parse_score(match[key])
-            if parsed is not None:
-                return parsed
+            result = parse_score(match[key])
+            if result is not None:
+                return result
     return None
-def feature_row(match):
-    row = []
-    found = 0
-    for aliases in ODDS_ALIASES.values():
-        value = get_nested(match, aliases)
-        row.append(value if value is not None else np.nan)
-        if value is not None:
-            found += 1
-    home_odd, draw_odd, away_odd = row[:3]
-    if all(
-        np.isfinite(value) and value > 0
-        for value in (home_odd, draw_odd, away_odd)
+def get_date(match):
+    for key in (
+        "date", "matchDate", "match_date",
+        "tarih", "datetime", "kickoff",
     ):
-        inverse = [1 / home_odd, 1 / draw_odd, 1 / away_odd]
+        if match.get(key):
+            return str(match[key])
+    return ""
+def get_features(match):
+    features = []
+    for aliases in ODDS_ALIASES.values():
+        value = get_odd(match, aliases)
+        features.append(value if value is not None else np.nan)
+    home, draw, away = features[:3]
+    if all(np.isfinite(value) and value > 0 for value in (home, draw, away)):
+        inverse = [1 / home, 1 / draw, 1 / away]
         total = sum(inverse)
-        row.extend([value / total for value in inverse])
+        features.extend([value / total for value in inverse])
     else:
-        row.extend([np.nan, np.nan, np.nan])
-    return row, found
-def targets(match):
-    ft = full_score(match)
+        features.extend([np.nan, np.nan, np.nan])
+    return features
+def get_targets(match):
+    ft = get_full_score(match)
     if ft is None:
         return None
     home, away = ft
-    ms = 0 if home > away else (1 if home == away else 2)
-    kg = int(home > 0 and away > 0)
-    over25 = int(home + away >= 3)
-    ht = half_score(match)
-    iy15u = None
-    iy = None
+    labels = {
+        "MS": 0 if home > away else (1 if home == away else 2),
+        "KG": int(home > 0 and away > 0),
+        "U25": int(home + away >= 3),
+        "IY15U": None,
+        "IY": None,
+    }
+    ht = get_half_score(match)
     if ht is not None:
         ht_home, ht_away = ht
-        iy15u = int(ht_home + ht_away >= 2)
-        iy = 0 if ht_home > ht_away else (
-            1 if ht_home == ht_away else 2
+        labels["IY15U"] = int(ht_home + ht_away >= 2)
+        labels["IY"] = (
+            0 if ht_home > ht_away
+            else (1 if ht_home == ht_away else 2)
         )
-    return {
-        "MS": ms,
-        "KG": kg,
-        "U25": over25,
-        "IY15U": iy15u,
-        "IY": iy,
-    }
-def valid_train_row(match):
-    features, count = feature_row(match)
-    labels = targets(match)
-    valid = (
-        labels is not None
-        and count >= 2
-        and not all(np.isnan(value) for value in features)
-    )
-    return valid, features, labels, count
-def required_classes(target):
+    return labels
+def expected_classes(target):
     return [0, 1, 2] if target in ("MS", "IY") else [0, 1]
-def create_model(algo, target, seed):
-    multiclass = len(required_classes(target)) > 2
-    eval_metric = "mlogloss" if multiclass else "logloss"
-    if algo == "rf":
+def make_model(algorithm, target):
+    multiclass = len(expected_classes(target)) == 3
+    if algorithm == "rf":
         estimator = RandomForestClassifier(
-            n_estimators=240,
+            n_estimators=180,
             min_samples_leaf=3,
             max_features="sqrt",
             class_weight="balanced_subsample",
-            random_state=seed,
+            random_state=RANDOM_STATE,
             n_jobs=-1,
         )
-    elif algo == "xgb" and HAS_XGB:
+    elif algorithm == "xgb" and xgb is not None:
         estimator = xgb.XGBClassifier(
-            n_estimators=150,
-            learning_rate=0.03,
+            n_estimators=120,
+            learning_rate=0.04,
             max_depth=4,
-            random_state=seed,
-            eval_metric=eval_metric,
+            random_state=RANDOM_STATE,
+            eval_metric="mlogloss" if multiclass else "logloss",
             n_jobs=-1,
         )
-    elif algo == "lgb" and HAS_LGB:
+    elif algorithm == "lgb" and lgb is not None:
         estimator = lgb.LGBMClassifier(
-            n_estimators=150,
-            learning_rate=0.03,
+            n_estimators=120,
+            learning_rate=0.04,
             max_depth=4,
-            random_state=seed,
+            random_state=RANDOM_STATE,
             verbose=-1,
             n_jobs=-1,
         )
@@ -240,337 +227,335 @@ def create_model(algo, target, seed):
         ("imputer", SimpleImputer(strategy="median", add_indicator=True)),
         ("model", estimator),
     ])
-def aligned_probabilities(model, X, expected_classes):
+def aligned_probabilities(model, X, classes):
     raw = model.predict_proba(X)
-    model_classes = [
+    fitted_classes = [
         int(value) for value in model.named_steps["model"].classes_
     ]
-    aligned = np.zeros(
-        (len(X), len(expected_classes)),
-        dtype=float,
-    )
-    expected_index = {
-        class_value: idx
-        for idx, class_value in enumerate(expected_classes)
-    }
-    for source_idx, class_value in enumerate(model_classes):
-        if class_value in expected_index:
-            aligned[:, expected_index[class_value]] = raw[:, source_idx]
+    aligned = np.zeros((len(X), len(classes)), dtype=float)
+    class_positions = {value: i for i, value in enumerate(classes)}
+    for source_index, class_value in enumerate(fitted_classes):
+        if class_value in class_positions:
+            aligned[:, class_positions[class_value]] = raw[:, source_index]
     totals = aligned.sum(axis=1)
-    for idx, total in enumerate(totals):
+    for index, total in enumerate(totals):
         if total > 0 and math.isfinite(float(total)):
-            aligned[idx] /= total
+            aligned[index] /= total
         else:
-            aligned[idx] = 1.0 / len(expected_classes)
+            aligned[index] = 1 / len(classes)
     return aligned
-def train_target(rows, target):
-    expected = required_classes(target)
+def train_one_target(rows, target):
+    classes = expected_classes(target)
     eligible = [
         (features, labels[target])
-        for features, labels, _ in rows
+        for features, labels in rows
         if labels.get(target) is not None
     ]
     if len(eligible) < MIN_TRAIN:
         return None, {
             "samples": len(eligible),
-            "message": f"Eğitim için en az {MIN_TRAIN} maç gerekli.",
+            "message": f"En az {MIN_TRAIN} eğitim örneği gerekli.",
         }
-    X = np.asarray([features for features, _ in eligible], dtype=float)
-    y = np.asarray([label for _, label in eligible], dtype=int)
-    overall_classes = set(int(value) for value in np.unique(y))
-    if not set(expected).issubset(overall_classes):
+    X = np.asarray([item[0] for item in eligible], dtype=float)
+    y = np.asarray([item[1] for item in eligible], dtype=int)
+    if not set(classes).issubset(set(np.unique(y))):
         return None, {
             "samples": len(y),
-            "classes": sorted(overall_classes),
-            "message": f"Veride gerekli sınıflar eksik. Beklenen={expected}.",
+            "message": "Tarihsel veride gerekli sonuç sınıfları eksik.",
         }
-    split = max(int(len(y) * 0.8), 1)
-    if split >= len(y):
-        return None, {
-            "samples": len(y),
-            "message": "Doğrulama kümesi oluşturulamadı.",
-        }
-    X_train_full = X[:split]
-    X_val_full = X[split:]
-    y_train = y[:split]
-    y_val = y[split:]
-    train_classes = set(int(value) for value in np.unique(y_train))
-    if not set(expected).issubset(train_classes):
+    split = int(len(y) * 0.8)
+    split = max(1, min(split, len(y) - 1))
+    X_train, X_val = X[:split], X[split:]
+    y_train, y_val = y[:split], y[split:]
+    if not set(classes).issubset(set(np.unique(y_train))):
         return None, {
             "samples": len(y),
             "trainSamples": len(y_train),
             "validationSamples": len(y_val),
-            "classes": sorted(train_classes),
-            "message": (
-                "Kronolojik eğitim bölümünde gerekli sınıflar yok. "
-                f"Beklenen={expected}, bulunan={sorted(train_classes)}."
-            ),
+            "message": "Kronolojik eğitim bölümünde gerekli sınıflar eksik.",
         }
-    feature_indices = np.flatnonzero(
-        np.isfinite(X_train_full).any(axis=0)
-    )
+    feature_indices = np.flatnonzero(np.isfinite(X_train).any(axis=0))
     if len(feature_indices) == 0:
         return None, {
             "samples": len(y),
-            "message": "Eğitim bölümünde kullanılabilir özellik yok.",
+            "message": "Kullanılabilir oran özelliği bulunamadı.",
         }
-    X_train = X_train_full[:, feature_indices]
-    X_val = X_val_full[:, feature_indices]
-    X_final = X[:, feature_indices]
-    removed_features = int(X.shape[1] - len(feature_indices))
-    algos = ["rf"]
-    if HAS_XGB:
-        algos.append("xgb")
-    if HAS_LGB:
-        algos.append("lgb")
-    validation_metrics = {}
+    X_train = X_train[:, feature_indices]
+    X_val = X_val[:, feature_indices]
+    X_all = X[:, feature_indices]
+    algorithms = ["rf"]
+    if xgb is not None:
+        algorithms.append("xgb")
+    if lgb is not None:
+        algorithms.append("lgb")
     validation_models = {}
-    for algo in algos:
-        model = create_model(algo, target, RANDOM_STATE)
-        if model is None:
-            continue
+    metrics = {}
+    for algorithm in algorithms:
+        model = make_model(algorithm, target)
         try:
             model.fit(X_train, y_train)
-            probabilities = aligned_probabilities(model, X_val, expected)
-            loss = float(log_loss(y_val, probabilities, labels=expected))
-            predicted_classes = np.asarray(expected)[
-                np.argmax(probabilities, axis=1)
-            ]
-            accuracy = float(accuracy_score(y_val, predicted_classes))
-            if not math.isfinite(loss) or not math.isfinite(accuracy):
-                continue
-            validation_metrics[algo] = {
-                "log_loss": max(loss, MIN_LOG_LOSS),
-                "accuracy": accuracy,
-            }
-            validation_models[algo] = model
+            probs = aligned_probabilities(model, X_val, classes)
+            loss = max(
+                float(log_loss(y_val, probs, labels=classes)),
+                MIN_LOG_LOSS,
+            )
+            predicted = np.asarray(classes)[np.argmax(probs, axis=1)]
+            accuracy = float(accuracy_score(y_val, predicted))
+            if math.isfinite(loss) and math.isfinite(accuracy):
+                validation_models[algorithm] = model
+                metrics[algorithm] = {
+                    "accuracy": accuracy,
+                    "logLoss": loss,
+                }
         except Exception as exc:
             print(
-                f"[{target}] {algo.upper()} doğrulama hatası: {exc}",
+                f"{target}/{algorithm} doğrulama hatası: {exc}",
                 file=sys.stderr,
             )
-    if not validation_metrics:
+    if not metrics:
         return None, {
             "samples": len(y),
-            "trainSamples": len(y_train),
-            "validationSamples": len(y_val),
-            "removedEmptyFeatures": removed_features,
-            "message": "Hiçbir model doğrulama aşamasını geçemedi.",
+            "message": "Hiçbir algoritma doğrulama aşamasını geçemedi.",
         }
-    inverse_scores = {
-        algo: 1.0 / max(data["log_loss"], MIN_LOG_LOSS)
-        for algo, data in validation_metrics.items()
+    inverse_losses = {
+        name: 1 / value["logLoss"]
+        for name, value in metrics.items()
     }
-    inverse_total = sum(inverse_scores.values())
-    if not math.isfinite(inverse_total) or inverse_total <= 0:
-        weights = {
-            algo: 1.0 / len(inverse_scores)
-            for algo in inverse_scores
-        }
-    else:
-        weights = {
-            algo: score / inverse_total
-            for algo, score in inverse_scores.items()
-        }
-    # Birleşik modelin kronolojik doğrulama tahminleri.
-    ensemble_probabilities = np.zeros(
-        (len(y_val), len(expected)),
-        dtype=float,
-    )
-    for algo, model in validation_models.items():
-        ensemble_probabilities += (
-            weights[algo] * aligned_probabilities(model, X_val, expected)
+    total_weight = sum(inverse_losses.values())
+    weights = {
+        name: value / total_weight
+        for name, value in inverse_losses.items()
+    }
+    val_probs = np.zeros((len(y_val), len(classes)), dtype=float)
+    for name, model in validation_models.items():
+        val_probs += weights[name] * aligned_probabilities(
+            model, X_val, classes
         )
-    row_totals = ensemble_probabilities.sum(axis=1)
-    for idx, total in enumerate(row_totals):
-        if total > 0 and math.isfinite(float(total)):
-            ensemble_probabilities[idx] /= total
+    sums = val_probs.sum(axis=1)
+    for index, total in enumerate(sums):
+        if total > 0:
+            val_probs[index] /= total
         else:
-            ensemble_probabilities[idx] = 1.0 / len(expected)
-    ensemble_predictions = np.asarray(expected)[
-        np.argmax(ensemble_probabilities, axis=1)
-    ]
-    ensemble_accuracy = float(
-        accuracy_score(y_val, ensemble_predictions)
-    )
-    ensemble_log_loss = float(
-        log_loss(y_val, ensemble_probabilities, labels=expected)
-    )
-    expected_index = {
-        class_value: idx
-        for idx, class_value in enumerate(expected)
-    }
-    actual_one_hot = np.zeros_like(ensemble_probabilities)
-    for row_idx, actual_class in enumerate(y_val):
-        actual_one_hot[
-            row_idx, expected_index[int(actual_class)]
-        ] = 1.0
-    ensemble_brier = float(np.mean(
-        np.sum(
-            (ensemble_probabilities - actual_one_hot) ** 2,
-            axis=1,
-        )
-    ))
+            val_probs[index] = 1 / len(classes)
+    predicted = np.asarray(classes)[np.argmax(val_probs, axis=1)]
+    accuracy = float(accuracy_score(y_val, predicted))
+    ensemble_loss = float(log_loss(y_val, val_probs, labels=classes))
+    positions = {value: i for i, value in enumerate(classes)}
+    one_hot = np.zeros_like(val_probs)
+    for index, actual in enumerate(y_val):
+        one_hot[index, positions[int(actual)]] = 1
+    brier = float(np.mean(np.sum((val_probs - one_hot) ** 2, axis=1)))
     final_models = {}
-    for algo in weights:
-        model = create_model(algo, target, RANDOM_STATE)
-        if model is None:
-            continue
+    for algorithm in weights:
+        model = make_model(algorithm, target)
         try:
-            model.fit(X_final, y)
-            final_models[algo] = model
+            model.fit(X_all, y)
+            final_models[algorithm] = model
         except Exception as exc:
             print(
-                f"[{target}] {algo.upper()} final eğitim hatası: {exc}",
+                f"{target}/{algorithm} final eğitim hatası: {exc}",
                 file=sys.stderr,
             )
     if not final_models:
         return None, {
             "samples": len(y),
-            "trainSamples": len(y_train),
-            "validationSamples": len(y_val),
-            "removedEmptyFeatures": removed_features,
-            "message": "Final eğitim aşamasında hiçbir model çalışmadı.",
+            "message": "Final modeller eğitilemedi.",
         }
-    weights = {
-        algo: weights[algo]
-        for algo in final_models
+    final_weights = {
+        name: weights[name]
+        for name in final_models
     }
-    weight_total = sum(weights.values())
-    if weight_total > 0:
-        weights = {
-            algo: value / weight_total
-            for algo, value in weights.items()
-        }
-    else:
-        weights = {
-            algo: 1.0 / len(final_models)
-            for algo in final_models
-        }
+    weight_sum = sum(final_weights.values())
+    final_weights = {
+        name: value / weight_sum
+        for name, value in final_weights.items()
+    }
     report = {
         "samples": int(len(y)),
         "trainSamples": int(len(y_train)),
         "validationSamples": int(len(y_val)),
-        "validationAccuracy": round(ensemble_accuracy * 100, 2),
-        "validationLogLoss": round(ensemble_log_loss, 6),
-        "validationBrier": round(ensemble_brier, 6),
-        "classes": expected,
-        "inputFeatures": int(X.shape[1]),
+        "validationAccuracy": round(accuracy, 6),
+        "validationLogLoss": round(ensemble_loss, 6),
+        "validationBrier": round(brier, 6),
+        "classes": classes,
         "usedFeatures": int(len(feature_indices)),
-        "removedEmptyFeatures": removed_features,
-        "subModels": {
-            algo: {
-                "validationAccuracy": round(
-                    data["accuracy"] * 100, 2
-                ),
-                "validationLogLoss": round(data["log_loss"], 6),
-            }
-            for algo, data in validation_metrics.items()
-        },
-        "ensembleWeights": {
-            algo: round(weight, 6)
-            for algo, weight in weights.items()
-        },
+        "removedEmptyFeatures": int(X.shape[1] - len(feature_indices)),
+        "subModels": metrics,
+        "ensembleWeights": final_weights,
     }
-    return {
+    ensemble = {
         "models": final_models,
-        "weights": weights,
-        "classes": expected,
+        "weights": final_weights,
+        "classes": classes,
         "featureIndices": feature_indices.tolist(),
-    }, report
-def get_ensemble_probabilities(ensemble, features):
-    expected = ensemble["classes"]
-    feature_indices = ensemble["featureIndices"]
-    selected_features = np.asarray(features, dtype=float)[feature_indices]
-    combined = {
-        int(class_value): 0.0
-        for class_value in expected
     }
-    for algo, model in ensemble["models"].items():
-        weight = ensemble["weights"].get(algo, 0.0)
+    return ensemble, report
+def training_fingerprint(rows):
+    # Yalnızca sonuçlanmış maçlar ve eğitimde kullanılabilir etiketler.
+    # Yeni, henüz oynanmamış maç eklemek parmak izini değiştirmez.
+    payload = []
+    for features, labels in rows:
+        payload.append({
+            "features": [
+                None if not math.isfinite(float(value)) else round(float(value), 6)
+                for value in features
+            ],
+            "labels": labels,
+        })
+    raw = json.dumps(
+        payload,
+        sort_keys=True,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
+def load_or_train(rows, fingerprint):
+    if MODEL_PATH.exists() and META_PATH.exists():
+        try:
+            with META_PATH.open("r", encoding="utf-8") as file:
+                meta = json.load(file)
+            if meta.get("fingerprint") == fingerprint:
+                bundle = joblib.load(MODEL_PATH)
+                if bundle.get("fingerprint") == fingerprint:
+                    print("Eğitim verisi değişmemiş; kayıtlı modeller yükleniyor.")
+                    return bundle, meta.get("validation", {})
+        except Exception as exc:
+            print(f"Model önbelleği kullanılamadı; yeniden eğitilecek: {exc}")
+    print("Eğitim verisi değişti veya model yok; yeniden eğitim başlıyor.")
+    models = {}
+    validation = {}
+    for target in TARGETS:
+        ensemble, report = train_one_target(rows, target)
+        validation[target] = report
+        if ensemble is not None:
+            models[target] = ensemble
+    if not models:
+        raise RuntimeError(
+            "Hiçbir market için model eğitilemedi. "
+            "v2-data.json içindeki skor ve oran alanlarını kontrol et."
+        )
+    bundle = {
+        "fingerprint": fingerprint,
+        "models": models,
+        "validation": validation,
+    }
+    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
+    META_PATH.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump(bundle, MODEL_PATH, compress=3)
+    with META_PATH.open("w", encoding="utf-8") as file:
+        json.dump(
+            {
+                "fingerprint": fingerprint,
+                "validation": validation,
+                "trainedAt": datetime.now(timezone.utc).isoformat(),
+            },
+            file,
+            ensure_ascii=False,
+            indent=2,
+        )
+    return bundle, validation
+def predict(ensemble, features):
+    indices = ensemble["featureIndices"]
+    selected = np.asarray(features, dtype=float)[indices]
+    classes = ensemble["classes"]
+    combined = np.zeros(len(classes), dtype=float)
+    for name, model in ensemble["models"].items():
+        weight = ensemble["weights"].get(name, 0)
         if weight <= 0:
             continue
-        try:
-            probabilities = aligned_probabilities(
-                model,
-                np.asarray([selected_features], dtype=float),
-                expected,
-            )[0]
-            for idx, class_value in enumerate(expected):
-                combined[int(class_value)] += (
-                    weight * float(probabilities[idx])
-                )
-        except Exception as exc:
-            print(
-                f"Tahmin uyarısı ({algo}): {exc}",
-                file=sys.stderr,
-            )
-    total = sum(combined.values())
-    if total > 0 and math.isfinite(total):
-        combined = {
-            key: value / total
-            for key, value in combined.items()
-        }
+        probs = aligned_probabilities(
+            model,
+            np.asarray([selected], dtype=float),
+            classes,
+        )[0]
+        combined += weight * probs
+    total = combined.sum()
+    if total > 0:
+        combined /= total
     else:
-        equal_probability = 1.0 / len(expected)
-        combined = {
-            int(key): equal_probability
-            for key in expected
-        }
-    return combined
-def fmt_pct(value):
+        combined[:] = 1 / len(classes)
+    return {
+        int(class_value): float(combined[index])
+        for index, class_value in enumerate(classes)
+    }
+def percent(value):
     return round(float(value) * 100, 1)
-def is_finished(match):
-    if full_score(match) is not None:
-        return True
-    status = str(
-        match.get("status", match.get("state", ""))
-    ).strip().lower()
-    return status in ("finished", "ended", "ft", "4", "5")
+def build_market(target, probabilities):
+    title = TARGET_TITLES[target]
+    if target in ("MS", "IY"):
+        if target == "MS":
+            options = [
+                (0, "MS1", "1"),
+                (1, "MSX", "X"),
+                (2, "MS2", "2"),
+            ]
+        else:
+            options = [
+                (0, "IY1", "İY 1"),
+                (1, "IYX", "İY X"),
+                (2, "IY2", "İY 2"),
+            ]
+        rendered = [
+            {
+                "key": key,
+                "title": name,
+                "probability": percent(probabilities.get(value, 0)),
+            }
+            for value, key, name in options
+        ]
+        best = max(rendered, key=lambda item: item["probability"])
+        return {
+            "title": title,
+            "options": rendered,
+            "pick": best["title"],
+            "probability": best["probability"],
+        }
+    yes_title, no_title = {
+        "KG": ("Var", "Yok"),
+        "U25": ("Üst", "Alt"),
+        "IY15U": ("Üst", "Alt"),
+    }[target]
+    yes = percent(probabilities.get(1, 0))
+    no = round(100 - yes, 1)
+    pick = yes_title if yes >= no else no_title
+    return {
+        "title": title,
+        "options": [
+            {"title": yes_title, "probability": yes},
+            {"title": no_title, "probability": no},
+        ],
+        "pick": pick,
+        "probability": max(yes, no),
+    }
 def main():
-    print(f"Kurulu algoritmalar: {ACTIVE_ALGORITHMS}")
-    v2 = load_json(V2_PATH)
-    live = load_json(LIVE_PATH)
-    if not v2:
+    matches = load_data()
+    matches.sort(key=lambda match: get_date(match))
+    # Eğitim yalnızca sonucu bulunan maçlardan yapılır.
+    training_rows = []
+    for match in matches:
+        labels = get_targets(match)
+        if labels is None:
+            continue
+        features = get_features(match)
+        if sum(np.isfinite(value) for value in features) < 2:
+            continue
+        training_rows.append((features, labels))
+    if not training_rows:
         raise RuntimeError(
-            "data/v2-data.json boş veya bulunamadı; eğitim yapılamıyor."
+            "v2-data.json içinde skoru ve kullanılabilir oranı bulunan "
+            "eğitim maçı yok."
         )
-    if not live:
-        print(
-            "UYARI: data/matches.json boş veya bulunamadı; "
-            "tahmin listesi boş olacak."
-        )
-    training = []
-    for match in v2:
-        valid, features, labels, _ = valid_train_row(match)
-        if valid:
-            training.append((features, labels, get_date(match)))
-    if not training:
-        raise RuntimeError(
-            "v2-data.json içinden uygun eğitim maçı çıkarılamadı."
-        )
-    training.sort(key=lambda row: row[2] or "")
-    trained_models = {}
-    validation_report = {}
-    for target in ("MS", "KG", "U25", "IY15U", "IY"):
-        ensemble, report = train_target(training, target)
-        validation_report[target] = report
-        if ensemble is not None:
-            trained_models[target] = ensemble
+    fingerprint = training_fingerprint(training_rows)
+    bundle, validation = load_or_train(training_rows, fingerprint)
+    models = bundle["models"]
     predictions = []
     skipped = 0
-    market_labels = (
-        ("MS", "Maç Sonucu"),
-        ("KG", "Karşılıklı Gol"),
-        ("U25", "2.5 Gol Alt/Üst"),
-        ("IY15U", "İlk Yarı 1.5 Gol Alt/Üst"),
-        ("IY", "İlk Yarı Sonucu"),
-    )
-    for match in live:
-        if not isinstance(match, dict) or is_finished(match):
+    for match in matches:
+        # Skoru bulunan maçlar tahmin listesine eklenmez.
+        if get_full_score(match) is not None:
             continue
-        features, feature_count = feature_row(match)
-        if feature_count < 2:
+        features = get_features(match)
+        if sum(np.isfinite(value) for value in features) < 2:
             skipped += 1
             continue
         home = str(
@@ -582,79 +567,22 @@ def main():
         if not home or not away:
             skipped += 1
             continue
-        prediction = {
+        item = {
             "date": get_date(match),
-            "time": str(
-                match.get("time", match.get("kickoffTime", ""))
-            ),
-            "league": str(
-                match.get("league", match.get("competition", ""))
-            ),
+            "time": str(match.get("time", match.get("kickoffTime", ""))),
+            "league": str(match.get("league", match.get("competition", ""))),
             "home": home,
             "away": away,
-            "featuresAvailable": feature_count,
+            "featuresAvailable": int(
+                sum(np.isfinite(value) for value in features)
+            ),
             "markets": {},
         }
-        for target, title in market_labels:
-            ensemble = trained_models.get(target)
-            if ensemble is None:
-                continue
-            probabilities = get_ensemble_probabilities(
-                ensemble, features
-            )
-            if target in ("MS", "IY"):
-                if target == "IY":
-                    specs = [
-                        (0, "IY1", "İY 1"),
-                        (1, "IYX", "İY X"),
-                        (2, "IY2", "İY 2"),
-                    ]
-                else:
-                    specs = [
-                        (0, "MS1", "1"),
-                        (1, "MSX", "X"),
-                        (2, "MS2", "2"),
-                    ]
-                options = [
-                    {
-                        "key": key,
-                        "title": option_title,
-                        "probability": fmt_pct(
-                            probabilities.get(class_value, 0.0)
-                        ),
-                    }
-                    for class_value, key, option_title in specs
-                ]
-                best = max(
-                    options,
-                    key=lambda option: option["probability"],
-                )
-                prediction["markets"][target] = {
-                    "title": title,
-                    "options": options,
-                    "pick": best["title"],
-                    "probability": best["probability"],
-                }
-            else:
-                yes = fmt_pct(probabilities.get(1, 0.0))
-                no = round(100.0 - yes, 1)
-                yes_title, no_title = {
-                    "KG": ("Var", "Yok"),
-                    "U25": ("Üst", "Alt"),
-                    "IY15U": ("Üst", "Alt"),
-                }[target]
-                pick = yes_title if yes >= no else no_title
-                prediction["markets"][target] = {
-                    "title": title,
-                    "options": [
-                        {"title": yes_title, "probability": yes},
-                        {"title": no_title, "probability": no},
-                    ],
-                    "pick": pick,
-                    "probability": max(yes, no),
-                }
-        if prediction["markets"]:
-            predictions.append(prediction)
+        for target, ensemble in models.items():
+            probabilities = predict(ensemble, features)
+            item["markets"][target] = build_market(target, probabilities)
+        if item["markets"]:
+            predictions.append(item)
     predictions.sort(
         key=lambda item: (
             item["date"],
@@ -663,70 +591,52 @@ def main():
             item["home"],
         )
     )
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    active_algorithms = sorted({
+        name
+        for ensemble in models.values()
+        for name in ensemble["models"]
+    })
     algorithm_names = {
         "rf": "RandomForestClassifier",
         "xgb": "XGBoost",
         "lgb": "LightGBM",
     }
-    used_algorithms = []
-    for ensemble in trained_models.values():
-        for algo in ensemble["models"]:
-            if algo not in used_algorithms:
-                used_algorithms.append(algo)
-    used_algorithm_names = [
-        algorithm_names[algo]
-        for algo in used_algorithms
-    ]
     output = {
-        "generatedAt": datetime.now(timezone.utc)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z"),
-        "source": {
-            "training": "data/v2-data.json",
-            "fixtures": "data/matches.json",
-        },
-        "model": (
-            "Log Loss Weighted Ensemble ("
-            + " + ".join(used_algorithm_names)
-            + ")"
-        ),
-        "activeAlgorithms": used_algorithm_names,
-        "trainingMatches": len(training),
-        "validation": validation_report,
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "source": "data/v2-data.json",
+        "model": "Log Loss Weighted Ensemble",
+        "activeAlgorithms": [
+            algorithm_names[name]
+            for name in active_algorithms
+        ],
+        "trainingMatches": len(training_rows),
+        "trainingFingerprint": fingerprint,
+        "validation": validation,
         "predictionCount": len(predictions),
         "skippedFixtures": skipped,
         "predictions": predictions,
         "notes": [
-            "Harici tahmin API'si kullanılmaz.",
-            "Ağırlıklar kronolojik doğrulama kümesindeki Log Loss değerlerine dayanır.",
-            "Final modeller tüm uygun tarihsel veriyle yeniden eğitilir.",
-            "Sınıf olasılıkları beklenen sınıf sırasına hizalanır.",
-            "Eğitim bölümünde tamamen boş olan özellik sütunları otomatik çıkarılır.",
-            "Doğruluk, Log Loss ve Brier skoru birleşik modelin kronolojik doğrulama tahminlerinden hesaplanır.",
+            "Tek veri kaynağı data/v2-data.json dosyasıdır.",
+            "matches.json kullanılmaz.",
+            "Sonucu bulunan maçlar eğitim verisi olarak kullanılır.",
+            "Sonucu bulunmayan maçlar için tahmin üretilir.",
+            "Eğitim verisi değişmediyse kaydedilmiş modeller yeniden kullanılır.",
+            "Açılış oranlarının veri dosyasında korunması gerekir.",
         ],
     }
-    OUT_PATH.write_text(
-        json.dumps(output, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with OUT_PATH.open("w", encoding="utf-8") as file:
+        json.dump(output, file, ensure_ascii=False, indent=2)
+    # Üretilen JSON dosyasını tekrar okuyarak kontrol et.
     with OUT_PATH.open("r", encoding="utf-8") as file:
         checked = json.load(file)
     if not isinstance(checked.get("predictions"), list):
-        raise RuntimeError(
-            "ML çıktısındaki predictions alanı geçersiz."
-        )
-    if not isinstance(checked.get("validation"), dict):
-        raise RuntimeError(
-            "ML çıktısındaki validation alanı geçersiz."
-        )
-    print(
-        "ML tamamlandı: "
-        f"eğitim={len(training)}, "
-        f"tahmin={len(predictions)}, "
-        f"atlanan={skipped}"
-    )
-    print(f"Kullanılan algoritmalar: {used_algorithm_names}")
-    print(f"Çıktı: {OUT_PATH.relative_to(ROOT)}")
+        raise RuntimeError("Tahmin JSON dosyası doğrulanamadı.")
+    print(f"Eğitim örneği: {len(training_rows)}")
+    print(f"Tahmin edilen maç: {len(predictions)}")
+    print(f"Atlanan maç: {skipped}")
+    print(f"Algoritmalar: {output['activeAlgorithms']}")
+    print(f"Model dosyası: {MODEL_PATH.relative_to(ROOT)}")
+    print(f"Tahmin dosyası: {OUT_PATH.relative_to(ROOT)}")
 if __name__ == "__main__":
     main()
