@@ -5,43 +5,350 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>MACKOLİK · ML ANALİZ</title>
 <style>
-:root{color-scheme:dark;--bg:#0b1020;--panel:#141c2f;--line:#27334d;--text:#edf2ff;--muted:#9eabc4;--accent:#7c9cff;--green:#43d6a0;--amber:#ffc86a}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif}
-header{padding:24px max(16px,calc((100vw - 1180px)/2));background:#10182a;border-bottom:1px solid var(--line)}
-h1{margin:0;font-size:clamp(23px,4vw,34px)}.sub{color:var(--muted);margin-top:5px}
-main{max-width:1180px;margin:auto;padding:18px 14px 40px}.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
-input,select,button{font:inherit;border-radius:10px;border:1px solid var(--line);padding:10px 12px;background:var(--panel);color:var(--text)}
-button{cursor:pointer;background:#25365c}button:hover{filter:brightness(1.15)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
-.card,.match,.metric{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:14px}
-.card .label{font-size:12px;color:var(--muted)}.card .value{font-size:23px;font-weight:750;margin-top:3px}
-.notice{padding:12px 14px;border:1px solid var(--line);border-radius:12px;color:var(--muted);margin:12px 0}
-.section-title{margin:22px 0 10px;font-size:18px}.matches{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:12px}
-.match-head{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px}.teams{font-size:17px;font-weight:700;margin:10px 0}
-.market{border-top:1px solid var(--line);padding:9px 0}.market-title{font-size:12px;color:var(--muted);margin-bottom:5px}
-.options{display:flex;gap:6px;flex-wrap:wrap}.option{flex:1;min-width:68px;padding:8px;border:1px solid var(--line);border-radius:9px;text-align:center}
-.option.best{border-color:var(--green);background:#15352f}.pct{font-weight:800;font-size:17px}.pick{color:var(--green);font-size:11px}
-.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.metric h3{margin:0 0 8px;font-size:15px}.metric p{margin:4px 0;color:var(--muted);font-size:13px}
-.empty{padding:25px;text-align:center;border:1px dashed var(--line);border-radius:12px;color:var(--muted)}
-footer{color:var(--muted);font-size:12px;margin-top:22px}
-@media(max-width:480px){header{padding:18px 14px}.card .value{font-size:20px}}
+:root{
+  color-scheme:dark;
+  --bg:#0b1020;
+  --panel:#141c2f;
+  --line:#27334d;
+  --text:#edf2ff;
+  --muted:#9eabc4;
+  --accent:#7c9cff;
+  --green:#43d6a0;
+  --amber:#ffc86a
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif
+}
+header{
+  padding:24px max(16px,calc((100vw - 1180px)/2));
+  background:#10182a;
+  border-bottom:1px solid var(--line)
+}
+h1{
+  margin:0;
+  font-size:clamp(23px,4vw,34px)
+}
+.sub{
+  color:var(--muted);
+  margin-top:5px
+}
+main{
+  max-width:1180px;
+  margin:auto;
+  padding:18px 14px 40px
+}
+.toolbar{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:14px
+}
+input,select,button{
+  font:inherit;
+  border-radius:10px;
+  border:1px solid var(--line);
+  padding:10px 12px;
+  background:var(--panel);
+  color:var(--text)
+}
+button{
+  cursor:pointer;
+  background:#25365c
+}
+button:hover{
+  filter:brightness(1.15)
+}
+.date-panel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  padding:14px;
+  margin-bottom:16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel)
+}
+.date-info{
+  min-width:150px;
+  flex:1
+}
+.date-label{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:3px
+}
+.date-heading{
+  font-size:19px;
+  font-weight:750
+}
+.date-controls{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap
+}
+.date-nav{
+  min-width:42px;
+  font-size:18px;
+  padding:9px 12px
+}
+.date-today{
+  background:#25365c
+}
+.date-picker{
+  width:155px;
+  min-height:42px;
+  accent-color:var(--accent)
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:10px;
+  margin-bottom:16px
+}
+.card,.match,.metric{
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:var(--panel);
+  padding:14px
+}
+.card .label{
+  font-size:12px;
+  color:var(--muted)
+}
+.card .value{
+  font-size:23px;
+  font-weight:750;
+  margin-top:3px
+}
+.notice{
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  color:var(--muted);
+  margin:12px 0
+}
+.section-title{
+  margin:22px 0 10px;
+  font-size:18px
+}
+.matches{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));
+  gap:12px
+}
+.match-head{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  color:var(--muted);
+  font-size:12px
+}
+.teams{
+  font-size:17px;
+  font-weight:700;
+  margin:10px 0
+}
+.market{
+  border-top:1px solid var(--line);
+  padding:9px 0
+}
+.market-title{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:5px
+}
+.options{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap
+}
+.option{
+  flex:1;
+  min-width:68px;
+  padding:8px;
+  border:1px solid var(--line);
+  border-radius:9px;
+  text-align:center
+}
+.option.best{
+  border-color:var(--green);
+  background:#15352f
+}
+.pct{
+  font-weight:800;
+  font-size:17px
+}
+.pick{
+  color:var(--green);
+  font-size:11px
+}
+.metrics{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:10px
+}
+.metric h3{
+  margin:0 0 8px;
+  font-size:15px
+}
+.metric p{
+  margin:4px 0;
+  color:var(--muted);
+  font-size:13px
+}
+.empty{
+  padding:25px;
+  text-align:center;
+  border:1px dashed var(--line);
+  border-radius:12px;
+  color:var(--muted)
+}
+footer{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:22px
+}
+@media(max-width:480px){
+  header{padding:18px 14px}
+  .card .value{font-size:20px}
+  .date-panel{align-items:stretch}
+  .date-controls{width:100%}
+  .date-picker{flex:1;min-width:0}
+}
 </style>
 </head>
 <body>
-<header><h1>MACKOLİK / ML ANALİZ</h1><div class="sub">Yerel maç verileriyle eğitilmiş makine öğrenmesi · DNA/RNA sisteminden bağımsız</div></header>
+<header>
+  <h1>MACKOLİK / ML ANALİZ</h1>
+  <div class="sub">
+    Yerel maç verileriyle eğitilmiş makine öğrenmesi · DNA/RNA sisteminden bağımsız
+  </div>
+</header>
 <main>
+  <div class="date-panel">
+    <div class="date-info">
+      <div class="date-label">MAÇ TARİHİ</div>
+      <div id="selectedDateLabel" class="date-heading">Tarih seçin</div>
+    </div>
+    <div class="date-controls">
+      <button
+        id="prevDate"
+        class="date-nav"
+        type="button"
+        aria-label="Önceki gün"
+        title="Önceki gün"
+      >‹</button>
+      <input
+        id="matchDate"
+        class="date-picker"
+        type="date"
+        aria-label="Maç tarihini seç"
+      >
+      <button
+        id="nextDate"
+        class="date-nav"
+        type="button"
+        aria-label="Sonraki gün"
+        title="Sonraki gün"
+      >›</button>
+      <button
+        id="todayDate"
+        class="date-today"
+        type="button"
+      >Bugün</button>
+    </div>
+  </div>
   <div class="toolbar">
-    <input id="search" placeholder="Takım veya lig ara..." aria-label="Takım veya lig ara">
-    <select id="market"><option value="all">Tüm marketler</option><option value="MS">Maç Sonucu</option><option value="KG">Karşılıklı Gol</option><option value="U25">2.5 Üst</option><option value="IY15U">İY 1.5 Üst</option></select>
-    <button id="refresh">Veriyi yenile</button>
+    <input
+      id="search"
+      placeholder="Takım veya lig ara..."
+      aria-label="Takım veya lig ara"
+    >
+    <select id="market" aria-label="Market seç">
+      <option value="all">Tüm marketler</option>
+      <option value="MS">Maç Sonucu</option>
+      <option value="KG">Karşılıklı Gol</option>
+      <option value="U25">2.5 Üst</option>
+      <option value="IY15U">İY 1.5 Üst</option>
+    </select>
+    <button id="refresh" type="button">Veriyi yenile</button>
   </div>
   <div id="summary" class="cards"></div>
-  <div id="status" class="notice">ML sonuçları yükleniyor...</div>
+  <div id="status" class="notice">
+    ML sonuçları yükleniyor...
+  </div>
   <h2 class="section-title">Model doğrulama sonuçları</h2>
   <div id="metrics" class="metrics"></div>
   <h2 class="section-title">Maç tahminleri</h2>
   <div id="matches" class="matches"></div>
-  <footer>Olasılıklar model tahminidir; kesinlik veya bahis tavsiyesi değildir. Doğruluk yüzdesi tek başına kârlılık anlamına gelmez. Modelin performansı yeni verilerle değişebilir.</footer>
+  <footer>
+    Olasılıklar model tahminidir; kesinlik veya bahis tavsiyesi değildir.
+    Doğruluk yüzdesi tek başına kârlılık anlamına gelmez.
+    Modelin performansı yeni verilerle değişebilir.
+  </footer>
 </main>
+<script>
+(function(){
+  const dateInput = document.getElementById('matchDate');
+  const dateLabel = document.getElementById('selectedDateLabel');
+  const prevButton = document.getElementById('prevDate');
+  const nextButton = document.getElementById('nextDate');
+  const todayButton = document.getElementById('todayDate');
+  function localDateString(date){
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  function formatDate(value){
+    if(!value) return 'Tarih seçin';
+    const parts = value.split('-').map(Number);
+    if(parts.length !== 3 || parts.some(Number.isNaN)){
+      return 'Tarih seçin';
+    }
+    const date = new Date(parts[0], parts[1] - 1, parts[2]);
+    return new Intl.DateTimeFormat('tr-TR', {
+      weekday:'long',
+      day:'numeric',
+      month:'long',
+      year:'numeric'
+    }).format(date);
+  }
+  function updateDateLabel(){
+    dateLabel.textContent = formatDate(dateInput.value);
+  }
+  function shiftDate(days){
+    const current = dateInput.value
+      ? new Date(
+          Number(dateInput.value.slice(0,4)),
+          Number(dateInput.value.slice(5,7)) - 1,
+          Number(dateInput.value.slice(8,10))
+        )
+      : new Date();
+    current.setDate(current.getDate() + days);
+    dateInput.value = localDateString(current);
+    dateInput.dispatchEvent(new Event('change', { bubbles:true }));
+    updateDateLabel();
+  }
+  dateInput.value = localDateString(new Date());
+  updateDateLabel();
+  dateInput.addEventListener('change', updateDateLabel);
+  prevButton.addEventListener('click', () => shiftDate(-1));
+  nextButton.addEventListener('click', () => shiftDate(1));
+  todayButton.addEventListener('click', () => {
+    dateInput.value = localDateString(new Date());
+    dateInput.dispatchEvent(new Event('change', { bubbles:true }));
+    updateDateLabel();
+  });
+})();
+</script>
 <script src="./ml.js"></script>
-</body></html>
+</body>
+</html>
