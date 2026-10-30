@@ -1,0 +1,64 @@
+
+name: ML Model Training
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Repository indir
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: ML kütüphanelerini kur
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy==2.2.6
+          pip install pandas==2.3.3
+          pip install scikit-learn==1.7.2
+          pip install xgboost==3.1.1
+          pip install lightgbm==4.6.0
+          pip install catboost==1.2.8
+
+      - name: Kütüphane sürümlerini kontrol et
+        run: |
+          python -c "import numpy, pandas, sklearn, xgboost, lightgbm, catboost; print('Tüm ML kütüphaneleri başarıyla yüklendi.')"
+
+      - name: ML modellerini eğit ve tahmin üret
+        run: python scripts/train-ml-models.py
+        env:
+          PYTHONUNBUFFERED: "1"
+
+      - name: Oluşturulan dosyaları kontrol et
+        run: |
+          test -s outputs/ml-training-report.json
+          test -s outputs/ml-predictions.json
+          echo "Eğitim raporu ve tahmin dosyaları hazır."
+          ls -lh outputs/ml-training-report.json outputs/ml-predictions.json
+
+      - name: Tahmin ve eğitim raporlarını GitHub'a kaydet
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add outputs/ml-training-report.json
+          git add outputs/ml-predictions.json
+
+          if git diff --cached --quiet; then
+            echo "Yeni değişiklik yok."
+          else
+            git commit -m "ML model eğitim ve tahmin sonuçları"
+            git push
+          fi
