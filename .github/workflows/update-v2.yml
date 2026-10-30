@@ -1,17 +1,23 @@
-name: V2 Excel → JSON
+
+name: V2 Excel → JSON → ML Güncelleme
+
 on:
   push:
     paths:
       - "input/acilis.xlsx"
   workflow_dispatch:
+
 permissions:
   contents: write
+
 concurrency:
   group: v2-excel-json-main
   cancel-in-progress: false
+
 jobs:
-  update-v2:
+  update-v2-and-ml:
     runs-on: ubuntu-latest
+
     steps:
       - name: Repository'i al
         uses: actions/checkout@v4
@@ -19,29 +25,51 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: true
+
       - name: Python kurulumu
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Gerekli paketleri kur
+
+      - name: Node.js kurulumu
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Python paketlerini kur
         run: |
           python -m pip install --upgrade pip
-          pip install pandas openpyxl
+          pip install pandas openpyxl numpy scikit-learn xgboost lightgbm catboost
+
       - name: Güncel main dalını al
         run: |
           git fetch origin main
           git reset --hard origin/main
+
       - name: Excel → JSON
         run: |
           python scripts/update_v2.py
-      - name: JSON değiştiyse commit et
+
+      - name: ML modellerini eğit ve tahminleri üret
+        run: |
+          python scripts/train-ml-models.py
+
+      - name: Tahmin geçmişini güncelle
+        run: |
+          node scripts/update-ml-history.mjs
+
+      - name: Güncellenen dosyaları commit et
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           git add data/v2-data.json
+          git add outputs/
+
           if git diff --cached --quiet; then
-            echo "JSON değişmedi."
+            echo "Kaydedilecek değişiklik yok."
             exit 0
           fi
-          git commit -m "V2 verisini güncelle"
+
+          git commit -m "V2 verisi ve ML tahminlerini güncelle"
           git push origin HEAD:main
