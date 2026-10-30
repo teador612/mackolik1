@@ -5,85 +5,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ML Tahmin Merkezi</title>
+
 <style>
-:root {
+:root{
   --bg:#0b1020;
-  --panel:#121a2d;
-  --panel2:#182238;
-  --border:#293650;
+  --panel:#121b2e;
+  --panel2:#19263c;
+  --border:#2b3a54;
   --text:#edf2ff;
-  --muted:#94a3b8;
+  --muted:#9aa9bf;
   --green:#22c55e;
-  --red:#ef4444;
-  --blue:#60a5fa;
+  --blue:#3b82f6;
   --yellow:#facc15;
 }
 *{box-sizing:border-box}
 body{
   margin:0;
-  padding:18px;
+  padding:16px;
   background:var(--bg);
   color:var(--text);
   font-family:Arial,Helvetica,sans-serif;
 }
-.container{max-width:1250px;margin:auto}
+.container{max-width:1200px;margin:auto}
 header{
-  margin-bottom:20px;
   padding:20px;
-  background:linear-gradient(135deg,#172746,#111827);
+  margin-bottom:16px;
+  background:linear-gradient(135deg,#172b4c,#111827);
   border:1px solid var(--border);
-  border-radius:16px;
+  border-radius:15px;
 }
-header h1{margin:0 0 8px;font-size:25px}
-header p{margin:0;color:var(--muted);font-size:13px}
+h1{font-size:24px;margin:0 0 7px}
+header p{font-size:13px;color:var(--muted);margin:0}
 .stats{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:10px;
-  margin-bottom:16px;
+  margin-bottom:15px;
 }
 .stat{
+  padding:13px;
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:12px;
-  padding:14px;
+  border-radius:11px;
 }
 .stat strong{display:block;font-size:23px;margin-bottom:4px}
-.stat span{font-size:12px;color:var(--muted)}
+.stat span{font-size:11px;color:var(--muted)}
 .filters{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
   gap:10px;
-  background:var(--panel);
-  padding:14px;
-  border:1px solid var(--border);
-  border-radius:14px;
-  margin-bottom:16px;
-}
-input,select,button{
-  font:inherit;
-}
-input,select{
-  width:100%;
-  min-width:0;
-  padding:12px;
-  color:var(--text);
-  background:#0b1324;
-  border:1px solid var(--border);
-  border-radius:9px;
-  outline:none;
-}
-button{
-  border:0;
-  cursor:pointer;
-}
-.status{
-  padding:12px 14px;
+  padding:13px;
   margin-bottom:14px;
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:10px;
+  border-radius:12px;
+}
+input,select,button{font:inherit}
+input,select{
+  width:100%;
+  min-width:0;
+  padding:11px;
+  color:var(--text);
+  background:#0b1425;
+  border:1px solid var(--border);
+  border-radius:8px;
+}
+.status{
+  padding:12px;
+  margin-bottom:14px;
   color:var(--muted);
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:9px;
   font-size:13px;
 }
 .match-list{display:grid;gap:12px}
@@ -91,112 +84,75 @@ button{
   overflow:hidden;
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:14px;
+  border-radius:13px;
 }
 .match-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
   padding:13px 15px;
-  background:#172238;
+  background:#17243a;
   border-bottom:1px solid var(--border);
 }
-.match-info{min-width:0}
-.match-date{
-  color:var(--muted);
-  font-size:12px;
-  margin-bottom:5px;
-}
-.match-teams{
-  font-size:15px;
-  font-weight:700;
-  overflow-wrap:anywhere;
-}
-.league{
-  display:inline-block;
-  margin-top:6px;
-  color:#93c5fd;
-  font-size:11px;
-}
+.match-date{font-size:12px;color:var(--muted);margin-bottom:5px}
+.match-teams{font-size:15px;font-weight:bold;overflow-wrap:anywhere}
+.league{font-size:11px;color:#93c5fd;margin-top:6px}
 .main-content{
   display:grid;
-  grid-template-columns:minmax(0,1.5fr) minmax(150px,0.8fr);
-  gap:12px;
-  padding:14px;
+  grid-template-columns:minmax(0,1.5fr) minmax(150px,.8fr);
+  gap:11px;
+  padding:13px;
 }
 .best-box,.score-box{
   min-width:0;
-  padding:14px;
-  border-radius:11px;
+  padding:13px;
   background:var(--panel2);
   border:1px solid var(--border);
+  border-radius:10px;
 }
 .box-label{
+  margin-bottom:9px;
   color:var(--muted);
   font-size:10px;
-  font-weight:700;
-  letter-spacing:.7px;
-  margin-bottom:9px;
+  font-weight:bold;
+  letter-spacing:.6px;
 }
-.best-pick{
-  font-size:20px;
-  font-weight:800;
-  line-height:1.3;
-  overflow-wrap:anywhere;
-}
-.best-market{
-  color:var(--muted);
-  font-size:12px;
-  margin-top:6px;
-}
-.best-percent{
-  color:var(--green);
-  font-size:14px;
-  font-weight:700;
-  margin-top:8px;
-}
+.best-pick{font-size:20px;font-weight:bold;overflow-wrap:anywhere}
+.best-market{margin-top:6px;color:var(--muted);font-size:12px}
+.best-percent{margin-top:8px;color:var(--green);font-size:13px;font-weight:bold}
 .score-line{
   display:flex;
-  align-items:center;
   justify-content:space-between;
+  align-items:center;
   gap:8px;
   margin:8px 0;
 }
 .score-type{font-size:12px;color:var(--muted)}
-.score-value{font-size:22px;font-weight:800}
+.score-value{font-size:21px;font-weight:bold}
 .expand-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
   gap:10px;
-  padding:0 14px 14px;
+  padding:0 13px 13px;
 }
 .expand-hint{font-size:11px;color:var(--muted)}
 .expand-btn{
   width:36px;
   height:36px;
   flex:0 0 36px;
-  border-radius:10px;
   color:white;
-  background:#2563eb;
+  background:var(--blue);
+  border:0;
+  border-radius:9px;
   font-size:23px;
-  line-height:1;
-  font-weight:400;
+  cursor:pointer;
 }
-.expand-btn:hover{background:#1d4ed8}
 .details{
   display:none;
-  padding:14px;
+  padding:13px;
+  background:#0e1728;
   border-top:1px solid var(--border);
-  background:#0e1729;
 }
 .details.open{display:block}
-.details-title{
-  font-size:13px;
-  font-weight:700;
-  margin-bottom:12px;
-}
+.details-title{font-size:13px;font-weight:bold;margin-bottom:11px}
 .market-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -204,57 +160,41 @@ button{
 }
 .market-item{
   min-width:0;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:10px;
   padding:11px;
-}
-.market-name{
-  color:var(--muted);
-  font-size:11px;
-  margin-bottom:7px;
-}
-.market-prediction{
-  font-size:14px;
-  font-weight:700;
-  overflow-wrap:anywhere;
-}
-.market-meta{
-  margin-top:6px;
-  color:var(--green);
-  font-size:12px;
-}
-.probabilities{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-  margin-top:9px;
-}
-.probability{
-  padding:4px 6px;
-  background:#202d43;
-  border-radius:5px;
-  color:#cbd5e1;
-  font-size:10px;
-}
-.empty{
-  text-align:center;
-  padding:35px 15px;
-  color:var(--muted);
   background:var(--panel);
   border:1px solid var(--border);
-  border-radius:12px;
+  border-radius:9px;
+}
+.market-name{font-size:11px;color:var(--muted);margin-bottom:7px}
+.market-prediction{font-size:14px;font-weight:bold;overflow-wrap:anywhere}
+.market-meta{font-size:12px;color:var(--green);margin-top:6px}
+.probabilities{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.probability{
+  padding:5px 6px;
+  color:#cbd5e1;
+  background:#25344b;
+  border-radius:5px;
+  font-size:10px;
 }
 .load-area{text-align:center;padding:18px}
 .load-btn,.refresh-btn{
   padding:12px 18px;
   color:white;
-  background:#2563eb;
-  border-radius:9px;
-  font-weight:700;
+  background:var(--blue);
+  border:0;
+  border-radius:8px;
+  font-weight:bold;
+  cursor:pointer;
 }
-.load-btn:hover,.refresh-btn:hover{background:#1d4ed8}
-.footer-note{
+.empty{
+  padding:30px 15px;
+  text-align:center;
+  color:var(--muted);
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:11px;
+}
+.note{
   margin:16px 0;
   color:var(--muted);
   font-size:11px;
@@ -262,10 +202,10 @@ button{
 }
 @media(max-width:700px){
   body{padding:10px}
-  header{padding:16px}
-  header h1{font-size:21px}
+  header{padding:15px}
+  h1{font-size:21px}
   .stats{gap:7px}
-  .stat{padding:11px 8px}
+  .stat{padding:10px 8px}
   .stat strong{font-size:19px}
   .stat span{font-size:10px}
   .filters{grid-template-columns:1fr 1fr;padding:10px}
@@ -273,9 +213,7 @@ button{
   .main-content{grid-template-columns:1fr 125px;gap:8px;padding:10px}
   .best-box,.score-box{padding:10px}
   .best-pick{font-size:17px}
-  .score-value{font-size:20px}
-  .match-head{padding:11px}
-  .match-teams{font-size:14px}
+  .score-value{font-size:19px}
   .market-grid{grid-template-columns:1fr}
 }
 @media(max-width:390px){
@@ -286,6 +224,7 @@ button{
 }
 </style>
 </head>
+
 <body>
 <div class="container">
 
@@ -305,19 +244,19 @@ button{
   </div>
   <div class="stat">
     <strong id="algorithmCount">-</strong>
-    <span>Kullanılan algoritma</span>
+    <span>Algoritma sayısı</span>
   </div>
 </div>
 
 <div class="filters">
-  <input type="date" id="dateFilter" aria-label="Tarih seç">
+  <input type="date" id="dateFilter" aria-label="Tarih filtresi">
   <select id="leagueFilter">
     <option value="">Tüm ligler</option>
   </select>
   <input type="search" id="teamFilter" placeholder="Takım ara...">
 </div>
 
-<div class="status" id="status">Tahmin verileri yükleniyor...</div>
+<div class="status" id="status">Veriler yükleniyor...</div>
 
 <div class="match-list" id="matchList"></div>
 
@@ -325,10 +264,10 @@ button{
   <button class="load-btn" id="loadMore">Daha fazla maç göster</button>
 </div>
 
-<div class="footer-note">
-  Ortak tahmin, mevcut algoritmaların ilgili sonuç için ürettiği olasılıkların
-  ortalamasıyla hesaplanır. Yüzdeler model olasılıklarının ortalamasıdır;
-  garanti veya kesin gerçekleşme oranı değildir.
+<div class="note">
+  Ortak tahmin, mevcut algoritmaların aynı piyasa ve sonuç için ürettiği
+  olasılıkların ortalamasıyla hesaplanır. Gösterilen yüzdeler model
+  olasılıklarının ortalamasıdır; kesinlik veya garanti anlamına gelmez.
 </div>
 
 </div>
@@ -339,40 +278,40 @@ button{
 const DATA_URL = "./outputs/ml-predictions.json";
 const PAGE_SIZE = 30;
 
-const ALGORITHMS = [
+const DEFAULT_ALGORITHMS = [
   "Random Forest",
   "XGBoost",
   "LightGBM",
   "CatBoost"
 ];
 
-const TARGET_LABELS = {
-  "MS 1-X-2": "Maç Sonucu",
-  "MS1X2": "Maç Sonucu",
-  "MS": "Maç Sonucu",
-  "KG Var/Yok": "Karşılıklı Gol",
-  "KG": "Karşılıklı Gol",
-  "İY 0.5 Alt/Üst": "İlk Yarı 0.5 Gol",
-  "İY 1.5 Alt/Üst": "İlk Yarı 1.5 Gol",
-  "MS 1.5 Alt/Üst": "Maç 1.5 Gol",
-  "MS 2.5 Alt/Üst": "Maç 2.5 Gol",
-  "MS 3.5 Alt/Üst": "Maç 3.5 Gol",
-  "İY 1-X-2": "İlk Yarı Sonucu",
-  "Goal range 0-1, 2-3, 4-5, 6+": "Toplam Gol Aralığı",
-  "Gol Aralığı": "Toplam Gol Aralığı"
-};
-
 const state = {
-  allMatches: [],
-  filteredMatches: [],
-  visibleCount: PAGE_SIZE,
-  expanded: new Set(),
-  rawData: null
+  data: null,
+  matches: [],
+  filtered: [],
+  algorithms: DEFAULT_ALGORITHMS,
+  visible: PAGE_SIZE,
+  expanded: new Set()
 };
 
 const $ = id => document.getElementById(id);
 
-function escapeHtml(value) {
+const TARGET_LABELS = {
+  "MS 1-X-2": "Maç Sonucu",
+  "KG Var-Yok": "Karşılıklı Gol",
+  "KG Var/Yok": "Karşılıklı Gol",
+  "İY 0.5 Alt-Üst": "İlk Yarı 0.5 Gol",
+  "İY 1.5 Alt-Üst": "İlk Yarı 1.5 Gol",
+  "MS 1.5 Alt-Üst": "Maç 1.5 Gol",
+  "MS 2.5 Alt-Üst": "Maç 2.5 Gol",
+  "MS 3.5 Alt-Üst": "Maç 3.5 Gol",
+  "İY 1-X-2": "İlk Yarı Sonucu",
+  "Gol Aralığı": "Toplam Gol Aralığı",
+  "Goal Range": "Toplam Gol Aralığı",
+  "Skor tahmini": "Skor Tahmini"
+};
+
+function escapeHTML(value){
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&":"&amp;",
     "<":"&lt;",
@@ -382,473 +321,323 @@ function escapeHtml(value) {
   })[char]);
 }
 
-function normalizeText(value) {
-  return String(value ?? "")
-    .toLocaleLowerCase("tr-TR")
-    .trim();
+function normalize(value){
+  return String(value ?? "").trim().toLocaleLowerCase("tr-TR");
 }
 
-function parseDate(value) {
-  if (!value) return 0;
-
-  const text = String(value);
-
-  let match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (match) {
-    return new Date(
-      Number(match[1]),
-      Number(match[2])-1,
-      Number(match[3])
-    ).getTime();
-  }
-
-  match = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-  if (match) {
-    return new Date(
-      Number(match[3]),
-      Number(match[2])-1,
-      Number(match[1])
-    ).getTime();
-  }
-
-  const parsed = Date.parse(text);
-  return Number.isFinite(parsed) ? parsed : 0;
+function getDate(match){
+  return match.date || match.matchDate || "";
 }
 
-function dateToInput(value) {
-  if (!value) return "";
+function getTime(match){
+  return match.time || match.matchTime || "";
+}
 
-  const text = String(value);
-  let match = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+function getHome(match){
+  return match.home || match.homeTeam || "Ev sahibi";
+}
 
-  if (match) return `${match[1]}-${match[2]}-${match[3]}`;
+function getAway(match){
+  return match.away || match.awayTeam || "Deplasman";
+}
 
-  match = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-  if (match) return `${match[3]}-${match[2]}-${match[1]}`;
+function getLeague(match){
+  return match.league || match.competition || "Lig bilgisi yok";
+}
+
+function parseDate(value){
+  const text = String(value ?? "");
+  let m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+
+  if(m){
+    return new Date(+m[3],+m[2]-1,+m[1]).getTime();
+  }
+
+  m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if(m){
+    return new Date(+m[1],+m[2]-1,+m[3]).getTime();
+  }
+
+  return Date.parse(text) || 0;
+}
+
+function dateForInput(value){
+  const text = String(value ?? "");
+  let m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+
+  if(m) return `${m[3]}-${m[2]}-${m[1]}`;
+
+  m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if(m) return `${m[1]}-${m[2]}-${m[3]}`;
 
   return "";
 }
 
-function formatPercent(value) {
-  if (!Number.isFinite(value)) return "-";
-  return "%" + Math.round(value * 100);
-}
-
-function toProbability(value) {
+function formatPercent(value){
   const number = Number(value);
-  if (!Number.isFinite(number)) return null;
+  if(!Number.isFinite(number)) return "-";
 
-  if (number > 1 && number <= 100) return number / 100;
-  if (number >= 0 && number <= 1) return number;
-
-  return null;
+  return "%" + Math.round(number);
 }
 
-function getMatchesFromData(data) {
-  if (Array.isArray(data)) return data;
-
-  const possible = [
-    data?.matches,
-    data?.predictions,
-    data?.data?.matches,
-    data?.results,
-    data?.data
-  ];
-
-  for (const item of possible) {
-    if (Array.isArray(item)) return item;
-  }
-
-  return [];
+function getMatchId(match,index){
+  return String(
+    match.matchKey ||
+    match.id ||
+    match.code ||
+    `${getDate(match)}-${getTime(match)}-${getHome(match)}-${getAway(match)}-${index}`
+  );
 }
 
-function getPredictionObject(match) {
-  return match?.predictions ||
-         match?.marketPredictions ||
-         match?.predictionResults ||
-         match?.models ||
-         {};
+/*
+  GERÇEK JSON YAPISI:
+
+  matches[]
+    └── predictions
+          ├── MS 1-X-2
+          │     ├── Random Forest
+          │     ├── XGBoost
+          │     ├── LightGBM
+          │     └── CatBoost
+          ├── KG Var-Yok
+          └── Skor tahmini
+*/
+
+function getPredictions(match){
+  return match?.predictions &&
+         typeof match.predictions === "object"
+    ? match.predictions
+    : {};
 }
 
-function getAlgorithmEntries(predictionObject) {
-  if (!predictionObject || typeof predictionObject !== "object") return [];
+function getTargetNames(match){
+  const predictions = getPredictions(match);
 
-  const entries = Object.entries(predictionObject);
+  return Object.keys(predictions).filter(target => {
+    if(normalize(target) === normalize("Skor tahmini")) return false;
 
-  const algorithmEntries = entries.filter(([name, value]) => {
-    if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+    const targetData = predictions[target];
 
-    const normalized = normalizeText(name);
-    return ALGORITHMS.some(algorithm =>
-      normalizeText(algorithm) === normalized ||
-      normalized.includes(normalizeText(algorithm))
-    );
+    return targetData &&
+      typeof targetData === "object" &&
+      !Array.isArray(targetData);
   });
-
-  return algorithmEntries;
 }
 
-function getTargetNames(match) {
-  const predictions = getPredictionObject(match);
-  const algorithms = getAlgorithmEntries(predictions);
+function getAlgorithmResult(match,target,algorithm){
+  const targetData = getPredictions(match)[target];
 
-  const names = new Set();
+  if(!targetData || typeof targetData !== "object") return null;
 
-  for (const [, algorithmData] of algorithms) {
-    for (const [key, value] of Object.entries(algorithmData || {})) {
-      if (
-        key === "Skor tahmini" ||
-        key === "score" ||
-        key === "scores" ||
-        key === "metadata"
-      ) continue;
+  if(targetData[algorithm]) return targetData[algorithm];
 
-      if (value && typeof value === "object" &&
-          (value.probabilities || value.prediction !== undefined ||
-           value.predictedClass !== undefined)) {
-        names.add(key);
-      }
-    }
-  }
+  const found = Object.entries(targetData).find(([name]) =>
+    normalize(name) === normalize(algorithm)
+  );
 
-  return [...names];
+  return found ? found[1] : null;
 }
 
-function getTargetValue(match, algorithmName, targetName) {
-  const predictions = getPredictionObject(match);
+function getProbabilityEntries(result){
+  const probabilities = result?.probabilities;
 
-  let algorithmData = predictions?.[algorithmName];
-
-  if (!algorithmData) {
-    const found = Object.entries(predictions || {}).find(([name]) =>
-      normalizeText(name) === normalizeText(algorithmName)
-    );
-    algorithmData = found?.[1];
-  }
-
-  if (!algorithmData) return null;
-
-  return algorithmData[targetName] || null;
-}
-
-function getProbabilityEntries(result) {
-  if (!result || typeof result !== "object") return [];
-
-  const probabilities =
-    result.probabilities ||
-    result.probs ||
-    result.classProbabilities ||
-    result.probability ||
-    null;
-
-  if (!probabilities || typeof probabilities !== "object") return [];
-
-  if (Array.isArray(probabilities)) {
-    return probabilities.map((item, index) => {
-      if (item && typeof item === "object") {
-        return [
-          String(item.class ?? item.label ?? item.name ?? index),
-          toProbability(item.probability ?? item.prob ?? item.value)
-        ];
-      }
-      return [String(index), toProbability(item)];
-    }).filter(([, value]) => value !== null);
-  }
+  if(!probabilities || typeof probabilities !== "object") return [];
 
   return Object.entries(probabilities)
-    .map(([key, value]) => [
-      key,
-      toProbability(
-        typeof value === "object" && value !== null
-          ? value.probability ?? value.prob ?? value.value
-          : value
-      )
-    ])
-    .filter(([, value]) => value !== null);
+    .map(([label,value]) => ({
+      label,
+      probability: Number(value)
+    }))
+    .filter(item => Number.isFinite(item.probability));
 }
 
-function getPredictedLabel(result) {
-  if (!result || typeof result !== "object") return null;
+function getPredictionLabel(result){
+  if(!result) return null;
 
   const value =
     result.prediction ??
+    result.pick ??
     result.predictedClass ??
-    result.predicted ??
     result.label ??
-    result.class ??
     null;
 
-  if (value === null || value === undefined) return null;
+  if(value === null || value === undefined) return null;
 
-  if (typeof value === "object") {
-    return String(value.label ?? value.name ?? value.value ?? "");
+  if(typeof value === "object"){
+    return String(value.title ?? value.label ?? value.key ?? "");
   }
 
   return String(value);
 }
 
-function getConsensusForTarget(match, targetName) {
-  const predictions = getPredictionObject(match);
-  const algorithmEntries = getAlgorithmEntries(predictions);
+function getConsensus(match,target){
+  const classData = new Map();
+  let modelsUsed = 0;
 
-  const classSums = new Map();
-  const modelPicks = [];
-  let usedModels = 0;
-
-  for (const [algorithmName] of algorithmEntries) {
-    const result = getTargetValue(match, algorithmName, targetName);
-    if (!result) continue;
+  for(const algorithm of state.algorithms){
+    const result = getAlgorithmResult(match,target,algorithm);
+    if(!result) continue;
 
     const entries = getProbabilityEntries(result);
+    const prediction = getPredictionLabel(result);
 
-    if (entries.length) {
-      usedModels++;
+    if(entries.length){
+      modelsUsed++;
 
-      for (const [label, probability] of entries) {
-        if (!classSums.has(label)) {
-          classSums.set(label, { sum:0, count:0, votes:0 });
+      for(const item of entries){
+        if(!classData.has(item.label)){
+          classData.set(item.label,{
+            sum:0,
+            count:0,
+            votes:0
+          });
         }
 
-        const item = classSums.get(label);
-        item.sum += probability;
-        item.count++;
+        const current = classData.get(item.label);
+        current.sum += item.probability;
+        current.count++;
       }
 
-      const modelPrediction = getPredictedLabel(result);
+      if(prediction !== null && classData.has(prediction)){
+        classData.get(prediction).votes++;
+      }else if(prediction === null){
+        const highest = entries.reduce((a,b) =>
+          a.probability > b.probability ? a : b
+        );
 
-      if (modelPrediction !== null) {
-        modelPicks.push(modelPrediction);
-      } else {
-        const best = [...entries].sort((a,b) => b[1]-a[1])[0];
-        if (best) modelPicks.push(best[0]);
+        classData.get(highest.label).votes++;
       }
-    } else {
-      const label = getPredictedLabel(result);
+    }else if(prediction !== null){
+      modelsUsed++;
 
-      if (label !== null) {
-        usedModels++;
-
-        if (!classSums.has(label)) {
-          classSums.set(label, { sum:0, count:0, votes:0 });
-        }
-
-        modelPicks.push(label);
+      if(!classData.has(prediction)){
+        classData.set(prediction,{
+          sum:0,
+          count:0,
+          votes:0
+        });
       }
+
+      classData.get(prediction).votes++;
     }
   }
 
-  if (!classSums.size) return null;
+  if(!classData.size) return null;
 
-  for (const pick of modelPicks) {
-    if (classSums.has(pick)) {
-      classSums.get(pick).votes++;
-    }
-  }
+  const outcomes = [...classData.entries()].map(([label,item]) => ({
+    label,
+    probability:item.count ? item.sum/item.count : 0,
+    votes:item.votes
+  }));
 
-  const outcomes = [...classSums.entries()]
-    .map(([label, item]) => ({
-      label,
-      probability: item.count ? item.sum / item.count : 0,
-      votes: item.votes,
-      models: usedModels
-    }))
-    .sort((a,b) => b.probability-a.probability);
-
-  if (!outcomes.length) return null;
+  outcomes.sort((a,b) => b.probability-a.probability);
 
   return {
-    targetName,
-    label: outcomes[0].label,
-    probability: outcomes[0].probability,
-    votes: outcomes[0].votes,
-    models: usedModels,
+    target,
+    label:outcomes[0].label,
+    probability:outcomes[0].probability,
+    votes:outcomes[0].votes,
+    models:modelsUsed,
     outcomes
   };
 }
 
-function getAllMarketConsensus(match) {
-  const targetNames = getTargetNames(match);
+function getAllConsensus(match){
   const results = [];
 
-  for (const targetName of targetNames) {
-    const result = getConsensusForTarget(match, targetName);
-    if (result) results.push(result);
+  for(const target of getTargetNames(match)){
+    const result = getConsensus(match,target);
+    if(result) results.push(result);
   }
 
   return results;
 }
 
-function getBestJointPrediction(match) {
-  const results = getAllMarketConsensus(match);
+function getBestPrediction(match){
+  const results = getAllConsensus(match);
 
-  if (!results.length) return null;
+  if(!results.length) return null;
 
-  let best = null;
+  results.sort((a,b) => b.probability-a.probability);
 
-  for (const result of results) {
-    if (!best || result.probability > best.probability) {
-      best = result;
-    }
-  }
-
-  return best;
+  return results[0];
 }
 
-function getScoreData(match) {
-  const predictions = getPredictionObject(match);
-  const algorithms = getAlgorithmEntries(predictions);
+function getScore(match){
+  const scoreData = getPredictions(match)["Skor tahmini"];
+
+  if(!scoreData || typeof scoreData !== "object"){
+    return {fullTime:"-",halfTime:"-"};
+  }
 
   const fullHome = [];
   const fullAway = [];
   const halfHome = [];
   const halfAway = [];
 
-  for (const [, algorithmData] of algorithms) {
-    const score =
-      algorithmData?.["Skor tahmini"] ||
-      algorithmData?.score ||
-      algorithmData?.scores ||
-      null;
+  for(const algorithm of state.algorithms){
+    let item = scoreData[algorithm];
 
-    if (!score) continue;
+    if(!item){
+      const found = Object.entries(scoreData).find(([name]) =>
+        normalize(name) === normalize(algorithm)
+      );
+      item = found?.[1];
+    }
 
-    const full = score.fullTime || score.fulltime || score.ft || {};
-    const half = score.halfTime || score.halftime || score.ht || {};
+    if(!item) continue;
 
-    const fh = Number(
-      full.expectedHomeGoals ??
-      full.homeExpectedGoals ??
-      full.homeGoalsExpected
-    );
+    const ft = item.fullTime || {};
+    const ht = item.halfTime || {};
 
-    const fa = Number(
-      full.expectedAwayGoals ??
-      full.awayExpectedGoals ??
-      full.awayGoalsExpected
-    );
+    const fh = Number(ft.expectedHomeGoals);
+    const fa = Number(ft.expectedAwayGoals);
+    const hh = Number(ht.expectedHomeGoals);
+    const ha = Number(ht.expectedAwayGoals);
 
-    const hh = Number(
-      half.expectedHomeGoals ??
-      half.homeExpectedGoals ??
-      half.homeGoalsExpected
-    );
-
-    const ha = Number(
-      half.expectedAwayGoals ??
-      half.awayExpectedGoals ??
-      half.awayGoalsExpected
-    );
-
-    if (Number.isFinite(fh)) fullHome.push(fh);
-    if (Number.isFinite(fa)) fullAway.push(fa);
-    if (Number.isFinite(hh)) halfHome.push(hh);
-    if (Number.isFinite(ha)) halfAway.push(ha);
+    if(Number.isFinite(fh)) fullHome.push(fh);
+    if(Number.isFinite(fa)) fullAway.push(fa);
+    if(Number.isFinite(hh)) halfHome.push(hh);
+    if(Number.isFinite(ha)) halfAway.push(ha);
   }
 
-  function average(values) {
-    if (!values.length) return null;
-    return values.reduce((sum,value) => sum+value,0) / values.length;
+  function avg(values){
+    if(!values.length) return null;
+    return values.reduce((a,b)=>a+b,0)/values.length;
   }
 
-  function scoreString(home, away) {
-    if (home === null || away === null) return "-";
+  function makeScore(home,away){
+    if(home === null || away === null) return "-";
     return `${Math.round(home)} - ${Math.round(away)}`;
   }
 
-  const fh = average(fullHome);
-  const fa = average(fullAway);
-  const hh = average(halfHome);
-  const ha = average(halfAway);
-
   return {
-    fullTime: scoreString(fh, fa),
-    halfTime: scoreString(hh, ha),
-    available: fh !== null || fa !== null || hh !== null || ha !== null
+    fullTime:makeScore(avg(fullHome),avg(fullAway)),
+    halfTime:makeScore(avg(halfHome),avg(halfAway))
   };
 }
 
-function getMatchDate(match) {
-  return match.date || match.matchDate || match.tarih || "";
-}
-
-function getMatchTime(match) {
-  return match.time || match.matchTime || match.saat || "";
-}
-
-function getHome(match) {
-  return match.home || match.homeTeam || match.evSahibi || match.team1 || "Ev sahibi";
-}
-
-function getAway(match) {
-  return match.away || match.awayTeam || match.deplasman || match.team2 || "Deplasman";
-}
-
-function getLeague(match) {
-  return match.league || match.competition || match.lig || "Lig bilgisi yok";
-}
-
-function getMatchId(match, index) {
-  return String(
-    match.matchKey ||
-    match.id ||
-    match.code ||
-    `${getMatchDate(match)}-${getMatchTime(match)}-${getHome(match)}-${getAway(match)}-${index}`
-  );
-}
-
-function getTargetLabel(target) {
+function targetLabel(target){
   return TARGET_LABELS[target] || target;
 }
 
-function getAlgorithmCount(match) {
-  return getAlgorithmEntries(getPredictionObject(match)).length;
-}
-
-function renderScore(score) {
-  if (!score.available) {
-    return `
-      <div class="score-box">
-        <div class="box-label">ORTAK SKOR TAHMİNİ</div>
-        <div class="score-line">
-          <span class="score-type">Maç sonu</span>
-          <span class="score-value">-</span>
-        </div>
-        <div class="score-line">
-          <span class="score-type">İlk yarı</span>
-          <span class="score-value">-</span>
-        </div>
-      </div>`;
-  }
-
-  return `
-    <div class="score-box">
-      <div class="box-label">ORTAK SKOR TAHMİNİ</div>
-      <div class="score-line">
-        <span class="score-type">Maç sonu</span>
-        <span class="score-value">${escapeHtml(score.fullTime)}</span>
-      </div>
-      <div class="score-line">
-        <span class="score-type">İlk yarı</span>
-        <span class="score-value">${escapeHtml(score.halfTime)}</span>
-      </div>
-    </div>`;
-}
-
-function renderBest(best) {
-  if (!best) {
+function renderBest(best){
+  if(!best){
     return `
       <div class="best-box">
         <div class="box-label">EN İYİ ORTAK TAHMİN</div>
         <div class="best-pick">Tahmin bulunamadı</div>
-        <div class="best-market">Bu maç için yeterli model çıktısı yok.</div>
+        <div class="best-market">Bu maç için model çıktısı bulunamadı.</div>
       </div>`;
   }
 
   return `
     <div class="best-box">
       <div class="box-label">EN İYİ ORTAK TAHMİN</div>
-      <div class="best-pick">${escapeHtml(best.label)}</div>
-      <div class="best-market">${escapeHtml(getTargetLabel(best.targetName))}</div>
+      <div class="best-pick">${escapeHTML(best.label)}</div>
+      <div class="best-market">${escapeHTML(targetLabel(best.target))}</div>
       <div class="best-percent">
         ${formatPercent(best.probability)} ortalama olasılık
         · ${best.votes}/${best.models} model tercihi
@@ -856,74 +645,45 @@ function renderBest(best) {
     </div>`;
 }
 
-function renderMatch(match, index) {
-  const id = getMatchId(match, index);
-  const best = getBestJointPrediction(match);
-  const score = getScoreData(match);
-  const expanded = state.expanded.has(id);
-
+function renderScore(score){
   return `
-    <article class="match" data-match-id="${escapeHtml(id)}">
-      <div class="match-head">
-        <div class="match-info">
-          <div class="match-date">
-            ${escapeHtml(getMatchDate(match))}
-            ${getMatchTime(match) ? " · " + escapeHtml(getMatchTime(match)) : ""}
-          </div>
-          <div class="match-teams">
-            ${escapeHtml(getHome(match))} - ${escapeHtml(getAway(match))}
-          </div>
-          <div class="league">${escapeHtml(getLeague(match))}</div>
-        </div>
+    <div class="score-box">
+      <div class="box-label">ORTAK SKOR TAHMİNİ</div>
+      <div class="score-line">
+        <span class="score-type">Maç sonu</span>
+        <span class="score-value">${escapeHTML(score.fullTime)}</span>
       </div>
-
-      <div class="main-content">
-        ${renderBest(best)}
-        ${renderScore(score)}
+      <div class="score-line">
+        <span class="score-type">İlk yarı</span>
+        <span class="score-value">${escapeHTML(score.halfTime)}</span>
       </div>
-
-      <div class="expand-row">
-        <span class="expand-hint">Diğer piyasa tahminlerini görmek için + işaretine bas</span>
-        <button
-          class="expand-btn"
-          type="button"
-          aria-label="Diğer tahminleri aç veya kapat"
-          aria-expanded="${expanded}"
-        >${expanded ? "−" : "+"}</button>
-      </div>
-
-      <div class="details ${expanded ? "open" : ""}">
-        <div class="details-content">
-          ${expanded ? renderDetails(match) : ""}
-        </div>
-      </div>
-    </article>`;
+    </div>`;
 }
 
-function renderDetails(match) {
-  const results = getAllMarketConsensus(match);
+function renderDetails(match){
+  const results = getAllConsensus(match);
 
-  if (!results.length) {
-    return `<div class="empty">Bu maç için diğer piyasa tahminleri bulunamadı.</div>`;
+  if(!results.length){
+    return `<div class="empty">Diğer piyasa tahminleri bulunamadı.</div>`;
   }
 
-  results.sort((a,b) => b.probability-a.probability);
+  results.sort((a,b)=>b.probability-a.probability);
 
   return `
     <div class="details-title">DİĞER PİYASA TAHMİNLERİ</div>
     <div class="market-grid">
-      ${results.map(result => `
+      ${results.map(result=>`
         <div class="market-item">
-          <div class="market-name">${escapeHtml(getTargetLabel(result.targetName))}</div>
-          <div class="market-prediction">${escapeHtml(result.label)}</div>
+          <div class="market-name">${escapeHTML(targetLabel(result.target))}</div>
+          <div class="market-prediction">${escapeHTML(result.label)}</div>
           <div class="market-meta">
             ${formatPercent(result.probability)} ortalama olasılık
-            · ${result.votes}/${result.models} model
+            · ${result.votes}/${result.models} model tercihi
           </div>
           <div class="probabilities">
-            ${result.outcomes.map(outcome => `
+            ${result.outcomes.map(outcome=>`
               <span class="probability">
-                ${escapeHtml(outcome.label)}: ${formatPercent(outcome.probability)}
+                ${escapeHTML(outcome.label)}: ${formatPercent(outcome.probability)}
               </span>
             `).join("")}
           </div>
@@ -932,171 +692,189 @@ function renderDetails(match) {
     </div>`;
 }
 
-function updateStats() {
-  $("totalMatches").textContent = state.filteredMatches.length;
-  $("shownMatches").textContent = Math.min(
-    state.visibleCount,
-    state.filteredMatches.length
-  );
+function renderMatch(match,index){
+  const id = getMatchId(match,index);
+  const best = getBestPrediction(match);
+  const score = getScore(match);
 
-  const counts = state.filteredMatches.map(getAlgorithmCount);
-  const maxCount = counts.length ? Math.max(...counts) : 0;
+  return `
+    <article class="match" data-id="${escapeHTML(id)}">
+      <div class="match-head">
+        <div class="match-date">
+          ${escapeHTML(getDate(match))}
+          ${getTime(match) ? " · "+escapeHTML(getTime(match)) : ""}
+        </div>
+        <div class="match-teams">
+          ${escapeHTML(getHome(match))} - ${escapeHTML(getAway(match))}
+        </div>
+        <div class="league">${escapeHTML(getLeague(match))}</div>
+      </div>
 
-  $("algorithmCount").textContent = maxCount || "-";
+      <div class="main-content">
+        ${renderBest(best)}
+        ${renderScore(score)}
+      </div>
+
+      <div class="expand-row">
+        <span class="expand-hint">Diğer tahminleri görüntüle</span>
+        <button class="expand-btn" type="button" aria-expanded="false">+</button>
+      </div>
+
+      <div class="details">
+        <div class="details-content"></div>
+      </div>
+    </article>`;
 }
 
-function renderList() {
-  const list = $("matchList");
-  const visible = state.filteredMatches.slice(0, state.visibleCount);
+function updateStats(){
+  $("totalMatches").textContent = state.filtered.length;
+  $("shownMatches").textContent =
+    Math.min(state.visible,state.filtered.length);
+  $("algorithmCount").textContent = state.algorithms.length;
+}
 
-  if (!visible.length) {
-    list.innerHTML = `<div class="empty">Filtrelere uygun maç bulunamadı.</div>`;
-  } else {
-    list.innerHTML = visible.map((match,index) =>
-      renderMatch(match, index)
+function renderList(){
+  const visible = state.filtered.slice(0,state.visible);
+
+  if(!visible.length){
+    $("matchList").innerHTML =
+      `<div class="empty">Filtreye uygun maç bulunamadı.</div>`;
+  }else{
+    $("matchList").innerHTML = visible.map((match,index)=>
+      renderMatch(match,index)
     ).join("");
   }
 
   $("loadArea").style.display =
-    state.visibleCount < state.filteredMatches.length ? "block" : "none";
+    state.visible < state.filtered.length ? "block" : "none";
 
   updateStats();
 
   $("status").textContent =
-    `${state.filteredMatches.length} maç bulundu. ` +
-    `${Math.min(state.visibleCount,state.filteredMatches.length)} maç gösteriliyor.`;
+    `${state.filtered.length} maç bulundu. ` +
+    `${Math.min(state.visible,state.filtered.length)} maç gösteriliyor.`;
 }
 
-function applyFilters() {
-  const dateValue = $("dateFilter").value;
-  const leagueValue = $("leagueFilter").value;
-  const searchValue = normalizeText($("teamFilter").value);
+function applyFilters(){
+  const date = $("dateFilter").value;
+  const league = $("leagueFilter").value;
+  const search = normalize($("teamFilter").value);
 
-  state.filteredMatches = state.allMatches.filter(match => {
-    if (dateValue && dateToInput(getMatchDate(match)) !== dateValue) {
-      return false;
-    }
+  state.filtered = state.matches.filter(match=>{
+    if(date && dateForInput(getDate(match)) !== date) return false;
+    if(league && getLeague(match) !== league) return false;
 
-    if (leagueValue && getLeague(match) !== leagueValue) {
-      return false;
-    }
-
-    if (searchValue) {
-      const teams = normalizeText(getHome(match) + " " + getAway(match));
-      if (!teams.includes(searchValue)) return false;
+    if(search){
+      const teams = normalize(getHome(match)+" "+getAway(match));
+      if(!teams.includes(search)) return false;
     }
 
     return true;
   });
 
-  state.visibleCount = PAGE_SIZE;
-  state.expanded.clear();
+  state.visible = PAGE_SIZE;
   renderList();
 }
 
-function populateLeagues() {
-  const select = $("leagueFilter");
-  const leagues = [...new Set(
-    state.allMatches.map(getLeague).filter(Boolean)
-  )].sort((a,b) => a.localeCompare(b,"tr"));
+function populateLeagues(){
+  const leagues = [...new Set(state.matches.map(getLeague))]
+    .filter(Boolean)
+    .sort((a,b)=>a.localeCompare(b,"tr"));
 
-  select.innerHTML =
-    `<option value="">Tüm ligler</option>` +
-    leagues.map(league =>
-      `<option value="${escapeHtml(league)}">${escapeHtml(league)}</option>`
+  $("leagueFilter").innerHTML =
+    `<option value="">Tüm ligler</option>`+
+    leagues.map(league=>
+      `<option value="${escapeHTML(league)}">${escapeHTML(league)}</option>`
     ).join("");
 }
 
-async function loadData() {
+async function loadData(){
   $("status").textContent = "Tahmin verileri yükleniyor...";
 
-  try {
-    const response = await fetch(`${DATA_URL}?v=${Date.now()}`, {
+  try{
+    const response = await fetch(DATA_URL+"?v="+Date.now(),{
       cache:"no-store"
     });
 
-    if (!response.ok) {
-      throw new Error(`JSON dosyası yüklenemedi. HTTP ${response.status}`);
+    if(!response.ok){
+      throw new Error("JSON yüklenemedi. HTTP "+response.status);
     }
 
     const data = await response.json();
-    state.rawData = data;
 
-    const matches = getMatchesFromData(data);
+    state.data = data;
 
-    if (!matches.length) {
-      throw new Error("JSON içinde maç listesi bulunamadı. Veri yapısını kontrol edin.");
+    if(!Array.isArray(data.matches)){
+      throw new Error("JSON içinde matches dizisi bulunamadı.");
     }
 
-    state.allMatches = matches.slice().sort((a,b) => {
-      const dateDifference = parseDate(getMatchDate(a)) - parseDate(getMatchDate(b));
+    state.algorithms =
+      Array.isArray(data.algorithms) && data.algorithms.length
+        ? data.algorithms
+        : DEFAULT_ALGORITHMS;
 
-      if (dateDifference !== 0) return dateDifference;
-
-      return String(getMatchTime(a)).localeCompare(String(getMatchTime(b)));
+    state.matches = data.matches.slice().sort((a,b)=>{
+      const difference = parseDate(getDate(a))-parseDate(getDate(b));
+      if(difference !== 0) return difference;
+      return String(getTime(a)).localeCompare(String(getTime(b)));
     });
 
     populateLeagues();
     applyFilters();
 
     $("status").textContent =
-      `${state.allMatches.length} maç başarıyla yüklendi.`;
-  } catch (error) {
+      `${state.matches.length} maç yüklendi.`;
+  }catch(error){
     console.error(error);
-    $("status").textContent = "Hata: " + error.message;
+
+    $("status").textContent = "Veri yükleme hatası: "+error.message;
+
     $("matchList").innerHTML = `
       <div class="empty">
-        Tahmin verileri yüklenemedi.<br><br>
-        ${escapeHtml(error.message)}<br><br>
-        JSON dosyasının outputs/ml-predictions.json konumunda olduğunu kontrol edin.
+        ${escapeHTML(error.message)}<br><br>
+        outputs/ml-predictions.json dosyasını kontrol et.
       </div>`;
   }
 }
 
-$("dateFilter").addEventListener("change", applyFilters);
-$("leagueFilter").addEventListener("change", applyFilters);
-$("teamFilter").addEventListener("input", applyFilters);
+$("dateFilter").addEventListener("change",applyFilters);
+$("leagueFilter").addEventListener("change",applyFilters);
+$("teamFilter").addEventListener("input",applyFilters);
 
-$("loadMore").addEventListener("click", () => {
-  state.visibleCount += PAGE_SIZE;
+$("loadMore").addEventListener("click",()=>{
+  state.visible += PAGE_SIZE;
   renderList();
 });
 
-$("matchList").addEventListener("click", event => {
+$("matchList").addEventListener("click",event=>{
   const button = event.target.closest(".expand-btn");
-  if (!button) return;
+  if(!button) return;
 
   const card = button.closest(".match");
-  if (!card) return;
-
-  const id = card.dataset.matchId;
   const details = card.querySelector(".details");
   const content = card.querySelector(".details-content");
+  const id = card.dataset.id;
 
-  const willOpen = !details.classList.contains("open");
+  const opening = !details.classList.contains("open");
 
-  if (willOpen) {
+  if(opening){
     details.classList.add("open");
     button.textContent = "−";
     button.setAttribute("aria-expanded","true");
 
-    if (!content.dataset.loaded) {
-      const match = state.filteredMatches.find((item,index =>
-        getMatchId(item,index) === id
-      ));
+    if(!content.dataset.loaded){
+      const index = [...$("matchList").children].indexOf(card);
+      const match = state.filtered[index];
 
-      if (match) {
+      if(match){
         content.innerHTML = renderDetails(match);
         content.dataset.loaded = "true";
       }
     }
-
-    state.expanded.add(id);
-  } else {
+  }else{
     details.classList.remove("open");
     button.textContent = "+";
     button.setAttribute("aria-expanded","false");
-    state.expanded.delete(id);
   }
 });
 
