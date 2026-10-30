@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -299,9 +298,11 @@ function getLeague(match){
 function dateForInput(value){
   const text = String(value ?? "");
   let m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
+
   if(m) return `${m[3]}-${m[2]}-${m[1]}`;
 
   m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
   if(m) return `${m[1]}-${m[2]}-${m[3]}`;
 
   return "";
@@ -309,13 +310,17 @@ function dateForInput(value){
 
 function parseDate(value){
   const input = dateForInput(value);
+
   if(!input) return 0;
+
   return new Date(input+"T00:00:00").getTime();
 }
 
 function formatPercent(value){
   const number = Number(value);
+
   if(!Number.isFinite(number)) return "-";
+
   return "%"+Math.round(number);
 }
 
@@ -345,6 +350,7 @@ function getPredictions(match){
 function getTargetNames(match){
   return Object.keys(getPredictions(match)).filter(target => {
     if(normalize(target) === normalize("Skor tahmini")) return false;
+
     return getPredictions(match)[target] &&
       typeof getPredictions(match)[target] === "object";
   });
@@ -352,6 +358,7 @@ function getTargetNames(match){
 
 function getAlgorithmResult(match,target,algorithm){
   const targetData = getPredictions(match)[target];
+
   if(!targetData || typeof targetData !== "object") return null;
 
   if(targetData[algorithm]) return targetData[algorithm];
@@ -365,6 +372,7 @@ function getAlgorithmResult(match,target,algorithm){
 
 function getProbabilityEntries(result){
   const probabilities = result?.probabilities;
+
   if(!probabilities || typeof probabilities !== "object") return [];
 
   return Object.entries(probabilities)
@@ -401,6 +409,7 @@ function getConsensus(match,target){
 
   for(const algorithm of state.algorithms){
     const result = getAlgorithmResult(match,target,algorithm);
+
     if(!result) continue;
 
     const entries = getProbabilityEntries(result);
@@ -427,6 +436,7 @@ function getConsensus(match,target){
         const highest = entries.reduce((a,b) =>
           a.probability > b.probability ? a : b
         );
+
         classData.get(highest.label).votes++;
       }
     }else if(prediction !== null){
@@ -470,8 +480,11 @@ function getAllConsensus(match){
 
 function getBestPrediction(match){
   const results = getAllConsensus(match);
+
   if(!results.length) return null;
+
   results.sort((a,b) => b.probability-a.probability);
+
   return results[0];
 }
 
@@ -496,6 +509,7 @@ function getScore(match){
       const found = Object.entries(scoreData).find(([name]) =>
         normalize(name) === normalize(algorithm)
       );
+
       item = found?.[1];
     }
 
@@ -523,6 +537,7 @@ function getScore(match){
 
   function makeScore(home,away){
     if(home === null || away === null) return "-";
+
     return `${Math.round(home)} - ${Math.round(away)}`;
   }
 
@@ -555,6 +570,7 @@ function getMarketEvaluation(match,target){
 function getResultClass(result){
   if(result === "correct") return "correct";
   if(result === "incorrect") return "incorrect";
+
   return "pending";
 }
 
@@ -605,7 +621,9 @@ function renderScore(score,match){
 
   function scoreStatus(item){
     if(!item) return "";
+
     const cls = getResultClass(item.status);
+
     const label = item.status === "correct"
       ? "✓ Doğru skor"
       : "✕ Yanlış skor";
@@ -714,6 +732,7 @@ function renderMatch(match){
 
 function updateStats(){
   $("totalMatches").textContent = state.filtered.length;
+
   $("shownMatches").textContent =
     Math.min(state.visible,state.filtered.length);
 
@@ -763,10 +782,12 @@ function applyFilters(){
 
   state.filtered = state.matches.filter(match=>{
     if(date && dateForInput(getDate(match)) !== date) return false;
+
     if(league && getLeague(match) !== league) return false;
 
     if(search){
       const teams = normalize(getHome(match)+" "+getAway(match));
+
       if(!teams.includes(search)) return false;
     }
 
@@ -774,6 +795,7 @@ function applyFilters(){
   });
 
   state.visible = PAGE_SIZE;
+
   renderList();
 }
 
@@ -796,6 +818,7 @@ async function fetchJson(url,optional=false){
 
   if(!response.ok){
     if(optional) return null;
+
     throw new Error("JSON yüklenemedi: "+url+" HTTP "+response.status);
   }
 
@@ -820,16 +843,16 @@ async function loadData(){
         ? current.algorithms
         : DEFAULT_ALGORITHMS;
 
-    // Arşivdeki ilk maç öncesi tahminleri esas alınır.
+    // Önce mevcut arşivdeki maçları al.
     const archived = history.matches.slice();
     const archivedIds = new Set(archived.map(getMatchId));
 
-    // Arşivde olmayan ve henüz başlamamış güncel maçları ekle.
+    // Güncel tahmin dosyasındaki arşivde bulunmayan TÜM maçları ekle.
+    // Başlama saati geçmiş olsa bile maç gizlenmez.
     if(Array.isArray(current?.matches)){
-      const now = Date.now();
-
       for(const match of current.matches){
         const id = getMatchId(match);
+
         if(archivedIds.has(id)) continue;
 
         const date = dateForInput(getDate(match));
@@ -837,16 +860,14 @@ async function loadData(){
 
         if(!date || !/^\d{1,2}:\d{2}$/.test(time)) continue;
 
-        const [year,month,day] = date.split("-").map(Number);
-        const [hour,minute] = time.split(":").map(Number);
-        const kickoff = Date.UTC(year,month-1,day,hour-3,minute);
-
-        if(kickoff <= now) continue;
-
         archived.push({
           ...match,
           matchId:id,
-          evaluation:{status:"pending",markets:{},scores:{}}
+          evaluation:{
+            status:"pending",
+            markets:{},
+            scores:{}
+          }
         });
 
         archivedIds.add(id);
@@ -854,8 +875,11 @@ async function loadData(){
     }
 
     state.matches = archived.sort((a,b)=>{
-      const difference = parseDate(getDate(a))-parseDate(getDate(b));
+      const difference =
+        parseDate(getDate(a))-parseDate(getDate(b));
+
       if(difference !== 0) return difference;
+
       return String(getTime(a)).localeCompare(String(getTime(b)));
     });
 
@@ -867,7 +891,9 @@ async function loadData(){
 
   }catch(error){
     console.error(error);
-    $("status").textContent = "Veri yükleme hatası: "+error.message;
+
+    $("status").textContent =
+      "Veri yükleme hatası: "+error.message;
 
     $("matchList").innerHTML = `
       <div class="empty">
@@ -888,6 +914,7 @@ $("loadMore").addEventListener("click",()=>{
 
 $("matchList").addEventListener("click",event=>{
   const button = event.target.closest(".expand-btn");
+
   if(!button) return;
 
   const card = button.closest(".match");
