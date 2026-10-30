@@ -1,3 +1,4 @@
+
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -24,6 +25,13 @@ function parseScore(value) {
   };
 }
 
+function normalize(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLocaleLowerCase("tr-TR");
+}
+
 function makeMatchId(match) {
   return [
     match.date ?? "",
@@ -34,8 +42,15 @@ function makeMatchId(match) {
   ].join("|");
 }
 
-function normalize(value) {
-  return String(value ?? "").trim().toLocaleLowerCase("tr-TR");
+// Maçları boşluk ve harf farklılıklarından bağımsız karşılaştır.
+function canonicalMatchId(match) {
+  return [
+    match.date,
+    match.time,
+    match.league,
+    match.home,
+    match.away
+  ].map(normalize).join("|");
 }
 
 function parseKickoff(date, time) {
@@ -64,8 +79,20 @@ function parseKickoff(date, time) {
     return null;
   }
 
-  // Türkiye saati UTC+3.
-  return Date.UTC(year, month - 1, day, hour - 3, minute);
+  const utc = Date.UTC(year, month - 1, day, hour - 3, minute);
+
+  const check = new Date(utc + 3 * 60 * 60 * 1000);
+
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  // Maç saatleri Türkiye yerel saati (UTC+3) kabul edilir.
+  return utc;
 }
 
 function getConsensus(match, target) {
@@ -79,8 +106,8 @@ function getConsensus(match, target) {
   const counts = new Map();
 
   for (const algorithm of ALGORITHMS) {
-    const result = targetData[algorithm];
-    const probabilities = result?.probabilities;
+    const probabilities =
+      targetData[algorithm]?.probabilities;
 
     if (!probabilities || typeof probabilities !== "object") {
       continue;
@@ -98,14 +125,12 @@ function getConsensus(match, target) {
 
   if (!sums.size) return null;
 
-  const outcomes = [...sums.entries()].map(([label, sum]) => ({
-    label,
-    probability: sum / counts.get(label)
-  }));
-
-  outcomes.sort((a, b) => b.probability - a.probability);
-
-  return outcomes[0].label;
+  return [...sums.entries()]
+    .map(([label, sum]) => ({
+      label,
+      probability: sum / counts.get(label)
+    }))
+    .sort((a, b) => b.probability - a.probability)[0].label;
 }
 
 function getActualTargets(ft, ht) {
@@ -147,6 +172,7 @@ function getActualTargets(ft, ht) {
 
 function getPredictedScore(match, period) {
   const scoreData = match.predictions?.["Skor tahmini"];
+
   if (!scoreData) return null;
 
   const homeValues = [];
@@ -154,6 +180,7 @@ function getPredictedScore(match, period) {
 
   for (const algorithm of ALGORITHMS) {
     const item = scoreData[algorithm]?.[period];
+
     if (!item) continue;
 
     const home = Number(item.expectedHomeGoals);
@@ -178,20 +205,7 @@ function evaluateMatch(archivedMatch, sourceMatch, now) {
   const ft = parseScore(sourceMatch.score);
   const ht = parseScore(sourceMatch.halfTimeScore);
 
-  if (!ft) {
-    archivedMatch.evaluation = {
-      status: "pending",
-      evaluatedAt: null,
-      fullTimeScore: null,
-      halfTimeScore: ht
-        ? `${ht.home}-${ht.away}`
-        : null,
-      markets: {},
-      scores: {}
-    };
-
-    return false;
-  }
+  if (!ft) return false;
 
   const actualTargets = getActualTargets(ft, ht);
   const markets = {};
@@ -253,13 +267,12 @@ function evaluateMatch(archivedMatch, sourceMatch, now) {
 
 async function readJson(filePath, fallback = null) {
   try {
-    return JSON.parse(
-      await fs.readFile(filePath, "utf8")
-    );
+    return JSON.parse(await fs.readFile(filePath, "utf8"));
   } catch (error) {
     if (error.code === "ENOENT" && fallback !== null) {
       return fallback;
     }
+
     throw error;
   }
 }
@@ -292,33 +305,70 @@ async function main() {
   const archivedById = new Map();
 
   for (const item of history.matches) {
-    if (item.matchId) {
-      archivedById.set(item.matchId, item);
+    const key = canonicalMatchId(item);
+
+    if (key !== "||||") {
+      archivedById.set(key, item);
     }
   }
 
   let added = 0;
   let evaluated = 0;
+  let alreadyArchived = 0;
+  let started = 0;
+  let invalidDate = 0;
+  let duplicateInPredictions = 0;
+  let noPredictionData = 0;
 
-  // 1. Maç başlamadan önceki tahminleri arşive ekle.
+  const predictionKeys = new Set();
+
+  // 1. Yeni ve henüz başlamamış maçları arşivle.
   for (const match of predictions.matches) {
     const matchId = match.matchId || makeMatchId(match);
+    const key = canonicalMatchId(match);
 
-    // Daha önce arşivlenmiş tahminin üzerine yazma.
-    if (archivedById.has(matchId)) continue;
+    if (key === "||||") {
+      invalidDate++;
+      continue;
+    }
+
+    if (predictionKeys.has(key)) {
+      duplicateInPredictions++;
+      continue;
+    }
+
+    predictionKeys.add(key);
+
+    if (archivedById.has(key)) {
+      alreadyArchived++;
+      continue;
+    }
 
     const kickoff = parseKickoff(match.date, match.time);
 
-    // Tarih veya saat geçersizse arşive alma.
-    if (kickoff === null) continue;
+    if (kickoff === null) {
+      invalidDate++;
+      continue;
+    }
 
-    // Başlamış veya başlamasına çok az kalmış maçları alma.
-    if (kickoff <= now) continue;
+    if (kickoff <= now) {
+      started++;
+      continue;
+    }
+
+    if (
+      !match.predictions ||
+      Object.keys(match.predictions).length === 0
+    ) {
+      noPredictionData++;
+      continue;
+    }
 
     const archivedMatch = {
       ...match,
       matchId,
-      predictionCreatedAt: predictions.createdAt || new Date(now).toISOString(),
+      predictionCreatedAt:
+        predictions.createdAt || new Date(now).toISOString(),
       evaluation: {
         status: "pending",
         evaluatedAt: null,
@@ -330,35 +380,45 @@ async function main() {
     };
 
     history.matches.push(archivedMatch);
-    archivedById.set(matchId, archivedMatch);
+    archivedById.set(key, archivedMatch);
     added++;
   }
 
-  // 2. Arşivdeki maçların sonuçlarını güncelle.
+  // 2. Sonuçları maç kimliğine göre eşleştir.
   const sourceById = new Map();
 
   for (const match of sourceData.matches) {
-    sourceById.set(makeMatchId(match), match);
-  }
+    const key = canonicalMatchId(match);
 
-  for (const archivedMatch of history.matches) {
-    const sourceMatch = sourceById.get(archivedMatch.matchId);
-
-    if (!sourceMatch) continue;
-
-    if (parseScore(sourceMatch.score)) {
-      const wasCompleted =
-        archivedMatch.evaluation?.status === "completed";
-
-      evaluateMatch(archivedMatch, sourceMatch, now);
-
-      if (!wasCompleted) evaluated++;
+    if (key !== "||||") {
+      sourceById.set(key, match);
     }
   }
 
+  // 3. Arşivdeki maçların sonuçlarını güncelle.
+  for (const archivedMatch of history.matches) {
+    const key = canonicalMatchId(archivedMatch);
+    const sourceMatch = sourceById.get(key);
+
+    if (!sourceMatch) continue;
+
+    if (!parseScore(sourceMatch.score)) continue;
+
+    const wasCompleted =
+      archivedMatch.evaluation?.status === "completed";
+
+    evaluateMatch(archivedMatch, sourceMatch, now);
+
+    if (!wasCompleted) {
+      evaluated++;
+    }
+  }
+
+  // 4. Maçları tarihe göre sırala.
   history.matches.sort((a, b) => {
     const dateA = parseKickoff(a.date, a.time) ?? 0;
     const dateB = parseKickoff(b.date, b.time) ?? 0;
+
     return dateA - dateB;
   });
 
@@ -379,10 +439,19 @@ async function main() {
 
   await fs.rename(temporaryPath, HISTORY_PATH);
 
-  console.log("ML tahmin arşivi güncellendi.");
+  console.log("-----------------------------------");
+  console.log("ML TAHMİN ARŞİVİ GÜNCELLENDİ");
+  console.log("-----------------------------------");
+  console.log(`Tahmin dosyasındaki maç: ${predictions.matches.length}`);
   console.log(`Yeni arşivlenen maç: ${added}`);
+  console.log(`Zaten arşivde olan maç: ${alreadyArchived}`);
+  console.log(`Başlamış maç: ${started}`);
+  console.log(`Geçersiz tarih/saat: ${invalidDate}`);
+  console.log(`Tekrarlanan tahmin kaydı: ${duplicateInPredictions}`);
+  console.log(`Tahmin verisi olmayan maç: ${noPredictionData}`);
   console.log(`Yeni sonuçlandırılan maç: ${evaluated}`);
   console.log(`Toplam arşiv maç sayısı: ${history.matchCount}`);
+  console.log("-----------------------------------");
 }
 
 main().catch(error => {
