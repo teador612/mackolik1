@@ -1,446 +1,391 @@
-
 import fs from "node:fs/promises";
 import path from "node:path";
 
-const ROOT = process.cwd();
-const DATA_PATH = path.join(ROOT, "data/v2-data.json");
-const PREDICTIONS_PATH = path.join(ROOT, "outputs/ml-predictions.json");
-const HISTORY_PATH = path.join(ROOT, "outputs/ml-prediction-history.json");
+const PREDICTIONS_PATH = "outputs/ml-predictions.json";
+const DATA_PATH = "data/v2-data.json";
+const HISTORY_PATH = "outputs/ml-prediction-history.json";
 
-async function readJson(file, fallback = null) {
+const ALGORITHMS = [
+  "Random Forest",
+  "XGBoost",
+  "LightGBM",
+  "CatBoost"
+];
+
+function parseScore(value) {
+  if (typeof value !== "string") return null;
+
+  const match = value.match(/^\s*(\d+)\s*[-:]\s*(\d+)\s*$/);
+  if (!match) return null;
+
+  return {
+    home: Number(match[1]),
+    away: Number(match[2])
+  };
+}
+
+function makeMatchId(match) {
+  return [
+    match.date ?? "",
+    match.time ?? "",
+    match.league ?? "",
+    match.home ?? "",
+    match.away ?? ""
+  ].join("|");
+}
+
+function normalize(value) {
+  return String(value ?? "").trim().toLocaleLowerCase("tr-TR");
+}
+
+function parseKickoff(date, time) {
+  const dateMatch = String(date ?? "").match(
+    /^(\d{2})\.(\d{2})\.(\d{4})$/
+  );
+
+  const timeMatch = String(time ?? "").match(
+    /^(\d{1,2}):(\d{2})$/
+  );
+
+  if (!dateMatch || !timeMatch) return null;
+
+  const day = Number(dateMatch[1]);
+  const month = Number(dateMatch[2]);
+  const year = Number(dateMatch[3]);
+  const hour = Number(timeMatch[1]);
+  const minute = Number(timeMatch[2]);
+
+  if (
+    month < 1 || month > 12 ||
+    day < 1 || day > 31 ||
+    hour < 0 || hour > 23 ||
+    minute < 0 || minute > 59
+  ) {
+    return null;
+  }
+
+  // Türkiye saati UTC+3.
+  return Date.UTC(year, month - 1, day, hour - 3, minute);
+}
+
+function getConsensus(match, target) {
+  const targetData = match.predictions?.[target];
+
+  if (!targetData || typeof targetData !== "object") {
+    return null;
+  }
+
+  const sums = new Map();
+  const counts = new Map();
+
+  for (const algorithm of ALGORITHMS) {
+    const result = targetData[algorithm];
+    const probabilities = result?.probabilities;
+
+    if (!probabilities || typeof probabilities !== "object") {
+      continue;
+    }
+
+    for (const [label, rawValue] of Object.entries(probabilities)) {
+      const value = Number(rawValue);
+
+      if (!Number.isFinite(value)) continue;
+
+      sums.set(label, (sums.get(label) ?? 0) + value);
+      counts.set(label, (counts.get(label) ?? 0) + 1);
+    }
+  }
+
+  if (!sums.size) return null;
+
+  const outcomes = [...sums.entries()].map(([label, sum]) => ({
+    label,
+    probability: sum / counts.get(label)
+  }));
+
+  outcomes.sort((a, b) => b.probability - a.probability);
+
+  return outcomes[0].label;
+}
+
+function getActualTargets(ft, ht) {
+  const actual = {};
+
+  if (ft) {
+    const total = ft.home + ft.away;
+
+    actual["MS 1-X-2"] =
+      ft.home > ft.away ? "1" :
+      ft.home === ft.away ? "X" : "2";
+
+    actual["KG Var-Yok"] =
+      ft.home > 0 && ft.away > 0 ? "Var" : "Yok";
+
+    actual["MS 1.5 Alt-Üst"] = total >= 2 ? "Üst" : "Alt";
+    actual["MS 2.5 Alt-Üst"] = total >= 3 ? "Üst" : "Alt";
+    actual["MS 3.5 Alt-Üst"] = total >= 4 ? "Üst" : "Alt";
+
+    actual["Gol aralığı"] =
+      total <= 1 ? "0-1" :
+      total <= 3 ? "2-3" :
+      total <= 5 ? "4-5" : "6+";
+  }
+
+  if (ht) {
+    const total = ht.home + ht.away;
+
+    actual["İY 0.5 Alt-Üst"] = total >= 1 ? "Üst" : "Alt";
+    actual["İY 1.5 Alt-Üst"] = total >= 2 ? "Üst" : "Alt";
+
+    actual["İY 1-X-2"] =
+      ht.home > ht.away ? "1" :
+      ht.home === ht.away ? "X" : "2";
+  }
+
+  return actual;
+}
+
+function getPredictedScore(match, period) {
+  const scoreData = match.predictions?.["Skor tahmini"];
+  if (!scoreData) return null;
+
+  const homeValues = [];
+  const awayValues = [];
+
+  for (const algorithm of ALGORITHMS) {
+    const item = scoreData[algorithm]?.[period];
+    if (!item) continue;
+
+    const home = Number(item.expectedHomeGoals);
+    const away = Number(item.expectedAwayGoals);
+
+    if (Number.isFinite(home)) homeValues.push(home);
+    if (Number.isFinite(away)) awayValues.push(away);
+  }
+
+  if (!homeValues.length || !awayValues.length) return null;
+
+  const average = values =>
+    values.reduce((sum, value) => sum + value, 0) / values.length;
+
+  return {
+    home: Math.round(average(homeValues)),
+    away: Math.round(average(awayValues))
+  };
+}
+
+function evaluateMatch(archivedMatch, sourceMatch, now) {
+  const ft = parseScore(sourceMatch.score);
+  const ht = parseScore(sourceMatch.halfTimeScore);
+
+  if (!ft) {
+    archivedMatch.evaluation = {
+      status: "pending",
+      evaluatedAt: null,
+      fullTimeScore: null,
+      halfTimeScore: ht
+        ? `${ht.home}-${ht.away}`
+        : null,
+      markets: {},
+      scores: {}
+    };
+
+    return false;
+  }
+
+  const actualTargets = getActualTargets(ft, ht);
+  const markets = {};
+
+  for (const [target, actual] of Object.entries(actualTargets)) {
+    const predicted = getConsensus(archivedMatch, target);
+
+    if (predicted === null) continue;
+
+    markets[target] = {
+      prediction: predicted,
+      actual,
+      status: normalize(predicted) === normalize(actual)
+        ? "correct"
+        : "incorrect"
+    };
+  }
+
+  const predictedFT = getPredictedScore(archivedMatch, "fullTime");
+  const predictedHT = getPredictedScore(archivedMatch, "halfTime");
+
+  const scores = {};
+
+  if (predictedFT) {
+    scores.fullTime = {
+      prediction: `${predictedFT.home}-${predictedFT.away}`,
+      actual: `${ft.home}-${ft.away}`,
+      status:
+        predictedFT.home === ft.home &&
+        predictedFT.away === ft.away
+          ? "correct"
+          : "incorrect"
+    };
+  }
+
+  if (predictedHT && ht) {
+    scores.halfTime = {
+      prediction: `${predictedHT.home}-${predictedHT.away}`,
+      actual: `${ht.home}-${ht.away}`,
+      status:
+        predictedHT.home === ht.home &&
+        predictedHT.away === ht.away
+          ? "correct"
+          : "incorrect"
+    };
+  }
+
+  archivedMatch.evaluation = {
+    status: "completed",
+    evaluatedAt: new Date(now).toISOString(),
+    fullTimeScore: `${ft.home}-${ft.away}`,
+    halfTimeScore: ht ? `${ht.home}-${ht.away}` : null,
+    markets,
+    scores
+  };
+
+  return true;
+}
+
+async function readJson(filePath, fallback = null) {
   try {
-    return JSON.parse(await fs.readFile(file, "utf8"));
+    return JSON.parse(
+      await fs.readFile(filePath, "utf8")
+    );
   } catch (error) {
-    if (error.code === "ENOENT" && fallback !== null) return fallback;
+    if (error.code === "ENOENT" && fallback !== null) {
+      return fallback;
+    }
     throw error;
   }
 }
 
-async function writeJson(file, value) {
-  await fs.mkdir(path.dirname(file), { recursive: true });
-  await fs.writeFile(file, JSON.stringify(value, null, 2) + "\n", "utf8");
-}
-
-function getRows(data) {
-  if (Array.isArray(data)) return data;
-
-  for (const key of ["matches", "data", "items", "results"]) {
-    if (Array.isArray(data?.[key])) return data[key];
-  }
-
-  throw new Error("v2-data.json içinde maç listesi bulunamadı.");
-}
-
-function text(value) {
-  return String(value ?? "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLocaleLowerCase("tr-TR")
-    .replace(/ı/g, "i")
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-}
-
-function compact(value) {
-  return text(value).replace(/\s+/g, "");
-}
-
-function dateKey(value) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return "";
-
-  const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (iso) return `${iso[1]}-${iso[2]}-${iso[3]}`;
-
-  const local = raw.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
-
-  if (local) {
-    return `${local[3]}-${local[2].padStart(2, "0")}-${local[1].padStart(2, "0")}`;
-  }
-
-  const parsed = new Date(raw);
-
-  return Number.isNaN(parsed.getTime())
-    ? raw
-    : parsed.toISOString().slice(0, 10);
-}
-
-function score(value) {
-  if (value && typeof value === "object") {
-    const home = Number(value.home ?? value.h ?? value.homeScore);
-    const away = Number(value.away ?? value.a ?? value.awayScore);
-
-    if (
-      Number.isInteger(home) && home >= 0 &&
-      Number.isInteger(away) && away >= 0
-    ) {
-      return [home, away];
-    }
-
-    return null;
-  }
-
-  const match = String(value ?? "").match(
-    /^\s*(\d{1,2})\s*[-:]\s*(\d{1,2})\s*$/
-  );
-
-  return match
-    ? [Number(match[1]), Number(match[2])]
-    : null;
-}
-
-function getScore(match, keys) {
-  for (const key of keys) {
-    const result = score(match?.[key]);
-    if (result) return result;
-  }
-
-  return null;
-}
-
-function fullScore(match) {
-  return getScore(match, [
-    "score",
-    "fullTimeScore",
-    "full_time_score",
-    "ft",
-    "resultScore",
-    "skor",
-    "sonuc"
-  ]);
-}
-
-function halfScore(match) {
-  return getScore(match, [
-    "halfTimeScore",
-    "half_time_score",
-    "ht",
-    "iySkor",
-    "halfScore",
-    "devreSkoru"
-  ]);
-}
-
-function matchKey(match) {
-  const home = text(
-    match.home ?? match.homeTeam
-  );
-
-  const away = text(
-    match.away ?? match.awayTeam
-  );
-
-  const date = dateKey(
-    match.date ??
-    match.matchDate ??
-    match.match_date ??
-    match.tarih ??
-    match.datetime ??
-    match.kickoff
-  );
-
-  if (!home || !away || !date) return "";
-
-  return `${date}|${home}|${away}`;
-}
-
-function mainPrediction(match) {
-  const markets = Object.entries(match.markets ?? {})
-    .map(([key, market]) => ({
-      key,
-      title: market?.title ?? key,
-      pick: market?.pick,
-      probability: Number(market?.probability)
-    }))
-    .filter(item =>
-      item.pick != null &&
-      Number.isFinite(item.probability) &&
-      item.probability >= 0 &&
-      item.probability <= 100
-    )
-    .sort((a, b) => b.probability - a.probability);
-
-  return markets[0] ?? null;
-}
-
-/*
- * Tahmin seçeneklerini ortak biçime dönüştürür.
- * Örnek:
- * "İY 1" -> "iy1"
- * "MS 1" -> "ms1"
- * "X"    -> "x"
- */
-function outcome(marketKey, pick, match) {
-  const ft = fullScore(match);
-  const ht = halfScore(match);
-  const selected = compact(pick);
-
-  if (marketKey === "MS") {
-    if (!ft) return null;
-
-    const [home, away] = ft;
-    const actual = home > away
-      ? "1"
-      : home === away
-        ? "x"
-        : "2";
-
-    const aliases = {
-      "1": ["1", "ms1", "evsahibi", "home"],
-      "x": ["x", "0", "msx", "ms0", "beraberlik", "draw"],
-      "2": ["2", "ms2", "deplasman", "away"]
-    };
-
-    return aliases[actual].includes(selected);
-  }
-
-  if (marketKey === "KG") {
-    if (!ft) return null;
-
-    const actual = ft[0] > 0 && ft[1] > 0;
-
-    if (["var", "kgvar", "yes"].includes(selected)) {
-      return actual;
-    }
-
-    if (["yok", "kgyok", "no"].includes(selected)) {
-      return !actual;
-    }
-
-    return null;
-  }
-
-  if (marketKey === "U25") {
-    if (!ft) return null;
-
-    const over = ft[0] + ft[1] >= 3;
-
-    if (["ust", "over", "25ust"].includes(selected)) {
-      return over;
-    }
-
-    if (["alt", "under", "25alt"].includes(selected)) {
-      return !over;
-    }
-
-    return null;
-  }
-
-  if (marketKey === "IY15U") {
-    if (!ht) return null;
-
-    const over = ht[0] + ht[1] >= 2;
-
-    if (["ust", "over", "iy15ust"].includes(selected)) {
-      return over;
-    }
-
-    if (["alt", "under", "iy15alt"].includes(selected)) {
-      return !over;
-    }
-
-    return null;
-  }
-
-  if (marketKey === "IY") {
-    if (!ht) return null;
-
-    const [home, away] = ht;
-
-    const actual = home > away
-      ? "1"
-      : home === away
-        ? "x"
-        : "2";
-
-    const aliases = {
-      "1": ["1", "iy1", "iyevsahibi", "home"],
-      "x": ["x", "0", "iyx", "iy0", "iyberaberlik", "draw"],
-      "2": ["2", "iy2", "iydeplasman", "away"]
-    };
-
-    return aliases[actual].includes(selected);
-  }
-
-  return null;
-}
-
-function getMatchDate(match) {
-  return String(
-    match.date ??
-    match.matchDate ??
-    match.match_date ??
-    match.tarih ??
-    match.datetime ??
-    match.kickoff ??
-    ""
-  );
-}
-
-function settledStatus(match, marketKey, pick) {
-  const result = outcome(marketKey, pick, match);
-
-  if (result === null) return "pending";
-
-  return result ? "successful" : "failed";
-}
-
 async function main() {
+  const now = Date.now();
+
+  const predictions = await readJson(PREDICTIONS_PATH);
   const sourceData = await readJson(DATA_PATH);
-  const predictionData = await readJson(PREDICTIONS_PATH);
 
-  const historyData = await readJson(
-    HISTORY_PATH,
-    { predictions: [] }
-  );
-
-  const sourceMatches = getRows(sourceData);
-  const currentPredictions = predictionData?.predictions;
-
-  if (!Array.isArray(currentPredictions)) {
-    throw new Error(
-      "ml-predictions.json içinde predictions listesi bulunamadı."
-    );
+  if (!Array.isArray(predictions.matches)) {
+    throw new Error("ml-predictions.json içinde matches listesi bulunamadı.");
   }
 
-  const history = Array.isArray(historyData.predictions)
-    ? historyData.predictions
-    : [];
+  if (!Array.isArray(sourceData.matches)) {
+    throw new Error("v2-data.json içinde matches listesi bulunamadı.");
+  }
 
-  const sourceByKey = new Map();
+  const history = await readJson(HISTORY_PATH, {
+    createdAt: new Date(now).toISOString(),
+    updatedAt: null,
+    matchCount: 0,
+    matches: []
+  });
 
-  for (const match of sourceMatches) {
-    const key = matchKey(match);
+  if (!Array.isArray(history.matches)) {
+    history.matches = [];
+  }
 
-    if (!key) continue;
+  const archivedById = new Map();
 
-    if (
-      !sourceByKey.has(key) ||
-      (!fullScore(sourceByKey.get(key)) && fullScore(match))
-    ) {
-      sourceByKey.set(key, match);
+  for (const item of history.matches) {
+    if (item.matchId) {
+      archivedById.set(item.matchId, item);
     }
   }
-
-  const historyByKey = new Map(
-    history
-      .filter(item => item.matchKey)
-      .map(item => [item.matchKey, item])
-  );
 
   let added = 0;
+  let evaluated = 0;
 
-  for (const match of currentPredictions) {
-    const key = matchKey(match);
+  // 1. Maç başlamadan önceki tahminleri arşive ekle.
+  for (const match of predictions.matches) {
+    const matchId = match.matchId || makeMatchId(match);
 
-    if (!key || historyByKey.has(key)) continue;
+    // Daha önce arşivlenmiş tahminin üzerine yazma.
+    if (archivedById.has(matchId)) continue;
 
-    const best = mainPrediction(match);
+    const kickoff = parseKickoff(match.date, match.time);
 
-    if (!best) continue;
+    // Tarih veya saat geçersizse arşive alma.
+    if (kickoff === null) continue;
 
-    const record = {
-      matchKey: key,
-      date: getMatchDate(match),
-      time: String(match.time ?? ""),
-      league: String(match.league ?? ""),
-      home: String(match.home ?? match.homeTeam ?? ""),
-      away: String(match.away ?? match.awayTeam ?? ""),
-      marketKey: best.key,
-      marketTitle: best.title,
-      pick: best.pick,
-      probability: best.probability,
-      predictedAt: predictionData.generatedAt ?? new Date().toISOString(),
-      status: "pending",
-      actualScore: null,
-      actualHalfTimeScore: null
+    // Başlamış veya başlamasına çok az kalmış maçları alma.
+    if (kickoff <= now) continue;
+
+    const archivedMatch = {
+      ...match,
+      matchId,
+      predictionCreatedAt: predictions.createdAt || new Date(now).toISOString(),
+      evaluation: {
+        status: "pending",
+        evaluatedAt: null,
+        fullTimeScore: null,
+        halfTimeScore: null,
+        markets: {},
+        scores: {}
+      }
     };
 
-    history.push(record);
-    historyByKey.set(key, record);
+    history.matches.push(archivedMatch);
+    archivedById.set(matchId, archivedMatch);
     added++;
   }
 
-  let settled = 0;
-  let checked = 0;
+  // 2. Arşivdeki maçların sonuçlarını güncelle.
+  const sourceById = new Map();
 
-  for (const record of history) {
-    const sourceMatch = sourceByKey.get(record.matchKey);
+  for (const match of sourceData.matches) {
+    sourceById.set(makeMatchId(match), match);
+  }
+
+  for (const archivedMatch of history.matches) {
+    const sourceMatch = sourceById.get(archivedMatch.matchId);
 
     if (!sourceMatch) continue;
 
-    const ft = fullScore(sourceMatch);
+    if (parseScore(sourceMatch.score)) {
+      const wasCompleted =
+        archivedMatch.evaluation?.status === "completed";
 
-    // Tam maç sonucu bulunmadan tahmin sonuçlandırılmaz.
-    if (!ft) continue;
+      evaluateMatch(archivedMatch, sourceMatch, now);
 
-    const result = settledStatus(
-      sourceMatch,
-      record.marketKey,
-      record.pick
-    );
-
-    if (result === "pending") continue;
-
-    checked++;
-
-    const ht = halfScore(sourceMatch);
-    const previousStatus = record.status;
-
-    record.actualScore = `${ft[0]}-${ft[1]}`;
-    record.actualHalfTimeScore = ht
-      ? `${ht[0]}-${ht[1]}`
-      : null;
-
-    record.status = result;
-
-    if (
-      previousStatus !== result ||
-      !record.settledAt
-    ) {
-      record.settledAt = new Date().toISOString();
-      settled++;
+      if (!wasCompleted) evaluated++;
     }
   }
 
-  history.sort((a, b) =>
-    dateKey(b.date).localeCompare(dateKey(a.date)) ||
-    String(b.time).localeCompare(String(a.time))
-  );
-
-  const successful = history.filter(
-    item => item.status === "successful"
-  ).length;
-
-  const failed = history.filter(
-    item => item.status === "failed"
-  ).length;
-
-  const completed = successful + failed;
-
-  await writeJson(HISTORY_PATH, {
-    updatedAt: new Date().toISOString(),
-    source: "data/v2-data.json",
-    totalPredictions: history.length,
-    completedPredictions: completed,
-    successfulPredictions: successful,
-    failedPredictions: failed,
-    successRate: completed
-      ? Number((successful / completed * 100).toFixed(2))
-      : null,
-    predictions: history
+  history.matches.sort((a, b) => {
+    const dateA = parseKickoff(a.date, a.time) ?? 0;
+    const dateB = parseKickoff(b.date, b.time) ?? 0;
+    return dateA - dateB;
   });
 
-  console.log(`Yeni geçmiş kaydı: ${added}`);
-  console.log(`Sonuç eşleştirmesi yapılan kayıt: ${checked}`);
-  console.log(`Yeni sonuçlandırılan kayıt: ${settled}`);
-  console.log(`Toplam geçmiş tahmin: ${history.length}`);
-  console.log(`Başarılı: ${successful}`);
-  console.log(`Başarısız: ${failed}`);
-  console.log(`Başarı oranı: ${completed ? (successful / completed * 100).toFixed(2) + "%" : "Henüz hesaplanamadı"}`);
+  history.updatedAt = new Date(now).toISOString();
+  history.matchCount = history.matches.length;
+
+  await fs.mkdir(path.dirname(HISTORY_PATH), {
+    recursive: true
+  });
+
+  const temporaryPath = `${HISTORY_PATH}.tmp`;
+
+  await fs.writeFile(
+    temporaryPath,
+    JSON.stringify(history, null, 2),
+    "utf8"
+  );
+
+  await fs.rename(temporaryPath, HISTORY_PATH);
+
+  console.log("ML tahmin arşivi güncellendi.");
+  console.log(`Yeni arşivlenen maç: ${added}`);
+  console.log(`Yeni sonuçlandırılan maç: ${evaluated}`);
+  console.log(`Toplam arşiv maç sayısı: ${history.matchCount}`);
 }
 
 main().catch(error => {
-  console.error("ML geçmiş güncelleme hatası:", error);
-  process.exitCode = 1;
+  console.error("ML arşivleme hatası:", error);
+  process.exit(1);
 });
