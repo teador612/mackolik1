@@ -1,354 +1,896 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MACKOLİK · ML ANALİZ</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Tahmin Merkezi</title>
 <style>
-:root{
-  color-scheme:dark;
-  --bg:#0b1020;
-  --panel:#141c2f;
-  --line:#27334d;
-  --text:#edf2ff;
-  --muted:#9eabc4;
-  --accent:#7c9cff;
-  --green:#43d6a0;
-  --amber:#ffc86a
+:root {
+  --bg:#080d18;
+  --panel:#111a2b;
+  --panel2:#172238;
+  --border:#263650;
+  --text:#e8eef9;
+  --muted:#91a0b8;
+  --accent:#45a3ff;
+  --green:#22c993;
+  --red:#ff6474;
+  --yellow:#f5bd4f;
 }
-*{box-sizing:border-box}
-body{
+* { box-sizing:border-box; }
+body {
   margin:0;
   background:var(--bg);
   color:var(--text);
-  font:15px/1.5 system-ui,-apple-system,Segoe UI,sans-serif
+  font-family:Arial,Helvetica,sans-serif;
 }
-header{
-  padding:24px max(16px,calc((100vw - 1180px)/2));
-  background:#10182a;
-  border-bottom:1px solid var(--line)
+header {
+  padding:22px 16px;
+  background:linear-gradient(135deg,#101d34,#142b4c);
+  border-bottom:1px solid var(--border);
 }
-h1{
-  margin:0;
-  font-size:clamp(23px,4vw,34px)
-}
-.sub{
-  color:var(--muted);
-  margin-top:5px
-}
-main{
-  max-width:1180px;
+.header-inner,.container {
+  max-width:1450px;
   margin:auto;
-  padding:18px 14px 40px
 }
-.toolbar{
+.header-top {
   display:flex;
-  gap:10px;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
   flex-wrap:wrap;
-  margin-bottom:14px
 }
-input,select,button{
-  font:inherit;
-  border-radius:10px;
-  border:1px solid var(--line);
-  padding:10px 12px;
+h1 {
+  font-size:24px;
+  margin:0;
+  letter-spacing:.5px;
+}
+.subtitle {
+  color:var(--muted);
+  margin-top:8px;
+  font-size:13px;
+}
+.status {
+  font-size:12px;
+  padding:8px 12px;
+  border-radius:20px;
+  background:#1d3049;
+  color:#a9d3ff;
+}
+.container { padding:18px 14px 40px; }
+.stats {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:16px;
+}
+.stat,.panel,.match-card {
   background:var(--panel);
-  color:var(--text)
+  border:1px solid var(--border);
+  border-radius:12px;
 }
-button{
-  cursor:pointer;
-  background:#25365c
+.stat { padding:14px; }
+.stat-label {
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:8px;
 }
-button:hover{
-  filter:brightness(1.15)
+.stat-value {
+  font-size:21px;
+  font-weight:700;
 }
-.date-panel{
+.filters {
+  display:grid;
+  grid-template-columns:repeat(5,minmax(0,1fr));
+  gap:10px;
+  padding:14px;
+  margin-bottom:16px;
+}
+.filter label {
+  display:block;
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:7px;
+}
+input,select {
+  width:100%;
+  min-width:0;
+  padding:11px 10px;
+  color:var(--text);
+  background:#0b1424;
+  border:1px solid var(--border);
+  border-radius:8px;
+  outline:none;
+  font-size:13px;
+}
+input:focus,select:focus { border-color:var(--accent); }
+.toolbar {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
+  gap:10px;
   flex-wrap:wrap;
-  padding:14px;
-  margin-bottom:16px;
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:var(--panel)
+  margin:16px 0 12px;
 }
-.date-info{
-  min-width:150px;
-  flex:1
+.toolbar h2 {
+  font-size:17px;
+  margin:0;
 }
-.date-label{
-  font-size:12px;
+.result-count {
   color:var(--muted);
-  margin-bottom:3px
+  font-size:12px;
 }
-.date-heading{
-  font-size:19px;
-  font-weight:750
+.match-list {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
 }
-.date-controls{
+.match-card {
+  padding:14px;
+  min-width:0;
+}
+.match-head {
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:10px;
+  padding-bottom:12px;
+  border-bottom:1px solid var(--border);
+}
+.match-date {
+  color:var(--accent);
+  font-size:12px;
+  font-weight:700;
+}
+.league {
+  color:var(--muted);
+  font-size:11px;
+  margin-top:5px;
+}
+.match-time {
+  color:var(--yellow);
+  font-size:13px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.teams {
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  gap:8px;
+  align-items:center;
+  padding:16px 0;
+  text-align:center;
+}
+.team {
+  font-size:14px;
+  font-weight:700;
+  overflow-wrap:anywhere;
+}
+.vs {
+  color:var(--muted);
+  font-size:11px;
+}
+.model-select-row {
   display:flex;
   align-items:center;
   gap:8px;
-  flex-wrap:wrap
+  margin-bottom:12px;
 }
-.date-nav{
-  min-width:42px;
-  font-size:18px;
-  padding:9px 12px
-}
-.date-today{
-  background:#25365c
-}
-.date-picker{
-  width:155px;
-  min-height:42px;
-  accent-color:var(--accent)
-}
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:10px;
-  margin-bottom:16px
-}
-.card,.match,.metric{
-  border:1px solid var(--line);
-  border-radius:14px;
-  background:var(--panel);
-  padding:14px
-}
-.card .label{
-  font-size:12px;
-  color:var(--muted)
-}
-.card .value{
-  font-size:23px;
-  font-weight:750;
-  margin-top:3px
-}
-.notice{
-  padding:12px 14px;
-  border:1px solid var(--line);
-  border-radius:12px;
+.model-select-row label {
   color:var(--muted);
-  margin:12px 0
+  font-size:11px;
+  white-space:nowrap;
 }
-.section-title{
-  margin:22px 0 10px;
-  font-size:18px
-}
-.matches{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));
-  gap:12px
-}
-.match-head{
-  display:flex;
-  justify-content:space-between;
-  gap:12px;
-  color:var(--muted);
-  font-size:12px
-}
-.teams{
-  font-size:17px;
-  font-weight:700;
-  margin:10px 0
-}
-.market{
-  border-top:1px solid var(--line);
-  padding:9px 0
-}
-.market-title{
-  font-size:12px;
-  color:var(--muted);
-  margin-bottom:5px
-}
-.options{
-  display:flex;
-  gap:6px;
-  flex-wrap:wrap
-}
-.option{
-  flex:1;
-  min-width:68px;
+.model-select-row select {
+  max-width:190px;
   padding:8px;
-  border:1px solid var(--line);
-  border-radius:9px;
-  text-align:center
 }
-.option.best{
-  border-color:var(--green);
-  background:#15352f
-}
-.pct{
-  font-weight:800;
-  font-size:17px
-}
-.pick{
-  color:var(--green);
-  font-size:11px
-}
-.metrics{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  gap:10px
-}
-.metric h3{
-  margin:0 0 8px;
-  font-size:15px
-}
-.metric p{
-  margin:4px 0;
-  color:var(--muted);
-  font-size:13px
-}
-.empty{
-  padding:25px;
-  text-align:center;
-  border:1px dashed var(--line);
-  border-radius:12px;
-  color:var(--muted)
-}
-footer{
-  color:var(--muted);
+.section-title {
+  color:#b9c9e2;
   font-size:12px;
-  margin-top:22px
+  font-weight:700;
+  padding:9px 0;
+  border-top:1px solid var(--border);
+  margin-top:5px;
 }
-@media(max-width:480px){
-  header{padding:18px 14px}
-  .card .value{font-size:20px}
-  .date-panel{align-items:stretch}
-  .date-controls{width:100%}
-  .date-picker{flex:1;min-width:0}
+.prediction-row {
+  display:grid;
+  grid-template-columns:minmax(100px,1fr) minmax(110px,1.5fr) 65px;
+  gap:8px;
+  align-items:center;
+  padding:7px 0;
+  font-size:12px;
+}
+.pred-name { color:#c5d1e3; }
+.pred-value {
+  text-align:right;
+  font-weight:700;
+  color:var(--green);
+}
+.bar-wrap {
+  display:flex;
+  height:7px;
+  border-radius:8px;
+  overflow:hidden;
+  background:#26344b;
+}
+.bar {
+  height:100%;
+  background:var(--accent);
+}
+.prob-text {
+  color:var(--muted);
+  font-size:10px;
+  text-align:right;
+  margin-top:4px;
+}
+.prob-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+}
+.prob-item {
+  background:var(--panel2);
+  border:1px solid #273750;
+  border-radius:8px;
+  padding:9px;
+  min-width:0;
+}
+.prob-item .name {
+  color:var(--muted);
+  font-size:10px;
+  margin-bottom:6px;
+}
+.prob-item .choice {
+  font-weight:700;
+  font-size:14px;
+}
+.prob-item .percent {
+  color:var(--green);
+  font-size:12px;
+  margin-top:4px;
+}
+.score-grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.score-box {
+  background:var(--panel2);
+  border:1px solid #273750;
+  border-radius:8px;
+  padding:10px;
+}
+.score-title {
+  color:var(--muted);
+  font-size:10px;
+  margin-bottom:7px;
+}
+.score-result {
+  font-size:20px;
+  font-weight:700;
+  color:var(--yellow);
+}
+.expected {
+  color:var(--muted);
+  font-size:11px;
+  margin-top:5px;
+}
+.consensus {
+  background:#102a2b;
+  border:1px solid #20534b;
+  border-radius:8px;
+  padding:10px;
+  margin:10px 0;
+}
+.consensus-title {
+  color:var(--green);
+  font-size:11px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+.consensus-line {
+  font-size:11px;
+  color:#c6d8d4;
+  margin-top:5px;
+}
+details {
+  margin-top:12px;
+  border-top:1px solid var(--border);
+  padding-top:10px;
+}
+summary {
+  cursor:pointer;
+  color:#a9cfff;
+  font-size:12px;
+  font-weight:700;
+}
+.compare-table {
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+  font-size:11px;
+}
+.compare-table th,.compare-table td {
+  padding:8px 5px;
+  border-bottom:1px solid var(--border);
+  text-align:center;
+}
+.compare-table th {
+  color:var(--muted);
+  font-weight:500;
+}
+.compare-table td:first-child,.compare-table th:first-child {
+  text-align:left;
+}
+.empty,.error {
+  padding:30px 15px;
+  text-align:center;
+  color:var(--muted);
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:12px;
+  grid-column:1/-1;
+}
+.error { color:var(--red); }
+.note {
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.6;
+  margin-top:18px;
+}
+button {
+  background:#1d4775;
+  border:1px solid #32659c;
+  color:white;
+  padding:9px 13px;
+  border-radius:8px;
+  cursor:pointer;
+}
+button:hover { background:#285d91; }
+@media(max-width:900px) {
+  .filters { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .match-list { grid-template-columns:1fr; }
+}
+@media(max-width:560px) {
+  h1 { font-size:20px; }
+  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .filter:last-child { grid-column:1/-1; }
+  .container { padding:12px 9px 30px; }
+  .match-card { padding:11px; }
+  .prediction-row {
+    grid-template-columns:95px minmax(65px,1fr) 55px;
+    gap:5px;
+  }
 }
 </style>
 </head>
 <body>
+
 <header>
-  <h1>MACKOLİK / ML ANALİZ</h1>
-  <div class="sub">
-    Yerel maç verileriyle eğitilmiş makine öğrenmesi · DNA/RNA sisteminden bağımsız
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <h1>ML TAHMİN MERKEZİ</h1>
+        <div class="subtitle">39 açılış oranı · 4 algoritma · Makine öğrenmesi tahminleri</div>
+      </div>
+      <div class="status" id="status">Veriler yükleniyor...</div>
+    </div>
   </div>
 </header>
-<main>
-  <div class="date-panel">
-    <div class="date-info">
-      <div class="date-label">MAÇ TARİHİ</div>
-      <div id="selectedDateLabel" class="date-heading">Tarih seçin</div>
+
+<main class="container">
+
+  <section class="stats">
+    <div class="stat">
+      <div class="stat-label">Toplam tahmin</div>
+      <div class="stat-value" id="statCount">-</div>
     </div>
-    <div class="date-controls">
-      <button
-        id="prevDate"
-        class="date-nav"
-        type="button"
-        aria-label="Önceki gün"
-        title="Önceki gün"
-      >‹</button>
-      <input
-        id="matchDate"
-        class="date-picker"
-        type="date"
-        aria-label="Maç tarihini seç"
-      >
-      <button
-        id="nextDate"
-        class="date-nav"
-        type="button"
-        aria-label="Sonraki gün"
-        title="Sonraki gün"
-      >›</button>
-      <button
-        id="todayDate"
-        class="date-today"
-        type="button"
-      >Bugün</button>
+    <div class="stat">
+      <div class="stat-label">Tahmin tarihi</div>
+      <div class="stat-value" id="statDate">-</div>
     </div>
-  </div>
+    <div class="stat">
+      <div class="stat-label">Algoritma</div>
+      <div class="stat-value">4</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Kullanılan oran</div>
+      <div class="stat-value">39</div>
+    </div>
+  </section>
+
+  <section class="panel filters">
+    <div class="filter">
+      <label for="dateFilter">Maç tarihi</label>
+      <select id="dateFilter">
+        <option value="">Tüm tarihler</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="leagueFilter">Lig</label>
+      <select id="leagueFilter">
+        <option value="">Tüm ligler</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="teamSearch">Takım ara</label>
+      <input id="teamSearch" type="search" placeholder="Takım adı...">
+    </div>
+    <div class="filter">
+      <label for="modelFilter">Algoritma</label>
+      <select id="modelFilter">
+        <option value="CatBoost">CatBoost</option>
+        <option value="XGBoost">XGBoost</option>
+        <option value="LightGBM">LightGBM</option>
+        <option value="Random Forest">Random Forest</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="marketFilter">Tahmin türü</label>
+      <select id="marketFilter">
+        <option value="">Tüm tahminler</option>
+        <option value="MS 1-X-2">Maç sonucu</option>
+        <option value="KG Var-Yok">Karşılıklı gol</option>
+        <option value="İY 0.5 Alt-Üst">İY 0.5 Alt/Üst</option>
+        <option value="İY 1.5 Alt-Üst">İY 1.5 Alt/Üst</option>
+        <option value="MS 1.5 Alt-Üst">MS 1.5 Alt/Üst</option>
+        <option value="MS 2.5 Alt-Üst">MS 2.5 Alt/Üst</option>
+        <option value="MS 3.5 Alt-Üst">MS 3.5 Alt/Üst</option>
+        <option value="İY 1-X-2">İlk yarı sonucu</option>
+        <option value="Gol aralığı">Gol aralığı</option>
+      </select>
+    </div>
+  </section>
+
   <div class="toolbar">
-    <input
-      id="search"
-      placeholder="Takım veya lig ara..."
-      aria-label="Takım veya lig ara"
-    >
-    <select id="market" aria-label="Market seç">
-      <option value="all">Tüm marketler</option>
-      <option value="MS">Maç Sonucu</option>
-      <option value="KG">Karşılıklı Gol</option>
-      <option value="U25">2.5 Üst</option>
-      <option value="IY15U">İY 1.5 Üst</option>
-    </select>
-    <button id="refresh" type="button">Veriyi yenile</button>
+    <h2>Maç tahminleri</h2>
+    <div class="result-count" id="resultCount">Maçlar hazırlanıyor...</div>
+    <button id="refreshButton" type="button">Verileri yenile</button>
   </div>
-  <div id="summary" class="cards"></div>
-  <div id="status" class="notice">
-    ML sonuçları yükleniyor...
+
+  <section class="match-list" id="matchList">
+    <div class="empty">Tahmin dosyası yükleniyor...</div>
+  </section>
+
+  <div class="note">
+    Tahminler geçmiş maç verileri ve açılış oranlarıyla eğitilmiş makine öğrenmesi modellerinin çıktılarıdır.
+    Olasılıklar model tahminidir; kesin sonuç veya bahis kazancı garantisi değildir.
+    Skor tahminleri regresyon modellerinin beklenen gol değerlerinden üretilir.
   </div>
-  <h2 class="section-title">Model doğrulama sonuçları</h2>
-  <div id="metrics" class="metrics"></div>
-  <h2 class="section-title">Maç tahminleri</h2>
-  <div id="matches" class="matches"></div>
-  <footer>
-    Olasılıklar model tahminidir; kesinlik veya bahis tavsiyesi değildir.
-    Doğruluk yüzdesi tek başına kârlılık anlamına gelmez.
-    Modelin performansı yeni verilerle değişebilir.
-  </footer>
+
 </main>
+
 <script>
-(function(){
-  const dateInput = document.getElementById('matchDate');
-  const dateLabel = document.getElementById('selectedDateLabel');
-  const prevButton = document.getElementById('prevDate');
-  const nextButton = document.getElementById('nextDate');
-  const todayButton = document.getElementById('todayDate');
-  function localDateString(date){
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-  function formatDate(value){
-    if(!value) return 'Tarih seçin';
-    const parts = value.split('-').map(Number);
-    if(parts.length !== 3 || parts.some(Number.isNaN)){
-      return 'Tarih seçin';
-    }
-    const date = new Date(parts[0], parts[1] - 1, parts[2]);
-    return new Intl.DateTimeFormat('tr-TR', {
-      weekday:'long',
-      day:'numeric',
-      month:'long',
-      year:'numeric'
-    }).format(date);
-  }
-  function updateDateLabel(){
-    dateLabel.textContent = formatDate(dateInput.value);
-  }
-  function shiftDate(days){
-    const current = dateInput.value
-      ? new Date(
-          Number(dateInput.value.slice(0,4)),
-          Number(dateInput.value.slice(5,7)) - 1,
-          Number(dateInput.value.slice(8,10))
-        )
-      : new Date();
-    current.setDate(current.getDate() + days);
-    dateInput.value = localDateString(current);
-    dateInput.dispatchEvent(new Event('change', { bubbles:true }));
-    updateDateLabel();
-  }
-  dateInput.value = localDateString(new Date());
-  updateDateLabel();
-  dateInput.addEventListener('change', updateDateLabel);
-  prevButton.addEventListener('click', () => shiftDate(-1));
-  nextButton.addEventListener('click', () => shiftDate(1));
-  todayButton.addEventListener('click', () => {
-    dateInput.value = localDateString(new Date());
-    dateInput.dispatchEvent(new Event('change', { bubbles:true }));
-    updateDateLabel();
+"use strict";
+
+const DATA_URL = "./outputs/ml-predictions.json";
+
+const ALGORITHMS = [
+  "Random Forest",
+  "XGBoost",
+  "LightGBM",
+  "CatBoost"
+];
+
+const TARGETS = [
+  "MS 1-X-2",
+  "KG Var-Yok",
+  "İY 0.5 Alt-Üst",
+  "İY 1.5 Alt-Üst",
+  "MS 1.5 Alt-Üst",
+  "MS 2.5 Alt-Üst",
+  "MS 3.5 Alt-Üst",
+  "İY 1-X-2",
+  "Gol aralığı"
+];
+
+let allMatches = [];
+let predictionData = null;
+
+const $ = id => document.getElementById(id);
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[char]);
+}
+
+function parseDate(value) {
+  if (!value) return null;
+  const parts = String(value).split(".");
+  if (parts.length !== 3) return null;
+
+  const day = Number(parts[0]);
+  const month = Number(parts[1]);
+  const year = Number(parts[2]);
+
+  if (!day || !month || !year) return null;
+  return new Date(year, month - 1, day);
+}
+
+function dateKey(value) {
+  const date = parseDate(value);
+  if (!date) return "";
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0")
+  ].join("-");
+}
+
+function formatPercent(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "-";
+  return (number * 100).toFixed(1) + "%";
+}
+
+function formatNumber(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return "-";
+  return number.toFixed(2);
+}
+
+function getPrediction(match, target, algorithm) {
+  const item = match?.predictions?.[target];
+  if (!item) return null;
+
+  return item[algorithm] || null;
+}
+
+function getProbabilityEntries(prediction) {
+  if (!prediction || !prediction.probabilities) return [];
+
+  return Object.entries(prediction.probabilities)
+    .map(([label, value]) => ({
+      label,
+      value: Number(value)
+    }))
+    .filter(item => Number.isFinite(item.value))
+    .sort((a,b) => b.value - a.value);
+}
+
+function getBestPrediction(match, target, algorithm) {
+  const prediction = getPrediction(match, target, algorithm);
+  if (!prediction) return null;
+
+  const entries = getProbabilityEntries(prediction);
+  if (!entries.length) return null;
+
+  return {
+    label: prediction.prediction ?? entries[0].label,
+    probability: entries.find(x => x.label === prediction.prediction)?.value ?? entries[0].value,
+    entries
+  };
+}
+
+function getConsensus(match, target) {
+  const votes = {};
+
+  ALGORITHMS.forEach(algorithm => {
+    const prediction = getBestPrediction(match, target, algorithm);
+    if (!prediction) return;
+
+    votes[prediction.label] = (votes[prediction.label] || 0) + 1;
   });
-})();
+
+  const entries = Object.entries(votes).sort((a,b) => b[1] - a[1]);
+  if (!entries.length) return null;
+
+  return {
+    label: entries[0][0],
+    votes: entries[0][1],
+    total: Object.values(votes).reduce((sum,value) => sum + value,0)
+  };
+}
+
+function renderPredictionRow(match, target, algorithm) {
+  const result = getBestPrediction(match, target, algorithm);
+  if (!result) return "";
+
+  const label = escapeHTML(result.label);
+  const percent = formatPercent(result.probability);
+  const width = Math.max(0, Math.min(100, result.probability * 100));
+
+  return `
+    <div class="prediction-row">
+      <div class="pred-name">${escapeHTML(target)}</div>
+      <div>
+        <div class="bar-wrap">
+          <div class="bar" style="width:${width}%"></div>
+        </div>
+        <div class="prob-text">${percent}</div>
+      </div>
+      <div class="pred-value">${label}</div>
+    </div>
+  `;
+}
+
+function renderProbabilityCards(match, target, algorithm) {
+  const result = getBestPrediction(match, target, algorithm);
+  if (!result) {
+    return `<div class="empty">Bu tahmin için veri bulunamadı.</div>`;
+  }
+
+  return `
+    <div class="prob-grid">
+      ${result.entries.map(item => `
+        <div class="prob-item">
+          <div class="name">${escapeHTML(target)}</div>
+          <div class="choice">${escapeHTML(item.label)}</div>
+          <div class="percent">${formatPercent(item.value)}</div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderConsensus(match) {
+  const items = TARGETS.map(target => ({
+    target,
+    consensus: getConsensus(match, target)
+  })).filter(item => item.consensus);
+
+  return `
+    <div class="consensus">
+      <div class="consensus-title">4 ALGORİTMA ORTAK GÖRÜŞÜ</div>
+      ${items.map(item => `
+        <div class="consensus-line">
+          <b>${escapeHTML(item.target)}:</b>
+          ${escapeHTML(item.consensus.label)}
+          — ${item.consensus.votes}/${item.consensus.total} model
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderScore(match, algorithm) {
+  const scoreData = match?.predictions?.["Skor tahmini"]?.[algorithm];
+
+  if (!scoreData) {
+    return `<div class="empty">Skor tahmini bulunamadı.</div>`;
+  }
+
+  const ft = scoreData.fullTime || {};
+  const ht = scoreData.halfTime || {};
+
+  return `
+    <div class="score-grid">
+      <div class="score-box">
+        <div class="score-title">MAÇ SONU SKOR TAHMİNİ</div>
+        <div class="score-result">${escapeHTML(ft.predictedScore ?? "-")}</div>
+        <div class="expected">
+          Beklenen gol:
+          ${formatNumber(ft.expectedHomeGoals)}
+          - ${formatNumber(ft.expectedAwayGoals)}
+        </div>
+      </div>
+      <div class="score-box">
+        <div class="score-title">İLK YARI SKOR TAHMİNİ</div>
+        <div class="score-result">${escapeHTML(ht.predictedScore ?? "-")}</div>
+        <div class="expected">
+          Beklenen gol:
+          ${formatNumber(ht.expectedHomeGoals)}
+          - ${formatNumber(ht.expectedAwayGoals)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderComparison(match) {
+  return `
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Tahmin</th>
+          ${ALGORITHMS.map(a => `<th>${escapeHTML(a)}</th>`).join("")}
+        </tr>
+      </thead>
+      <tbody>
+        ${TARGETS.map(target => `
+          <tr>
+            <td>${escapeHTML(target)}</td>
+            ${ALGORITHMS.map(algorithm => {
+              const result = getBestPrediction(match,target,algorithm);
+              return `<td>${result ? escapeHTML(result.label) + "<br><span style='color:var(--muted)'>" + formatPercent(result.probability) + "</span>" : "-"}</td>`;
+            }).join("")}
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderMatch(match) {
+  const algorithm = $("modelFilter").value;
+  const market = $("marketFilter").value;
+
+  const matchId = escapeHTML(match.matchId ?? "");
+  const home = escapeHTML(match.home ?? "Ev sahibi");
+  const away = escapeHTML(match.away ?? "Deplasman");
+  const date = escapeHTML(match.date ?? "");
+  const time = escapeHTML(match.time ?? "--:--");
+  const league = escapeHTML(match.league ?? "Lig bilgisi yok");
+
+  let predictionHTML = "";
+
+  if (market) {
+    predictionHTML = `
+      <div class="section-title">${escapeHTML(market)}</div>
+      ${renderProbabilityCards(match,market,algorithm)}
+      <div class="section-title">Diğer algoritmaların tahmini</div>
+      ${renderComparisonForTarget(match,market)}
+    `;
+  } else {
+    predictionHTML = `
+      <div class="section-title">MODEL TAHMİNLERİ</div>
+      ${TARGETS.map(target => renderPredictionRow(match,target,algorithm)).join("")}
+    `;
+  }
+
+  return `
+    <article class="match-card" data-match-id="${matchId}">
+      <div class="match-head">
+        <div>
+          <div class="match-date">${date}</div>
+          <div class="league">${league}</div>
+        </div>
+        <div class="match-time">${time}</div>
+      </div>
+
+      <div class="teams">
+        <div class="team">${home}</div>
+        <div class="vs">VS</div>
+        <div class="team">${away}</div>
+      </div>
+
+      <div class="model-select-row">
+        <label>Seçili model:</label>
+        <strong>${escapeHTML(algorithm)}</strong>
+      </div>
+
+      ${predictionHTML}
+
+      ${renderConsensus(match)}
+
+      <div class="section-title">SKOR TAHMİNİ</div>
+      ${renderScore(match,algorithm)}
+
+      <details>
+        <summary>4 algoritmayı karşılaştır</summary>
+        ${renderComparison(match)}
+      </details>
+    </article>
+  `;
+}
+
+function renderComparisonForTarget(match,target) {
+  return `
+    <div class="prob-grid">
+      ${ALGORITHMS.map(algorithm => {
+        const result = getBestPrediction(match,target,algorithm);
+        return `
+          <div class="prob-item">
+            <div class="name">${escapeHTML(algorithm)}</div>
+            <div class="choice">${result ? escapeHTML(result.label) : "-"}</div>
+            <div class="percent">${result ? formatPercent(result.probability) : "-"}</div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+}
+
+function populateFilters() {
+  const dates = [...new Set(allMatches.map(m => m.date).filter(Boolean))];
+  dates.sort((a,b) => dateKey(a).localeCompare(dateKey(b)));
+
+  $("dateFilter").innerHTML =
+    `<option value="">Tüm tarihler</option>` +
+    dates.map(date => `<option value="${escapeHTML(date)}">${escapeHTML(date)}</option>`).join("");
+
+  const leagues = [...new Set(allMatches.map(m => m.league).filter(Boolean))]
+    .sort((a,b) => String(a).localeCompare(String(b),"tr"));
+
+  $("leagueFilter").innerHTML =
+    `<option value="">Tüm ligler</option>` +
+    leagues.map(league => `<option value="${escapeHTML(league)}">${escapeHTML(league)}</option>`).join("");
+}
+
+function getFilteredMatches() {
+  const date = $("dateFilter").value;
+  const league = $("leagueFilter").value;
+  const search = $("teamSearch").value.trim().toLocaleLowerCase("tr");
+
+  return allMatches.filter(match => {
+    if (date && match.date !== date) return false;
+    if (league && match.league !== league) return false;
+
+    if (search) {
+      const teams = `${match.home || ""} ${match.away || ""}`.toLocaleLowerCase("tr");
+      if (!teams.includes(search)) return false;
+    }
+
+    return true;
+  }).sort((a,b) => {
+    const dateCompare = dateKey(a.date).localeCompare(dateKey(b.date));
+    if (dateCompare !== 0) return dateCompare;
+    return String(a.time || "").localeCompare(String(b.time || ""));
+  });
+}
+
+function render() {
+  const matches = getFilteredMatches();
+  $("resultCount").textContent = `${matches.length} / ${allMatches.length} maç gösteriliyor`;
+
+  if (!matches.length) {
+    $("matchList").innerHTML = `<div class="empty">Bu filtrelere uygun maç bulunamadı.</div>`;
+    return;
+  }
+
+  $("matchList").innerHTML = matches.map(renderMatch).join("");
+}
+
+async function loadData() {
+  $("status").textContent = "Veriler yükleniyor...";
+  $("matchList").innerHTML = `<div class="empty">Tahmin dosyası okunuyor...</div>`;
+
+  try {
+    const response = await fetch(DATA_URL + "?v=" + Date.now(), {
+      cache:"no-store"
+    });
+
+    if (!response.ok) {
+      throw new Error("JSON dosyası okunamadı. HTTP " + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data || !Array.isArray(data.matches)) {
+      throw new Error("JSON dosyasında matches listesi bulunamadı.");
+    }
+
+    predictionData = data;
+    allMatches = data.matches;
+
+    $("statCount").textContent =
+      Number(data.predictionCount ?? allMatches.length).toLocaleString("tr-TR");
+
+    $("statDate").textContent = data.today || "-";
+
+    $("status").textContent = "Veriler güncel";
+    populateFilters();
+    render();
+
+  } catch (error) {
+    console.error(error);
+    $("status").textContent = "Veri yüklenemedi";
+    $("matchList").innerHTML = `
+      <div class="error">
+        <b>Tahmin dosyası yüklenemedi.</b><br><br>
+        ${escapeHTML(error.message)}<br><br>
+        GitHub deposunda outputs/ml-predictions.json dosyasının bulunduğunu kontrol et.
+      </div>
+    `;
+  }
+}
+
+["dateFilter","leagueFilter","teamSearch","modelFilter","marketFilter"].forEach(id => {
+  $(id).addEventListener("input",render);
+  $(id).addEventListener("change",render);
+});
+
+$("refreshButton").addEventListener("click",loadData);
+
+loadData();
 </script>
-<script src="./ml.js"></script>
 </body>
 </html>
