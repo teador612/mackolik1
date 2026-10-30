@@ -1,0 +1,26 @@
+name: ML Data Analysis
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Repository indir
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: ML veri analizini çalıştır
+        run: python scripts/analyze-ml-data.py
+        env:
+          PYTHONUNBUFFERED: "1"
