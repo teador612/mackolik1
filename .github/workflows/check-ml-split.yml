@@ -1,0 +1,27 @@
+
+name: ML Chronological Data Split Check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Repository indir
+        uses: actions/checkout@v4
+
+      - name: Python 3.12 kur
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tarih bazlı veri bölünmesini kontrol et
+        run: python scripts/check-ml-split.py
+        env:
+          PYTHONUNBUFFERED: "1"
