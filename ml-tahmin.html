@@ -5,7 +5,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ML Tahmin Merkezi</title>
-
 <style>
 :root{
   --bg:#0b1020;
@@ -15,191 +14,145 @@
   --text:#edf2ff;
   --muted:#9aa9bf;
   --green:#22c55e;
+  --red:#ef4444;
   --blue:#3b82f6;
-  --yellow:#facc15;
 }
 *{box-sizing:border-box}
 body{
-  margin:0;
-  padding:16px;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
+  margin:0;padding:16px;background:var(--bg);
+  color:var(--text);font-family:Arial,Helvetica,sans-serif
 }
 .container{max-width:1200px;margin:auto}
 header{
-  padding:20px;
-  margin-bottom:16px;
+  padding:20px;margin-bottom:16px;
   background:linear-gradient(135deg,#172b4c,#111827);
-  border:1px solid var(--border);
-  border-radius:15px;
+  border:1px solid var(--border);border-radius:15px
 }
 h1{font-size:24px;margin:0 0 7px}
 header p{font-size:13px;color:var(--muted);margin:0}
 .stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:10px;
-  margin-bottom:15px;
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-bottom:15px
 }
 .stat{
-  padding:13px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:11px;
+  padding:13px;background:var(--panel);
+  border:1px solid var(--border);border-radius:11px
 }
 .stat strong{display:block;font-size:23px;margin-bottom:4px}
 .stat span{font-size:11px;color:var(--muted)}
 .filters{
-  display:grid;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:10px;
-  padding:13px;
-  margin-bottom:14px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:12px;
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;padding:13px;margin-bottom:14px;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:12px
 }
 input,select,button{font:inherit}
 input,select{
-  width:100%;
-  min-width:0;
-  padding:11px;
-  color:var(--text);
-  background:#0b1425;
-  border:1px solid var(--border);
-  border-radius:8px;
+  width:100%;min-width:0;padding:11px;color:var(--text);
+  background:#0b1425;border:1px solid var(--border);
+  border-radius:8px
 }
 .status{
-  padding:12px;
-  margin-bottom:14px;
-  color:var(--muted);
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:9px;
-  font-size:13px;
+  padding:12px;margin-bottom:14px;color:var(--muted);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:9px;font-size:13px
 }
 .match-list{display:grid;gap:12px}
 .match{
-  overflow:hidden;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:13px;
+  overflow:hidden;background:var(--panel);
+  border:1px solid var(--border);border-radius:13px
 }
 .match-head{
-  padding:13px 15px;
-  background:#17243a;
-  border-bottom:1px solid var(--border);
+  padding:13px 15px;background:#17243a;
+  border-bottom:1px solid var(--border)
 }
 .match-date{font-size:12px;color:var(--muted);margin-bottom:5px}
 .match-teams{font-size:15px;font-weight:bold;overflow-wrap:anywhere}
 .league{font-size:11px;color:#93c5fd;margin-top:6px}
 .main-content{
-  display:grid;
-  grid-template-columns:minmax(0,1.5fr) minmax(150px,.8fr);
-  gap:11px;
-  padding:13px;
+  display:grid;grid-template-columns:minmax(0,1.5fr) minmax(150px,.8fr);
+  gap:11px;padding:13px
 }
 .best-box,.score-box{
-  min-width:0;
-  padding:13px;
-  background:var(--panel2);
-  border:1px solid var(--border);
-  border-radius:10px;
+  min-width:0;padding:13px;background:var(--panel2);
+  border:1px solid var(--border);border-radius:10px
 }
 .box-label{
-  margin-bottom:9px;
-  color:var(--muted);
-  font-size:10px;
-  font-weight:bold;
-  letter-spacing:.6px;
+  margin-bottom:9px;color:var(--muted);font-size:10px;
+  font-weight:bold;letter-spacing:.6px
 }
 .best-pick{font-size:20px;font-weight:bold;overflow-wrap:anywhere}
 .best-market{margin-top:6px;color:var(--muted);font-size:12px}
 .best-percent{margin-top:8px;color:var(--green);font-size:13px;font-weight:bold}
 .score-line{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  margin:8px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:8px;margin:8px 0
 }
 .score-type{font-size:12px;color:var(--muted)}
 .score-value{font-size:21px;font-weight:bold}
 .expand-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:0 13px 13px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:0 13px 13px
 }
 .expand-hint{font-size:11px;color:var(--muted)}
 .expand-btn{
-  width:36px;
-  height:36px;
-  flex:0 0 36px;
-  color:white;
-  background:var(--blue);
-  border:0;
-  border-radius:9px;
-  font-size:23px;
-  cursor:pointer;
+  width:36px;height:36px;flex:0 0 36px;color:white;
+  background:var(--blue);border:0;border-radius:9px;
+  font-size:23px;cursor:pointer
 }
 .details{
-  display:none;
-  padding:13px;
-  background:#0e1728;
-  border-top:1px solid var(--border);
+  display:none;padding:13px;background:#0e1728;
+  border-top:1px solid var(--border)
 }
 .details.open{display:block}
 .details-title{font-size:13px;font-weight:bold;margin-bottom:11px}
 .market-grid{
-  display:grid;
-  grid-template-columns:repeat(2,minmax(0,1fr));
-  gap:9px;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px
 }
 .market-item{
-  min-width:0;
-  padding:11px;
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:9px;
+  min-width:0;padding:11px;background:var(--panel);
+  border:1px solid var(--border);border-radius:9px
+}
+.market-item.correct{
+  border-color:var(--green);
+  background:rgba(34,197,94,.10)
+}
+.market-item.incorrect{
+  border-color:var(--red);
+  background:rgba(239,68,68,.10)
 }
 .market-name{font-size:11px;color:var(--muted);margin-bottom:7px}
 .market-prediction{font-size:14px;font-weight:bold;overflow-wrap:anywhere}
 .market-meta{font-size:12px;color:var(--green);margin-top:6px}
+.market-item.incorrect .market-meta{color:var(--red)}
+.result-label{
+  display:inline-block;margin-top:8px;padding:5px 8px;
+  border-radius:5px;font-size:11px;font-weight:bold
+}
+.result-label.correct{color:#86efac;background:rgba(34,197,94,.16)}
+.result-label.incorrect{color:#fca5a5;background:rgba(239,68,68,.16)}
+.result-label.pending{color:#cbd5e1;background:#25344b}
 .probabilities{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
 .probability{
-  padding:5px 6px;
-  color:#cbd5e1;
-  background:#25344b;
-  border-radius:5px;
-  font-size:10px;
+  padding:5px 6px;color:#cbd5e1;background:#25344b;
+  border-radius:5px;font-size:10px
 }
+.score-result{
+  font-size:11px;margin-top:6px;color:var(--muted)
+}
+.score-result.correct{color:var(--green)}
+.score-result.incorrect{color:var(--red)}
 .load-area{text-align:center;padding:18px}
-.load-btn,.refresh-btn{
-  padding:12px 18px;
-  color:white;
-  background:var(--blue);
-  border:0;
-  border-radius:8px;
-  font-weight:bold;
-  cursor:pointer;
+.load-btn{
+  padding:12px 18px;color:white;background:var(--blue);
+  border:0;border-radius:8px;font-weight:bold;cursor:pointer
 }
 .empty{
-  padding:30px 15px;
-  text-align:center;
-  color:var(--muted);
-  background:var(--panel);
-  border:1px solid var(--border);
-  border-radius:11px;
+  padding:30px 15px;text-align:center;color:var(--muted);
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:11px
 }
-.note{
-  margin:16px 0;
-  color:var(--muted);
-  font-size:11px;
-  line-height:1.6;
-}
+.note{margin:16px 0;color:var(--muted);font-size:11px;line-height:1.6}
 @media(max-width:700px){
   body{padding:10px}
   header{padding:15px}
@@ -224,7 +177,6 @@ input,select{
 }
 </style>
 </head>
-
 <body>
 <div class="container">
 
@@ -243,13 +195,13 @@ input,select{
     <span>Gösterilen maç</span>
   </div>
   <div class="stat">
-    <strong id="algorithmCount">-</strong>
-    <span>Algoritma sayısı</span>
+    <strong id="successRate">-</strong>
+    <span>Tahmin başarı oranı</span>
   </div>
 </div>
 
 <div class="filters">
-  <input type="date" id="dateFilter" aria-label="Tarih filtresi">
+  <input type="date" id="dateFilter" aria-label="Maç tarihi">
   <select id="leagueFilter">
     <option value="">Tüm ligler</option>
   </select>
@@ -257,7 +209,6 @@ input,select{
 </div>
 
 <div class="status" id="status">Veriler yükleniyor...</div>
-
 <div class="match-list" id="matchList"></div>
 
 <div class="load-area" id="loadArea" style="display:none">
@@ -265,9 +216,10 @@ input,select{
 </div>
 
 <div class="note">
-  Ortak tahmin, mevcut algoritmaların aynı piyasa ve sonuç için ürettiği
-  olasılıkların ortalamasıyla hesaplanır. Gösterilen yüzdeler model
-  olasılıklarının ortalamasıdır; kesinlik veya garanti anlamına gelmez.
+  Yeşil: Doğru tahmin. Kırmızı: Yanlış tahmin.
+  Gri: Sonucu henüz belli olmayan maç.
+  Geçmiş tahminler arşivdeki maç öncesi tahminleridir.
+  Model olasılıkları kesinlik veya garanti anlamına gelmez.
 </div>
 
 </div>
@@ -275,7 +227,8 @@ input,select{
 <script>
 "use strict";
 
-const DATA_URL = "./outputs/ml-predictions.json";
+const PREDICTIONS_URL = "./outputs/ml-predictions.json";
+const HISTORY_URL = "./outputs/ml-prediction-history.json";
 const PAGE_SIZE = 30;
 
 const DEFAULT_ALGORITHMS = [
@@ -286,29 +239,27 @@ const DEFAULT_ALGORITHMS = [
 ];
 
 const state = {
-  data: null,
   matches: [],
   filtered: [],
   algorithms: DEFAULT_ALGORITHMS,
-  visible: PAGE_SIZE,
-  expanded: new Set()
+  visible: PAGE_SIZE
 };
 
 const $ = id => document.getElementById(id);
 
 const TARGET_LABELS = {
-  "MS 1-X-2": "Maç Sonucu",
-  "KG Var-Yok": "Karşılıklı Gol",
-  "KG Var/Yok": "Karşılıklı Gol",
-  "İY 0.5 Alt-Üst": "İlk Yarı 0.5 Gol",
-  "İY 1.5 Alt-Üst": "İlk Yarı 1.5 Gol",
-  "MS 1.5 Alt-Üst": "Maç 1.5 Gol",
-  "MS 2.5 Alt-Üst": "Maç 2.5 Gol",
-  "MS 3.5 Alt-Üst": "Maç 3.5 Gol",
-  "İY 1-X-2": "İlk Yarı Sonucu",
-  "Gol Aralığı": "Toplam Gol Aralığı",
-  "Goal Range": "Toplam Gol Aralığı",
-  "Skor tahmini": "Skor Tahmini"
+  "MS 1-X-2":"Maç Sonucu",
+  "KG Var-Yok":"Karşılıklı Gol",
+  "KG Var/Yok":"Karşılıklı Gol",
+  "İY 0.5 Alt-Üst":"İlk Yarı 0.5 Gol",
+  "İY 1.5 Alt-Üst":"İlk Yarı 1.5 Gol",
+  "MS 1.5 Alt-Üst":"Maç 1.5 Gol",
+  "MS 2.5 Alt-Üst":"Maç 2.5 Gol",
+  "MS 3.5 Alt-Üst":"Maç 3.5 Gol",
+  "İY 1-X-2":"İlk Yarı Sonucu",
+  "Gol aralığı":"Toplam Gol Aralığı",
+  "Gol Aralığı":"Toplam Gol Aralığı",
+  "Goal Range":"Toplam Gol Aralığı"
 };
 
 function escapeHTML(value){
@@ -345,90 +296,62 @@ function getLeague(match){
   return match.league || match.competition || "Lig bilgisi yok";
 }
 
-function parseDate(value){
-  const text = String(value ?? "");
-  let m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-
-  if(m){
-    return new Date(+m[3],+m[2]-1,+m[1]).getTime();
-  }
-
-  m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
-  if(m){
-    return new Date(+m[1],+m[2]-1,+m[3]).getTime();
-  }
-
-  return Date.parse(text) || 0;
-}
-
 function dateForInput(value){
   const text = String(value ?? "");
   let m = text.match(/^(\d{2})\.(\d{2})\.(\d{4})$/);
-
   if(m) return `${m[3]}-${m[2]}-${m[1]}`;
 
   m = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-
   if(m) return `${m[1]}-${m[2]}-${m[3]}`;
 
   return "";
 }
 
+function parseDate(value){
+  const input = dateForInput(value);
+  if(!input) return 0;
+  return new Date(input+"T00:00:00").getTime();
+}
+
 function formatPercent(value){
   const number = Number(value);
   if(!Number.isFinite(number)) return "-";
-
-  return "%" + Math.round(number);
+  return "%"+Math.round(number);
 }
 
-function getMatchId(match,index){
+function getMatchId(match){
   return String(
+    match.matchId ||
     match.matchKey ||
     match.id ||
     match.code ||
-    `${getDate(match)}-${getTime(match)}-${getHome(match)}-${getAway(match)}-${index}`
+    [
+      getDate(match),
+      getTime(match),
+      getLeague(match),
+      getHome(match),
+      getAway(match)
+    ].join("|")
   );
 }
 
-/*
-  GERÇEK JSON YAPISI:
-
-  matches[]
-    └── predictions
-          ├── MS 1-X-2
-          │     ├── Random Forest
-          │     ├── XGBoost
-          │     ├── LightGBM
-          │     └── CatBoost
-          ├── KG Var-Yok
-          └── Skor tahmini
-*/
-
 function getPredictions(match){
   return match?.predictions &&
-         typeof match.predictions === "object"
+    typeof match.predictions === "object"
     ? match.predictions
     : {};
 }
 
 function getTargetNames(match){
-  const predictions = getPredictions(match);
-
-  return Object.keys(predictions).filter(target => {
+  return Object.keys(getPredictions(match)).filter(target => {
     if(normalize(target) === normalize("Skor tahmini")) return false;
-
-    const targetData = predictions[target];
-
-    return targetData &&
-      typeof targetData === "object" &&
-      !Array.isArray(targetData);
+    return getPredictions(match)[target] &&
+      typeof getPredictions(match)[target] === "object";
   });
 }
 
 function getAlgorithmResult(match,target,algorithm){
   const targetData = getPredictions(match)[target];
-
   if(!targetData || typeof targetData !== "object") return null;
 
   if(targetData[algorithm]) return targetData[algorithm];
@@ -442,13 +365,12 @@ function getAlgorithmResult(match,target,algorithm){
 
 function getProbabilityEntries(result){
   const probabilities = result?.probabilities;
-
   if(!probabilities || typeof probabilities !== "object") return [];
 
   return Object.entries(probabilities)
     .map(([label,value]) => ({
       label,
-      probability: Number(value)
+      probability:Number(value)
     }))
     .filter(item => Number.isFinite(item.probability));
 }
@@ -472,6 +394,7 @@ function getPredictionLabel(result){
   return String(value);
 }
 
+/* Dört algoritmanın ortak tahmini */
 function getConsensus(match,target){
   const classData = new Map();
   let modelsUsed = 0;
@@ -489,9 +412,7 @@ function getConsensus(match,target){
       for(const item of entries){
         if(!classData.has(item.label)){
           classData.set(item.label,{
-            sum:0,
-            count:0,
-            votes:0
+            sum:0,count:0,votes:0
           });
         }
 
@@ -506,7 +427,6 @@ function getConsensus(match,target){
         const highest = entries.reduce((a,b) =>
           a.probability > b.probability ? a : b
         );
-
         classData.get(highest.label).votes++;
       }
     }else if(prediction !== null){
@@ -514,9 +434,7 @@ function getConsensus(match,target){
 
       if(!classData.has(prediction)){
         classData.set(prediction,{
-          sum:0,
-          count:0,
-          votes:0
+          sum:0,count:0,votes:0
         });
       }
 
@@ -545,23 +463,15 @@ function getConsensus(match,target){
 }
 
 function getAllConsensus(match){
-  const results = [];
-
-  for(const target of getTargetNames(match)){
-    const result = getConsensus(match,target);
-    if(result) results.push(result);
-  }
-
-  return results;
+  return getTargetNames(match)
+    .map(target => getConsensus(match,target))
+    .filter(Boolean);
 }
 
 function getBestPrediction(match){
   const results = getAllConsensus(match);
-
   if(!results.length) return null;
-
   results.sort((a,b) => b.probability-a.probability);
-
   return results[0];
 }
 
@@ -572,10 +482,12 @@ function getScore(match){
     return {fullTime:"-",halfTime:"-"};
   }
 
-  const fullHome = [];
-  const fullAway = [];
-  const halfHome = [];
-  const halfAway = [];
+  const values = {
+    fullHome:[],
+    fullAway:[],
+    halfHome:[],
+    halfAway:[]
+  };
 
   for(const algorithm of state.algorithms){
     let item = scoreData[algorithm];
@@ -597,15 +509,16 @@ function getScore(match){
     const hh = Number(ht.expectedHomeGoals);
     const ha = Number(ht.expectedAwayGoals);
 
-    if(Number.isFinite(fh)) fullHome.push(fh);
-    if(Number.isFinite(fa)) fullAway.push(fa);
-    if(Number.isFinite(hh)) halfHome.push(hh);
-    if(Number.isFinite(ha)) halfAway.push(ha);
+    if(Number.isFinite(fh)) values.fullHome.push(fh);
+    if(Number.isFinite(fa)) values.fullAway.push(fa);
+    if(Number.isFinite(hh)) values.halfHome.push(hh);
+    if(Number.isFinite(ha)) values.halfAway.push(ha);
   }
 
-  function avg(values){
-    if(!values.length) return null;
-    return values.reduce((a,b)=>a+b,0)/values.length;
+  function avg(list){
+    return list.length
+      ? list.reduce((a,b)=>a+b,0)/list.length
+      : null;
   }
 
   function makeScore(home,away){
@@ -614,8 +527,8 @@ function getScore(match){
   }
 
   return {
-    fullTime:makeScore(avg(fullHome),avg(fullAway)),
-    halfTime:makeScore(avg(halfHome),avg(halfAway))
+    fullTime:makeScore(avg(values.fullHome),avg(values.fullAway)),
+    halfTime:makeScore(avg(values.halfHome),avg(values.halfAway))
   };
 }
 
@@ -623,15 +536,51 @@ function targetLabel(target){
   return TARGET_LABELS[target] || target;
 }
 
-function renderBest(best){
+function getEvaluation(match){
+  return match.evaluation || {};
+}
+
+function getMarketEvaluation(match,target){
+  const markets = getEvaluation(match).markets || {};
+
+  if(markets[target]) return markets[target];
+
+  const found = Object.entries(markets).find(([name]) =>
+    normalize(name) === normalize(target)
+  );
+
+  return found ? found[1] : null;
+}
+
+function getResultClass(result){
+  if(result === "correct") return "correct";
+  if(result === "incorrect") return "incorrect";
+  return "pending";
+}
+
+function renderResultBadge(result){
+  if(result === "correct"){
+    return `<span class="result-label correct">✓ DOĞRU</span>`;
+  }
+
+  if(result === "incorrect"){
+    return `<span class="result-label incorrect">✕ YANLIŞ</span>`;
+  }
+
+  return `<span class="result-label pending">SONUÇ BEKLENİYOR</span>`;
+}
+
+function renderBest(best,match){
   if(!best){
     return `
       <div class="best-box">
         <div class="box-label">EN İYİ ORTAK TAHMİN</div>
         <div class="best-pick">Tahmin bulunamadı</div>
-        <div class="best-market">Bu maç için model çıktısı bulunamadı.</div>
       </div>`;
   }
+
+  const evaluation = getMarketEvaluation(match,best.target);
+  const result = evaluation?.status || "pending";
 
   return `
     <div class="best-box">
@@ -642,10 +591,31 @@ function renderBest(best){
         ${formatPercent(best.probability)} ortalama olasılık
         · ${best.votes}/${best.models} model tercihi
       </div>
+      ${renderResultBadge(result)}
+      ${evaluation?.actual
+        ? `<div class="score-result">Gerçek sonuç: ${escapeHTML(evaluation.actual)}</div>`
+        : ""}
     </div>`;
 }
 
-function renderScore(score){
+function renderScore(score,match){
+  const scores = getEvaluation(match).scores || {};
+  const ft = scores.fullTime;
+  const ht = scores.halfTime;
+
+  function scoreStatus(item){
+    if(!item) return "";
+    const cls = getResultClass(item.status);
+    const label = item.status === "correct"
+      ? "✓ Doğru skor"
+      : "✕ Yanlış skor";
+
+    return `
+      <div class="score-result ${cls}">
+        ${label} · Gerçek: ${escapeHTML(item.actual || "-")}
+      </div>`;
+  }
+
   return `
     <div class="score-box">
       <div class="box-label">ORTAK SKOR TAHMİNİ</div>
@@ -653,10 +623,12 @@ function renderScore(score){
         <span class="score-type">Maç sonu</span>
         <span class="score-value">${escapeHTML(score.fullTime)}</span>
       </div>
+      ${scoreStatus(ft)}
       <div class="score-line">
         <span class="score-type">İlk yarı</span>
         <span class="score-value">${escapeHTML(score.halfTime)}</span>
       </div>
+      ${scoreStatus(ht)}
     </div>`;
 }
 
@@ -672,47 +644,61 @@ function renderDetails(match){
   return `
     <div class="details-title">DİĞER PİYASA TAHMİNLERİ</div>
     <div class="market-grid">
-      ${results.map(result=>`
-        <div class="market-item">
-          <div class="market-name">${escapeHTML(targetLabel(result.target))}</div>
-          <div class="market-prediction">${escapeHTML(result.label)}</div>
-          <div class="market-meta">
-            ${formatPercent(result.probability)} ortalama olasılık
-            · ${result.votes}/${result.models} model tercihi
-          </div>
-          <div class="probabilities">
-            ${result.outcomes.map(outcome=>`
-              <span class="probability">
-                ${escapeHTML(outcome.label)}: ${formatPercent(outcome.probability)}
-              </span>
-            `).join("")}
-          </div>
-        </div>
-      `).join("")}
+      ${results.map(result=>{
+        const evaluation = getMarketEvaluation(match,result.target);
+        const status = evaluation?.status || "pending";
+        const cls = getResultClass(status);
+
+        return `
+          <div class="market-item ${cls === "pending" ? "" : cls}">
+            <div class="market-name">${escapeHTML(targetLabel(result.target))}</div>
+            <div class="market-prediction">${escapeHTML(result.label)}</div>
+            <div class="market-meta">
+              ${formatPercent(result.probability)} ortalama olasılık
+              · ${result.votes}/${result.models} model tercihi
+            </div>
+            ${renderResultBadge(status)}
+            ${evaluation?.actual
+              ? `<div class="score-result">Gerçek: ${escapeHTML(evaluation.actual)}</div>`
+              : ""}
+            <div class="probabilities">
+              ${result.outcomes.map(outcome=>`
+                <span class="probability">
+                  ${escapeHTML(outcome.label)}: ${formatPercent(outcome.probability)}
+                </span>
+              `).join("")}
+            </div>
+          </div>`;
+      }).join("")}
     </div>`;
 }
 
-function renderMatch(match,index){
-  const id = getMatchId(match,index);
+function renderMatch(match){
   const best = getBestPrediction(match);
   const score = getScore(match);
+  const evaluation = getEvaluation(match);
+  const completed = evaluation.status === "completed";
 
   return `
-    <article class="match" data-id="${escapeHTML(id)}">
+    <article class="match">
       <div class="match-head">
         <div class="match-date">
           ${escapeHTML(getDate(match))}
           ${getTime(match) ? " · "+escapeHTML(getTime(match)) : ""}
+          ${completed ? " · MAÇ TAMAMLANDI" : " · MAÇ ÖNCESİ TAHMİN"}
         </div>
         <div class="match-teams">
           ${escapeHTML(getHome(match))} - ${escapeHTML(getAway(match))}
         </div>
         <div class="league">${escapeHTML(getLeague(match))}</div>
+        ${evaluation.fullTimeScore
+          ? `<div class="score-result">Maç sonucu: ${escapeHTML(evaluation.fullTimeScore)}</div>`
+          : ""}
       </div>
 
       <div class="main-content">
-        ${renderBest(best)}
-        ${renderScore(score)}
+        ${renderBest(best,match)}
+        ${renderScore(score,match)}
       </div>
 
       <div class="expand-row">
@@ -721,7 +707,7 @@ function renderMatch(match,index){
       </div>
 
       <div class="details">
-        <div class="details-content"></div>
+        <div class="details-content">${renderDetails(match)}</div>
       </div>
     </article>`;
 }
@@ -730,7 +716,23 @@ function updateStats(){
   $("totalMatches").textContent = state.filtered.length;
   $("shownMatches").textContent =
     Math.min(state.visible,state.filtered.length);
-  $("algorithmCount").textContent = state.algorithms.length;
+
+  let correct = 0;
+  let wrong = 0;
+
+  for(const match of state.matches){
+    const markets = getEvaluation(match).markets || {};
+
+    for(const item of Object.values(markets)){
+      if(item.status === "correct") correct++;
+      if(item.status === "incorrect") wrong++;
+    }
+  }
+
+  const total = correct+wrong;
+
+  $("successRate").textContent =
+    total ? "%"+Math.round(correct/total*100) : "-";
 }
 
 function renderList(){
@@ -738,11 +740,10 @@ function renderList(){
 
   if(!visible.length){
     $("matchList").innerHTML =
-      `<div class="empty">Filtreye uygun maç bulunamadı.</div>`;
+      `<div class="empty">Bu tarihte arşivlenmiş tahmin bulunamadı.</div>`;
   }else{
-    $("matchList").innerHTML = visible.map((match,index)=>
-      renderMatch(match,index)
-    ).join("");
+    $("matchList").innerHTML =
+      visible.map(match=>renderMatch(match)).join("");
   }
 
   $("loadArea").style.display =
@@ -751,7 +752,7 @@ function renderList(){
   updateStats();
 
   $("status").textContent =
-    `${state.filtered.length} maç bulundu. ` +
+    `${state.filtered.length} maç bulundu. `+
     `${Math.min(state.visible,state.filtered.length)} maç gösteriliyor.`;
 }
 
@@ -788,32 +789,71 @@ function populateLeagues(){
     ).join("");
 }
 
+async function fetchJson(url,optional=false){
+  const response = await fetch(url+"?v="+Date.now(),{
+    cache:"no-store"
+  });
+
+  if(!response.ok){
+    if(optional) return null;
+    throw new Error("JSON yüklenemedi: "+url+" HTTP "+response.status);
+  }
+
+  return response.json();
+}
+
 async function loadData(){
-  $("status").textContent = "Tahmin verileri yükleniyor...";
+  $("status").textContent = "Tahmin arşivi yükleniyor...";
 
   try{
-    const response = await fetch(DATA_URL+"?v="+Date.now(),{
-      cache:"no-store"
-    });
+    const [history,current] = await Promise.all([
+      fetchJson(HISTORY_URL),
+      fetchJson(PREDICTIONS_URL,true)
+    ]);
 
-    if(!response.ok){
-      throw new Error("JSON yüklenemedi. HTTP "+response.status);
-    }
-
-    const data = await response.json();
-
-    state.data = data;
-
-    if(!Array.isArray(data.matches)){
-      throw new Error("JSON içinde matches dizisi bulunamadı.");
+    if(!Array.isArray(history.matches)){
+      throw new Error("Arşiv JSON içinde matches listesi bulunamadı.");
     }
 
     state.algorithms =
-      Array.isArray(data.algorithms) && data.algorithms.length
-        ? data.algorithms
+      Array.isArray(current?.algorithms) && current.algorithms.length
+        ? current.algorithms
         : DEFAULT_ALGORITHMS;
 
-    state.matches = data.matches.slice().sort((a,b)=>{
+    // Arşivdeki ilk maç öncesi tahminleri esas alınır.
+    const archived = history.matches.slice();
+    const archivedIds = new Set(archived.map(getMatchId));
+
+    // Arşivde olmayan ve henüz başlamamış güncel maçları ekle.
+    if(Array.isArray(current?.matches)){
+      const now = Date.now();
+
+      for(const match of current.matches){
+        const id = getMatchId(match);
+        if(archivedIds.has(id)) continue;
+
+        const date = dateForInput(getDate(match));
+        const time = getTime(match);
+
+        if(!date || !/^\d{1,2}:\d{2}$/.test(time)) continue;
+
+        const [year,month,day] = date.split("-").map(Number);
+        const [hour,minute] = time.split(":").map(Number);
+        const kickoff = Date.UTC(year,month-1,day,hour-3,minute);
+
+        if(kickoff <= now) continue;
+
+        archived.push({
+          ...match,
+          matchId:id,
+          evaluation:{status:"pending",markets:{},scores:{}}
+        });
+
+        archivedIds.add(id);
+      }
+    }
+
+    state.matches = archived.sort((a,b)=>{
       const difference = parseDate(getDate(a))-parseDate(getDate(b));
       if(difference !== 0) return difference;
       return String(getTime(a)).localeCompare(String(getTime(b)));
@@ -823,16 +863,16 @@ async function loadData(){
     applyFilters();
 
     $("status").textContent =
-      `${state.matches.length} maç yüklendi.`;
+      `${state.matches.length} arşivlenmiş ve güncel maç yüklendi.`;
+
   }catch(error){
     console.error(error);
-
     $("status").textContent = "Veri yükleme hatası: "+error.message;
 
     $("matchList").innerHTML = `
       <div class="empty">
         ${escapeHTML(error.message)}<br><br>
-        outputs/ml-predictions.json dosyasını kontrol et.
+        outputs/ml-prediction-history.json dosyasını kontrol et.
       </div>`;
   }
 }
@@ -852,30 +892,11 @@ $("matchList").addEventListener("click",event=>{
 
   const card = button.closest(".match");
   const details = card.querySelector(".details");
-  const content = card.querySelector(".details-content");
-  const id = card.dataset.id;
-
   const opening = !details.classList.contains("open");
 
-  if(opening){
-    details.classList.add("open");
-    button.textContent = "−";
-    button.setAttribute("aria-expanded","true");
-
-    if(!content.dataset.loaded){
-      const index = [...$("matchList").children].indexOf(card);
-      const match = state.filtered[index];
-
-      if(match){
-        content.innerHTML = renderDetails(match);
-        content.dataset.loaded = "true";
-      }
-    }
-  }else{
-    details.classList.remove("open");
-    button.textContent = "+";
-    button.setAttribute("aria-expanded","false");
-  }
+  details.classList.toggle("open",opening);
+  button.textContent = opening ? "−" : "+";
+  button.setAttribute("aria-expanded",String(opening));
 });
 
 loadData();
