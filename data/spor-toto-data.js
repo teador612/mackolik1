@@ -192,7 +192,7 @@ window.SPORT_TOTO_DATA = {
     ],
     "12": [
       {"number":1,"home":"Tümosan Konyaspor","away":"Galatasaray","result":"2"},
-      {"number":2,"home":"Erzurumspor FK","away":"Arca Çorum FK","result":null},
+      {"number":2,"home":"Erzurumspor FK","away":"Arca Çorum FK","result":"2"},
       {"number":3,"home":"Kocaelispor","away":"Çaykur Rizespor","result":null},
       {"number":4,"home":"Fenerbahçe","away":"Göztepe","result":null},
       {"number":5,"home":"Amed Sportif Faaliyetler","away":"Eyüpspor","result":null},
