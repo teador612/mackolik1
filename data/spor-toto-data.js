@@ -195,7 +195,7 @@ window.SPORT_TOTO_DATA = {
       {"number":2,"home":"Erzurumspor FK","away":"Arca Çorum FK","result":"2"},
       {"number":3,"home":"Kocaelispor","away":"Çaykur Rizespor","result":"X"},
       {"number":4,"home":"Fenerbahçe","away":"Göztepe","result":"2"},
-      {"number":5,"home":"Amed Sportif Faaliyetler","away":"Eyüpspor","result":null},
+      {"number":5,"home":"Amed Sportif Faaliyetler","away":"Eyüpspor","result":"1"},
       {"number":6,"home":"İstanbul Başakşehir","away":"Samsunspor","result":null},
       {"number":7,"home":"Trabzonspor","away":"Gaziantep FK","result":null},
       {"number":8,"home":"Kasımpaşa","away":"Beşiktaş","result":null},
