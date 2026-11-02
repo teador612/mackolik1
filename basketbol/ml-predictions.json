@@ -1,7 +1,9 @@
 {
-  "updatedAt": "2026-11-02T09:11:39.405638+00:00",
+  "updatedAt": "2026-11-02T11:33:03.009953+00:00",
   "source": "basketball.json",
   "league": "NBA",
+  "predictionMethod": "walk_forward",
+  "historicalPredictionsEnabled": true,
   "models": [
     "RandomForest",
     "XGBoost",
@@ -12,6 +14,8 @@
     "completedMatches": 192,
     "trainingSamples": 134,
     "minimumTeamHistory": 3,
+    "minimumTrainingRows": 40,
+    "featureCount": 54,
     "validation": {
       "RandomForest": {
         "homeMAE": 11.383,
@@ -38,18 +42,4300 @@
         "validationMatches": 27
       }
     },
-    "status": "trained",
-    "featureCount": 54
+    "status": "trained"
   },
   "diagnostics": {
     "totalRecords": 1024,
     "nbaMatches": 420,
     "finishedMatches": 192,
-    "upcomingCandidates": 228,
-    "skippedForInsufficientHistory": 0,
-    "todayUTC": "2026-11-02"
+    "upcomingMatches": 228,
+    "historicalCandidates": 192,
+    "historicalPredicted": 93,
+    "upcomingPredicted": 228,
+    "skippedInsufficientHistory": 58,
+    "skippedInsufficientTraining": 41,
+    "todayUTC": "2026-11-02",
+    "upcomingCandidates": 228
   },
   "predictions": [
+    {
+      "matchId": "401898719",
+      "date": "2026-10-17",
+      "utcDate": "2026-10-17T02:30Z",
+      "league": "NBA",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "Denver Nuggets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 41,
+      "trainingCutoff": "2026-10-17T02:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 108.9,
+            "awayScore": 121.1,
+            "totalScore": 230.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 105.5,
+            "awayScore": 120.7,
+            "totalScore": 226.2,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 111.0,
+            "awayScore": 123.1,
+            "totalScore": 234.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 112.1,
+            "awayScore": 120.5,
+            "totalScore": 232.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.4,
+          "awayScore": 121.3,
+          "totalScore": 230.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909088",
+      "date": "2026-10-20",
+      "utcDate": "2026-10-20T19:00Z",
+      "league": "NBA",
+      "homeTeam": "Detroit Pistons",
+      "awayTeam": "Boston Celtics",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 42,
+      "trainingCutoff": "2026-10-20T19:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.4,
+            "awayScore": 118.9,
+            "totalScore": 232.3,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 117.2,
+            "awayScore": 122.3,
+            "totalScore": 239.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 119.0,
+            "awayScore": 123.1,
+            "totalScore": 242.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 113.2,
+            "awayScore": 119.5,
+            "totalScore": 232.7,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.7,
+          "awayScore": 121.0,
+          "totalScore": 236.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909089",
+      "date": "2026-10-20",
+      "utcDate": "2026-10-20T23:00Z",
+      "league": "NBA",
+      "homeTeam": "New York Knicks",
+      "awayTeam": "Philadelphia 76ers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 43,
+      "trainingCutoff": "2026-10-20T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.9,
+            "awayScore": 113.8,
+            "totalScore": 224.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 110.5,
+            "awayScore": 117.4,
+            "totalScore": 227.9,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 106.9,
+            "awayScore": 115.5,
+            "totalScore": 222.4,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 108.0,
+            "awayScore": 115.0,
+            "totalScore": 223.0,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.1,
+          "awayScore": 115.4,
+          "totalScore": 224.5,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909090",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T01:50Z",
+      "league": "NBA",
+      "homeTeam": "San Antonio Spurs",
+      "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 44,
+      "trainingCutoff": "2026-10-21T01:50:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.8,
+            "awayScore": 102.0,
+            "totalScore": 213.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 112.1,
+            "awayScore": 98.9,
+            "totalScore": 211.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 115.4,
+            "awayScore": 101.7,
+            "totalScore": 217.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 112.9,
+            "awayScore": 104.6,
+            "totalScore": 217.5,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.0,
+          "awayScore": 101.8,
+          "totalScore": 214.8,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909834",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Orlando Magic",
+      "awayTeam": "Atlanta Hawks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 45,
+      "trainingCutoff": "2026-10-21T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 124.4,
+            "awayScore": 116.9,
+            "totalScore": 241.3,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 126.9,
+            "awayScore": 121.4,
+            "totalScore": 248.3,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 121.3,
+            "awayScore": 120.1,
+            "totalScore": 241.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 125.8,
+            "awayScore": 119.1,
+            "totalScore": 244.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 124.6,
+          "awayScore": 119.4,
+          "totalScore": 244.0,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909835",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Washington Wizards",
+      "awayTeam": "Milwaukee Bucks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 45,
+      "trainingCutoff": "2026-10-21T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.5,
+            "awayScore": 113.3,
+            "totalScore": 224.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 107.1,
+            "awayScore": 112.0,
+            "totalScore": 219.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 106.6,
+            "awayScore": 109.4,
+            "totalScore": 216.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 107.8,
+            "awayScore": 114.0,
+            "totalScore": 221.8,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.2,
+          "awayScore": 112.2,
+          "totalScore": 220.4,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909836",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Brooklyn Nets",
+      "awayTeam": "Charlotte Hornets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 47,
+      "trainingCutoff": "2026-10-21T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.9,
+            "awayScore": 107.9,
+            "totalScore": 226.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 120.6,
+            "awayScore": 113.8,
+            "totalScore": 234.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.5,
+            "awayScore": 114.7,
+            "totalScore": 233.2,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 117.6,
+            "awayScore": 110.6,
+            "totalScore": 228.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.9,
+          "awayScore": 111.8,
+          "totalScore": 230.7,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909091",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Miami Heat",
+      "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 47,
+      "trainingCutoff": "2026-10-21T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 123.9,
+            "awayScore": 115.1,
+            "totalScore": 239.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 124.3,
+            "awayScore": 113.4,
+            "totalScore": 237.7,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 126.0,
+            "awayScore": 118.1,
+            "totalScore": 244.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 122.9,
+            "awayScore": 117.9,
+            "totalScore": 240.8,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 124.3,
+          "awayScore": 116.1,
+          "totalScore": 240.4,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909837",
+      "date": "2026-10-21",
+      "utcDate": "2026-10-21T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Toronto Raptors",
+      "awayTeam": "Chicago Bulls",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 47,
+      "trainingCutoff": "2026-10-21T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 123.1,
+            "awayScore": 123.8,
+            "totalScore": 246.9,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 128.1,
+            "awayScore": 122.3,
+            "totalScore": 250.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 125.0,
+            "awayScore": 127.0,
+            "totalScore": 252.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 122.6,
+            "awayScore": 123.6,
+            "totalScore": 246.2,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 124.7,
+          "awayScore": 124.2,
+          "totalScore": 248.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909838",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Memphis Grizzlies",
+      "awayTeam": "Utah Jazz",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 50,
+      "trainingCutoff": "2026-10-22T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.2,
+            "awayScore": 107.4,
+            "totalScore": 219.6,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 112.0,
+            "awayScore": 106.5,
+            "totalScore": 218.5,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 109.9,
+            "awayScore": 102.7,
+            "totalScore": 212.6,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.1,
+            "awayScore": 109.6,
+            "totalScore": 222.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.8,
+          "awayScore": 106.5,
+          "totalScore": 218.3,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909839",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T00:00Z",
+      "league": "NBA",
+      "homeTeam": "New Orleans Pelicans",
+      "awayTeam": "Indiana Pacers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 50,
+      "trainingCutoff": "2026-10-22T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.7,
+            "awayScore": 117.0,
+            "totalScore": 227.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 105.0,
+            "awayScore": 118.3,
+            "totalScore": 223.3,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 103.9,
+            "awayScore": 115.9,
+            "totalScore": 219.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 110.1,
+            "awayScore": 115.8,
+            "totalScore": 225.9,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 107.4,
+          "awayScore": 116.8,
+          "totalScore": 224.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909840",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T00:30Z",
+      "league": "NBA",
+      "homeTeam": "Houston Rockets",
+      "awayTeam": "Dallas Mavericks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 52,
+      "trainingCutoff": "2026-10-22T00:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 120.8,
+            "awayScore": 110.6,
+            "totalScore": 231.4,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.4,
+            "awayScore": 110.6,
+            "totalScore": 228.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 114.2,
+            "awayScore": 110.4,
+            "totalScore": 224.6,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 118.2,
+            "awayScore": 115.0,
+            "totalScore": 233.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.7,
+          "awayScore": 111.7,
+          "totalScore": 229.4,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909092",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "Golden State Warriors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 53,
+      "trainingCutoff": "2026-10-22T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 106.2,
+            "awayScore": 118.2,
+            "totalScore": 224.4,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 105.8,
+            "awayScore": 118.2,
+            "totalScore": 224.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 117.0,
+            "awayScore": 117.8,
+            "totalScore": 234.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 109.4,
+            "awayScore": 116.9,
+            "totalScore": 226.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.6,
+          "awayScore": 117.8,
+          "totalScore": 227.4,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909841",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Portland Trail Blazers",
+      "awayTeam": "Phoenix Suns",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 53,
+      "trainingCutoff": "2026-10-22T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.9,
+            "awayScore": 106.1,
+            "totalScore": 224.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 116.3,
+            "awayScore": 101.1,
+            "totalScore": 217.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.2,
+            "awayScore": 102.0,
+            "totalScore": 220.2,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 118.9,
+            "awayScore": 104.0,
+            "totalScore": 222.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.8,
+          "awayScore": 103.3,
+          "totalScore": 221.1,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909842",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T02:30Z",
+      "league": "NBA",
+      "homeTeam": "LA Clippers",
+      "awayTeam": "Sacramento Kings",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 55,
+      "trainingCutoff": "2026-10-22T02:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.6,
+            "awayScore": 109.6,
+            "totalScore": 223.2,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 115.0,
+            "awayScore": 108.6,
+            "totalScore": 223.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.2,
+            "awayScore": 110.2,
+            "totalScore": 228.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 115.6,
+            "awayScore": 105.6,
+            "totalScore": 221.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.6,
+          "awayScore": 108.5,
+          "totalScore": 224.1,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909093",
+      "date": "2026-10-22",
+      "utcDate": "2026-10-22T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Philadelphia 76ers",
+      "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 56,
+      "trainingCutoff": "2026-10-22T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.1,
+            "awayScore": 114.6,
+            "totalScore": 225.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 105.4,
+            "awayScore": 114.6,
+            "totalScore": 220.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 105.7,
+            "awayScore": 121.5,
+            "totalScore": 227.2,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 109.9,
+            "awayScore": 115.6,
+            "totalScore": 225.5,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.0,
+          "awayScore": 116.6,
+          "totalScore": 224.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909094",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T01:30Z",
+      "league": "NBA",
+      "homeTeam": "Oklahoma City Thunder",
+      "awayTeam": "Denver Nuggets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 57,
+      "trainingCutoff": "2026-10-23T01:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.2,
+            "awayScore": 113.3,
+            "totalScore": 231.5,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.6,
+            "awayScore": 113.7,
+            "totalScore": 231.3,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 119.2,
+            "awayScore": 108.7,
+            "totalScore": 227.9,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 115.0,
+            "awayScore": 113.3,
+            "totalScore": 228.3,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.5,
+          "awayScore": 112.2,
+          "totalScore": 229.7,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909848",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T20:00Z",
+      "league": "NBA",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Chicago Bulls",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 58,
+      "trainingCutoff": "2026-10-23T20:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.8,
+            "awayScore": 118.0,
+            "totalScore": 231.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 108.7,
+            "awayScore": 124.1,
+            "totalScore": 232.8,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 105.3,
+            "awayScore": 114.5,
+            "totalScore": 219.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 108.7,
+            "awayScore": 119.9,
+            "totalScore": 228.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.1,
+          "awayScore": 119.1,
+          "totalScore": 228.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909095",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Boston Celtics",
+      "awayTeam": "New York Knicks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 59,
+      "trainingCutoff": "2026-10-23T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.6,
+            "awayScore": 106.4,
+            "totalScore": 225.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.3,
+            "awayScore": 106.3,
+            "totalScore": 224.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.6,
+            "awayScore": 112.7,
+            "totalScore": 231.3,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 119.7,
+            "awayScore": 111.0,
+            "totalScore": 230.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.8,
+          "awayScore": 109.1,
+          "totalScore": 227.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909843",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Charlotte Hornets",
+      "awayTeam": "Atlanta Hawks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 59,
+      "trainingCutoff": "2026-10-23T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 119.3,
+            "awayScore": 120.5,
+            "totalScore": 239.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 117.5,
+            "awayScore": 124.5,
+            "totalScore": 242.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 118.8,
+            "awayScore": 124.9,
+            "totalScore": 243.7,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 116.9,
+            "awayScore": 121.7,
+            "totalScore": 238.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.1,
+          "awayScore": 122.9,
+          "totalScore": 241.0,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909844",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Indiana Pacers",
+      "awayTeam": "Dallas Mavericks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 59,
+      "trainingCutoff": "2026-10-23T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 120.4,
+            "awayScore": 117.1,
+            "totalScore": 237.5,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 120.4,
+            "awayScore": 117.0,
+            "totalScore": 237.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.4,
+            "awayScore": 119.2,
+            "totalScore": 237.6,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 121.9,
+            "awayScore": 116.7,
+            "totalScore": 238.6,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 120.3,
+          "awayScore": 117.5,
+          "totalScore": 237.8,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909845",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Orlando Magic",
+      "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 59,
+      "trainingCutoff": "2026-10-23T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 119.4,
+            "awayScore": 122.8,
+            "totalScore": 242.2,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 119.4,
+            "awayScore": 131.7,
+            "totalScore": 251.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 119.0,
+            "awayScore": 128.1,
+            "totalScore": 247.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 120.2,
+            "awayScore": 126.1,
+            "totalScore": 246.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.5,
+          "awayScore": 127.2,
+          "totalScore": 246.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909846",
+      "date": "2026-10-23",
+      "utcDate": "2026-10-23T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Washington Wizards",
+      "awayTeam": "Toronto Raptors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 59,
+      "trainingCutoff": "2026-10-23T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 122.6,
+            "awayScore": 115.9,
+            "totalScore": 238.5,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 126.5,
+            "awayScore": 112.0,
+            "totalScore": 238.5,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 126.7,
+            "awayScore": 105.3,
+            "totalScore": 232.0,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 125.2,
+            "awayScore": 109.5,
+            "totalScore": 234.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 125.2,
+          "awayScore": 110.7,
+          "totalScore": 235.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909847",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Miami Heat",
+      "awayTeam": "Detroit Pistons",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 64,
+      "trainingCutoff": "2026-10-24T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 108.7,
+            "awayScore": 114.1,
+            "totalScore": 222.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 106.1,
+            "awayScore": 112.8,
+            "totalScore": 218.9,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 110.6,
+            "awayScore": 112.8,
+            "totalScore": 223.4,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 105.8,
+            "awayScore": 114.8,
+            "totalScore": 220.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 107.8,
+          "awayScore": 113.6,
+          "totalScore": 221.4,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909096",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T01:30Z",
+      "league": "NBA",
+      "homeTeam": "San Antonio Spurs",
+      "awayTeam": "Houston Rockets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 65,
+      "trainingCutoff": "2026-10-24T01:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 122.1,
+            "awayScore": 110.6,
+            "totalScore": 232.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 125.6,
+            "awayScore": 110.0,
+            "totalScore": 235.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 128.0,
+            "awayScore": 114.1,
+            "totalScore": 242.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 120.5,
+            "awayScore": 109.2,
+            "totalScore": 229.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 124.0,
+          "awayScore": 111.0,
+          "totalScore": 235.0,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909849",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T01:30Z",
+      "league": "NBA",
+      "homeTeam": "Utah Jazz",
+      "awayTeam": "New Orleans Pelicans",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 65,
+      "trainingCutoff": "2026-10-24T01:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 109.1,
+            "awayScore": 109.4,
+            "totalScore": 218.5,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 110.1,
+            "awayScore": 107.0,
+            "totalScore": 217.1,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 109.7,
+            "awayScore": 109.2,
+            "totalScore": 218.9,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 110.0,
+            "awayScore": 108.0,
+            "totalScore": 218.0,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.7,
+          "awayScore": 108.4,
+          "totalScore": 218.1,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909850",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Golden State Warriors",
+      "awayTeam": "Memphis Grizzlies",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 67,
+      "trainingCutoff": "2026-10-24T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.4,
+            "awayScore": 111.4,
+            "totalScore": 224.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 112.6,
+            "awayScore": 108.4,
+            "totalScore": 221.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 109.7,
+            "awayScore": 109.2,
+            "totalScore": 218.9,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.2,
+            "awayScore": 110.5,
+            "totalScore": 223.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.2,
+          "awayScore": 109.9,
+          "totalScore": 222.1,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909851",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "LA Clippers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 67,
+      "trainingCutoff": "2026-10-24T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.3,
+            "awayScore": 115.4,
+            "totalScore": 225.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 107.1,
+            "awayScore": 117.4,
+            "totalScore": 224.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 104.9,
+            "awayScore": 118.4,
+            "totalScore": 223.3,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 109.6,
+            "awayScore": 115.7,
+            "totalScore": 225.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.0,
+          "awayScore": 116.7,
+          "totalScore": 224.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909852",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Sacramento Kings",
+      "awayTeam": "Portland Trail Blazers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 67,
+      "trainingCutoff": "2026-10-24T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.5,
+            "awayScore": 122.1,
+            "totalScore": 234.6,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 117.1,
+            "awayScore": 126.3,
+            "totalScore": 243.4,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 116.1,
+            "awayScore": 123.1,
+            "totalScore": 239.2,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 117.3,
+            "awayScore": 123.5,
+            "totalScore": 240.8,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.8,
+          "awayScore": 123.8,
+          "totalScore": 239.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909853",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T22:00Z",
+      "league": "NBA",
+      "homeTeam": "Charlotte Hornets",
+      "awayTeam": "Miami Heat",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 70,
+      "trainingCutoff": "2026-10-24T22:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 103.5,
+            "awayScore": 122.3,
+            "totalScore": 225.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 101.4,
+            "awayScore": 123.6,
+            "totalScore": 225.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 102.6,
+            "awayScore": 125.2,
+            "totalScore": 227.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 98.3,
+            "awayScore": 126.8,
+            "totalScore": 225.1,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 101.5,
+          "awayScore": 124.5,
+          "totalScore": 226.0,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909854",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Cleveland Cavaliers",
+      "awayTeam": "Brooklyn Nets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 71,
+      "trainingCutoff": "2026-10-24T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.3,
+            "awayScore": 118.8,
+            "totalScore": 229.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 102.7,
+            "awayScore": 117.1,
+            "totalScore": 219.8,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 103.8,
+            "awayScore": 121.6,
+            "totalScore": 225.4,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 107.1,
+            "awayScore": 118.1,
+            "totalScore": 225.2,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 106.0,
+          "awayScore": 118.9,
+          "totalScore": 224.9,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909855",
+      "date": "2026-10-24",
+      "utcDate": "2026-10-24T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Philadelphia 76ers",
+      "awayTeam": "Milwaukee Bucks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 71,
+      "trainingCutoff": "2026-10-24T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.3,
+            "awayScore": 114.7,
+            "totalScore": 226.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 117.1,
+            "awayScore": 116.6,
+            "totalScore": 233.7,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 112.9,
+            "awayScore": 113.8,
+            "totalScore": 226.7,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.1,
+            "awayScore": 117.5,
+            "totalScore": 231.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.8,
+          "awayScore": 115.7,
+          "totalScore": 229.5,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909857",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Chicago Bulls",
+      "awayTeam": "Washington Wizards",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 73,
+      "trainingCutoff": "2026-10-25T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.8,
+            "awayScore": 111.2,
+            "totalScore": 222.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 108.3,
+            "awayScore": 111.8,
+            "totalScore": 220.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 108.2,
+            "awayScore": 111.7,
+            "totalScore": 219.9,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.6,
+            "awayScore": 111.4,
+            "totalScore": 223.0,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.7,
+          "awayScore": 111.5,
+          "totalScore": 221.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909858",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Dallas Mavericks",
+      "awayTeam": "San Antonio Spurs",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 73,
+      "trainingCutoff": "2026-10-25T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.2,
+            "awayScore": 116.9,
+            "totalScore": 228.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 109.6,
+            "awayScore": 112.6,
+            "totalScore": 222.2,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 110.7,
+            "awayScore": 119.7,
+            "totalScore": 230.4,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.2,
+            "awayScore": 118.1,
+            "totalScore": 229.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 110.7,
+          "awayScore": 116.8,
+          "totalScore": 227.5,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909856",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T00:30Z",
+      "league": "NBA",
+      "homeTeam": "Atlanta Hawks",
+      "awayTeam": "Houston Rockets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 75,
+      "trainingCutoff": "2026-10-25T00:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.4,
+            "awayScore": 116.1,
+            "totalScore": 231.5,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 114.9,
+            "awayScore": 117.6,
+            "totalScore": 232.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 119.4,
+            "awayScore": 121.6,
+            "totalScore": 241.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 118.8,
+            "awayScore": 118.9,
+            "totalScore": 237.7,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.1,
+          "awayScore": 118.5,
+          "totalScore": 235.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909859",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Denver Nuggets",
+      "awayTeam": "New Orleans Pelicans",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 76,
+      "trainingCutoff": "2026-10-25T01:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.3,
+            "awayScore": 114.4,
+            "totalScore": 227.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 114.7,
+            "awayScore": 113.8,
+            "totalScore": 228.5,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 117.9,
+            "awayScore": 115.8,
+            "totalScore": 233.7,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.1,
+            "awayScore": 115.0,
+            "totalScore": 228.1,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 114.8,
+          "awayScore": 114.8,
+          "totalScore": 229.6,
+          "winner": "TIE"
+        }
+      }
+    },
+    {
+      "matchId": "401909860",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Phoenix Suns",
+      "awayTeam": "Golden State Warriors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 77,
+      "trainingCutoff": "2026-10-25T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.7,
+            "awayScore": 117.8,
+            "totalScore": 229.5,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 108.5,
+            "awayScore": 118.3,
+            "totalScore": 226.8,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 111.1,
+            "awayScore": 117.0,
+            "totalScore": 228.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.1,
+            "awayScore": 118.3,
+            "totalScore": 232.4,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.3,
+          "awayScore": 117.8,
+          "totalScore": 229.1,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909861",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T21:00Z",
+      "league": "NBA",
+      "homeTeam": "Utah Jazz",
+      "awayTeam": "Los Angeles Lakers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 78,
+      "trainingCutoff": "2026-10-25T21:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.5,
+            "awayScore": 114.5,
+            "totalScore": 232.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 115.0,
+            "awayScore": 109.7,
+            "totalScore": 224.7,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 118.5,
+            "awayScore": 118.0,
+            "totalScore": 236.5,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 118.5,
+            "awayScore": 115.9,
+            "totalScore": 234.4,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.4,
+          "awayScore": 114.5,
+          "totalScore": 231.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909862",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T22:00Z",
+      "league": "NBA",
+      "homeTeam": "Brooklyn Nets",
+      "awayTeam": "Indiana Pacers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 79,
+      "trainingCutoff": "2026-10-25T22:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.2,
+            "awayScore": 118.9,
+            "totalScore": 237.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 117.5,
+            "awayScore": 125.5,
+            "totalScore": 243.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 121.7,
+            "awayScore": 125.4,
+            "totalScore": 247.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 117.1,
+            "awayScore": 120.2,
+            "totalScore": 237.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.6,
+          "awayScore": 122.5,
+          "totalScore": 241.1,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909864",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Minnesota Timberwolves",
+      "awayTeam": "Toronto Raptors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 80,
+      "trainingCutoff": "2026-10-25T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.5,
+            "awayScore": 118.6,
+            "totalScore": 232.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 112.6,
+            "awayScore": 118.7,
+            "totalScore": 231.3,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 112.1,
+            "awayScore": 118.3,
+            "totalScore": 230.4,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 113.0,
+            "awayScore": 117.7,
+            "totalScore": 230.7,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.8,
+          "awayScore": 118.3,
+          "totalScore": 231.1,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909863",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T23:00Z",
+      "league": "NBA",
+      "homeTeam": "New York Knicks",
+      "awayTeam": "Orlando Magic",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 80,
+      "trainingCutoff": "2026-10-25T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.0,
+            "awayScore": 119.5,
+            "totalScore": 234.5,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 115.7,
+            "awayScore": 119.4,
+            "totalScore": 235.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 120.2,
+            "awayScore": 123.5,
+            "totalScore": 243.7,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 117.4,
+            "awayScore": 120.4,
+            "totalScore": 237.8,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.1,
+          "awayScore": 120.7,
+          "totalScore": 237.8,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909865",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Oklahoma City Thunder",
+      "awayTeam": "LA Clippers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 80,
+      "trainingCutoff": "2026-10-25T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.9,
+            "awayScore": 114.7,
+            "totalScore": 227.6,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 116.1,
+            "awayScore": 113.5,
+            "totalScore": 229.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 108.8,
+            "awayScore": 117.8,
+            "totalScore": 226.6,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 117.6,
+            "awayScore": 115.8,
+            "totalScore": 233.4,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.8,
+          "awayScore": 115.5,
+          "totalScore": 229.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909866",
+      "date": "2026-10-25",
+      "utcDate": "2026-10-25T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Philadelphia 76ers",
+      "awayTeam": "Detroit Pistons",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 83,
+      "trainingCutoff": "2026-10-25T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.6,
+            "awayScore": 115.6,
+            "totalScore": 228.2,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 113.6,
+            "awayScore": 116.4,
+            "totalScore": 230.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 112.4,
+            "awayScore": 118.9,
+            "totalScore": 231.3,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.1,
+            "awayScore": 116.6,
+            "totalScore": 227.7,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.4,
+          "awayScore": 116.9,
+          "totalScore": 229.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909867",
+      "date": "2026-10-26",
+      "utcDate": "2026-10-26T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Sacramento Kings",
+      "awayTeam": "Memphis Grizzlies",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 84,
+      "trainingCutoff": "2026-10-26T01:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.5,
+            "awayScore": 121.9,
+            "totalScore": 233.4,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 106.3,
+            "awayScore": 121.3,
+            "totalScore": 227.6,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 103.7,
+            "awayScore": 123.1,
+            "totalScore": 226.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.4,
+            "awayScore": 119.6,
+            "totalScore": 231.0,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.2,
+          "awayScore": 121.5,
+          "totalScore": 229.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909868",
+      "date": "2026-10-26",
+      "utcDate": "2026-10-26T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Charlotte Hornets",
+      "awayTeam": "Washington Wizards",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 85,
+      "trainingCutoff": "2026-10-26T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 106.3,
+            "awayScore": 119.8,
+            "totalScore": 226.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 95.1,
+            "awayScore": 117.9,
+            "totalScore": 213.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 99.2,
+            "awayScore": 120.7,
+            "totalScore": 219.9,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 107.6,
+            "awayScore": 118.5,
+            "totalScore": 226.1,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 102.0,
+          "awayScore": 119.2,
+          "totalScore": 221.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909869",
+      "date": "2026-10-26",
+      "utcDate": "2026-10-26T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Cleveland Cavaliers",
+      "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 85,
+      "trainingCutoff": "2026-10-26T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.4,
+            "awayScore": 117.5,
+            "totalScore": 227.9,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 114.6,
+            "awayScore": 115.3,
+            "totalScore": 229.9,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 111.6,
+            "awayScore": 111.4,
+            "totalScore": 223.0,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 115.5,
+            "awayScore": 114.3,
+            "totalScore": 229.8,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.0,
+          "awayScore": 114.6,
+          "totalScore": 227.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909870",
+      "date": "2026-10-26",
+      "utcDate": "2026-10-26T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Boston Celtics",
+      "awayTeam": "Chicago Bulls",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 87,
+      "trainingCutoff": "2026-10-26T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.5,
+            "awayScore": 107.3,
+            "totalScore": 219.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 110.9,
+            "awayScore": 101.3,
+            "totalScore": 212.2,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 111.4,
+            "awayScore": 104.4,
+            "totalScore": 215.8,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 115.7,
+            "awayScore": 108.5,
+            "totalScore": 224.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.6,
+          "awayScore": 105.4,
+          "totalScore": 218.0,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909871",
+      "date": "2026-10-26",
+      "utcDate": "2026-10-26T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Miami Heat",
+      "awayTeam": "Dallas Mavericks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 87,
+      "trainingCutoff": "2026-10-26T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.2,
+            "awayScore": 119.9,
+            "totalScore": 233.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 116.4,
+            "awayScore": 119.8,
+            "totalScore": 236.2,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 112.3,
+            "awayScore": 121.3,
+            "totalScore": 233.6,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 113.7,
+            "awayScore": 120.6,
+            "totalScore": 234.3,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.9,
+          "awayScore": 120.4,
+          "totalScore": 234.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909872",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Indiana Pacers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 89,
+      "trainingCutoff": "2026-10-27T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.8,
+            "awayScore": 124.8,
+            "totalScore": 236.6,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 110.1,
+            "awayScore": 126.5,
+            "totalScore": 236.6,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 112.3,
+            "awayScore": 124.0,
+            "totalScore": 236.3,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.5,
+            "awayScore": 117.9,
+            "totalScore": 232.4,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.2,
+          "awayScore": 123.3,
+          "totalScore": 235.5,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909873",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Oklahoma City Thunder",
+      "awayTeam": "Phoenix Suns",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 89,
+      "trainingCutoff": "2026-10-27T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.4,
+            "awayScore": 106.5,
+            "totalScore": 218.9,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 111.1,
+            "awayScore": 106.8,
+            "totalScore": 217.9,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 107.7,
+            "awayScore": 103.7,
+            "totalScore": 211.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 112.3,
+            "awayScore": 111.1,
+            "totalScore": 223.4,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 110.9,
+          "awayScore": 107.0,
+          "totalScore": 217.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909874",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T00:30Z",
+      "league": "NBA",
+      "homeTeam": "Houston Rockets",
+      "awayTeam": "Atlanta Hawks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 91,
+      "trainingCutoff": "2026-10-27T00:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.5,
+            "awayScore": 112.5,
+            "totalScore": 230.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.6,
+            "awayScore": 110.4,
+            "totalScore": 228.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 120.8,
+            "awayScore": 110.9,
+            "totalScore": 231.7,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 119.5,
+            "awayScore": 106.7,
+            "totalScore": 226.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.8,
+          "awayScore": 110.1,
+          "totalScore": 228.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909875",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Utah Jazz",
+      "awayTeam": "Memphis Grizzlies",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 92,
+      "trainingCutoff": "2026-10-27T01:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.3,
+            "awayScore": 114.9,
+            "totalScore": 225.2,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 107.0,
+            "awayScore": 118.2,
+            "totalScore": 225.2,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 104.1,
+            "awayScore": 112.8,
+            "totalScore": 216.9,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 110.1,
+            "awayScore": 113.3,
+            "totalScore": 223.4,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 107.9,
+          "awayScore": 114.8,
+          "totalScore": 222.7,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909876",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Denver Nuggets",
+      "awayTeam": "Golden State Warriors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 93,
+      "trainingCutoff": "2026-10-27T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.3,
+            "awayScore": 113.1,
+            "totalScore": 228.4,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.3,
+            "awayScore": 112.1,
+            "totalScore": 230.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 119.1,
+            "awayScore": 111.1,
+            "totalScore": 230.2,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 119.7,
+            "awayScore": 113.8,
+            "totalScore": 233.5,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 118.1,
+          "awayScore": 112.5,
+          "totalScore": 230.6,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909877",
+      "date": "2026-10-27",
+      "utcDate": "2026-10-27T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Boston Celtics",
+      "awayTeam": "Brooklyn Nets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 94,
+      "trainingCutoff": "2026-10-27T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.5,
+            "awayScore": 105.6,
+            "totalScore": 224.1,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.9,
+            "awayScore": 103.5,
+            "totalScore": 222.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 119.6,
+            "awayScore": 104.5,
+            "totalScore": 224.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 120.7,
+            "awayScore": 107.2,
+            "totalScore": 227.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.4,
+          "awayScore": 105.2,
+          "totalScore": 224.6,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909878",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T00:00Z",
+      "league": "NBA",
+      "homeTeam": "New York Knicks",
+      "awayTeam": "Detroit Pistons",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 95,
+      "trainingCutoff": "2026-10-28T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 109.6,
+            "awayScore": 114.2,
+            "totalScore": 223.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 112.8,
+            "awayScore": 112.0,
+            "totalScore": 224.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 114.2,
+            "awayScore": 114.5,
+            "totalScore": 228.7,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 112.2,
+            "awayScore": 113.0,
+            "totalScore": 225.2,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.2,
+          "awayScore": 113.4,
+          "totalScore": 225.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909879",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T00:00Z",
+      "league": "NBA",
+      "homeTeam": "San Antonio Spurs",
+      "awayTeam": "Sacramento Kings",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 95,
+      "trainingCutoff": "2026-10-28T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.0,
+            "awayScore": 104.8,
+            "totalScore": 220.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 119.2,
+            "awayScore": 107.9,
+            "totalScore": 227.1,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 112.8,
+            "awayScore": 101.4,
+            "totalScore": 214.2,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 117.2,
+            "awayScore": 107.8,
+            "totalScore": 225.0,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 116.3,
+          "awayScore": 105.5,
+          "totalScore": 221.8,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909880",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T03:00Z",
+      "league": "NBA",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "Portland Trail Blazers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 97,
+      "trainingCutoff": "2026-10-28T03:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.7,
+            "awayScore": 111.0,
+            "totalScore": 228.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 120.6,
+            "awayScore": 108.2,
+            "totalScore": 228.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 116.3,
+            "awayScore": 110.1,
+            "totalScore": 226.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 122.2,
+            "awayScore": 109.5,
+            "totalScore": 231.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.2,
+          "awayScore": 109.7,
+          "totalScore": 228.9,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909881",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Atlanta Hawks",
+      "awayTeam": "Miami Heat",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 98,
+      "trainingCutoff": "2026-10-28T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.7,
+            "awayScore": 113.5,
+            "totalScore": 231.2,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.0,
+            "awayScore": 108.2,
+            "totalScore": 225.2,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 117.3,
+            "awayScore": 106.7,
+            "totalScore": 224.0,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 117.5,
+            "awayScore": 110.7,
+            "totalScore": 228.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.4,
+          "awayScore": 109.8,
+          "totalScore": 227.2,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909882",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Cleveland Cavaliers",
+      "awayTeam": "Washington Wizards",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 98,
+      "trainingCutoff": "2026-10-28T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 114.5,
+            "awayScore": 114.4,
+            "totalScore": 228.9,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 115.2,
+            "awayScore": 109.8,
+            "totalScore": 225.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 114.1,
+            "awayScore": 115.7,
+            "totalScore": 229.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 116.6,
+            "awayScore": 115.6,
+            "totalScore": 232.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.1,
+          "awayScore": 113.9,
+          "totalScore": 229.0,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909883",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Detroit Pistons",
+      "awayTeam": "Charlotte Hornets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 98,
+      "trainingCutoff": "2026-10-28T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.1,
+            "awayScore": 110.4,
+            "totalScore": 226.5,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 120.6,
+            "awayScore": 114.5,
+            "totalScore": 235.1,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 122.5,
+            "awayScore": 121.1,
+            "totalScore": 243.6,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 117.4,
+            "awayScore": 111.3,
+            "totalScore": 228.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.2,
+          "awayScore": 114.3,
+          "totalScore": 233.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909884",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Indiana Pacers",
+      "awayTeam": "Philadelphia 76ers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 98,
+      "trainingCutoff": "2026-10-28T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.7,
+            "awayScore": 117.6,
+            "totalScore": 233.3,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 113.4,
+            "awayScore": 115.2,
+            "totalScore": 228.6,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 109.0,
+            "awayScore": 124.5,
+            "totalScore": 233.5,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 115.0,
+            "awayScore": 114.9,
+            "totalScore": 229.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.3,
+          "awayScore": 118.0,
+          "totalScore": 231.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909885",
+      "date": "2026-10-28",
+      "utcDate": "2026-10-28T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Toronto Raptors",
+      "awayTeam": "Orlando Magic",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 102,
+      "trainingCutoff": "2026-10-28T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.0,
+            "awayScore": 110.0,
+            "totalScore": 228.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 119.4,
+            "awayScore": 107.4,
+            "totalScore": 226.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 123.7,
+            "awayScore": 101.7,
+            "totalScore": 225.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 119.5,
+            "awayScore": 109.8,
+            "totalScore": 229.3,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 120.2,
+          "awayScore": 107.2,
+          "totalScore": 227.4,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909886",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Chicago Bulls",
+      "awayTeam": "New York Knicks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 103,
+      "trainingCutoff": "2026-10-29T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.7,
+            "awayScore": 116.4,
+            "totalScore": 227.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 107.0,
+            "awayScore": 117.3,
+            "totalScore": 224.3,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 105.9,
+            "awayScore": 116.1,
+            "totalScore": 222.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 107.8,
+            "awayScore": 114.0,
+            "totalScore": 221.8,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 107.8,
+          "awayScore": 116.0,
+          "totalScore": 223.8,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909887",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Houston Rockets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 103,
+      "trainingCutoff": "2026-10-29T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.4,
+            "awayScore": 121.3,
+            "totalScore": 236.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 119.6,
+            "awayScore": 123.8,
+            "totalScore": 243.4,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 118.2,
+            "awayScore": 121.7,
+            "totalScore": 239.9,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 116.0,
+            "awayScore": 120.4,
+            "totalScore": 236.4,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.3,
+          "awayScore": 121.8,
+          "totalScore": 239.1,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909888",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Minnesota Timberwolves",
+      "awayTeam": "Golden State Warriors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 103,
+      "trainingCutoff": "2026-10-29T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.9,
+            "awayScore": 111.5,
+            "totalScore": 223.4,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 109.6,
+            "awayScore": 106.6,
+            "totalScore": 216.2,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 111.8,
+            "awayScore": 104.7,
+            "totalScore": 216.5,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.3,
+            "awayScore": 108.6,
+            "totalScore": 221.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.7,
+          "awayScore": 107.8,
+          "totalScore": 219.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909889",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T00:00Z",
+      "league": "NBA",
+      "homeTeam": "New Orleans Pelicans",
+      "awayTeam": "Denver Nuggets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 103,
+      "trainingCutoff": "2026-10-29T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 119.8,
+            "awayScore": 115.6,
+            "totalScore": 235.4,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 123.0,
+            "awayScore": 121.8,
+            "totalScore": 244.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 119.1,
+            "awayScore": 121.9,
+            "totalScore": 241.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 120.9,
+            "awayScore": 119.6,
+            "totalScore": 240.5,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 120.7,
+          "awayScore": 119.7,
+          "totalScore": 240.4,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909890",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Utah Jazz",
+      "awayTeam": "San Antonio Spurs",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 107,
+      "trainingCutoff": "2026-10-29T01:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.7,
+            "awayScore": 114.3,
+            "totalScore": 225.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 106.9,
+            "awayScore": 116.5,
+            "totalScore": 223.4,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 109.8,
+            "awayScore": 116.1,
+            "totalScore": 225.9,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 110.2,
+            "awayScore": 113.5,
+            "totalScore": 223.7,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.4,
+          "awayScore": 115.1,
+          "totalScore": 224.5,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909891",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T01:30Z",
+      "league": "NBA",
+      "homeTeam": "Dallas Mavericks",
+      "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 108,
+      "trainingCutoff": "2026-10-29T01:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 109.4,
+            "awayScore": 114.3,
+            "totalScore": 223.7,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 106.6,
+            "awayScore": 114.4,
+            "totalScore": 221.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 109.0,
+            "awayScore": 111.8,
+            "totalScore": 220.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 108.9,
+            "awayScore": 117.1,
+            "totalScore": 226.0,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.5,
+          "awayScore": 114.4,
+          "totalScore": 222.9,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909892",
+      "date": "2026-10-29",
+      "utcDate": "2026-10-29T02:30Z",
+      "league": "NBA",
+      "homeTeam": "LA Clippers",
+      "awayTeam": "Los Angeles Lakers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 109,
+      "trainingCutoff": "2026-10-29T02:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 114.0,
+            "awayScore": 108.9,
+            "totalScore": 222.9,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 109.6,
+            "awayScore": 105.9,
+            "totalScore": 215.5,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 107.5,
+            "awayScore": 100.8,
+            "totalScore": 208.3,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 111.1,
+            "awayScore": 108.6,
+            "totalScore": 219.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 110.5,
+          "awayScore": 106.0,
+          "totalScore": 216.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909893",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Atlanta Hawks",
+      "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 110,
+      "trainingCutoff": "2026-10-30T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.4,
+            "awayScore": 112.1,
+            "totalScore": 222.5,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 107.6,
+            "awayScore": 111.4,
+            "totalScore": 219.0,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 107.5,
+            "awayScore": 109.3,
+            "totalScore": 216.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 109.7,
+            "awayScore": 112.9,
+            "totalScore": 222.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.8,
+          "awayScore": 111.4,
+          "totalScore": 220.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909894",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T00:00Z",
+      "league": "NBA",
+      "homeTeam": "New Orleans Pelicans",
+      "awayTeam": "Sacramento Kings",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 110,
+      "trainingCutoff": "2026-10-30T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.1,
+            "awayScore": 114.6,
+            "totalScore": 232.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.4,
+            "awayScore": 121.1,
+            "totalScore": 239.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 122.0,
+            "awayScore": 122.2,
+            "totalScore": 244.2,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 120.9,
+            "awayScore": 115.0,
+            "totalScore": 235.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.8,
+          "awayScore": 118.2,
+          "totalScore": 238.0,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909895",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Portland Trail Blazers",
+      "awayTeam": "Memphis Grizzlies",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 112,
+      "trainingCutoff": "2026-10-30T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.4,
+            "awayScore": 106.3,
+            "totalScore": 217.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 110.5,
+            "awayScore": 102.1,
+            "totalScore": 212.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 111.4,
+            "awayScore": 102.3,
+            "totalScore": 213.7,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.7,
+            "awayScore": 104.8,
+            "totalScore": 218.5,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.8,
+          "awayScore": 103.9,
+          "totalScore": 215.7,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909277",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Washington Wizards",
+      "awayTeam": "Charlotte Hornets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 113,
+      "trainingCutoff": "2026-10-30T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.9,
+            "awayScore": 105.8,
+            "totalScore": 216.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 106.4,
+            "awayScore": 102.0,
+            "totalScore": 208.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 110.7,
+            "awayScore": 100.7,
+            "totalScore": 211.4,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 107.2,
+            "awayScore": 106.1,
+            "totalScore": 213.3,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.8,
+          "awayScore": 103.7,
+          "totalScore": 212.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909278",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Boston Celtics",
+      "awayTeam": "Chicago Bulls",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 114,
+      "trainingCutoff": "2026-10-30T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 120.6,
+            "awayScore": 110.1,
+            "totalScore": 230.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 125.4,
+            "awayScore": 110.9,
+            "totalScore": 236.3,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 125.2,
+            "awayScore": 107.9,
+            "totalScore": 233.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 122.9,
+            "awayScore": 111.4,
+            "totalScore": 234.3,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 123.5,
+          "awayScore": 110.1,
+          "totalScore": 233.6,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909279",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Brooklyn Nets",
+      "awayTeam": "Detroit Pistons",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 114,
+      "trainingCutoff": "2026-10-30T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.0,
+            "awayScore": 115.6,
+            "totalScore": 227.6,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 113.3,
+            "awayScore": 116.4,
+            "totalScore": 229.7,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 115.5,
+            "awayScore": 114.6,
+            "totalScore": 230.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.5,
+            "awayScore": 112.3,
+            "totalScore": 225.8,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.6,
+          "awayScore": 114.7,
+          "totalScore": 228.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909280",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Philadelphia 76ers",
+      "awayTeam": "New York Knicks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 114,
+      "trainingCutoff": "2026-10-30T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 108.4,
+            "awayScore": 110.6,
+            "totalScore": 219.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 108.4,
+            "awayScore": 112.7,
+            "totalScore": 221.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 107.7,
+            "awayScore": 109.4,
+            "totalScore": 217.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.0,
+            "awayScore": 111.6,
+            "totalScore": 222.6,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.9,
+          "awayScore": 111.1,
+          "totalScore": 220.0,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909281",
+      "date": "2026-10-30",
+      "utcDate": "2026-10-30T23:30Z",
+      "league": "NBA",
+      "homeTeam": "Toronto Raptors",
+      "awayTeam": "Orlando Magic",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 114,
+      "trainingCutoff": "2026-10-30T23:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 120.3,
+            "awayScore": 104.5,
+            "totalScore": 224.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 123.3,
+            "awayScore": 101.7,
+            "totalScore": 225.0,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 127.7,
+            "awayScore": 96.6,
+            "totalScore": 224.3,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 122.9,
+            "awayScore": 109.1,
+            "totalScore": 232.0,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 123.5,
+          "awayScore": 103.0,
+          "totalScore": 226.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909283",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Dallas Mavericks",
+      "awayTeam": "Houston Rockets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 118,
+      "trainingCutoff": "2026-10-31T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 107.9,
+            "awayScore": 114.1,
+            "totalScore": 222.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 103.7,
+            "awayScore": 110.8,
+            "totalScore": 214.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 104.2,
+            "awayScore": 116.4,
+            "totalScore": 220.6,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 107.7,
+            "awayScore": 112.3,
+            "totalScore": 220.0,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 105.9,
+          "awayScore": 113.4,
+          "totalScore": 219.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909282",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Miami Heat",
+      "awayTeam": "Indiana Pacers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 118,
+      "trainingCutoff": "2026-10-31T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.3,
+            "awayScore": 114.7,
+            "totalScore": 227.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 110.9,
+            "awayScore": 114.0,
+            "totalScore": 224.9,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 110.6,
+            "awayScore": 112.2,
+            "totalScore": 222.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 112.9,
+            "awayScore": 114.0,
+            "totalScore": 226.9,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.7,
+          "awayScore": 113.7,
+          "totalScore": 225.4,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909284",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Minnesota Timberwolves",
+      "awayTeam": "LA Clippers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 118,
+      "trainingCutoff": "2026-10-31T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.3,
+            "awayScore": 109.5,
+            "totalScore": 219.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 109.7,
+            "awayScore": 109.9,
+            "totalScore": 219.6,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 108.2,
+            "awayScore": 116.9,
+            "totalScore": 225.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.0,
+            "awayScore": 109.4,
+            "totalScore": 220.4,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.8,
+          "awayScore": 111.4,
+          "totalScore": 221.2,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909285",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Golden State Warriors",
+      "awayTeam": "Los Angeles Lakers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 121,
+      "trainingCutoff": "2026-10-31T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.0,
+            "awayScore": 109.7,
+            "totalScore": 220.7,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 108.2,
+            "awayScore": 107.6,
+            "totalScore": 215.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 105.5,
+            "awayScore": 108.3,
+            "totalScore": 213.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 110.6,
+            "awayScore": 108.5,
+            "totalScore": 219.1,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.8,
+          "awayScore": 108.5,
+          "totalScore": 217.3,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909286",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Phoenix Suns",
+      "awayTeam": "Denver Nuggets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 121,
+      "trainingCutoff": "2026-10-31T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.7,
+            "awayScore": 115.9,
+            "totalScore": 232.6,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 122.1,
+            "awayScore": 115.5,
+            "totalScore": 237.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 117.1,
+            "awayScore": 117.7,
+            "totalScore": 234.8,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 121.2,
+            "awayScore": 114.8,
+            "totalScore": 236.0,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 119.3,
+          "awayScore": 116.0,
+          "totalScore": 235.3,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909896",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T19:00Z",
+      "league": "NBA",
+      "homeTeam": "Utah Jazz",
+      "awayTeam": "Portland Trail Blazers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 123,
+      "trainingCutoff": "2026-10-31T19:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.9,
+            "awayScore": 116.9,
+            "totalScore": 230.8,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 108.5,
+            "awayScore": 117.7,
+            "totalScore": 226.2,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 110.1,
+            "awayScore": 117.9,
+            "totalScore": 228.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 112.9,
+            "awayScore": 116.6,
+            "totalScore": 229.5,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.3,
+          "awayScore": 117.3,
+          "totalScore": 228.6,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909897",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T22:00Z",
+      "league": "NBA",
+      "homeTeam": "Charlotte Hornets",
+      "awayTeam": "Philadelphia 76ers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 124,
+      "trainingCutoff": "2026-10-31T22:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 110.2,
+            "awayScore": 111.7,
+            "totalScore": 221.9,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 113.4,
+            "awayScore": 112.0,
+            "totalScore": 225.4,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 115.3,
+            "awayScore": 112.3,
+            "totalScore": 227.6,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 112.7,
+            "awayScore": 111.0,
+            "totalScore": 223.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.9,
+          "awayScore": 111.8,
+          "totalScore": 224.7,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909898",
+      "date": "2026-10-31",
+      "utcDate": "2026-10-31T23:00Z",
+      "league": "NBA",
+      "homeTeam": "New Orleans Pelicans",
+      "awayTeam": "Atlanta Hawks",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 125,
+      "trainingCutoff": "2026-10-31T23:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.5,
+            "awayScore": 120.7,
+            "totalScore": 236.2,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 118.6,
+            "awayScore": 126.3,
+            "totalScore": 244.9,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 119.4,
+            "awayScore": 123.6,
+            "totalScore": 243.0,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 118.2,
+            "awayScore": 117.7,
+            "totalScore": 235.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.9,
+          "awayScore": 122.1,
+          "totalScore": 240.0,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909899",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Memphis Grizzlies",
+      "awayTeam": "Sacramento Kings",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 126,
+      "trainingCutoff": "2026-11-01T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 118.2,
+            "awayScore": 109.4,
+            "totalScore": 227.6,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.2,
+            "awayScore": 110.7,
+            "totalScore": 228.9,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 113.5,
+            "awayScore": 110.7,
+            "totalScore": 224.2,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 118.3,
+            "awayScore": 113.6,
+            "totalScore": 231.9,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.0,
+          "awayScore": 111.1,
+          "totalScore": 228.1,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909900",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 126,
+      "trainingCutoff": "2026-11-01T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 114.9,
+            "awayScore": 119.2,
+            "totalScore": 234.1,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 121.7,
+            "awayScore": 121.8,
+            "totalScore": 243.5,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 122.5,
+            "awayScore": 124.6,
+            "totalScore": 247.1,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 121.9,
+            "awayScore": 118.8,
+            "totalScore": 240.7,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 120.2,
+          "awayScore": 121.1,
+          "totalScore": 241.3,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909901",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T00:00Z",
+      "league": "NBA",
+      "homeTeam": "San Antonio Spurs",
+      "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 126,
+      "trainingCutoff": "2026-11-01T00:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.9,
+            "awayScore": 108.5,
+            "totalScore": 221.4,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 112.9,
+            "awayScore": 106.3,
+            "totalScore": 219.2,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 105.5,
+            "awayScore": 111.8,
+            "totalScore": 217.3,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 111.5,
+            "awayScore": 108.7,
+            "totalScore": 220.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 110.7,
+          "awayScore": 108.8,
+          "totalScore": 219.5,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909902",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T00:30Z",
+      "league": "NBA",
+      "homeTeam": "Houston Rockets",
+      "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 129,
+      "trainingCutoff": "2026-11-01T00:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.7,
+            "awayScore": 106.3,
+            "totalScore": 219.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 111.6,
+            "awayScore": 104.0,
+            "totalScore": 215.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 113.7,
+            "awayScore": 104.3,
+            "totalScore": 218.0,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 114.5,
+            "awayScore": 106.0,
+            "totalScore": 220.5,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.1,
+          "awayScore": 105.2,
+          "totalScore": 218.3,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909903",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T20:30Z",
+      "league": "NBA",
+      "homeTeam": "Orlando Magic",
+      "awayTeam": "Boston Celtics",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 130,
+      "trainingCutoff": "2026-11-01T20:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 113.9,
+            "awayScore": 115.1,
+            "totalScore": 229.0,
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 113.5,
+            "awayScore": 111.1,
+            "totalScore": 224.6,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 110.2,
+            "awayScore": 108.9,
+            "totalScore": 219.1,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 112.9,
+            "awayScore": 113.0,
+            "totalScore": 225.9,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.6,
+          "awayScore": 112.0,
+          "totalScore": 224.6,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909904",
+      "date": "2026-11-01",
+      "utcDate": "2026-11-01T22:00Z",
+      "league": "NBA",
+      "homeTeam": "Indiana Pacers",
+      "awayTeam": "Brooklyn Nets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 131,
+      "trainingCutoff": "2026-11-01T22:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 117.6,
+            "awayScore": 117.4,
+            "totalScore": 235.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.0,
+            "awayScore": 124.1,
+            "totalScore": 241.1,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 116.5,
+            "awayScore": 123.0,
+            "totalScore": 239.5,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 115.8,
+            "awayScore": 117.2,
+            "totalScore": 233.0,
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 116.7,
+          "awayScore": 120.4,
+          "totalScore": 237.1,
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401909905",
+      "date": "2026-11-02",
+      "utcDate": "2026-11-02T01:30Z",
+      "league": "NBA",
+      "homeTeam": "Golden State Warriors",
+      "awayTeam": "LA Clippers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 132,
+      "trainingCutoff": "2026-11-02T01:30:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.7,
+            "awayScore": 102.1,
+            "totalScore": 214.8,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 111.7,
+            "awayScore": 95.1,
+            "totalScore": 206.8,
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 111.5,
+            "awayScore": 99.1,
+            "totalScore": 210.6,
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.7,
+            "awayScore": 103.5,
+            "totalScore": 217.2,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.4,
+          "awayScore": 99.9,
+          "totalScore": 212.3,
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401909906",
+      "date": "2026-11-02",
+      "utcDate": "2026-11-02T02:00Z",
+      "league": "NBA",
+      "homeTeam": "Los Angeles Lakers",
+      "awayTeam": "Toronto Raptors",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 133,
+      "trainingCutoff": "2026-11-02T02:00:00+00:00",
+      "modelCount": 4,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 114.2,
+            "awayScore": 111.8,
+            "totalScore": 226.0,
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 113.2,
+            "awayScore": 114.2,
+            "totalScore": 227.4,
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 107.9,
+            "awayScore": 115.6,
+            "totalScore": 223.5,
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 115.5,
+            "awayScore": 112.8,
+            "totalScore": 228.3,
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.7,
+          "awayScore": 113.6,
+          "totalScore": 226.3,
+          "winner": "AWAY"
+        }
+      }
+    },
     {
       "matchId": "401909907",
       "date": "2026-11-03",
@@ -57,6 +4343,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -100,6 +4389,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -143,6 +4435,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -186,6 +4481,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -229,6 +4527,9 @@
       "league": "NBA",
       "homeTeam": "Orlando Magic",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -272,6 +4573,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -315,6 +4619,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Sacramento Kings",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -358,6 +4665,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -401,6 +4711,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -444,6 +4757,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -487,6 +4803,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -530,6 +4849,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -573,6 +4895,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -616,6 +4941,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -659,6 +4987,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-03T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -702,6 +5033,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -745,6 +5079,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -788,6 +5125,9 @@
       "league": "NBA",
       "homeTeam": "Boston Celtics",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -831,6 +5171,9 @@
       "league": "NBA",
       "homeTeam": "Brooklyn Nets",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -874,6 +5217,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -917,6 +5263,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -960,6 +5309,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1003,6 +5355,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1046,6 +5401,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1089,6 +5447,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1132,6 +5493,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1175,6 +5539,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1218,6 +5585,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1261,6 +5631,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-05T03:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1304,6 +5677,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-06T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1347,6 +5723,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-06T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1390,6 +5769,9 @@
       "league": "NBA",
       "homeTeam": "Atlanta Hawks",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1433,6 +5815,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1476,6 +5861,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1519,6 +5907,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1562,6 +5953,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1605,6 +5999,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1648,6 +6045,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1691,6 +6091,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1734,6 +6137,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1777,6 +6183,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-07T22:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1820,6 +6229,9 @@
       "league": "NBA",
       "homeTeam": "Atlanta Hawks",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1863,6 +6275,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1906,6 +6321,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1949,6 +6367,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -1992,6 +6413,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2035,6 +6459,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2078,6 +6505,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T20:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2121,6 +6551,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-08T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2164,6 +6597,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-09T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2207,6 +6643,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-09T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2250,6 +6689,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-09T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2293,6 +6735,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-09T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2336,6 +6781,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-09T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2379,6 +6827,9 @@
       "league": "NBA",
       "homeTeam": "Atlanta Hawks",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2422,6 +6873,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2465,6 +6919,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2508,6 +6965,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2551,6 +7011,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2594,6 +7057,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2637,6 +7103,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2680,6 +7149,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-10T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2723,6 +7195,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2766,6 +7241,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2809,6 +7287,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2852,6 +7333,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2895,6 +7379,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2938,6 +7425,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-11T04:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -2981,6 +7471,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3024,6 +7517,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3067,6 +7563,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3110,6 +7609,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3153,6 +7655,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3196,6 +7701,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3239,6 +7747,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3282,6 +7793,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3325,6 +7839,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3368,6 +7885,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-12T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3411,6 +7931,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-13T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3454,6 +7977,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-13T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3497,6 +8023,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-13T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3540,6 +8069,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-13T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3583,6 +8115,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3626,6 +8161,9 @@
       "league": "NBA",
       "homeTeam": "Orlando Magic",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3669,6 +8207,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3712,6 +8253,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3755,6 +8299,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3798,6 +8345,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3841,6 +8391,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3884,6 +8437,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3927,6 +8483,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-14T03:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -3970,6 +8529,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4013,6 +8575,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4056,6 +8621,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4099,6 +8667,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4142,6 +8713,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4185,6 +8759,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T18:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4228,6 +8805,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T21:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4271,6 +8851,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T21:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4314,6 +8897,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T22:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4357,6 +8943,9 @@
       "league": "NBA",
       "homeTeam": "Boston Celtics",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4400,6 +8989,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-15T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4443,6 +9035,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-16T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4486,6 +9081,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-16T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4529,6 +9127,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-16T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4572,6 +9173,9 @@
       "league": "NBA",
       "homeTeam": "Boston Celtics",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4615,6 +9219,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4658,6 +9265,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4701,6 +9311,9 @@
       "league": "NBA",
       "homeTeam": "Brooklyn Nets",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4744,6 +9357,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4787,6 +9403,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4830,6 +9449,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4873,6 +9495,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-17T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4916,6 +9541,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-18T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -4959,6 +9587,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-18T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5002,6 +9633,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-18T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5045,6 +9679,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-18T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5088,6 +9725,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-18T04:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5131,6 +9771,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5174,6 +9817,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5217,6 +9863,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5260,6 +9909,9 @@
       "league": "NBA",
       "homeTeam": "Orlando Magic",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5303,6 +9955,9 @@
       "league": "NBA",
       "homeTeam": "Brooklyn Nets",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5346,6 +10001,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5389,6 +10047,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5432,6 +10093,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5475,6 +10139,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5518,6 +10185,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5561,6 +10231,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5604,6 +10277,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-19T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5647,6 +10323,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-20T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5690,6 +10369,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-20T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5733,6 +10415,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-20T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5776,6 +10461,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-20T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5819,6 +10507,9 @@
       "league": "NBA",
       "homeTeam": "Atlanta Hawks",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5862,6 +10553,9 @@
       "league": "NBA",
       "homeTeam": "Brooklyn Nets",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5905,6 +10599,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5948,6 +10645,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -5991,6 +10691,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6034,6 +10737,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6077,6 +10783,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6120,6 +10829,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6163,6 +10875,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Sacramento Kings",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6206,6 +10921,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-21T18:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6249,6 +10967,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6292,6 +11013,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6335,6 +11059,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6378,6 +11105,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6421,6 +11151,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6464,6 +11197,9 @@
       "league": "NBA",
       "homeTeam": "Atlanta Hawks",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T20:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6507,6 +11243,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-22T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6550,6 +11289,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-23T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6593,6 +11335,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-23T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6636,6 +11381,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-23T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6679,6 +11427,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-23T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6722,6 +11473,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-23T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6765,6 +11519,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6808,6 +11565,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Portland Trail Blazers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6851,6 +11611,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6894,6 +11657,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6937,6 +11703,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -6980,6 +11749,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7023,6 +11795,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7066,6 +11841,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7109,6 +11887,9 @@
       "league": "NBA",
       "homeTeam": "Los Angeles Lakers",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7152,6 +11933,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-24T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7195,6 +11979,9 @@
       "league": "NBA",
       "homeTeam": "Orlando Magic",
       "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-25T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7238,6 +12025,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-25T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7281,6 +12071,9 @@
       "league": "NBA",
       "homeTeam": "Denver Nuggets",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-25T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7324,6 +12117,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-25T22:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7367,6 +12163,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Chicago Bulls",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7410,6 +12209,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Cleveland Cavaliers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7453,6 +12255,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7496,6 +12301,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7539,6 +12347,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7582,6 +12393,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7625,6 +12439,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Sacramento Kings",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7668,6 +12485,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-26T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7711,6 +12531,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7754,6 +12577,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Milwaukee Bucks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7797,6 +12623,9 @@
       "league": "NBA",
       "homeTeam": "Indiana Pacers",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7840,6 +12669,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7883,6 +12715,9 @@
       "league": "NBA",
       "homeTeam": "Boston Celtics",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7926,6 +12761,9 @@
       "league": "NBA",
       "homeTeam": "Minnesota Timberwolves",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -7969,6 +12807,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Dallas Mavericks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8012,6 +12853,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8055,6 +12899,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8098,6 +12945,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8141,6 +12991,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T02:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8184,6 +13037,9 @@
       "league": "NBA",
       "homeTeam": "Washington Wizards",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T22:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8227,6 +13083,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-28T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8270,6 +13129,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8313,6 +13175,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8356,6 +13221,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Philadelphia 76ers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8399,6 +13267,9 @@
       "league": "NBA",
       "homeTeam": "Memphis Grizzlies",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T21:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8442,6 +13313,9 @@
       "league": "NBA",
       "homeTeam": "San Antonio Spurs",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T21:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8485,6 +13359,9 @@
       "league": "NBA",
       "homeTeam": "Utah Jazz",
       "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T22:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8528,6 +13405,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8571,6 +13451,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8614,6 +13497,9 @@
       "league": "NBA",
       "homeTeam": "New York Knicks",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8657,6 +13543,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8700,6 +13589,9 @@
       "league": "NBA",
       "homeTeam": "Toronto Raptors",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-29T23:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8743,6 +13635,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-30T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8786,6 +13681,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-11-30T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8829,6 +13727,9 @@
       "league": "NBA",
       "homeTeam": "Charlotte Hornets",
       "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8872,6 +13773,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8915,6 +13819,9 @@
       "league": "NBA",
       "homeTeam": "Brooklyn Nets",
       "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -8958,6 +13865,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9001,6 +13911,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Boston Celtics",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9044,6 +13957,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9087,6 +14003,9 @@
       "league": "NBA",
       "homeTeam": "Sacramento Kings",
       "awayTeam": "New Orleans Pelicans",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-01T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9130,6 +14049,9 @@
       "league": "NBA",
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9173,6 +14095,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9216,6 +14141,9 @@
       "league": "NBA",
       "homeTeam": "Miami Heat",
       "awayTeam": "Atlanta Hawks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9259,6 +14187,9 @@
       "league": "NBA",
       "homeTeam": "Chicago Bulls",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9302,6 +14233,9 @@
       "league": "NBA",
       "homeTeam": "Houston Rockets",
       "awayTeam": "Toronto Raptors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T01:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9345,6 +14279,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "LA Clippers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9388,6 +14325,9 @@
       "league": "NBA",
       "homeTeam": "Portland Trail Blazers",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T03:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9431,6 +14371,9 @@
       "league": "NBA",
       "homeTeam": "Golden State Warriors",
       "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-02T04:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9474,6 +14417,9 @@
       "league": "NBA",
       "homeTeam": "Detroit Pistons",
       "awayTeam": "Memphis Grizzlies",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9517,6 +14463,9 @@
       "league": "NBA",
       "homeTeam": "Philadelphia 76ers",
       "awayTeam": "Denver Nuggets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T00:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9560,6 +14509,9 @@
       "league": "NBA",
       "homeTeam": "Boston Celtics",
       "awayTeam": "Charlotte Hornets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T00:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9603,6 +14555,9 @@
       "league": "NBA",
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "Orlando Magic",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9646,6 +14601,9 @@
       "league": "NBA",
       "homeTeam": "Milwaukee Bucks",
       "awayTeam": "New York Knicks",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9689,6 +14647,9 @@
       "league": "NBA",
       "homeTeam": "New Orleans Pelicans",
       "awayTeam": "Los Angeles Lakers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9732,6 +14693,9 @@
       "league": "NBA",
       "homeTeam": "Oklahoma City Thunder",
       "awayTeam": "Brooklyn Nets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T01:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9775,6 +14739,9 @@
       "league": "NBA",
       "homeTeam": "Phoenix Suns",
       "awayTeam": "Sacramento Kings",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T02:00:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9818,6 +14785,9 @@
       "league": "NBA",
       "homeTeam": "LA Clippers",
       "awayTeam": "Minnesota Timberwolves",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 134,
+      "trainingCutoff": "2026-12-03T03:30:00+00:00",
       "modelCount": 4,
       "prediction": {
         "models": {
@@ -9856,8 +14826,11 @@
     }
   ],
   "summary": {
+    "historicalMatches": 192,
+    "historicalPredictedMatches": 93,
     "upcomingMatches": 228,
-    "predictedMatches": 228,
+    "predictedUpcomingMatches": 228,
+    "predictedMatches": 321,
     "modelCount": 4
   }
 }
