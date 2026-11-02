@@ -35,6 +35,13 @@ MIN_TRAINING_ROWS = 40
 
 RANDOM_STATE = 42
 
+# Makinenin kendi baremini hesaplarken kullanacağı
+# maç sayısı.
+TOTAL_LINE_HISTORY = 50
+
+# Barem hesaplamak için gereken minimum maç.
+MIN_LINE_HISTORY = 10
+
 MODEL_NAMES = [
     "RandomForest",
     "XGBoost",
@@ -211,7 +218,6 @@ def is_upcoming(match):
     if match_date is None:
         return False
 
-    # Geçmiş tarihli oynanmamış maçları gelecek maç olarak alma.
     if match_date.date() < current_utc().date():
         return False
 
@@ -252,6 +258,135 @@ def is_upcoming(match):
 
 
 # ============================================================
+# MAKİNENİN ALT / ÜST BAREMİ
+# ============================================================
+
+def get_historical_total_line(matches, target_date):
+    """
+    Hedef maçtan önce tamamlanmış son NBA maçlarını kullanır.
+
+    Gelecekte oynanacak maçların sonuçları kullanılmaz.
+    Barem 0.5 aralıklarına yuvarlanır.
+    """
+
+    historical_totals = []
+
+    for match in matches:
+        if not is_finished(match):
+            continue
+
+        match_date = get_match_date(match)
+
+        if match_date is None or match_date >= target_date:
+            continue
+
+        home_score = get_score(match, "homeScore")
+        away_score = get_score(match, "awayScore")
+
+        if home_score is None or away_score is None:
+            continue
+
+        historical_totals.append({
+            "date": match_date,
+            "total": home_score + away_score,
+        })
+
+    historical_totals.sort(
+        key=lambda item: item["date"]
+    )
+
+    recent = historical_totals[-TOTAL_LINE_HISTORY:]
+
+    if len(recent) < MIN_LINE_HISTORY:
+        return None
+
+    average_total = statistics.mean(
+        item["total"] for item in recent
+    )
+
+    # 0.5 sayı aralıklarına yuvarla.
+    line = round(average_total * 2) / 2
+
+    return {
+        "line": round(line, 1),
+        "historyCount": len(recent),
+        "historyAverage": round(average_total, 2),
+        "method": "previous_nba_matches_average",
+    }
+
+
+def get_total_direction(predicted_total, total_line):
+    """
+    Modelin beklenen toplamını makinenin belirlediği
+    baremle karşılaştırır.
+    """
+
+    if predicted_total is None or total_line is None:
+        return None
+
+    if predicted_total > total_line:
+        return "OVER"
+
+    if predicted_total < total_line:
+        return "UNDER"
+
+    return "PUSH"
+
+
+def evaluate_total_direction(predicted_direction, actual_total, total_line):
+    """
+    Gerçekleşen toplam sayı ile tahminin doğruluğunu belirler.
+    """
+
+    if actual_total is None or total_line is None:
+        return None
+
+    if predicted_direction == "OVER":
+        if actual_total > total_line:
+            return "success"
+
+        if actual_total < total_line:
+            return "failed"
+
+        return "push"
+
+    if predicted_direction == "UNDER":
+        if actual_total < total_line:
+            return "success"
+
+        if actual_total > total_line:
+            return "failed"
+
+        return "push"
+
+    return "push"
+
+
+# ============================================================
+# MS1 / MS2 DEĞERLENDİRMESİ
+# ============================================================
+
+def get_winner(home_score, away_score):
+    if home_score > away_score:
+        return "HOME"
+
+    if away_score > home_score:
+        return "AWAY"
+
+    return "TIE"
+
+
+def evaluate_winner(predicted_winner, actual_winner):
+    if not predicted_winner or not actual_winner:
+        return None
+
+    if predicted_winner == actual_winner:
+        return "success"
+
+    return "failed"
+
+
+# ============================================================
 # TAKIM GEÇMİŞİ
 # ============================================================
 
@@ -264,7 +399,6 @@ def collect_team_history(matches, team_name, target_date):
 
         match_date = get_match_date(match)
 
-        # Hedef maçtan sonraki hiçbir sonuç kullanılamaz.
         if match_date is None or match_date >= target_date:
             continue
 
@@ -482,7 +616,6 @@ def build_features(matches, match):
     features.update(home_data)
     features.update(away_data)
 
-    # Önceki karşılaşmalar.
     home_vs_away = [
         item for item in home_history
         if item["opponent"] == away_team
@@ -654,7 +787,9 @@ def fit_models(X, y_home, y_away):
     trained_models = {}
 
     for model_name in MODEL_NAMES:
-        home_model = create_models()[model_name]
+        model_definitions = create_models()
+
+        home_model = model_definitions[model_name]
         away_model = create_models()[model_name]
 
         home_model.fit(X, y_home)
@@ -687,7 +822,9 @@ def build_validation(X, y_home, y_away):
     y_away_valid = y_away[split_index:]
 
     for model_name in MODEL_NAMES:
-        home_model = create_models()[model_name]
+        model_definitions = create_models()
+
+        home_model = model_definitions[model_name]
         away_model = create_models()[model_name]
 
         home_model.fit(X_train, y_home_train)
@@ -738,23 +875,16 @@ def clamp_score(value):
     )
 
 
-def get_winner(home_score, away_score):
-    if home_score > away_score:
-        return "HOME"
-
-    if away_score > home_score:
-        return "AWAY"
-
-    return "TIE"
-
-
-def make_model_prediction(models, features, feature_names):
+def make_model_prediction(
+    models,
+    features,
+    feature_names,
+    total_line
+):
     feature_vector = np.array(
         [[features[name] for name in feature_names]],
         dtype=float
     )
-
-    model_results = []
 
     model_output = {}
     home_values = []
@@ -773,10 +903,17 @@ def make_model_prediction(models, features, feature_names):
 
         winner = get_winner(home_score, away_score)
 
+        direction = get_total_direction(
+            total_score,
+            total_line
+        )
+
         model_output[model_name] = {
             "homeScore": home_score,
             "awayScore": away_score,
             "totalScore": total_score,
+            "totalLine": total_line,
+            "totalDirection": direction,
             "winner": winner,
         }
 
@@ -791,14 +928,23 @@ def make_model_prediction(models, features, feature_names):
         1
     )
 
+    ensemble_winner = get_winner(
+        ensemble_home,
+        ensemble_away
+    )
+
+    ensemble_direction = get_total_direction(
+        ensemble_total,
+        total_line
+    )
+
     ensemble = {
         "homeScore": ensemble_home,
         "awayScore": ensemble_away,
         "totalScore": ensemble_total,
-        "winner": get_winner(
-            ensemble_home,
-            ensemble_away
-        ),
+        "totalLine": total_line,
+        "totalDirection": ensemble_direction,
+        "winner": ensemble_winner,
     }
 
     return {
@@ -869,6 +1015,7 @@ def generate_predictions(
             "upcomingPredicted": 0,
             "skippedInsufficientHistory": 0,
             "skippedInsufficientTraining": 0,
+            "skippedInsufficientLineHistory": 0,
         }
 
     X_all = np.array(
@@ -882,7 +1029,6 @@ def generate_predictions(
     y_home_all = np.array(home_targets, dtype=float)
     y_away_all = np.array(away_targets, dtype=float)
 
-    # Aynı maç saatindeki hedefler aynı eğitim kümesini kullanır.
     model_cache = {}
 
     stats = {
@@ -900,6 +1046,7 @@ def generate_predictions(
 
         "skippedInsufficientHistory": 0,
         "skippedInsufficientTraining": 0,
+        "skippedInsufficientLineHistory": 0,
     }
 
     for match in targets:
@@ -908,16 +1055,12 @@ def generate_predictions(
         if target_date is None:
             continue
 
-        # Hedef maçın özellikleri yalnızca o maçtan önceki
-        # tamamlanmış karşılaşmalardan oluşturulur.
         features = build_features(nba_matches, match)
 
         if features is None:
             stats["skippedInsufficientHistory"] += 1
             continue
 
-        # Kritik nokta:
-        # Eğitimde hedef maçtan sonra oynanan hiçbir maç yok.
         train_indices = [
             index
             for index, sample_date in enumerate(sample_dates)
@@ -927,6 +1070,18 @@ def generate_predictions(
         if len(train_indices) < MIN_TRAINING_ROWS:
             stats["skippedInsufficientTraining"] += 1
             continue
+
+        # Hedef tarihten önceki maçlardan barem üret.
+        line_data = get_historical_total_line(
+            nba_matches,
+            target_date
+        )
+
+        if line_data is None:
+            stats["skippedInsufficientLineHistory"] += 1
+            continue
+
+        total_line = line_data["line"]
 
         cache_key = target_date.isoformat()
 
@@ -943,7 +1098,6 @@ def generate_predictions(
 
         trained_models = model_cache[cache_key]
 
-        # Eğitimde kullanılan özellik sırasını koru.
         features = {
             name: features.get(name, 0.0)
             for name in feature_names
@@ -952,10 +1106,61 @@ def generate_predictions(
         prediction = make_model_prediction(
             trained_models,
             features,
-            feature_names
+            feature_names,
+            total_line
         )
 
         historical = is_finished(match)
+
+        actual_home = (
+            get_score(match, "homeScore")
+            if historical else None
+        )
+
+        actual_away = (
+            get_score(match, "awayScore")
+            if historical else None
+        )
+
+        actual_total = (
+            round(actual_home + actual_away, 1)
+            if actual_home is not None and actual_away is not None
+            else None
+        )
+
+        actual_winner = (
+            get_winner(actual_home, actual_away)
+            if actual_home is not None and actual_away is not None
+            else None
+        )
+
+        # Geçmiş maçların her model ve Ensemble sonucunu
+        # ayrıca kaydet.
+        if historical:
+            for model_name, model_result in prediction["models"].items():
+                model_result["totalResult"] = evaluate_total_direction(
+                    model_result["totalDirection"],
+                    actual_total,
+                    total_line
+                )
+
+                model_result["winnerResult"] = evaluate_winner(
+                    model_result["winner"],
+                    actual_winner
+                )
+
+            ensemble = prediction["ensemble"]
+
+            ensemble["totalResult"] = evaluate_total_direction(
+                ensemble["totalDirection"],
+                actual_total,
+                total_line
+            )
+
+            ensemble["winnerResult"] = evaluate_winner(
+                ensemble["winner"],
+                actual_winner
+            )
 
         result = {
             "matchId": (
@@ -984,6 +1189,19 @@ def generate_predictions(
 
             "modelCount": len(MODEL_NAMES),
 
+            "totalLine": total_line,
+
+            "totalLineInfo": {
+                "method": line_data["method"],
+                "historyCount": line_data["historyCount"],
+                "historyAverage": line_data["historyAverage"],
+            },
+
+            "actualHomeScore": actual_home,
+            "actualAwayScore": actual_away,
+            "actualTotal": actual_total,
+            "actualWinner": actual_winner,
+
             "prediction": prediction,
         }
 
@@ -999,8 +1217,11 @@ def generate_predictions(
         print(
             f"[{'GEÇMİŞ' if historical else 'GELECEK'}] "
             f"{result['homeTeam']} - {result['awayTeam']} | "
-            f"{ensemble['homeScore']}-"
+            f"Tahmin: {ensemble['homeScore']}-"
             f"{ensemble['awayScore']} | "
+            f"Barem: {total_line} | "
+            f"{ensemble['totalDirection']} | "
+            f"{ensemble['winner']} | "
             f"Eğitim: {len(train_indices)} maç"
         )
 
@@ -1014,6 +1235,7 @@ def generate_predictions(
 def main():
     print("=" * 65)
     print("NBA MACHINE LEARNING - WALK FORWARD")
+    print("ALT / ÜST + MS1 / MS2 TAHMİN SİSTEMİ")
     print("=" * 65)
 
     input_file = find_input_file()
@@ -1073,6 +1295,17 @@ def main():
 
         "models": MODEL_NAMES,
 
+        "totalLineMethod": {
+            "name": "previous_nba_matches_average",
+            "historyMatches": TOTAL_LINE_HISTORY,
+            "minimumHistory": MIN_LINE_HISTORY,
+            "rounding": 0.5,
+            "description": (
+                "Hedef maçtan önce tamamlanmış son NBA maçlarının "
+                "toplam sayı ortalaması 0.5 bareme yuvarlanır."
+            ),
+        },
+
         "training": {
             "completedMatches": len(finished_matches),
             "trainingSamples": len(feature_rows),
@@ -1092,11 +1325,11 @@ def main():
             "upcomingPredicted": 0,
             "skippedInsufficientHistory": 0,
             "skippedInsufficientTraining": 0,
+            "skippedInsufficientLineHistory": 0,
             "todayUTC": current_utc().date().isoformat(),
         },
 
         "predictions": [],
-
     }
 
     if len(feature_rows) < MIN_TRAINING_ROWS:
@@ -1126,7 +1359,6 @@ def main():
     output["training"]["status"] = "trained"
     output["training"]["featureCount"] = len(feature_names)
 
-    # Genel kronolojik doğrulama raporu.
     print("\nGenel model doğrulaması hazırlanıyor...")
 
     X_all = np.array(
@@ -1156,8 +1388,6 @@ def main():
             f"Toplam MAE={metrics['totalMAE']}"
         )
 
-    # Geçmiş ve gelecek maçların tamamı için
-    # hedef tarihe göre ayrı eğitim ve tahmin.
     print("\nWalk-forward tahminleri başlıyor...")
 
     predictions, stats = generate_predictions(
@@ -1194,40 +1424,14 @@ def main():
     print("NBA ML TAHMİN RAPORU")
     print("=" * 65)
 
-    print(
-        "Geçmiş maç adayı:",
-        stats["historicalCandidates"]
-    )
-
-    print(
-        "Tahmini üretilen geçmiş maç:",
-        stats["historicalPredicted"]
-    )
-
-    print(
-        "Gelecek maç adayı:",
-        stats["upcomingCandidates"]
-    )
-
-    print(
-        "Tahmini üretilen gelecek maç:",
-        stats["upcomingPredicted"]
-    )
-
-    print(
-        "Yetersiz takım geçmişi:",
-        stats["skippedInsufficientHistory"]
-    )
-
-    print(
-        "Yetersiz eğitim verisi:",
-        stats["skippedInsufficientTraining"]
-    )
-
-    print(
-        "Toplam ML tahmini:",
-        len(predictions)
-    )
+    print("Geçmiş maç adayı:", stats["historicalCandidates"])
+    print("Tahmini üretilen geçmiş maç:", stats["historicalPredicted"])
+    print("Gelecek maç adayı:", stats["upcomingCandidates"])
+    print("Tahmini üretilen gelecek maç:", stats["upcomingPredicted"])
+    print("Yetersiz takım geçmişi:", stats["skippedInsufficientHistory"])
+    print("Yetersiz eğitim verisi:", stats["skippedInsufficientTraining"])
+    print("Yetersiz barem geçmişi:", stats["skippedInsufficientLineHistory"])
+    print("Toplam ML tahmini:", len(predictions))
 
     print("Çıktı:", OUTPUT_FILE)
     print("=" * 65)
