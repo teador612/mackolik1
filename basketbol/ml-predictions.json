@@ -1,0 +1,50 @@
+{
+  "updatedAt": "2026-11-02T08:41:09.011102+00:00",
+  "source": "basketball.json",
+  "league": "NBA",
+  "models": [
+    "RandomForest",
+    "XGBoost",
+    "LightGBM",
+    "CatBoost"
+  ],
+  "training": {
+    "completedMatches": 192,
+    "trainingSamples": 134,
+    "minimumTeamHistory": 3,
+    "validation": {
+      "RandomForest": {
+        "homeMAE": 11.464,
+        "awayMAE": 10.598,
+        "totalMAE": 17.423,
+        "validationMatches": 27
+      },
+      "XGBoost": {
+        "homeMAE": 11.141,
+        "awayMAE": 10.837,
+        "totalMAE": 16.535,
+        "validationMatches": 27
+      },
+      "LightGBM": {
+        "homeMAE": 11.43,
+        "awayMAE": 11.415,
+        "totalMAE": 17.239,
+        "validationMatches": 27
+      },
+      "CatBoost": {
+        "homeMAE": 11.175,
+        "awayMAE": 10.754,
+        "totalMAE": 16.272,
+        "validationMatches": 27
+      }
+    },
+    "status": "trained",
+    "featureCount": 54
+  },
+  "predictions": [],
+  "summary": {
+    "upcomingMatches": 0,
+    "predictedMatches": 0,
+    "modelCount": 4
+  }
+}
