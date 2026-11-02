@@ -44,7 +44,7 @@ MODEL_NAMES = [
 
 
 # ============================================================
-# VERİ OKUMA
+# DOSYA İŞLEMLERİ
 # ============================================================
 
 def load_json(path):
@@ -56,12 +56,7 @@ def save_json(data):
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
     with OUTPUT_FILE.open("w", encoding="utf-8") as file:
-        json.dump(
-            data,
-            file,
-            ensure_ascii=False,
-            indent=2
-        )
+        json.dump(data, file, ensure_ascii=False, indent=2)
 
 
 def find_input_file():
@@ -69,13 +64,11 @@ def find_input_file():
         if path.is_file():
             return path
 
-    raise FileNotFoundError(
-        "basketball.json bulunamadi."
-    )
+    raise FileNotFoundError("basketball.json bulunamadı.")
 
 
 # ============================================================
-# TARİH VE MAÇ KONTROLLERİ
+# TARİH İŞLEMLERİ
 # ============================================================
 
 def parse_date(value):
@@ -83,19 +76,19 @@ def parse_date(value):
         return None
 
     try:
-        text = str(value).strip()
+        value = str(value).strip()
 
-        if text.endswith("Z"):
-            text = text[:-1] + "+00:00"
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
 
-        result = datetime.fromisoformat(text)
+        result = datetime.fromisoformat(value)
 
         if result.tzinfo is None:
             result = result.replace(tzinfo=timezone.utc)
 
         return result.astimezone(timezone.utc)
 
-    except (ValueError, TypeError):
+    except (ValueError, TypeError, OverflowError):
         return None
 
 
@@ -106,15 +99,26 @@ def get_match_date(match):
     )
 
 
+def current_utc():
+    return datetime.now(timezone.utc)
+
+
+# ============================================================
+# MAÇ KONTROLLERİ
+# ============================================================
+
 def is_nba(match):
-    return str(match.get("league", "")).strip().upper() == LEAGUE_NAME
+    return (
+        str(match.get("league", "")).strip().upper()
+        == LEAGUE_NAME
+    )
 
 
 def get_score(match, key):
     value = match.get(key)
 
     try:
-        if value is None:
+        if value is None or value == "":
             return None
 
         score = float(value)
@@ -128,42 +132,114 @@ def get_score(match, key):
         return None
 
 
+def played_value(match):
+    value = match.get("played")
+
+    if value is True:
+        return True
+
+    if value is False or value is None:
+        return False
+
+    return str(value).strip().lower() in (
+        "true", "1", "yes", "evet"
+    )
+
+
+def get_status(match):
+    return str(match.get("status", "")).strip().upper()
+
+
 def is_finished(match):
     if not is_nba(match):
         return False
 
-    if match.get("played") is False:
+    status = get_status(match)
+
+    unfinished_words = (
+        "SCHEDULED",
+        "IN_PROGRESS",
+        "IN PROGRESS",
+        "POSTPONED",
+        "CANCELED",
+        "CANCELLED",
+        "NOT_STARTED",
+        "NOT STARTED",
+        "PRE_GAME",
+        "PREGAME",
+    )
+
+    if any(word in status for word in unfinished_words):
         return False
 
-    status = str(match.get("status", "")).upper()
-
-    if status and any(
-        word in status
-        for word in ("SCHEDULED", "IN_PROGRESS", "POSTPONED", "CANCELED")
-    ):
+    if played_value(match) is False:
         return False
 
     home_score = get_score(match, "homeScore")
     away_score = get_score(match, "awayScore")
 
-    return (
-        home_score is not None
-        and away_score is not None
-        and status != "STATUS_CANCELED"
-    )
+    if home_score is None or away_score is None:
+        return False
+
+    if home_score == 0 and away_score == 0:
+        if status not in ("FINAL", "STATUS_FINAL", "COMPLETED"):
+            return False
+
+    return True
 
 
 def is_upcoming(match):
     if not is_nba(match):
         return False
 
-    if match.get("played") is True:
+    if played_value(match):
         return False
 
+    match_date = get_match_date(match)
+
+    if match_date is None:
+        return False
+
+    # Bugünden önceki maçları tahmine alma.
+    today = current_utc().date()
+
+    if match_date.date() < today:
+        return False
+
+    status = get_status(match)
+
+    completed_words = (
+        "FINAL",
+        "COMPLETED",
+        "FINISHED",
+        "POSTPONED",
+        "CANCELED",
+        "CANCELLED",
+        "IN_PROGRESS",
+        "IN PROGRESS",
+        "LIVE",
+    )
+
+    if any(word in status for word in completed_words):
+        return False
+
+    # Scheduled / Pre-game maçları skor alanı 0 olsa bile kabul et.
+    scheduled_words = (
+        "SCHEDULED",
+        "NOT_STARTED",
+        "NOT STARTED",
+        "PRE_GAME",
+        "PREGAME",
+        "STATUS_SCHEDULED",
+    )
+
+    if any(word in status for word in scheduled_words):
+        return True
+
+    # Durum bilgisi yoksa skor alanlarına bak.
     return (
         get_score(match, "homeScore") is None
         and get_score(match, "awayScore") is None
-        and get_match_date(match) is not None
     )
 
 
@@ -180,6 +256,7 @@ def collect_team_history(matches, team_name, target_date):
 
         match_date = get_match_date(match)
 
+        # Gelecek maçları ve aynı günkü maçları geçmişe katma.
         if match_date is None or match_date >= target_date:
             continue
 
@@ -229,7 +306,7 @@ def safe_std(values):
 
 
 # ============================================================
-# ÖZELLİK ÜRETİMİ
+# TAKIM ÖZELLİKLERİ
 # ============================================================
 
 def team_features(history, target_date, prefix, target_is_home):
@@ -241,6 +318,7 @@ def team_features(history, target_date, prefix, target_is_home):
 
     scored = [item["scored"] for item in history]
     conceded = [item["conceded"] for item in history]
+
     totals = [
         item["scored"] + item["conceded"]
         for item in history
@@ -253,13 +331,11 @@ def team_features(history, target_date, prefix, target_is_home):
     recent10_conceded = [item["conceded"] for item in recent10]
 
     home_games = [
-        item for item in history
-        if item["is_home"]
+        item for item in history if item["is_home"]
     ]
 
     away_games = [
-        item for item in history
-        if not item["is_home"]
+        item for item in history if not item["is_home"]
     ]
 
     role_games = home_games if target_is_home else away_games
@@ -268,6 +344,7 @@ def team_features(history, target_date, prefix, target_is_home):
     total_wins = sum(item["won"] for item in history)
 
     last_date = history[-1]["date"]
+
     rest_days = max(
         0,
         (target_date.date() - last_date.date()).days
@@ -279,7 +356,7 @@ def team_features(history, target_date, prefix, target_is_home):
         if 0 <= (target_date - item["date"]).days <= 7
     )
 
-    values = {
+    return {
         f"{prefix}_games": len(history),
 
         f"{prefix}_last5_scored": average(recent_scored),
@@ -291,12 +368,10 @@ def team_features(history, target_date, prefix, target_is_home):
         f"{prefix}_all_scored": average(scored),
         f"{prefix}_all_conceded": average(conceded),
 
-        f"{prefix}_last5_total": average(
-            [
-                item["scored"] + item["conceded"]
-                for item in recent5
-            ]
-        ),
+        f"{prefix}_last5_total": average([
+            item["scored"] + item["conceded"]
+            for item in recent5
+        ]),
 
         f"{prefix}_all_total": average(totals),
 
@@ -342,8 +417,10 @@ def team_features(history, target_date, prefix, target_is_home):
         f"{prefix}_games_last7": games_last_7_days,
     }
 
-    return values
 
+# ============================================================
+# ÖZELLİK ÜRETİMİ
+# ============================================================
 
 def build_features(matches, match):
     target_date = get_match_date(match)
@@ -358,15 +435,11 @@ def build_features(matches, match):
         return None
 
     home_history = collect_team_history(
-        matches,
-        home_team,
-        target_date
+        matches, home_team, target_date
     )
 
     away_history = collect_team_history(
-        matches,
-        away_team,
-        target_date
+        matches, away_team, target_date
     )
 
     if (
@@ -376,17 +449,11 @@ def build_features(matches, match):
         return None
 
     home_data = team_features(
-        home_history,
-        target_date,
-        "home",
-        True
+        home_history, target_date, "home", True
     )
 
     away_data = team_features(
-        away_history,
-        target_date,
-        "away",
-        False
+        away_history, target_date, "away", False
     )
 
     if home_data is None or away_data is None:
@@ -409,7 +476,17 @@ def build_features(matches, match):
 
     h2h = home_vs_away + away_vs_home
 
-    h2h.sort(key=lambda item: item["date"])
+    # Aynı karşılaşmayı iki kez sayma.
+    unique_h2h = {}
+
+    for item in h2h:
+        key = item["date"]
+        unique_h2h[key] = item
+
+    h2h = sorted(
+        unique_h2h.values(),
+        key=lambda item: item["date"]
+    )
 
     recent_h2h = h2h[-5:]
 
@@ -421,16 +498,18 @@ def build_features(matches, match):
     )
 
     features["h2h_away_scored"] = average(
-        [item["conceded"] for item in recent_h2h],
+        [item["scored"] for item in recent_h2h],
         away_data["away_all_scored"]
     )
 
     features["h2h_home_win_rate"] = (
-        average([1.0 if item["won"] else 0.0 for item in recent_h2h])
+        average([
+            1.0 if item["won"] else 0.0
+            for item in recent_h2h
+        ])
         if recent_h2h else 0.5
     )
 
-    # Takvim özellikleri.
     features["month"] = target_date.month
     features["weekday"] = target_date.weekday()
 
@@ -454,7 +533,7 @@ def build_features(matches, match):
 
 
 # ============================================================
-# MODEL TANIMLARI
+# MODELLER
 # ============================================================
 
 def create_models():
@@ -512,14 +591,16 @@ def build_training_data(matches):
     finished = [
         match for match in matches
         if is_finished(match)
+        and get_match_date(match) is not None
     ]
 
-    finished.sort(key=lambda item: get_match_date(item))
+    finished.sort(
+        key=lambda item: get_match_date(item)
+    )
 
     feature_rows = []
     home_targets = []
     away_targets = []
-    training_dates = []
 
     for match in finished:
         features = build_features(matches, match)
@@ -536,14 +617,8 @@ def build_training_data(matches):
         feature_rows.append(features)
         home_targets.append(home_score)
         away_targets.append(away_score)
-        training_dates.append(get_match_date(match))
 
-    return (
-        feature_rows,
-        home_targets,
-        away_targets,
-        training_dates
-    )
+    return feature_rows, home_targets, away_targets
 
 
 # ============================================================
@@ -552,17 +627,11 @@ def build_training_data(matches):
 
 def train_models(X, y_home, y_away):
     row_count = len(X)
-
     split_index = int(row_count * 0.80)
-
-    validation_available = (
-        split_index >= 25
-        and row_count - split_index >= 5
-    )
 
     validation = {}
 
-    if validation_available:
+    if split_index >= 25 and row_count - split_index >= 5:
         X_train = X[:split_index]
         X_valid = X[split_index:]
 
@@ -572,8 +641,8 @@ def train_models(X, y_home, y_away):
         y_away_train = y_away[:split_index]
         y_away_valid = y_away[split_index:]
 
-        for model_name, model_factory in create_models().items():
-            home_model = model_factory
+        for model_name in MODEL_NAMES:
+            home_model = create_models()[model_name]
             away_model = create_models()[model_name]
 
             home_model.fit(X_train, y_home_train)
@@ -584,30 +653,29 @@ def train_models(X, y_home, y_away):
 
             validation[model_name] = {
                 "homeMAE": round(
-                    float(mean_absolute_error(y_home_valid, home_pred)),
-                    3
+                    float(mean_absolute_error(
+                        y_home_valid, home_pred
+                    )), 3
                 ),
                 "awayMAE": round(
-                    float(mean_absolute_error(y_away_valid, away_pred)),
-                    3
+                    float(mean_absolute_error(
+                        y_away_valid, away_pred
+                    )), 3
                 ),
                 "totalMAE": round(
-                    float(
-                        mean_absolute_error(
-                            np.array(y_home_valid) + np.array(y_away_valid),
-                            np.array(home_pred) + np.array(away_pred)
-                        )
-                    ),
-                    3
+                    float(mean_absolute_error(
+                        y_home_valid + y_away_valid,
+                        home_pred + away_pred
+                    )), 3
                 ),
                 "validationMatches": len(X_valid),
             }
 
-    # Son tahminler için tüm geçmiş veriyle yeniden eğitim.
+    # Tüm veriyle son eğitim.
     trained_models = {}
 
-    for model_name, model_factory in create_models().items():
-        home_model = model_factory
+    for model_name in MODEL_NAMES:
+        home_model = create_models()[model_name]
         away_model = create_models()[model_name]
 
         home_model.fit(X, y_home)
@@ -632,14 +700,13 @@ def clamp_score(value):
     )
 
 
-def make_model_prediction(models, features):
+def make_model_prediction(models, features, feature_names):
     feature_vector = np.array(
-        [[features[key] for key in features]],
+        [[features[name] for name in feature_names]],
         dtype=float
     )
 
     model_results = {}
-
     home_values = []
     away_values = []
 
@@ -675,8 +742,7 @@ def make_model_prediction(models, features):
     ensemble_away = clamp_score(average(away_values))
 
     ensemble_total = round(
-        ensemble_home + ensemble_away,
-        1
+        ensemble_home + ensemble_away, 1
     )
 
     if ensemble_home > ensemble_away:
@@ -688,7 +754,6 @@ def make_model_prediction(models, features):
 
     return {
         "models": model_results,
-
         "ensemble": {
             "homeScore": ensemble_home,
             "awayScore": ensemble_away,
@@ -727,23 +792,24 @@ def main():
     print("NBA MACHINE LEARNING")
     print("=" * 60)
 
-    print("Toplam NBA maci:", len(nba_matches))
-    print("Tamamlanan NBA maci:", len(finished_matches))
-    print("Oynanmamis NBA maci:", len(upcoming_matches))
+    print("Veri dosyası:", input_file)
+    print("Toplam kayıt:", len(all_matches))
+    print("NBA maçları:", len(nba_matches))
+    print("Tamamlanan maç:", len(finished_matches))
+    print("Yaklaşan maç:", len(upcoming_matches))
 
     (
         feature_rows,
         home_targets,
-        away_targets,
-        training_dates
+        away_targets
     ) = build_training_data(nba_matches)
 
-    print("Egitim ornegi:", len(feature_rows))
+    print("Eğitim örneği:", len(feature_rows))
 
     output = {
-        "updatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": str(input_file.name),
-        "league": "NBA",
+        "updatedAt": current_utc().isoformat(),
+        "source": input_file.name,
+        "league": LEAGUE_NAME,
         "models": MODEL_NAMES,
         "training": {
             "completedMatches": len(finished_matches),
@@ -751,23 +817,31 @@ def main():
             "minimumTeamHistory": MIN_TEAM_HISTORY,
             "validation": {},
         },
+        "diagnostics": {
+            "totalRecords": len(all_matches),
+            "nbaMatches": len(nba_matches),
+            "finishedMatches": len(finished_matches),
+            "upcomingCandidates": len(upcoming_matches),
+            "skippedForInsufficientHistory": 0,
+            "todayUTC": current_utc().date().isoformat(),
+        },
         "predictions": [],
     }
 
     if len(feature_rows) < MIN_TRAINING_ROWS:
         output["training"]["status"] = "insufficient_data"
         output["training"]["message"] = (
-            f"Model egitimi icin en az {MIN_TRAINING_ROWS} "
-            "gecerli egitim ornegi gerekiyor."
+            f"En az {MIN_TRAINING_ROWS} eğitim örneği gerekiyor."
         )
 
+        output["summary"] = {
+            "upcomingMatches": len(upcoming_matches),
+            "predictedMatches": 0,
+            "modelCount": len(MODEL_NAMES),
+        }
+
         save_json(output)
-
-        print("YETERSIZ EGITIM VERISI")
-        print("Gerekli:", MIN_TRAINING_ROWS)
-        print("Mevcut:", len(feature_rows))
-        print("Dosya kaydedildi:", OUTPUT_FILE)
-
+        print("Yetersiz eğitim verisi.")
         return
 
     feature_names = list(feature_rows[0].keys())
@@ -784,17 +858,14 @@ def main():
     y_away = np.array(away_targets, dtype=float)
 
     trained_models, validation = train_models(
-        X,
-        y_home,
-        y_away
+        X, y_home, y_away
     )
 
     output["training"]["status"] = "trained"
     output["training"]["featureCount"] = len(feature_names)
     output["training"]["validation"] = validation
 
-    print()
-    print("MODEL DOGRULAMA")
+    print("\nMODEL DOĞRULAMA")
 
     for name, metrics in validation.items():
         print(
@@ -804,8 +875,7 @@ def main():
             f"Toplam MAE={metrics['totalMAE']}"
         )
 
-    print()
-    print("NBA TAHMINLERI")
+    print("\nNBA TAHMİNLERİ")
 
     upcoming_matches.sort(
         key=lambda item: get_match_date(item)
@@ -815,15 +885,19 @@ def main():
         features = build_features(nba_matches, match)
 
         if features is None:
+            output["diagnostics"][
+                "skippedForInsufficientHistory"
+            ] += 1
+
             print(
-                "Atlandi - yeterli gecmis yok:",
+                "Yeterli geçmiş yok:",
                 match.get("homeTeam"),
                 "-",
                 match.get("awayTeam")
             )
             continue
 
-        # Eğitimde kullanılan özellik sırasını koru.
+        # Eğitimdeki özellik sırasını aynen koru.
         features = {
             name: features.get(name, 0.0)
             for name in feature_names
@@ -831,14 +905,15 @@ def main():
 
         prediction = make_model_prediction(
             trained_models,
-            features
+            features,
+            feature_names
         )
 
         result = {
             "matchId": match.get("id"),
             "date": match.get("date"),
             "utcDate": match.get("utcDate"),
-            "league": "NBA",
+            "league": LEAGUE_NAME,
             "homeTeam": match.get("homeTeam"),
             "awayTeam": match.get("awayTeam"),
             "modelCount": len(MODEL_NAMES),
@@ -865,12 +940,12 @@ def main():
 
     save_json(output)
 
-    print()
-    print("=" * 60)
-    print("ML TAHMINLERI TAMAMLANDI")
-    print("Egitim ornegi:", len(feature_rows))
-    print("Tahmin sayisi:", len(output["predictions"]))
-    print("Cikti:", OUTPUT_FILE)
+    print("\n" + "=" * 60)
+    print("ML TAHMİNLERİ TAMAMLANDI")
+    print("Eğitim örneği:", len(feature_rows))
+    print("Yaklaşan maç:", len(upcoming_matches))
+    print("Tahmin sayısı:", len(output["predictions"]))
+    print("Çıktı:", OUTPUT_FILE)
     print("=" * 60)
 
 
