@@ -101,6 +101,7 @@ input[type=date]{color-scheme:dark}
   background:linear-gradient(135deg,#271e17,#1e1813);box-shadow:0 3px 9px #0002
 }
 .match-card.pending-card{border-color:#80632c;background:linear-gradient(135deg,#332716,#241c13)}
+.match-card.historical-card{border-color:#46634f}
 .match-head{
   width:100%;min-height:70px;padding:10px;display:grid;
   grid-template-columns:48px minmax(0,1fr) auto;gap:9px;align-items:center;
@@ -283,6 +284,7 @@ let engine="classic";
 let predictions=[];
 let mlResults=null;
 let mlMeta=null;
+let mlResultMap=new Map();
 
 const dateFilter=document.getElementById("dateFilter");
 const leagueFilter=document.getElementById("leagueFilter");
@@ -304,6 +306,7 @@ function escapeHtml(value){
     .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 function number(value){
+  if(value===null||value===undefined||value==="")return null;
   const n=Number(value);
   return Number.isFinite(n)?n:null;
 }
@@ -510,14 +513,41 @@ function getMLConsensus(p){
   const winner=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
   return {count:counts[winner],total:votes.length,winner};
 }
+function getMLResult(p){
+  return mlResultMap.get(String(p.matchId))??null;
+}
+function getMLActualScore(p){
+  const result=getMLResult(p);
+  if(!result)return null;
+
+  const home=number(result.homeScore??result.actualHomeScore??result.finalHomeScore);
+  const away=number(result.awayScore??result.actualAwayScore??result.finalAwayScore);
+
+  return home!==null&&away!==null?{home,away}:null;
+}
+function getMLStatus(p){
+  if(p.predictionType!=="historical_backtest")return "pending";
+
+  const actual=getMLActualScore(p);
+  if(!actual)return "pending";
+
+  const ensemble=getMLEnsemble(p);
+  const predicted=ensemble.winner;
+  const actualWinner=actual.home>actual.away?"HOME":actual.away>actual.home?"AWAY":"DRAW";
+
+  return predicted===actualWinner?"success":"failed";
+}
 function buildMLDetails(p){
   const models=getMLModels(p);
   const ensemble=getMLEnsemble(p);
   const consensus=getMLConsensus(p);
+  const actual=getMLActualScore(p);
   let cards="";
+
   for(const name of MODEL_NAMES){
     const m=models[name];
     if(!m)continue;
+
     cards+=`<div class="ml-model">
       <div class="ml-model-name">${escapeHtml(MODEL_LABELS[name])}</div>
       <div class="ml-model-score">${number(m.homeScore)?.toFixed(1)??"-"} - ${number(m.awayScore)?.toFixed(1)??"-"}</div>
@@ -525,6 +555,7 @@ function buildMLDetails(p){
       <div class="ml-note">Toplam: ${number(m.totalScore)?.toFixed(1)??"-"}</div>
     </div>`;
   }
+
   return `<div class="details">
     <div class="detail-title">🤖 Dört modelin tahmini</div>
     <div class="ml-model-grid">${cards}
@@ -539,25 +570,37 @@ function buildMLDetails(p){
     <div class="detail-top">
       <div class="detail-box"><div class="detail-label">Eğitim örneklemi</div><div class="detail-value">${p.trainingSamplesBeforeMatch??"-"}</div></div>
       <div class="detail-box"><div class="detail-label">Model sayısı</div><div class="detail-value">${p.modelCount??consensus.total}</div></div>
-      <div class="detail-box"><div class="detail-label">Tahmin türü</div><div class="detail-value">Canlı ML</div></div>
+      <div class="detail-box"><div class="detail-label">Tahmin türü</div><div class="detail-value">${p.predictionType==="historical_backtest"?"Geçmiş backtest":"Yaklaşan maç"}</div></div>
     </div>
+    ${actual?`<div class="detail-title">Gerçekleşen maç skoru</div>
+      <div class="detail-top">
+        <div class="detail-box"><div class="detail-label">Ev sahibi</div><div class="detail-value">${actual.home}</div></div>
+        <div class="detail-box"><div class="detail-label">Deplasman</div><div class="detail-value">${actual.away}</div></div>
+        <div class="detail-box"><div class="detail-label">Ensemble kazanan tahmini</div><div class="detail-value">${getMLStatus(p)==="success"?"Doğru":"Yanlış"}</div></div>
+      </div>`:""}
   </div>`;
 }
 function buildMLPerformance(){
   const target=document.getElementById("mlPerformance");
   const metrics=mlResults?.backtestMetrics??{};
-  const rankings=mlResults?.backtestRankings??[];
+  const rankings=mlResults?.backtestRankings??{};
   const live=mlResults?.metrics??{};
   let rows="";
-  const order=rankings.length?rankings.map(x=>x.model):MODEL_NAMES.concat("Ensemble");
+
+  const order=Array.isArray(rankings)&&rankings.length
+    ?rankings.map(x=>x.model)
+    :MODEL_NAMES.concat("Ensemble");
+
   for(const name of order){
     const m=metrics[name];
     if(!m)continue;
     rows+=`<tr><td>${escapeHtml(name)}</td><td>${m.matches??0}</td><td>${number(m.totalMAE)?.toFixed(2)??"-"}</td><td>${number(m.winnerAccuracy)!==null?"%"+number(m.winnerAccuracy).toFixed(1):"-"}</td></tr>`;
   }
+
   const backtestCount=mlResults?.backtestSummary?.totalEvaluatedMatches??0;
   const pending=Array.isArray(mlResults?.pending)?mlResults.pending.length:0;
   const liveCount=Array.isArray(mlResults?.history)?mlResults.history.length:0;
+
   target.innerHTML=`
     <strong>Geçmiş walk-forward testi</strong>
     <table><thead><tr><th>Model</th><th>Maç</th><th>Toplam MAE</th><th>Kazanan</th></tr></thead>
@@ -572,47 +615,77 @@ function buildMLPerformance(){
 function renderMLInfo(){
   const diagnostics=mlMeta?.diagnostics??{};
   const training=mlMeta?.training??{};
+  const historical=predictions.filter(p=>p.predictionType==="historical_backtest").length;
+  const upcoming=predictions.filter(p=>p.predictionType==="upcoming").length;
+
   document.getElementById("mlInfo").innerHTML=
     `<strong>ML motoru:</strong> ${escapeHtml(training.status??"Veri yüklendi")} · `+
     `Eğitim maçları: ${training.completedMatches??"-"} · `+
     `Eğitim örneklemi: ${training.trainingSamples??"-"} · `+
-    `Gelecek tahmin: ${diagnostics.upcomingPredicted??predictions.length}`;
+    `Geçmiş tahmin: ${historical} · Yaklaşan tahmin: ${upcoming}`;
 }
-function getMLStatus(p){return "pending"}
 function createMLCard(p){
   const ensemble=getMLEnsemble(p);
   const consensus=getMLConsensus(p);
+  const actual=getMLActualScore(p);
+  const status=getMLStatus(p);
   const home=number(ensemble.homeScore);
   const away=number(ensemble.awayScore);
   const total=number(ensemble.totalScore);
   const winner=ensemble.winner;
   const time=getTime(p);
+  const isHistorical=p.predictionType==="historical_backtest";
+
+  const shownHome=actual?actual.home:null;
+  const shownAway=actual?actual.away:null;
+
   const card=document.createElement("div");
-  card.className="match-card pending-card";
+  card.className="match-card";
+
+  if(isHistorical)card.classList.add("historical-card");
+  else card.classList.add("pending-card");
+
   card.innerHTML=`
     <div class="match-head" role="button" tabindex="0" aria-expanded="false">
-      <div class="match-time"><strong>${escapeHtml(time||"🏀")}</strong><span>${escapeHtml(p.league??"NBA")}</span></div>
+      <div class="match-time">
+        <strong>${escapeHtml(time||"🏀")}</strong>
+        <span>${escapeHtml(p.league??"NBA")}</span>
+        <div class="ml-note">${isHistorical?"GEÇMİŞ":"YAKLAŞAN"}</div>
+      </div>
       <div class="teams">
-        <div class="team-row"><span class="team-name">${escapeHtml(p.homeTeam??"-")}</span><span class="score">${home!==null?home.toFixed(1):"-"}</span></div>
-        <div class="team-row"><span class="team-name">${escapeHtml(p.awayTeam??"-")}</span><span class="score">${away!==null?away.toFixed(1):"-"}</span></div>
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(p.homeTeam??"-")}</span>
+          <span class="score ${shownHome===null?"empty":""}">${shownHome!==null?shownHome:home!==null?home.toFixed(1):"-"}</span>
+        </div>
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(p.awayTeam??"-")}</span>
+          <span class="score ${shownAway===null?"empty":""}">${shownAway!==null?shownAway:away!==null?away.toFixed(1):"-"}</span>
+        </div>
       </div>
       <div class="prediction-box">
-        <div class="prediction-market">ENSEMBLE · ${consensus.count}/${consensus.total} UZLAŞMA</div>
-        <div class="prediction pending">${total!==null?total.toFixed(1)+" sayı":"Tahmin yok"}</div>
+        <div class="prediction-market">${isHistorical?"GERÇEK SKOR":"ENSEMBLE"} · ${consensus.count}/${consensus.total}</div>
+        <div class="prediction ${predictionClass(status)}">${isHistorical?statusText(status):total!==null?total.toFixed(1)+" sayı":"Tahmin yok"}</div>
         <div class="prediction-1x2"><strong>${escapeHtml(mlWinnerShort(winner))}</strong></div>
         <span class="expand-icon">▼</span>
       </div>
     </div>
     ${buildMLDetails(p)}`;
+
   const head=card.querySelector(".match-head");
+
   function toggle(){
     const open=card.classList.toggle("open");
     head.setAttribute("aria-expanded",open?"true":"false");
   }
+
   head.addEventListener("click",toggle);
   head.addEventListener("keydown",event=>{
-    if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle()}
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      toggle();
+    }
   });
+
   return card;
 }
 
@@ -621,35 +694,59 @@ function filterPredictions(){
   const date=dateFilter.value;
   const league=leagueFilter.value;
   const status=statusFilter.value;
+
   return predictions.filter(p=>{
     if(date&&getDate(p)!==date)return false;
+
     if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
-    if(engine==="ml")return status==="all"||status==="pending";
+
+    if(engine==="ml"){
+      const mlStatus=getMLStatus(p);
+      if(status!=="all"&&mlStatus!==status)return false;
+      return true;
+    }
+
     if(status!=="all"&&getStatus(p)!==status)return false;
     return true;
+  }).sort((a,b)=>{
+    const dateA=getDate(a);
+    const dateB=getDate(b);
+    const timeA=a.utcDate??(dateA+"T"+(a.time??"00:00"));
+    const timeB=b.utcDate??(dateB+"T"+(b.time??"00:00"));
+    return String(timeA).localeCompare(String(timeB));
   });
 }
 function setDefaultDate(){
   const dates=[...new Set(predictions.map(getDate).filter(Boolean))].sort();
-  if(!dates.length){dateFilter.value="";return}
+
+  if(!dates.length){
+    dateFilter.value="";
+    return;
+  }
+
   const today=todayString();
   dateFilter.value=dates.includes(today)?today:dates[0];
 }
 function render(){
   if(engine==="classic")updateClassicSummary();
+
   const filtered=filterPredictions();
   content.innerHTML="";
   matchCount.textContent=filtered.length+" maç";
   dateTitle.textContent=dateFilter.value?formatDate(dateFilter.value):"Maçlar";
+
   if(!filtered.length){
-    content.innerHTML='<div class="empty">🏀 Bu filtrelere uygun maç bulunamadı.</div>';
+    content.innerHTML='<div class="empty">🏀 Bu tarihte filtrelere uygun maç bulunamadı. Başka bir tarih seçebilirsin.</div>';
     return;
   }
+
   const list=document.createElement("div");
   list.className="matches";
+
   for(const p of filtered){
     list.appendChild(engine==="ml"?createMLCard(p):createClassicCard(p));
   }
+
   content.appendChild(list);
 }
 function createClassicCard(p){
@@ -660,9 +757,11 @@ function createClassicCard(p){
   const awayScore=number(p.awayScore);
   const hasScore=homeScore!==null&&awayScore!==null;
   const x2=get1X2(p);
+
   const card=document.createElement("div");
   card.className="match-card";
   if(status==="pending")card.classList.add("pending-card");
+
   card.innerHTML=`
     <div class="match-head" role="button" tabindex="0" aria-expanded="false">
       <div class="match-time"><strong>${escapeHtml(getTime(p)||"🏀")}</strong><span>${escapeHtml(p.league??"")}</span></div>
@@ -676,15 +775,22 @@ function createClassicCard(p){
         ${x2?oneXTwoBadge(p):""}<span class="expand-icon">▼</span>
       </div>
     </div>${buildClassicDetails(p)}`;
+
   const head=card.querySelector(".match-head");
+
   function toggle(){
     const open=card.classList.toggle("open");
     head.setAttribute("aria-expanded",open?"true":"false");
   }
+
   head.addEventListener("click",toggle);
   head.addEventListener("keydown",event=>{
-    if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle()}
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      toggle();
+    }
   });
+
   return card;
 }
 
@@ -697,6 +803,7 @@ async function fetchJSON(path){
 async function loadClassic(){
   const data=await fetchJSON("predictions.json");
   const raw=Array.isArray(data)?data:(Array.isArray(data.predictions)?data.predictions:[]);
+
   predictions=raw.filter(p=>{
     const league=String(p.league??"").trim().toLowerCase();
     return league!=="euroleague"&&league!=="eurocup";
@@ -707,47 +814,91 @@ async function loadML(){
     fetchJSON("ml-predictions.json"),
     fetchJSON("ml-results.json")
   ]);
+
   mlMeta=predictionData;
   mlResults=resultData;
-  const raw=Array.isArray(predictionData.predictions)?predictionData.predictions:[];
-  // Geçmiş backtest kayıtlarını tahmin listesinde gösterme.
-  predictions=raw.filter(p=>
-    p.predictionType==="upcoming"&&String(p.league??"").toUpperCase()==="NBA"
-  );
-  // ML sonuç dosyasındaki pending listesiyle eşleştir; dosya eskiyse tahmin JSON'u yedek kaynaktır.
-  const pending=Array.isArray(resultData.pending)?resultData.pending:[];
-  const pendingIds=new Set(pending.map(p=>String(p.matchId)));
-  if(pendingIds.size){
-    predictions=predictions.filter(p=>pendingIds.has(String(p.matchId)));
+
+  /* Sonuç dosyasındaki geçmiş maçları matchId üzerinden eşleştir. */
+  mlResultMap=new Map();
+
+  const historicalResults=Array.isArray(resultData.backtestHistory)
+    ?resultData.backtestHistory:[];
+  const liveResults=Array.isArray(resultData.history)
+    ?resultData.history:[];
+
+  for(const item of [...historicalResults,...liveResults]){
+    if(item.matchId!==undefined&&item.matchId!==null){
+      mlResultMap.set(String(item.matchId),item);
+    }
   }
+
+  /* Hem geçmiş backtest hem de yaklaşan maçları al. */
+  const raw=Array.isArray(predictionData.predictions)
+    ?predictionData.predictions:[];
+
+  predictions=raw.filter(p=>
+    ["upcoming","historical_backtest"].includes(p.predictionType)&&
+    String(p.league??"").toUpperCase()==="NBA"
+  );
+
+  /* Sonuç dosyasındaki geçmiş kayıtları da eksik maçları tamamlamak için ekle. */
+  const knownIds=new Set(predictions.map(p=>String(p.matchId)));
+
+  for(const item of historicalResults){
+    const id=String(item.matchId??"");
+    if(!id||knownIds.has(id))continue;
+
+    const source=item.prediction?item:{...item,prediction:{
+      models:item.models??{},
+      ensemble:item.ensemble??{}
+    }};
+
+    source.predictionType="historical_backtest";
+    predictions.push(source);
+    knownIds.add(id);
+  }
+
   buildMLPerformance();
   renderMLInfo();
 }
 async function switchEngine(next){
   engine=next;
+
   document.getElementById("classicBtn").classList.toggle("active",engine==="classic");
   document.getElementById("mlBtn").classList.toggle("active",engine==="ml");
   document.getElementById("classicSummary").classList.toggle("hidden",engine!=="classic");
   document.getElementById("mlSummary").classList.toggle("hidden",engine!=="ml");
+
   document.getElementById("headerSubtitle").textContent=engine==="ml"
     ?"NBA · RANDOM FOREST · XGBOOST · LIGHTGBM · CATBOOST · ENSEMBLE"
     :"MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ";
+
   statusFilter.value="all";
   content.innerHTML='<div class="loading">🏀 Veriler yükleniyor...</div>';
+
   try{
     if(engine==="classic")await loadClassic();
     else await loadML();
+
     setDefaultDate();
     render();
   }catch(error){
     console.error(error);
-    content.innerHTML=`<div class="error">Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}<br><br>${engine==="ml"?"ml-predictions.json ve ml-results.json dosyalarının basketbol klasöründe bulunduğunu kontrol et.":"predictions.json dosyasını kontrol et."}</div>`;
+
+    content.innerHTML=`<div class="error">
+      Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}<br><br>
+      ${engine==="ml"
+        ?"ml-predictions.json ve ml-results.json dosyalarının basketbol klasöründe bulunduğunu kontrol et."
+        :"predictions.json dosyasını kontrol et."}
+    </div>`;
+
     if(engine==="ml"){
       document.getElementById("mlPerformance").innerHTML='<div class="error">ML performans dosyası yüklenemedi.</div>';
       document.getElementById("mlInfo").textContent="ML verisi yüklenemedi.";
     }
   }
 }
+
 document.getElementById("classicBtn").addEventListener("click",()=>switchEngine("classic"));
 document.getElementById("mlBtn").addEventListener("click",()=>switchEngine("ml"));
 dateFilter.addEventListener("change",render);
