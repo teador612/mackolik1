@@ -1,342 +1,478 @@
+
 import json
-from collections import defaultdict
-from datetime import datetime, timezone
 from pathlib import Path
-# ============================================================
-# DOSYA YOLLARI
-# ============================================================
+from datetime import datetime, timezone
+from collections import defaultdict
+
+
 BASE_DIR = Path(__file__).resolve().parent
-PREDICTIONS_FILE = BASE_DIR / "predictions.json"
+INPUT_FILE = BASE_DIR / "predictions.json"
 OUTPUT_FILE = BASE_DIR / "results.json"
-# ============================================================
-# YARDIMCI FONKSİYONLAR
-# ============================================================
-def safe_float(value):
+
+
+def load_json(path):
+    if not path.exists():
+        raise FileNotFoundError(f"Dosya bulunamadı: {path}")
+
+    with path.open("r", encoding="utf-8") as file:
+        return json.load(file)
+
+
+def save_json(path, data):
+    with path.open("w", encoding="utf-8") as file:
+        json.dump(data, file, ensure_ascii=False, indent=2)
+
+
+def normalize_prediction(value):
+    if value is None:
+        return None
+
+    value = str(value).strip().upper()
+
+    if value in ("ALT", "UNDER"):
+        return "ALT"
+
+    if value in ("ÜST", "UST", "OVER"):
+        return "ÜST"
+
+    return None
+
+
+def normalize_1x2(value):
+    if value is None:
+        return None
+
+    value = str(value).strip().upper()
+
+    if value in ("1", "HOME"):
+        return "1"
+
+    if value in ("X", "DRAW"):
+        return "X"
+
+    if value in ("2", "AWAY"):
+        return "2"
+
+    return None
+
+
+def is_played(match):
+    if match.get("played") is True:
+        return True
+
+    if match.get("isFinished") is True:
+        return True
+
+    status = str(match.get("status", "")).strip().lower()
+
+    if status in ("finished", "final", "completed", "ft"):
+        return True
+
+    home_score = match.get("homeScore")
+    away_score = match.get("awayScore")
+
+    return (
+        home_score is not None
+        and away_score is not None
+        and match.get("isUnstarted") is not True
+    )
+
+
+def calculate_actual_result(home_score, away_score):
+    if home_score > away_score:
+        return "1"
+
+    if away_score > home_score:
+        return "2"
+
+    return "X"
+
+
+def calculate_main_result(prediction, line, actual_total):
+    prediction = normalize_prediction(prediction)
+
+    if prediction is None or line is None:
+        return None, None
+
     try:
-        if value is None:
-            return None
-        return float(value)
+        line = float(line)
     except (TypeError, ValueError):
-        return None
-def get_league_name(item):
-    league = str(item.get("league", "")).upper()
-    if league == "NBA":
-        return "NBA"
-    if league in (
-        "E",
-        "E2026",
-        "EUROLEAGUE",
-        "EUROLEGUE",
-        "EUROPE",
-    ):
-        return "EuroLeague"
-    return item.get("league", "Diğer")
-def calculate_percentage(successful, total):
-    if total <= 0:
-        return None
-    return round(successful / total * 100, 2)
-# ============================================================
-# TAHMİN DEĞERLENDİRME
-# ============================================================
-def evaluate_prediction(item):
-    prediction = item.get("prediction")
-    line = safe_float(item.get("line"))
-    home_score = safe_float(item.get("homeScore"))
-    away_score = safe_float(item.get("awayScore"))
-    played = bool(item.get("played"))
-    if not played:
-        return {
-            "status": "not_played",
-            "prediction": prediction,
-            "line": line,
-            "actualTotal": None,
-            "success": None,
-        }
-    if (
-        prediction not in ("Alt", "Üst")
-        or line is None
-        or home_score is None
-        or away_score is None
-    ):
-        return {
-            "status": "invalid",
-            "prediction": prediction,
-            "line": line,
-            "actualTotal": None,
-            "success": None,
-        }
-    actual_total = home_score + away_score
-    if actual_total == line:
-        return {
-            "status": "push",
-            "prediction": prediction,
-            "line": line,
-            "actualTotal": actual_total,
-            "success": None,
-        }
-    actual_result = "Üst" if actual_total > line else "Alt"
-    success = prediction == actual_result
-    return {
-        "status": "success" if success else "failed",
-        "prediction": prediction,
-        "line": line,
-        "actualTotal": actual_total,
-        "actualResult": actual_result,
-        "success": success,
-    }
-# ============================================================
-# İSTATİSTİKLER
-# ============================================================
-def calculate_stats(items):
-    completed = [
-        item for item in items
-        if item["evaluation"]["status"] in ("success", "failed")
-    ]
-    successful = [
-        item for item in completed
-        if item["evaluation"]["success"] is True
-    ]
-    failed = [
-        item for item in completed
-        if item["evaluation"]["success"] is False
-    ]
-    pushes = [
-        item for item in items
-        if item["evaluation"]["status"] == "push"
-    ]
-    not_played = [
-        item for item in items
-        if item["evaluation"]["status"] == "not_played"
-    ]
-    invalid = [
-        item for item in items
-        if item["evaluation"]["status"] == "invalid"
-    ]
-    return {
-        "totalPredictions": len(items),
-        "completed": len(completed),
-        "successful": len(successful),
-        "failed": len(failed),
-        "push": len(pushes),
-        "notPlayed": len(not_played),
-        "invalid": len(invalid),
-        "successRate": calculate_percentage(
-            len(successful),
-            len(completed),
-        ),
-    }
-def calculate_league_stats(items):
-    groups = defaultdict(list)
-    for item in items:
-        league = get_league_name(item["prediction"])
-        groups[league].append(item)
-    return {
-        league: calculate_stats(league_items)
-        for league, league_items in groups.items()
-    }
-def calculate_daily_stats(items):
-    groups = defaultdict(list)
-    for item in items:
-        date = item["prediction"].get("date") or "unknown"
-        groups[date].append(item)
-    return {
-        date: calculate_stats(date_items)
-        for date, date_items in sorted(groups.items())
-    }
-def calculate_prediction_distribution(items):
-    result = {
-        "Alt": {
-            "total": 0,
-            "successful": 0,
-            "failed": 0,
-        },
-        "Üst": {
-            "total": 0,
-            "successful": 0,
-            "failed": 0,
-        },
-    }
-    for item in items:
-        evaluation = item["evaluation"]
-        prediction = evaluation.get("prediction")
-        status = evaluation.get("status")
-        if prediction not in result:
+        return None, None
+
+    if prediction == "ÜST":
+        if actual_total > line:
+            return "ÜST", True
+
+        if actual_total < line:
+            return "ALT", False
+
+        return "PUSH", None
+
+    if prediction == "ALT":
+        if actual_total < line:
+            return "ALT", True
+
+        if actual_total > line:
+            return "ÜST", False
+
+        return "PUSH", None
+
+    return None, None
+
+
+def calculate_statistics(matches):
+    total = len(matches)
+    played = 0
+    upcoming = 0
+
+    evaluated = 0
+    successful = 0
+    failed = 0
+    push = 0
+    invalid = 0
+
+    one_x_two_evaluated = 0
+    one_x_two_successful = 0
+    one_x_two_failed = 0
+
+    alt_total = 0
+    alt_successful = 0
+
+    ust_total = 0
+    ust_successful = 0
+
+    league_stats = defaultdict(lambda: {
+        "total": 0,
+        "played": 0,
+        "upcoming": 0,
+        "evaluated": 0,
+        "successful": 0,
+        "failed": 0,
+        "push": 0,
+        "invalid": 0,
+        "successRate": 0,
+        "oneXTwoEvaluated": 0,
+        "oneXTwoSuccessful": 0,
+        "oneXTwoFailed": 0,
+        "oneXTwoSuccessRate": 0
+    })
+
+    for match in matches:
+        league = match.get("league") or "Bilinmeyen"
+        stats = league_stats[league]
+        stats["total"] += 1
+
+        if not match.get("played"):
+            upcoming += 1
+            stats["upcoming"] += 1
             continue
-        if status not in ("success", "failed"):
-            continue
-        result[prediction]["total"] += 1
-        if status == "success":
-            result[prediction]["successful"] += 1
+
+        played += 1
+        stats["played"] += 1
+
+        if match.get("mainEvaluated"):
+            evaluated += 1
+            stats["evaluated"] += 1
+
+            if match.get("success") is True:
+                successful += 1
+                stats["successful"] += 1
+
+                if match.get("prediction") == "ALT":
+                    alt_successful += 1
+
+                elif match.get("prediction") == "ÜST":
+                    ust_successful += 1
+
+            elif match.get("success") is False:
+                failed += 1
+                stats["failed"] += 1
+
+            elif match.get("result") == "PUSH":
+                push += 1
+                stats["push"] += 1
+
+            if match.get("prediction") == "ALT":
+                alt_total += 1
+
+            elif match.get("prediction") == "ÜST":
+                ust_total += 1
+
         else:
-            result[prediction]["failed"] += 1
-    for prediction in result:
-        total = result[prediction]["total"]
-        successful = result[prediction]["successful"]
-        result[prediction]["successRate"] = calculate_percentage(
-            successful,
-            total,
+            invalid += 1
+            stats["invalid"] += 1
+
+        if match.get("oneXTwoEvaluated"):
+            one_x_two_evaluated += 1
+            stats["oneXTwoEvaluated"] += 1
+
+            if match.get("success1X2") is True:
+                one_x_two_successful += 1
+                stats["oneXTwoSuccessful"] += 1
+
+            elif match.get("success1X2") is False:
+                one_x_two_failed += 1
+                stats["oneXTwoFailed"] += 1
+
+    success_rate = (
+        round(successful / evaluated * 100, 1)
+        if evaluated else 0
+    )
+
+    one_x_two_rate = (
+        round(one_x_two_successful / one_x_two_evaluated * 100, 1)
+        if one_x_two_evaluated else 0
+    )
+
+    for stats in league_stats.values():
+        stats["successRate"] = (
+            round(stats["successful"] / stats["evaluated"] * 100, 1)
+            if stats["evaluated"] else 0
         )
-    return result
-# ============================================================
-# SONUÇ KAYDI
-# ============================================================
-def build_result_item(item):
-    prediction = item["prediction"]
-    evaluation = item["evaluation"]
+
+        stats["oneXTwoSuccessRate"] = (
+            round(
+                stats["oneXTwoSuccessful"]
+                / stats["oneXTwoEvaluated"] * 100,
+                1
+            )
+            if stats["oneXTwoEvaluated"] else 0
+        )
+
     return {
-        "id": prediction.get("id"),
-        "league": get_league_name(prediction),
-        "season": prediction.get("season"),
-        "date": prediction.get("date"),
-        "home": prediction.get("home"),
-        "away": prediction.get("away"),
-        "prediction": evaluation.get("prediction"),
-        "line": evaluation.get("line"),
-        "homeScore": prediction.get("homeScore"),
-        "awayScore": prediction.get("awayScore"),
-        "actualTotal": evaluation.get("actualTotal"),
-        "actualResult": evaluation.get("actualResult"),
-        "status": evaluation.get("status"),
-        "success": evaluation.get("success"),
+        "total": total,
+        "played": played,
+        "upcoming": upcoming,
+        "evaluated": evaluated,
+        "successful": successful,
+        "failed": failed,
+        "push": push,
+        "invalid": invalid,
+        "successRate": success_rate,
+        "successRateMainPrediction": success_rate,
+        "oneXTwoEvaluated": one_x_two_evaluated,
+        "oneXTwoSuccessful": one_x_two_successful,
+        "oneXTwoFailed": one_x_two_failed,
+        "oneXTwoSuccessRate": one_x_two_rate,
+        "altTotal": alt_total,
+        "altSuccessful": alt_successful,
+        "altSuccessRate": (
+            round(alt_successful / alt_total * 100, 1)
+            if alt_total else 0
+        ),
+        "ustTotal": ust_total,
+        "ustSuccessful": ust_successful,
+        "ustSuccessRate": (
+            round(ust_successful / ust_total * 100, 1)
+            if ust_total else 0
+        ),
+        "leagues": dict(league_stats)
     }
-# ============================================================
-# DOSYA İŞLEMLERİ
-# ============================================================
-def load_predictions():
-    if not PREDICTIONS_FILE.exists():
-        raise FileNotFoundError(
-            f"predictions.json bulunamadı: {PREDICTIONS_FILE}"
-        )
-    with PREDICTIONS_FILE.open("r", encoding="utf-8") as file:
-        data = json.load(file)
-    if not isinstance(data, dict):
-        raise ValueError("predictions.json beklenen JSON formatında değil.")
+
+
+def evaluate_matches(data):
     predictions = data.get("predictions", [])
+
     if not isinstance(predictions, list):
-        raise ValueError("predictions alanı liste olmalıdır.")
-    return predictions
-def save_results(output):
-    with OUTPUT_FILE.open("w", encoding="utf-8") as file:
-        json.dump(
-            output,
-            file,
-            ensure_ascii=False,
-            indent=2,
+        raise ValueError("predictions.json içindeki predictions bir liste değil.")
+
+    evaluated_matches = []
+
+    for original in predictions:
+        match = dict(original)
+
+        home_score = match.get("homeScore")
+        away_score = match.get("awayScore")
+
+        match["home"] = match.get("homeTeam")
+        match["away"] = match.get("awayTeam")
+
+        match["played"] = is_played(match)
+
+        match["mainEvaluated"] = False
+        match["oneXTwoEvaluated"] = False
+
+        match["result"] = None
+        match["success"] = None
+        match["actualTotal"] = None
+
+        match["result1X2"] = None
+        match["success1X2"] = None
+
+        if not match["played"]:
+            evaluated_matches.append(match)
+            continue
+
+        if home_score is None or away_score is None:
+            evaluated_matches.append(match)
+            continue
+
+        try:
+            home_score = float(home_score)
+            away_score = float(away_score)
+        except (TypeError, ValueError):
+            evaluated_matches.append(match)
+            continue
+
+        actual_total = home_score + away_score
+
+        match["homeScore"] = home_score
+        match["awayScore"] = away_score
+        match["actualTotal"] = actual_total
+
+        # Ana Alt / Üst tahmini
+        prediction = normalize_prediction(match.get("prediction"))
+        line = match.get("line")
+
+        match["prediction"] = prediction
+
+        result, success = calculate_main_result(
+            prediction,
+            line,
+            actual_total
         )
-# ============================================================
-# ANA PROGRAM
-# ============================================================
-def main():
+
+        if result is not None:
+            match["mainEvaluated"] = True
+            match["result"] = result
+            match["success"] = success
+
+        # 1X2 tahmini ana tahminden bağımsız değerlendirilir.
+        prediction_1x2 = normalize_1x2(
+            match.get("prediction1X2")
+        )
+
+        actual_1x2 = calculate_actual_result(
+            home_score,
+            away_score
+        )
+
+        match["prediction1X2"] = prediction_1x2
+        match["actualResult1X2"] = actual_1x2
+        match["result1X2"] = actual_1x2
+
+        if prediction_1x2 is not None:
+            match["oneXTwoEvaluated"] = True
+            match["success1X2"] = (
+                prediction_1x2 == actual_1x2
+            )
+
+        evaluated_matches.append(match)
+
+    return evaluated_matches
+
+
+def print_report(stats, matches):
     print("=" * 70)
     print("BASKETBOL ANA TAHMİN SONUÇ ANALİZİ")
     print("=" * 70)
-    predictions = load_predictions()
-    print(f"\nToplam tahmin: {len(predictions)}")
-    results = []
-    for prediction in predictions:
-        evaluation = evaluate_prediction(prediction)
-        results.append({
-            "prediction": prediction,
-            "evaluation": evaluation,
-        })
-    overall = calculate_stats(results)
-    league_stats = calculate_league_stats(results)
-    daily_stats = calculate_daily_stats(results)
-    distribution = calculate_prediction_distribution(results)
-    output = {
-        "updatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": "predictions.json",
-        "settings": {
-            "mainMarket": "Maç Toplam Alt/Üst",
-            "successRateOnlyMainPrediction": True,
-            "excludedFromMainSuccessRate": [
-                "1/X/2",
-                "İY Alt/Üst",
-                "Q1 Alt/Üst",
-                "Q2 Alt/Üst",
-                "Q3 Alt/Üst",
-                "Q4 Alt/Üst",
-            ],
-            "pushExcludedFromSuccessRate": True,
-        },
-        "statistics": {
-            "overall": overall,
-            "leagues": league_stats,
-            "daily": daily_stats,
-            "predictionDistribution": distribution,
-        },
-        "results": [
-            build_result_item(item)
-            for item in results
-        ],
-    }
-    save_results(output)
-    # ========================================================
-    # GENEL RAPOR
-    # ========================================================
+
+    print(f"\nToplam tahmin : {stats['total']}")
+    print(f"Oynanan       : {stats['played']}")
+    print(f"Oynanmamış    : {stats['upcoming']}")
+
     print("\n" + "=" * 70)
-    print("GENEL BAŞARI")
+    print("ALT / ÜST GENEL BAŞARI")
     print("=" * 70)
-    print("Toplam tahmin :", overall["totalPredictions"])
-    print("Tamamlanan    :", overall["completed"])
-    print("Başarılı      :", overall["successful"])
-    print("Başarısız     :", overall["failed"])
-    print("Push          :", overall["push"])
-    print("Oynanmamış    :", overall["notPlayed"])
-    print("Geçersiz      :", overall["invalid"])
-    rate = overall["successRate"]
-    print("Başarı oranı  :", f"%{rate}" if rate is not None else "-")
-    # ========================================================
-    # GEÇERSİZ MAÇLARIN İNCELENMESİ
-    # ========================================================
-    invalid_items = [
-        item for item in results
-        if item["evaluation"]["status"] == "invalid"
-    ]
-    if invalid_items:
-        print("\n" + "=" * 70)
-        print("İLK 10 GEÇERSİZ MAÇ")
-        print("=" * 70)
-        for item in invalid_items[:10]:
-            prediction = item["prediction"]
-            print({
-                "id": prediction.get("id"),
-                "home": prediction.get("home"),
-                "away": prediction.get("away"),
-                "prediction": prediction.get("prediction"),
-                "line": prediction.get("line"),
-                "played": prediction.get("played"),
-                "homeScore": prediction.get("homeScore"),
-                "awayScore": prediction.get("awayScore"),
-            })
-    # ========================================================
-    # LİG İSTATİSTİKLERİ
-    # ========================================================
+
+    print(f"Değerlendirilen: {stats['evaluated']}")
+    print(f"Başarılı       : {stats['successful']}")
+    print(f"Başarısız      : {stats['failed']}")
+    print(f"Push           : {stats['push']}")
+    print(f"Geçersiz       : {stats['invalid']}")
+    print(f"Başarı oranı   : %{stats['successRate']}")
+
     print("\n" + "=" * 70)
-    print("LİG BAŞARILARI")
+    print("1X2 GENEL BAŞARI")
     print("=" * 70)
-    for league, stats in league_stats.items():
-        rate = stats["successRate"]
-        rate_text = f"%{rate}" if rate is not None else "-"
-        print(
-            f"{league}: {stats['successful']}/"
-            f"{stats['completed']} -> {rate_text}"
-        )
-    # ========================================================
-    # ALT / ÜST DAĞILIMI
-    # ========================================================
+
+    print(f"Değerlendirilen: {stats['oneXTwoEvaluated']}")
+    print(f"Başarılı       : {stats['oneXTwoSuccessful']}")
+    print(f"Başarısız      : {stats['oneXTwoFailed']}")
+    print(f"Başarı oranı   : %{stats['oneXTwoSuccessRate']}")
+
     print("\n" + "=" * 70)
     print("ALT / ÜST DAĞILIMI")
     print("=" * 70)
-    for prediction, stats in distribution.items():
-        rate = stats["successRate"]
-        rate_text = f"%{rate}" if rate is not None else "-"
+
+    print(
+        f"Alt: {stats['altSuccessful']}/{stats['altTotal']} "
+        f"-> %{stats['altSuccessRate']}"
+    )
+
+    print(
+        f"Üst: {stats['ustSuccessful']}/{stats['ustTotal']} "
+        f"-> %{stats['ustSuccessRate']}"
+    )
+
+    print("\n" + "=" * 70)
+    print("LİG BAŞARILARI")
+    print("=" * 70)
+
+    for league, league_stats in stats["leagues"].items():
         print(
-            f"{prediction}: {stats['successful']}/"
-            f"{stats['total']} -> {rate_text}"
+            f"{league}: "
+            f"{league_stats['successful']}/"
+            f"{league_stats['evaluated']} "
+            f"-> %{league_stats['successRate']} "
+            f"| 1X2: "
+            f"{league_stats['oneXTwoSuccessful']}/"
+            f"{league_stats['oneXTwoEvaluated']} "
+            f"-> %{league_stats['oneXTwoSuccessRate']}"
         )
+
+    invalid_matches = [
+        match for match in matches
+        if match.get("played") and not match.get("mainEvaluated")
+    ]
+
+    print("\n" + "=" * 70)
+    print("İLK 10 ANA TAHMİNİ OLMAYAN / GEÇERSİZ MAÇ")
+    print("=" * 70)
+
+    for match in invalid_matches[:10]:
+        print({
+            "id": match.get("id"),
+            "home": match.get("homeTeam"),
+            "away": match.get("awayTeam"),
+            "prediction": match.get("prediction"),
+            "line": match.get("line"),
+            "played": match.get("played"),
+            "homeScore": match.get("homeScore"),
+            "awayScore": match.get("awayScore"),
+            "prediction1X2": match.get("prediction1X2"),
+            "success1X2": match.get("success1X2")
+        })
+
+
+def main():
+    print("Tahmin dosyası okunuyor...")
+
+    data = load_json(INPUT_FILE)
+
+    matches = evaluate_matches(data)
+    stats = calculate_statistics(matches)
+
+    output = {
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "source": "predictions.json",
+        "summary": {
+            key: value
+            for key, value in stats.items()
+            if key != "leagues"
+        },
+        "leagues": stats["leagues"],
+        "predictions": matches
+    }
+
+    save_json(OUTPUT_FILE, output)
+
+    print_report(stats, matches)
+
     print("\n" + "=" * 70)
     print(f"results.json oluşturuldu: {OUTPUT_FILE}")
     print("=" * 70)
+
+
 if __name__ == "__main__":
     main()
