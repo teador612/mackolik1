@@ -1,13 +1,15 @@
+
 import json
-import os
 import re
 import hashlib
+from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
 import requests
 
 
-OUTPUT_FILE = "basketball.json"
+BASE_DIR = Path(__file__).resolve().parent
+OUTPUT_FILE = BASE_DIR / "basketball.json"
 
 TODAY = datetime.now(timezone.utc).date()
 
@@ -35,6 +37,7 @@ def get_json(url):
         )
         response.raise_for_status()
         return response.json()
+
     except Exception as e:
         print(f"❌ İstek hatası: {url}")
         print(f"   {e}")
@@ -49,11 +52,7 @@ def clean_text(value):
     if value is None:
         return ""
 
-    return re.sub(
-        r"\s+",
-        " ",
-        str(value).strip()
-    )
+    return re.sub(r"\s+", " ", str(value).strip())
 
 
 def normalize_team(name):
@@ -81,11 +80,7 @@ def normalize_team(name):
     for old, new in replacements.items():
         name = name.replace(old, new)
 
-    return re.sub(
-        r"\s+",
-        " ",
-        name
-    ).strip()
+    return re.sub(r"\s+", " ", name).strip()
 
 
 def safe_int(value):
@@ -94,17 +89,11 @@ def safe_int(value):
 
     try:
         return int(value)
-    except Exception:
+    except (TypeError, ValueError):
         return None
 
 
-def make_match_id(
-    league,
-    season,
-    home,
-    away,
-    utc_date,
-):
+def make_match_id(league, season, home, away, utc_date):
     raw = "|".join([
         clean_text(league),
         clean_text(season),
@@ -116,6 +105,16 @@ def make_match_id(
     return hashlib.sha1(
         raw.encode("utf-8")
     ).hexdigest()[:20]
+
+
+def match_key(match):
+    return (
+        clean_text(match.get("league")),
+        clean_text(match.get("season")),
+        normalize_team(match.get("homeTeam")),
+        normalize_team(match.get("awayTeam")),
+        clean_text(match.get("date") or match.get("utcDate", "")[:10]),
+    )
 
 
 # ============================================================
@@ -140,22 +139,10 @@ def build_periods(home_values, away_values):
     periods = {}
 
     for i in range(4):
-        home = (
-            home_values[i]
-            if i < len(home_values)
-            else None
-        )
+        home = home_values[i] if i < len(home_values) else None
+        away = away_values[i] if i < len(away_values) else None
 
-        away = (
-            away_values[i]
-            if i < len(away_values)
-            else None
-        )
-
-        period = make_period(
-            home,
-            away
-        )
+        period = make_period(home, away)
 
         if period is not None:
             periods[f"q{i + 1}"] = period
@@ -166,10 +153,7 @@ def build_periods(home_values, away_values):
 def has_four_periods(periods):
     return (
         isinstance(periods, dict)
-        and all(
-            f"q{i}" in periods
-            for i in range(1, 5)
-        )
+        and all(f"q{i}" in periods for i in range(1, 5))
     )
 
 
@@ -194,19 +178,13 @@ def build_match(
     away_team = clean_text(away_team)
     utc_date = clean_text(utc_date)
 
-    if not home_team or not away_team:
-        return None
-
-    if not utc_date:
+    if not home_team or not away_team or not utc_date:
         return None
 
     home_score = safe_int(home_score)
     away_score = safe_int(away_score)
 
-    if periods is None:
-        periods = {}
-
-    if not isinstance(periods, dict):
+    if periods is None or not isinstance(periods, dict):
         periods = {}
 
     if match_id is None:
@@ -229,15 +207,11 @@ def build_match(
         "homeScore": home_score,
         "awayScore": away_score,
         "played": bool(played),
-        "hasPeriodData": has_four_periods(
-            periods
-        ),
+        "hasPeriodData": has_four_periods(periods),
     }
 
     if status:
-        match["status"] = clean_text(
-            status
-        )
+        match["status"] = clean_text(status)
 
     if has_four_periods(periods):
         match["periods"] = periods
@@ -246,17 +220,178 @@ def build_match(
 
 
 # ============================================================
+# ESKİ VERİYİ KORU VE YENİ VERİYLE BİRLEŞTİR
+# ============================================================
+
+def load_existing_matches():
+    if not OUTPUT_FILE.exists():
+        print("📂 Önceki basketball.json bulunamadı. Yeni dosya oluşturulacak.")
+        return []
+
+    try:
+        with OUTPUT_FILE.open("r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        matches = data.get("matches", [])
+
+        if not isinstance(matches, list):
+            print("⚠️ Eski dosyanın matches alanı geçersiz.")
+            return []
+
+        print(f"📚 Önceki kayıt sayısı: {len(matches)}")
+        return matches
+
+    except Exception as e:
+        raise RuntimeError(
+            f"Eski basketball.json okunamadı. "
+            f"Dosyanın üzerine yazılmadı: {e}"
+        )
+
+
+def merge_match(old, new):
+    """
+    Eski maç kaydını korur.
+    Yeni API verisindeki güncel skor ve durumları uygular.
+    Eksik API verisi tamamlanmış maçın skorunu silemez.
+    """
+
+    merged = dict(old)
+
+    old_played = old.get("played") is True
+    new_played = new.get("played") is True
+
+    old_has_score = (
+        safe_int(old.get("homeScore")) is not None
+        and safe_int(old.get("awayScore")) is not None
+    )
+
+    new_has_score = (
+        safe_int(new.get("homeScore")) is not None
+        and safe_int(new.get("awayScore")) is not None
+    )
+
+    # Temel kimlik ve maç bilgileri
+    for field in (
+        "league",
+        "season",
+        "date",
+        "utcDate",
+        "homeTeam",
+        "awayTeam",
+    ):
+        if new.get(field) not in (None, ""):
+            merged[field] = new[field]
+
+    # Eski ID korunur.
+    if old.get("id"):
+        merged["id"] = old["id"]
+    elif new.get("id"):
+        merged["id"] = new["id"]
+
+    # Yeni skor geldiyse güncelle.
+    # Ancak tamamlanmış maçın skoru eksik API cevabıyla silinmez.
+    if new_has_score:
+        if new_played or not old_played or not old_has_score:
+            merged["homeScore"] = new["homeScore"]
+            merged["awayScore"] = new["awayScore"]
+
+    # Tamamlanmış maçın durumu geriye döndürülmez.
+    if old_played:
+        merged["played"] = True
+    else:
+        merged["played"] = new_played
+
+    # Durum bilgisi
+    if new.get("status"):
+        if not old_played or new_played:
+            merged["status"] = new["status"]
+
+    # Periyot verisi
+    old_periods = old.get("periods")
+    new_periods = new.get("periods")
+
+    if isinstance(old_periods, dict):
+        periods = dict(old_periods)
+    else:
+        periods = {}
+
+    if isinstance(new_periods, dict):
+        for key, value in new_periods.items():
+            if value is not None:
+                periods[key] = value
+
+    if has_four_periods(periods):
+        merged["periods"] = periods
+        merged["hasPeriodData"] = True
+    else:
+        merged["hasPeriodData"] = False
+
+        if periods:
+            merged["periods"] = periods
+
+    # Tamamlanmış eski maçın skoru korunur.
+    if old_played and old_has_score and not new_has_score:
+        merged["homeScore"] = old["homeScore"]
+        merged["awayScore"] = old["awayScore"]
+
+    return merged
+
+
+def merge_matches(old_matches, new_matches):
+    merged = {}
+
+    for match in old_matches:
+        if not isinstance(match, dict):
+            continue
+
+        key = match_key(match)
+
+        if not all(key):
+            continue
+
+        merged[key] = match
+
+    added = 0
+    updated = 0
+
+    for match in new_matches:
+        if not isinstance(match, dict):
+            continue
+
+        key = match_key(match)
+
+        if not all(key):
+            continue
+
+        old = merged.get(key)
+
+        if old is None:
+            merged[key] = match
+            added += 1
+        else:
+            merged[key] = merge_match(old, match)
+            updated += 1
+
+    result = list(merged.values())
+
+    print()
+    print("🔄 VERİ BİRLEŞTİRME")
+    print("-" * 60)
+    print(f"📚 Önceki kayıt: {len(old_matches)}")
+    print(f"🆕 Yeni maç: {added}")
+    print(f"🔁 Güncellenen eşleşme: {updated}")
+    print(f"📦 Birleşik toplam: {len(result)}")
+
+    return result
+
+
+# ============================================================
 # NBA
 # ============================================================
 
 def nba_date_range():
-    start = TODAY - timedelta(
-        days=NBA_DAYS_BACK
-    )
-
-    end = TODAY + timedelta(
-        days=NBA_DAYS_FORWARD
-    )
+    start = TODAY - timedelta(days=NBA_DAYS_BACK)
+    end = TODAY + timedelta(days=NBA_DAYS_FORWARD)
 
     current = start
 
@@ -266,63 +401,34 @@ def nba_date_range():
 
 
 def espn_completed(event):
-    status = event.get(
-        "status",
-        {}
-    )
+    status = event.get("status", {})
+    status_type = status.get("type", {})
 
-    status_type = status.get(
-        "type",
-        {}
-    )
-
-    if status_type.get(
-        "completed"
-    ) is True:
+    if status_type.get("completed") is True:
         return True
 
-    name = clean_text(
-        status_type.get("name")
-    ).lower()
+    name = clean_text(status_type.get("name")).lower()
+    state = clean_text(status_type.get("state")).lower()
 
-    state = clean_text(
-        status_type.get("state")
-    ).lower()
+    completed_values = {
+        "final",
+        "post",
+        "finished",
+        "complete",
+        "completed",
+    }
 
-    return (
-        name in {
-            "final",
-            "post",
-            "finished",
-            "complete",
-            "completed",
-        }
-        or
-        state in {
-            "final",
-            "post",
-            "finished",
-            "complete",
-            "completed",
-        }
-    )
+    return name in completed_values or state in completed_values
 
 
 def parse_espn_event(event):
-    competitions = event.get(
-        "competitions",
-        []
-    )
+    competitions = event.get("competitions", [])
 
     if not competitions:
         return None
 
     competition = competitions[0]
-
-    competitors = competition.get(
-        "competitors",
-        []
-    )
+    competitors = competition.get("competitors", [])
 
     if len(competitors) < 2:
         return None
@@ -333,64 +439,39 @@ def parse_espn_event(event):
     for item in competitors:
         if item.get("homeAway") == "home":
             home = item
-
         elif item.get("homeAway") == "away":
             away = item
 
     if not home or not away:
         return None
 
+    home_team_data = home.get("team", {})
+    away_team_data = away.get("team", {})
+
     home_team = (
-        home.get("team", {}).get(
-            "displayName"
-        )
-        or
-        home.get("team", {}).get(
-            "name"
-        )
-        or
-        home.get("team", {}).get(
-            "shortDisplayName"
-        )
+        home_team_data.get("displayName")
+        or home_team_data.get("name")
+        or home_team_data.get("shortDisplayName")
         or ""
     )
 
     away_team = (
-        away.get("team", {}).get(
-            "displayName"
-        )
-        or
-        away.get("team", {}).get(
-            "name"
-        )
-        or
-        away.get("team", {}).get(
-            "shortDisplayName"
-        )
+        away_team_data.get("displayName")
+        or away_team_data.get("name")
+        or away_team_data.get("shortDisplayName")
         or ""
     )
 
-    utc_date = (
-        event.get("date")
-        or
-        competition.get("date")
-        or ""
-    )
+    utc_date = event.get("date") or competition.get("date") or ""
 
-    home_score = safe_int(
-        home.get("score")
-    )
-
-    away_score = safe_int(
-        away.get("score")
-    )
+    home_score = safe_int(home.get("score"))
+    away_score = safe_int(away.get("score"))
 
     status = (
         event.get("status", {})
         .get("type", {})
         .get("description")
-        or
-        event.get("status", {})
+        or event.get("status", {})
         .get("type", {})
         .get("name")
         or ""
@@ -398,48 +479,25 @@ def parse_espn_event(event):
 
     played = espn_completed(event)
 
-    home_linescores = (
-        home.get("linescores")
-        or []
-    )
-
-    away_linescores = (
-        away.get("linescores")
-        or []
-    )
+    home_linescores = home.get("linescores") or []
+    away_linescores = away.get("linescores") or []
 
     home_periods = []
+    away_periods = []
 
     for item in home_linescores[:4]:
         if isinstance(item, dict):
-            home_periods.append(
-                safe_int(
-                    item.get("value")
-                )
-            )
+            home_periods.append(safe_int(item.get("value")))
         else:
-            home_periods.append(
-                safe_int(item)
-            )
-
-    away_periods = []
+            home_periods.append(safe_int(item))
 
     for item in away_linescores[:4]:
         if isinstance(item, dict):
-            away_periods.append(
-                safe_int(
-                    item.get("value")
-                )
-            )
+            away_periods.append(safe_int(item.get("value")))
         else:
-            away_periods.append(
-                safe_int(item)
-            )
+            away_periods.append(safe_int(item))
 
-    periods = build_periods(
-        home_periods,
-        away_periods
-    )
+    periods = build_periods(home_periods, away_periods)
 
     return build_match(
         league="NBA",
@@ -465,10 +523,7 @@ def fetch_nba():
     matches = []
 
     for current_date in nba_date_range():
-
-        date_string = current_date.strftime(
-            "%Y%m%d"
-        )
+        date_string = current_date.strftime("%Y%m%d")
 
         url = (
             "https://site.api.espn.com/apis/site/v2/"
@@ -481,40 +536,21 @@ def fetch_nba():
         if not data:
             continue
 
-        for event in data.get(
-            "events",
-            []
-        ):
+        for event in data.get("events", []):
             try:
-                match = parse_espn_event(
-                    event
-                )
+                match = parse_espn_event(event)
 
                 if match:
                     matches.append(match)
 
             except Exception as e:
-                print(
-                    f"⚠️ NBA maç okunamadı: {e}"
-                )
+                print(f"⚠️ NBA maç okunamadı: {e}")
 
-    matches = deduplicate(
-        matches
-    )
+    matches = deduplicate(matches)
 
-    print(
-        f"📦 Toplam: {len(matches)}"
-    )
-
-    print(
-        f"🏁 Tamamlanan: "
-        f"{sum(m['played'] for m in matches)}"
-    )
-
-    print(
-        f"⏱️ Periyotlu: "
-        f"{sum(m['hasPeriodData'] for m in matches)}"
-    )
+    print(f"📦 Toplam: {len(matches)}")
+    print(f"🏁 Tamamlanan: {sum(m['played'] for m in matches)}")
+    print(f"⏱️ Periyotlu: {sum(m['hasPeriodData'] for m in matches)}")
 
     return matches
 
@@ -532,12 +568,9 @@ def club_name(value):
 
     return (
         value.get("name")
-        or
-        value.get("shortName")
-        or
-        value.get("displayName")
-        or
-        value.get("code")
+        or value.get("shortName")
+        or value.get("displayName")
+        or value.get("code")
         or ""
     )
 
@@ -546,49 +579,22 @@ def parse_partials(value):
     if not isinstance(value, dict):
         return []
 
-    result = []
-
-    for i in range(1, 5):
-        result.append(
-            safe_int(
-                value.get(
-                    f"partials{i}"
-                )
-            )
-        )
-
-    return result
+    return [
+        safe_int(value.get(f"partials{i}"))
+        for i in range(1, 5)
+    ]
 
 
-def parse_euro_game(
-    game,
-    league="EuroLeague",
-    season="E2026",
-):
-    local = (
-        game.get("local")
-        or {}
-    )
-
-    road = (
-        game.get("road")
-        or {}
-    )
+def parse_euro_game(game, league="EuroLeague", season="E2026"):
+    local = game.get("local") or {}
+    road = game.get("road") or {}
 
     home_team = club_name(
-        local.get("club")
-        or
-        local.get("team")
-        or
-        local
+        local.get("club") or local.get("team") or local
     )
 
     away_team = club_name(
-        road.get("club")
-        or
-        road.get("team")
-        or
-        road
+        road.get("club") or road.get("team") or road
     )
 
     if not home_team or not away_team:
@@ -596,76 +602,45 @@ def parse_euro_game(
 
     utc_date = (
         game.get("date")
-        or
-        game.get("utcDate")
-        or
-        game.get("startDate")
-        or
-        game.get("dateTime")
-        or
-        game.get("scheduledDate")
+        or game.get("utcDate")
+        or game.get("startDate")
+        or game.get("dateTime")
+        or game.get("scheduledDate")
         or ""
     )
 
     if not utc_date:
         return None
 
-    home_score = safe_int(
-        local.get("score")
-    )
+    home_score = safe_int(local.get("score"))
+    away_score = safe_int(road.get("score"))
 
-    away_score = safe_int(
-        road.get("score")
-    )
+    home_partials = parse_partials(local.get("partials"))
+    away_partials = parse_partials(road.get("partials"))
 
-    home_partials = parse_partials(
-        local.get("partials")
-    )
-
-    away_partials = parse_partials(
-        road.get("partials")
-    )
-
-    periods = build_periods(
-        home_partials,
-        away_partials
-    )
+    periods = build_periods(home_partials, away_partials)
 
     status = (
         game.get("status")
-        or
-        game.get("gameStatus")
-        or
-        game.get("state")
+        or game.get("gameStatus")
+        or game.get("state")
         or ""
     )
 
     if isinstance(status, dict):
         status = (
             status.get("name")
-            or
-            status.get("description")
-            or
-            status.get("status")
+            or status.get("description")
+            or status.get("status")
             or ""
         )
 
-    status_lower = clean_text(
-        status
-    ).lower()
+    status_lower = clean_text(status).lower()
 
     played = None
 
-    for key in (
-        "completed",
-        "played",
-        "isFinished",
-        "finished",
-    ):
-        if isinstance(
-            game.get(key),
-            bool
-        ):
+    for key in ("completed", "played", "isFinished", "finished"):
+        if isinstance(game.get(key), bool):
             played = game.get(key)
             break
 
@@ -679,49 +654,34 @@ def parse_euro_game(
         played = True
 
     if played is None:
-
         if (
             has_four_periods(periods)
-            and
-            home_score is not None
-            and
-            away_score is not None
+            and home_score is not None
+            and away_score is not None
         ):
-
             home_total = sum(
-                periods[
-                    f"q{i}"
-                ]["home"]
+                periods[f"q{i}"]["home"]
                 for i in range(1, 5)
             )
 
             away_total = sum(
-                periods[
-                    f"q{i}"
-                ]["away"]
+                periods[f"q{i}"]["away"]
                 for i in range(1, 5)
             )
 
-            if (
-                home_total == home_score
-                and
-                away_total == away_score
-            ):
+            if home_total == home_score and away_total == away_score:
                 played = True
 
     if played is None:
         played = (
             home_score is not None
-            and
-            away_score is not None
+            and away_score is not None
         )
 
     match_id = (
         game.get("id")
-        or
-        game.get("gameId")
-        or
-        game.get("code")
+        or game.get("gameId")
+        or game.get("code")
     )
 
     return build_match(
@@ -755,54 +715,27 @@ def fetch_euroleague():
     if not data:
         return []
 
-    raw_games = (
-        data.get("data")
-        or
-        data.get("games")
-        or
-        []
-    )
+    raw_games = data.get("data") or data.get("games") or []
 
-    print(
-        f"📡 API maçları: "
-        f"{len(raw_games)}"
-    )
+    print(f"📡 API maçları: {len(raw_games)}")
 
     matches = []
 
     for game in raw_games:
-
         try:
-            match = parse_euro_game(
-                game
-            )
+            match = parse_euro_game(game)
 
             if match:
                 matches.append(match)
 
         except Exception as e:
-            print(
-                f"⚠️ EuroLeague maç okunamadı: {e}"
-            )
+            print(f"⚠️ EuroLeague maç okunamadı: {e}")
 
-    matches = deduplicate(
-        matches
-    )
+    matches = deduplicate(matches)
 
-    print(
-        f"✅ Kullanılabilir: "
-        f"{len(matches)}"
-    )
-
-    print(
-        f"🏁 Tamamlanan: "
-        f"{sum(m['played'] for m in matches)}"
-    )
-
-    print(
-        f"⏱️ Periyotlu: "
-        f"{sum(m['hasPeriodData'] for m in matches)}"
-    )
+    print(f"✅ Kullanılabilir: {len(matches)}")
+    print(f"🏁 Tamamlanan: {sum(m['played'] for m in matches)}")
+    print(f"⏱️ Periyotlu: {sum(m['hasPeriodData'] for m in matches)}")
 
     return matches
 
@@ -827,23 +760,13 @@ def fetch_eurocup():
     if not data:
         return []
 
-    raw_games = (
-        data.get("data")
-        or
-        data.get("games")
-        or
-        []
-    )
+    raw_games = data.get("data") or data.get("games") or []
 
-    print(
-        f"📡 API maçları: "
-        f"{len(raw_games)}"
-    )
+    print(f"📡 API maçları: {len(raw_games)}")
 
     matches = []
 
     for game in raw_games:
-
         try:
             match = parse_euro_game(
                 game,
@@ -855,28 +778,13 @@ def fetch_eurocup():
                 matches.append(match)
 
         except Exception as e:
-            print(
-                f"⚠️ EuroCup maç okunamadı: {e}"
-            )
+            print(f"⚠️ EuroCup maç okunamadı: {e}")
 
-    matches = deduplicate(
-        matches
-    )
+    matches = deduplicate(matches)
 
-    print(
-        f"✅ Kullanılabilir: "
-        f"{len(matches)}"
-    )
-
-    print(
-        f"🏁 Tamamlanan: "
-        f"{sum(m['played'] for m in matches)}"
-    )
-
-    print(
-        f"⏱️ Periyotlu: "
-        f"{sum(m['hasPeriodData'] for m in matches)}"
-    )
+    print(f"✅ Kullanılabilir: {len(matches)}")
+    print(f"🏁 Tamamlanan: {sum(m['played'] for m in matches)}")
+    print(f"⏱️ Periyotlu: {sum(m['hasPeriodData'] for m in matches)}")
 
     return matches
 
@@ -889,18 +797,10 @@ def deduplicate(matches):
     unique = {}
 
     for match in matches:
+        key = match_key(match)
 
-        key = (
-            match.get("league"),
-            match.get("season"),
-            normalize_team(
-                match.get("homeTeam")
-            ),
-            normalize_team(
-                match.get("awayTeam")
-            ),
-            match.get("date"),
-        )
+        if not all(key):
+            continue
 
         old = unique.get(key)
 
@@ -910,30 +810,26 @@ def deduplicate(matches):
 
         old_score = (
             old.get("homeScore") is not None
-            and
-            old.get("awayScore") is not None
+            and old.get("awayScore") is not None
         )
 
         new_score = (
             match.get("homeScore") is not None
-            and
-            match.get("awayScore") is not None
+            and match.get("awayScore") is not None
         )
 
         if new_score and not old_score:
             unique[key] = match
             continue
 
-        if (
-            match.get("hasPeriodData")
-            and
-            not old.get("hasPeriodData")
-        ):
+        if match.get("played") and not old.get("played"):
+            unique[key] = match
+            continue
+
+        if match.get("hasPeriodData") and not old.get("hasPeriodData"):
             unique[key] = match
 
-    return list(
-        unique.values()
-    )
+    return list(unique.values())
 
 
 # ============================================================
@@ -958,39 +854,13 @@ def sort_matches(matches):
 # ============================================================
 
 def collect_all():
-
     all_matches = []
 
-    # NBA
-    nba = fetch_nba()
+    all_matches.extend(fetch_nba())
+    all_matches.extend(fetch_euroleague())
+    all_matches.extend(fetch_eurocup())
 
-    all_matches.extend(
-        nba
-    )
-
-    # EUROLEAGUE
-    euroleague = fetch_euroleague()
-
-    all_matches.extend(
-        euroleague
-    )
-
-    # SADECE EKLENEN EUROCUP
-    eurocup = fetch_eurocup()
-
-    all_matches.extend(
-        eurocup
-    )
-
-    all_matches = deduplicate(
-        all_matches
-    )
-
-    all_matches = sort_matches(
-        all_matches
-    )
-
-    return all_matches
+    return sort_matches(deduplicate(all_matches))
 
 
 # ============================================================
@@ -998,27 +868,17 @@ def collect_all():
 # ============================================================
 
 def save_json(matches):
-
     payload = {
-        "updatedAt": datetime.now(
-            timezone.utc
-        ).isoformat(),
-
-        "totalMatches": len(
-            matches
-        ),
-
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "totalMatches": len(matches),
         "matches": matches,
     }
 
-    # Kompakt JSON.
-    # History yok, eski sezon yok.
-    with open(
-        OUTPUT_FILE,
-        "w",
-        encoding="utf-8"
-    ) as file:
+    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
 
+    temp_file = OUTPUT_FILE.with_suffix(".tmp")
+
+    with temp_file.open("w", encoding="utf-8") as file:
         json.dump(
             payload,
             file,
@@ -1026,34 +886,19 @@ def save_json(matches):
             separators=(",", ":"),
         )
 
-    size_mb = (
-        os.path.getsize(
-            OUTPUT_FILE
-        )
-        / 1024
-        / 1024
-    )
+    temp_file.replace(OUTPUT_FILE)
+
+    size_mb = OUTPUT_FILE.stat().st_size / 1024 / 1024
 
     print()
     print("=" * 60)
     print("💾 BASKETBALL.JSON")
     print("=" * 60)
-
-    print(
-        f"📦 Toplam maç: "
-        f"{len(matches)}"
-    )
-
-    print(
-        f"📁 Dosya boyutu: "
-        f"{size_mb:.2f} MB"
-    )
+    print(f"📦 Toplam maç: {len(matches)}")
+    print(f"📁 Dosya boyutu: {size_mb:.2f} MB")
 
     if size_mb >= 95:
-        print(
-            "⚠️ UYARI: "
-            "GitHub 100 MB sınırına yaklaşıldı."
-        )
+        print("⚠️ UYARI: GitHub 100 MB sınırına yaklaşıldı.")
 
 
 # ============================================================
@@ -1061,15 +906,10 @@ def save_json(matches):
 # ============================================================
 
 def print_summary(matches):
-
     leagues = {}
 
     for match in matches:
-
-        league = match.get(
-            "league",
-            "Bilinmiyor"
-        )
+        league = match.get("league", "Bilinmiyor")
 
         if league not in leagues:
             leagues[league] = {
@@ -1091,10 +931,7 @@ def print_summary(matches):
     print("🏀 SONUÇ")
     print("=" * 60)
 
-    for league in sorted(
-        leagues
-    ):
-
+    for league in sorted(leagues):
         item = leagues[league]
 
         print(
@@ -1105,31 +942,12 @@ def print_summary(matches):
         )
 
     print()
-    print(
-        f"🏀 TOPLAM: "
-        f"{len(matches)} maç"
-    )
-
-    print()
-    print(
-        "📌 Ligler: NBA + EuroLeague + EuroCup"
-    )
-
-    print(
-        "📌 EuroLeague: sadece E2026"
-    )
-
-    print(
-        "📌 EuroCup: sadece U2026"
-    )
-
-    print(
-        "📌 E2025 ve E2024 kullanılmıyor."
-    )
-
-    print(
-        "📌 History alanları JSON'a yazılmıyor."
-    )
+    print(f"🏀 TOPLAM: {len(matches)} maç")
+    print("📌 Ligler: NBA + EuroLeague + EuroCup")
+    print("📌 EuroLeague: sadece E2026")
+    print("📌 EuroCup: sadece U2026")
+    print("📌 E2025 ve E2024 kullanılmıyor.")
+    print("📌 Eski maç kayıtları korunuyor.")
 
 
 # ============================================================
@@ -1137,34 +955,36 @@ def print_summary(matches):
 # ============================================================
 
 def main():
-
     print("=" * 60)
     print("🏀 NBA + EUROLEAGUE + EUROCUP")
     print("=" * 60)
+    print(f"📅 Tarih: {TODAY}")
+    print(f"📁 Veri klasörü: {BASE_DIR}")
 
-    print(
-        f"📅 Tarih: {TODAY}"
+    old_matches = load_existing_matches()
+    new_matches = collect_all()
+
+    if not new_matches:
+        if old_matches:
+            raise RuntimeError(
+                "Hiç yeni API verisi alınamadı. "
+                "Eski basketball.json korunuyor; üzerine yazılmadı."
+            )
+
+        raise RuntimeError("Hiç basketbol verisi alınamadı.")
+
+    all_matches = merge_matches(
+        old_matches,
+        new_matches,
     )
 
-    matches = collect_all()
+    all_matches = sort_matches(all_matches)
 
-    if not matches:
-        raise RuntimeError(
-            "Hiç basketbol verisi alınamadı."
-        )
-
-    save_json(
-        matches
-    )
-
-    print_summary(
-        matches
-    )
+    save_json(all_matches)
+    print_summary(all_matches)
 
     print()
-    print(
-        "✅ Güncelleme tamamlandı."
-    )
+    print("✅ Güncelleme tamamlandı.")
 
 
 if __name__ == "__main__":
