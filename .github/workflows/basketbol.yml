@@ -30,7 +30,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          cache: pip
 
       - name: Install Dependencies
         run: |
@@ -61,16 +60,16 @@ jobs:
           import json
           from pathlib import Path
 
+          base = Path("basketbol")
+
           files = [
-              "basketball.json",
+              "data/basketball.json",
               "predictions.json",
               "ml-predictions.json",
               "ml-results.json",
               "results.json",
               "analysis.json"
           ]
-
-          base = Path("basketbol")
 
           for filename in files:
               path = base / filename
