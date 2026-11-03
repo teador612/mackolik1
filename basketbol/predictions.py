@@ -1,6 +1,5 @@
 # ============================================================
-# BASKETBOL TAHMİN SİSTEMİ
-# NBA + EUROLEAGUE
+# NBA BASKETBOL TAHMİN SİSTEMİ
 #
 # SABİT / YAPAY BAREM KULLANILMAZ.
 # Doğal referans çizgisi, takımların geçmiş toplam
@@ -19,8 +18,9 @@ from datetime import datetime, timezone
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent
+DATA_DIR = BASE_DIR / "data"
 
-INPUT_FILE = BASE_DIR / "basketball.json"
+INPUT_FILE = DATA_DIR / "basketball.json"
 OUTPUT_FILE = BASE_DIR / "predictions.json"
 
 
@@ -39,6 +39,8 @@ MIN_CONFIDENCE = 50
 MAX_CONFIDENCE = 95
 
 MIN_SIGNAL_DIFFERENCE = 0.5
+
+TARGET_LEAGUE = "nba"
 
 
 # ============================================================
@@ -108,7 +110,6 @@ def parse_datetime(value):
 
     if isinstance(value, datetime):
         dt = value
-
     else:
         text = str(value).strip()
 
@@ -122,7 +123,6 @@ def parse_datetime(value):
             dt = datetime.fromisoformat(text)
 
         except ValueError:
-
             formats = [
                 "%Y-%m-%d",
                 "%Y-%m-%d %H:%M:%S",
@@ -1034,7 +1034,7 @@ def build_prediction_for_match(match, all_matches):
     else:
         status = "scheduled"
 
-    output = {
+    return {
         "id": match.get("id"),
         "league": get_league(match),
         "season": match.get("season"),
@@ -1130,8 +1130,6 @@ def build_prediction_for_match(match, all_matches):
             else 0
         ),
     }
-
-    return output
 
 
 # ============================================================
@@ -1263,6 +1261,11 @@ def calculate_league_summaries(predictions):
 # ============================================================
 
 def save_json(data):
+    OUTPUT_FILE.parent.mkdir(
+        parents=True,
+        exist_ok=True
+    )
+
     with OUTPUT_FILE.open(
         "w",
         encoding="utf-8"
@@ -1284,7 +1287,7 @@ def print_summary(predictions):
 
     print()
     print("=" * 60)
-    print("🏀 BASKETBOL TAHMİN SİSTEMİ")
+    print("🏀 NBA BASKETBOL TAHMİN SİSTEMİ")
     print("=" * 60)
 
     print(f"📊 Toplam maç       : {summary['total']}")
@@ -1330,9 +1333,21 @@ def main():
     if not isinstance(matches, list):
         matches = []
 
-    print(
-        f"📦 Veri içindeki maç sayısı: {len(matches)}"
-    )
+    # Yalnızca NBA maçlarını kullan.
+    matches = [
+        match
+        for match in matches
+        if isinstance(match, dict)
+        and normalize_name(get_league(match)) == TARGET_LEAGUE
+    ]
+
+    print(f"📦 NBA veri içindeki maç sayısı: {len(matches)}")
+
+    if not matches:
+        raise ValueError(
+            "basketball.json içinde NBA maçı bulunamadı. "
+            "Veri kaynağını ve league alanlarını kontrol et."
+        )
 
     predictions = build_predictions(matches)
 
@@ -1347,9 +1362,10 @@ def main():
             timezone.utc
         ).isoformat(),
 
-        "source": "basketball.json",
+        "source": "data/basketball.json",
 
         "settings": {
+            "league": "NBA",
             "maxHistory": MAX_HISTORY,
             "newestWeight": NEWEST_WEIGHT,
             "oldestWeight": OLDEST_WEIGHT,
