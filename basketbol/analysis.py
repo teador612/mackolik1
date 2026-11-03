@@ -13,31 +13,24 @@ OUTPUT_FILE = BASE_DIR / "analysis.json"
 
 def load_predictions():
     if not INPUT_FILE.exists():
-        raise FileNotFoundError(f"❌ {INPUT_FILE} bulunamadı.")
+        raise FileNotFoundError(f"Dosya bulunamadı: {INPUT_FILE}")
 
-    with INPUT_FILE.open("r", encoding="utf-8") as f:
-        data = json.load(f)
+    with INPUT_FILE.open("r", encoding="utf-8") as file:
+        data = json.load(file)
 
     predictions = data.get("predictions", [])
 
     if not isinstance(predictions, list):
-        raise RuntimeError(
-            "❌ predictions.json içindeki predictions alanı liste değil."
-        )
+        raise RuntimeError("predictions alanı liste değil.")
 
     return predictions
 
 
 def safe_float(value):
     try:
+        if value is None:
+            return None
         return float(value)
-    except (TypeError, ValueError):
-        return None
-
-
-def safe_int(value):
-    try:
-        return int(value)
     except (TypeError, ValueError):
         return None
 
@@ -45,8 +38,22 @@ def safe_int(value):
 def percentage(successful, total):
     if total <= 0:
         return 0.0
-
     return round(successful / total * 100, 2)
+
+
+def normalize_prediction(value):
+    if value is None:
+        return None
+
+    value = str(value).strip().upper()
+
+    if value in ("ÜST", "UST", "OVER"):
+        return "ÜST"
+
+    if value in ("ALT", "UNDER"):
+        return "ALT"
+
+    return None
 
 
 def empty_stats():
@@ -58,6 +65,8 @@ def empty_stats():
         "push": 0,
         "successRate": 0.0,
         "averageError": 0.0,
+        "_errorSum": 0.0,
+        "_errorCount": 0
     }
 
 
@@ -66,50 +75,57 @@ def add_result(stats, prediction, actual_total):
     stats["completed"] += 1
 
     line = safe_float(prediction.get("line"))
+    predicted = normalize_prediction(prediction.get("prediction"))
 
-    predicted = str(
-        prediction.get("prediction", "")
-    ).strip().lower()
-
-    if line is None or actual_total is None:
+    if line is None or actual_total is None or predicted is None:
         return
 
     difference = abs(actual_total - line)
 
-    stats.setdefault("_error_sum", 0.0)
-    stats["_error_sum"] += difference
+    stats["_errorSum"] += difference
+    stats["_errorCount"] += 1
 
     if actual_total == line:
         stats["push"] += 1
         return
 
-    actual_result = "Üst" if actual_total > line else "Alt"
+    actual_result = "ÜST" if actual_total > line else "ALT"
 
-    if predicted == actual_result.lower():
+    if predicted == actual_result:
         stats["successful"] += 1
     else:
         stats["failed"] += 1
 
 
 def finalize_stats(stats):
-    completed_without_push = (
-        stats["successful"] + stats["failed"]
-    )
+    evaluated = stats["successful"] + stats["failed"]
 
     stats["successRate"] = percentage(
         stats["successful"],
-        completed_without_push
+        evaluated
     )
 
-    if stats.get("completed", 0) > 0:
+    if stats["_errorCount"]:
         stats["averageError"] = round(
-            stats.get("_error_sum", 0.0) / stats["completed"],
+            stats["_errorSum"] / stats["_errorCount"],
             2
         )
 
-    stats.pop("_error_sum", None)
+    stats.pop("_errorSum", None)
+    stats.pop("_errorCount", None)
 
     return stats
+
+
+def get_bucket(value, ranges):
+    if value is None:
+        return "Bilinmiyor"
+
+    for upper, name in ranges:
+        if value < upper:
+            return name
+
+    return ranges[-1][1]
 
 
 def analyze():
@@ -120,96 +136,142 @@ def analyze():
     leagues = defaultdict(empty_stats)
     prediction_types = defaultdict(empty_stats)
     line_ranges = defaultdict(empty_stats)
+    confidence_ranges = defaultdict(empty_stats)
+    sample_ranges = defaultdict(empty_stats)
 
     completed_rows = []
 
+    line_buckets = [
+        (210, "200-209"),
+        (220, "210-219"),
+        (230, "220-229"),
+        (240, "230-239"),
+        (float("inf"), "240+")
+    ]
+
+    confidence_buckets = [
+        (60, "50-59"),
+        (70, "60-69"),
+        (80, "70-79"),
+        (90, "80-89"),
+        (float("inf"), "90+")
+    ]
+
+    sample_buckets = [
+        (5, "0-4"),
+        (8, "5-7"),
+        (11, "8-10"),
+        (float("inf"), "11+")
+    ]
+
     for prediction in predictions:
-
-        played = prediction.get("played", False)
-
-        if not played:
+        if not isinstance(prediction, dict):
             continue
 
-        home_score = safe_int(prediction.get("homeScore"))
-        away_score = safe_int(prediction.get("awayScore"))
+        if prediction.get("played") is not True:
+            continue
+
+        home_score = safe_float(prediction.get("homeScore"))
+        away_score = safe_float(prediction.get("awayScore"))
 
         if home_score is None or away_score is None:
             continue
 
-        actual_total = home_score + away_score
-
         line = safe_float(prediction.get("line"))
+        predicted = normalize_prediction(prediction.get("prediction"))
 
-        predicted = str(
-            prediction.get("prediction", "")
-        ).strip()
-
-        if line is None:
+        # Ana Alt/Üst tahmini olmayan maçlar analize alınmaz.
+        if line is None or predicted is None:
             continue
 
-        add_result(overall, prediction, actual_total)
+        actual_total = home_score + away_score
 
         league = prediction.get("league") or "Bilinmiyor"
 
+        # Genel istatistik
+        add_result(overall, prediction, actual_total)
+
+        # Lig istatistiği
         add_result(
             leagues[league],
             prediction,
             actual_total
         )
 
-        prediction_key = predicted if predicted else "Bilinmiyor"
-
+        # ALT / ÜST istatistiği
         add_result(
-            prediction_types[prediction_key],
+            prediction_types[predicted],
             prediction,
             actual_total
         )
 
-        if line < 140:
-            range_name = "<140"
-        elif line < 160:
-            range_name = "140-159"
-        elif line < 180:
-            range_name = "160-179"
-        elif line < 200:
-            range_name = "180-199"
-        else:
-            range_name = "200+"
+        # Barem aralığı
+        line_range = get_bucket(line, line_buckets)
 
         add_result(
-            line_ranges[range_name],
+            line_ranges[line_range],
             prediction,
             actual_total
         )
 
-        if actual_total > line:
-            actual_result = "Üst"
-        elif actual_total < line:
-            actual_result = "Alt"
-        else:
-            actual_result = "Push"
+        # Güven oranı
+        confidence = safe_float(prediction.get("confidence"))
 
-        if actual_total == line:
+        if confidence is not None:
+            confidence_range = get_bucket(
+                confidence,
+                confidence_buckets
+            )
+
+            add_result(
+                confidence_ranges[confidence_range],
+                prediction,
+                actual_total
+            )
+
+        # Geçmiş maç örneklemi
+        home_sample = safe_float(prediction.get("homeSample"))
+        away_sample = safe_float(prediction.get("awaySample"))
+
+        if home_sample is not None and away_sample is not None:
+            sample_count = min(home_sample, away_sample)
+
+            sample_range = get_bucket(
+                sample_count,
+                sample_buckets
+            )
+
+            add_result(
+                sample_ranges[sample_range],
+                prediction,
+                actual_total
+            )
+
+        actual_result = (
+            "ÜST" if actual_total > line
+            else "ALT" if actual_total < line
+            else "PUSH"
+        )
+
+        if actual_result == "PUSH":
             status = "Push"
             success = None
         else:
-            status = (
-                "Başarılı"
-                if predicted.lower() == actual_result.lower()
-                else "Başarısız"
-            )
-
-            success = status == "Başarılı"
+            success = predicted == actual_result
+            status = "Başarılı" if success else "Başarısız"
 
         completed_rows.append({
             "id": prediction.get("id"),
             "league": league,
             "season": prediction.get("season"),
             "date": prediction.get("date"),
-            "home": prediction.get("home"),
-            "away": prediction.get("away"),
+            "home": prediction.get("homeTeam") or prediction.get("home"),
+            "away": prediction.get("awayTeam") or prediction.get("away"),
             "prediction": predicted,
             "line": line,
+            "confidence": confidence,
+            "homeSample": home_sample,
+            "awaySample": away_sample,
             "expectedTotal": prediction.get("expectedTotal"),
             "homeScore": home_score,
             "awayScore": away_score,
@@ -218,152 +280,127 @@ def analyze():
             "absoluteError": round(abs(actual_total - line), 2),
             "actualResult": actual_result,
             "status": status,
-            "success": success,
+            "success": success
         })
 
     overall = finalize_stats(overall)
 
-    leagues = {
-        league: finalize_stats(stats)
-        for league, stats in leagues.items()
-    }
+    def finalize_group(group):
+        return {
+            key: finalize_stats(stats)
+            for key, stats in group.items()
+        }
 
-    prediction_types = {
-        market: finalize_stats(stats)
-        for market, stats in prediction_types.items()
-    }
-
-    line_ranges = {
-        line_range: finalize_stats(stats)
-        for line_range, stats in line_ranges.items()
-    }
+    leagues = finalize_group(leagues)
+    prediction_types = finalize_group(prediction_types)
+    line_ranges = finalize_group(line_ranges)
+    confidence_ranges = finalize_group(confidence_ranges)
+    sample_ranges = finalize_group(sample_ranges)
 
     biggest_errors = sorted(
         completed_rows,
-        key=lambda x: x["absoluteError"],
+        key=lambda row: row["absoluteError"],
         reverse=True
     )[:20]
 
     closest_predictions = sorted(
         completed_rows,
-        key=lambda x: x["absoluteError"]
+        key=lambda row: row["absoluteError"]
     )[:20]
-
-    over_stats = prediction_types.get("Üst", empty_stats())
-    under_stats = prediction_types.get("Alt", empty_stats())
 
     result = {
         "updatedAt": datetime.now(timezone.utc).isoformat(),
 
         "settings": {
             "mainMarket": "Maç Toplam Alt/Üst",
-            "analysisPurpose": (
-                "Mevcut ana tahminlerin başarı ve hata analizi"
-            ),
+            "source": "predictions.json",
             "pushExcludedFromSuccessRate": True,
-            "secondaryMarketsExcluded": True,
+            "confidenceAnalysis": True,
+            "sampleAnalysis": True,
+            "lineAnalysis": True
         },
 
         "overall": overall,
         "leagues": leagues,
         "predictionTypes": prediction_types,
         "lineRanges": line_ranges,
-        "over": over_stats,
-        "under": under_stats,
+        "confidenceRanges": confidence_ranges,
+        "sampleRanges": sample_ranges,
+
+        "over": prediction_types.get("ÜST", empty_stats()),
+        "under": prediction_types.get("ALT", empty_stats()),
+
         "biggestErrors": biggest_errors,
         "closestPredictions": closest_predictions,
-        "completedMatches": completed_rows,
+        "completedMatches": completed_rows
     }
 
-    with OUTPUT_FILE.open("w", encoding="utf-8") as f:
+    with OUTPUT_FILE.open("w", encoding="utf-8") as file:
         json.dump(
             result,
-            f,
+            file,
             ensure_ascii=False,
             indent=2
         )
 
     print("=" * 70)
-    print("🏀 BASKETBOL TAHMİN ANALİZİ")
+    print("NBA BASKETBOL TAHMİN ANALİZİ")
     print("=" * 70)
 
-    print("\n📊 GENEL")
+    print("\nGENEL BAŞARI")
     print("-" * 70)
-    print("Tamamlanan       :", overall["completed"])
-    print("Başarılı         :", overall["successful"])
-    print("Başarısız        :", overall["failed"])
-    print("Push             :", overall["push"])
-    print("Başarı oranı     :", f"%{overall['successRate']}")
-    print("Ortalama hata    :", overall["averageError"])
+    print("Tamamlanan:", overall["completed"])
+    print("Başarılı:", overall["successful"])
+    print("Başarısız:", overall["failed"])
+    print("Push:", overall["push"])
+    print("Başarı oranı:", f"%{overall['successRate']}")
+    print("Ortalama hata:", overall["averageError"])
 
-    print("\n🏆 LİGLER")
-    print("-" * 70)
-
-    for league, stats in leagues.items():
-        print(
-            f"{league}: "
-            f"{stats['successful']}/"
-            f"{stats['successful'] + stats['failed']} "
-            f"→ %{stats['successRate']} "
-            f"| Ortalama hata: {stats['averageError']}"
-        )
-
-    print("\n📈 ÜST / ALT")
+    print("\nALT / ÜST")
     print("-" * 70)
 
-    for name in ["Üst", "Alt"]:
+    for name in ("ALT", "ÜST"):
         stats = prediction_types.get(name)
 
-        if not stats:
-            continue
+        if stats:
+            evaluated = stats["successful"] + stats["failed"]
+            print(
+                f"{name}: {stats['successful']}/{evaluated} "
+                f"-> %{stats['successRate']} "
+                f"| Hata: {stats['averageError']}"
+            )
 
-        print(
-            f"{name}: "
-            f"{stats['successful']}/"
-            f"{stats['successful'] + stats['failed']} "
-            f"→ %{stats['successRate']} "
-            f"| Hata: {stats['averageError']}"
-        )
+    def print_group(title, group):
+        print(f"\n{title}")
+        print("-" * 70)
 
-    print("\n🎯 BAREM ARALIKLARI")
-    print("-" * 70)
+        for name, stats in group.items():
+            evaluated = stats["successful"] + stats["failed"]
 
-    range_order = [
-        "<140",
-        "140-159",
-        "160-179",
-        "180-199",
-        "200+",
-    ]
+            print(
+                f"{name}: {stats['successful']}/{evaluated} "
+                f"-> %{stats['successRate']} "
+                f"| Hata: {stats['averageError']}"
+            )
 
-    for range_name in range_order:
-        stats = line_ranges.get(range_name)
+    print_group("BAREM ARALIKLARI", line_ranges)
+    print_group("GÜVEN ORANLARI", confidence_ranges)
+    print_group("GEÇMİŞ MAÇ ÖRNEKLEMİ", sample_ranges)
+    print_group("LİG BAŞARILARI", leagues)
 
-        if not stats:
-            continue
-
-        print(
-            f"{range_name}: "
-            f"{stats['successful']}/"
-            f"{stats['successful'] + stats['failed']} "
-            f"→ %{stats['successRate']} "
-            f"| Ortalama hata: {stats['averageError']}"
-        )
-
-    print("\n🔥 EN BÜYÜK HATALAR")
+    print("\nEN BÜYÜK 10 HATA")
     print("-" * 70)
 
     for row in biggest_errors[:10]:
         print(
-            f"{row['home']} - "
-            f"{row['away']} | "
+            f"{row['home']} - {row['away']} | "
             f"Barem: {row['line']} | "
             f"Tahmin: {row['prediction']} | "
             f"Gerçek: {row['actualTotal']} | "
             f"Fark: {row['difference']}"
         )
 
-    print("\n📁 Oluşturuldu:", OUTPUT_FILE)
+    print("\nAnaliz dosyası oluşturuldu:", OUTPUT_FILE)
     print("=" * 70)
 
 
