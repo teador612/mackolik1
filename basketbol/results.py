@@ -9,20 +9,13 @@ BASE_DIR = Path(__file__).resolve().parent
 PREDICTIONS_FILE = BASE_DIR / "predictions.json"
 OUTPUT_FILE = BASE_DIR / "results.json"
 # ============================================================
-# YARDIMCI
+# YARDIMCI FONKSİYONLAR
 # ============================================================
 def safe_float(value):
     try:
         if value is None:
             return None
         return float(value)
-    except (TypeError, ValueError):
-        return None
-def safe_int(value):
-    try:
-        if value is None:
-            return None
-        return int(value)
     except (TypeError, ValueError):
         return None
 def get_league_name(item):
@@ -43,13 +36,9 @@ def calculate_percentage(successful, total):
         return None
     return round(successful / total * 100, 2)
 # ============================================================
-# ANA TAHMİN SONUCU
+# TAHMİN DEĞERLENDİRME
 # ============================================================
 def evaluate_prediction(item):
-    """
-    SADECE ANA TAHMİN:
-    Maç Toplam Alt/Üst
-    """
     prediction = item.get("prediction")
     line = safe_float(item.get("line"))
     home_score = safe_float(item.get("homeScore"))
@@ -96,7 +85,7 @@ def evaluate_prediction(item):
         "success": success,
     }
 # ============================================================
-# GENEL İSTATİSTİK
+# İSTATİSTİKLER
 # ============================================================
 def calculate_stats(items):
     completed = [
@@ -123,20 +112,19 @@ def calculate_stats(items):
         item for item in items
         if item["evaluation"]["status"] == "invalid"
     ]
-    total = len(completed)
     return {
         "totalPredictions": len(items),
-        "completed": total,
+        "completed": len(completed),
         "successful": len(successful),
         "failed": len(failed),
         "push": len(pushes),
         "notPlayed": len(not_played),
         "invalid": len(invalid),
-        "successRate": calculate_percentage(len(successful), total),
+        "successRate": calculate_percentage(
+            len(successful),
+            len(completed),
+        ),
     }
-# ============================================================
-# LİG İSTATİSTİKLERİ
-# ============================================================
 def calculate_league_stats(items):
     groups = defaultdict(list)
     for item in items:
@@ -146,9 +134,6 @@ def calculate_league_stats(items):
         league: calculate_stats(league_items)
         for league, league_items in groups.items()
     }
-# ============================================================
-# TARİH İSTATİSTİKLERİ
-# ============================================================
 def calculate_daily_stats(items):
     groups = defaultdict(list)
     for item in items:
@@ -158,9 +143,6 @@ def calculate_daily_stats(items):
         date: calculate_stats(date_items)
         for date, date_items in sorted(groups.items())
     }
-# ============================================================
-# TAHMİN DAĞILIMI
-# ============================================================
 def calculate_prediction_distribution(items):
     result = {
         "Alt": {
@@ -196,7 +178,7 @@ def calculate_prediction_distribution(items):
         )
     return result
 # ============================================================
-# SONUÇ KAYITLARI
+# SONUÇ KAYDI
 # ============================================================
 def build_result_item(item):
     prediction = item["prediction"]
@@ -218,7 +200,7 @@ def build_result_item(item):
         "success": evaluation.get("success"),
     }
 # ============================================================
-# DOSYA OKU
+# DOSYA İŞLEMLERİ
 # ============================================================
 def load_predictions():
     if not PREDICTIONS_FILE.exists():
@@ -226,10 +208,13 @@ def load_predictions():
             f"predictions.json bulunamadı: {PREDICTIONS_FILE}"
         )
     with PREDICTIONS_FILE.open("r", encoding="utf-8") as file:
-        return json.load(file)
-# ============================================================
-# KAYDET
-# ============================================================
+        data = json.load(file)
+    if not isinstance(data, dict):
+        raise ValueError("predictions.json beklenen JSON formatında değil.")
+    predictions = data.get("predictions", [])
+    if not isinstance(predictions, list):
+        raise ValueError("predictions alanı liste olmalıdır.")
+    return predictions
 def save_results(output):
     with OUTPUT_FILE.open("w", encoding="utf-8") as file:
         json.dump(
@@ -243,12 +228,10 @@ def save_results(output):
 # ============================================================
 def main():
     print("=" * 70)
-    print("🏀 BASKETBOL ANA TAHMİN SONUÇ ANALİZİ")
+    print("BASKETBOL ANA TAHMİN SONUÇ ANALİZİ")
     print("=" * 70)
-    data = load_predictions()
-    predictions = data.get("predictions", [])
-    print(f"\n📦 Toplam tahmin: {len(predictions)}")
-    print(f"📂 Kaynak dosya: {PREDICTIONS_FILE}")
+    predictions = load_predictions()
+    print(f"\nToplam tahmin: {len(predictions)}")
     results = []
     for prediction in predictions:
         evaluation = evaluate_prediction(prediction)
@@ -288,39 +271,72 @@ def main():
         ],
     }
     save_results(output)
+    # ========================================================
+    # GENEL RAPOR
+    # ========================================================
     print("\n" + "=" * 70)
-    print("📊 GENEL BAŞARI")
+    print("GENEL BAŞARI")
     print("=" * 70)
-    print("Toplam tahmin   :", overall["totalPredictions"])
-    print("Tamamlanan      :", overall["completed"])
-    print("✅ Başarılı      :", overall["successful"])
-    print("❌ Başarısız     :", overall["failed"])
-    print("⏸️ Push          :", overall["push"])
-    print("⏳ Oynanmamış    :", overall["notPlayed"])
+    print("Toplam tahmin :", overall["totalPredictions"])
+    print("Tamamlanan    :", overall["completed"])
+    print("Başarılı      :", overall["successful"])
+    print("Başarısız     :", overall["failed"])
+    print("Push          :", overall["push"])
+    print("Oynanmamış    :", overall["notPlayed"])
+    print("Geçersiz      :", overall["invalid"])
     rate = overall["successRate"]
-    print("📊 Başarı oranı  :", f"%{rate}" if rate is not None else "-")
+    print("Başarı oranı  :", f"%{rate}" if rate is not None else "-")
+    # ========================================================
+    # GEÇERSİZ MAÇLARIN İNCELENMESİ
+    # ========================================================
+    invalid_items = [
+        item for item in results
+        if item["evaluation"]["status"] == "invalid"
+    ]
+    if invalid_items:
+        print("\n" + "=" * 70)
+        print("İLK 10 GEÇERSİZ MAÇ")
+        print("=" * 70)
+        for item in invalid_items[:10]:
+            prediction = item["prediction"]
+            print({
+                "id": prediction.get("id"),
+                "home": prediction.get("home"),
+                "away": prediction.get("away"),
+                "prediction": prediction.get("prediction"),
+                "line": prediction.get("line"),
+                "played": prediction.get("played"),
+                "homeScore": prediction.get("homeScore"),
+                "awayScore": prediction.get("awayScore"),
+            })
+    # ========================================================
+    # LİG İSTATİSTİKLERİ
+    # ========================================================
     print("\n" + "=" * 70)
-    print("🏆 LİG BAŞARILARI")
+    print("LİG BAŞARILARI")
     print("=" * 70)
     for league, stats in league_stats.items():
         rate = stats["successRate"]
         rate_text = f"%{rate}" if rate is not None else "-"
         print(
             f"{league}: {stats['successful']}/"
-            f"{stats['completed']} → {rate_text}"
+            f"{stats['completed']} -> {rate_text}"
         )
+    # ========================================================
+    # ALT / ÜST DAĞILIMI
+    # ========================================================
     print("\n" + "=" * 70)
-    print("📈 ALT / ÜST DAĞILIMI")
+    print("ALT / ÜST DAĞILIMI")
     print("=" * 70)
     for prediction, stats in distribution.items():
         rate = stats["successRate"]
         rate_text = f"%{rate}" if rate is not None else "-"
         print(
             f"{prediction}: {stats['successful']}/"
-            f"{stats['total']} → {rate_text}"
+            f"{stats['total']} -> {rate_text}"
         )
     print("\n" + "=" * 70)
-    print(f"✅ results.json oluşturuldu: {OUTPUT_FILE}")
+    print(f"results.json oluşturuldu: {OUTPUT_FILE}")
     print("=" * 70)
 if __name__ == "__main__":
     main()
