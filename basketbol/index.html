@@ -129,6 +129,8 @@ input[type=date]{color-scheme:dark}
   font-variant-numeric:tabular-nums
 }
 .score.empty{color:#796957}
+.score.correct{color:var(--green)}
+.score.incorrect{color:var(--red)}
 .prediction-box{min-width:108px;text-align:right}
 .prediction-market{color:#b7a28e;font-size:9px;margin-bottom:5px}
 .prediction{
@@ -375,11 +377,13 @@ function escapeHtml(value){
   return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
     .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
+
 function number(value){
   if(value===null||value===undefined||value==="")return null;
   const n=Number(value);
   return Number.isFinite(n)?n:null;
 }
+
 function normalizeDate(value){
   if(!value)return "";
   const text=String(value).trim();
@@ -387,16 +391,20 @@ function normalizeDate(value){
   const match=text.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return match?match[1]+"-"+match[2]+"-"+match[3]:"";
 }
+
 function todayString(){
   const now=new Date();
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 }
+
 function formatDate(date){
   if(!date)return "-";
   const parts=date.split("-");
   return parts.length===3?parts[2]+"."+parts[1]+"."+parts[0]:date;
 }
+
 function getDate(p){return normalizeDate(p.date??p.utcDate)}
+
 function getTime(p){
   if(p.time)return String(p.time);
   if(p.utcDate){
@@ -415,6 +423,7 @@ function getTime(p){
 function hasRealScore(p){
   return number(p.homeScore)!==null&&number(p.awayScore)!==null;
 }
+
 function isFinished(p){
   if(p.isFinished===true||p.played===true)return true;
   const values=[p.status,p.matchStatus,p.gameStatus,p.state]
@@ -425,6 +434,7 @@ function isFinished(p){
   ];
   return values.some(v=>words.includes(v));
 }
+
 function isStarted(p){
   if(p.isUnstarted===true)return false;
   const values=[p.status,p.matchStatus,p.gameStatus,p.state]
@@ -443,6 +453,7 @@ function isStarted(p){
   if(hasRealScore(p))return true;
   return false;
 }
+
 function getStatus(p){
   if(!isFinished(p))return "pending";
   if(p.result==="successful"||p.success===true)return "success";
@@ -450,23 +461,27 @@ function getStatus(p){
   if(p.result==="push"||p.result==="Push")return "push";
   return "pending";
 }
+
 function statusText(status){
   if(status==="success")return "✓ Başarılı";
   if(status==="failed")return "✕ Başarısız";
   if(status==="push")return "＝ Push";
   return "Bekliyor";
 }
+
 function predictionClass(status){
   if(status==="success")return "success";
   if(status==="failed")return "fail";
   return "pending";
 }
+
 function predictionText(p){
   const prediction=String(p.prediction??"").trim();
   const line=number(p.line)??number(p.barem);
   if(!prediction)return "Tahmin yok";
   return line===null?prediction:prediction+" "+line.toFixed(2);
 }
+
 function get1X2(p){
   const prediction=String(p.prediction1X2??"").trim();
   if(!prediction)return null;
@@ -479,12 +494,14 @@ function get1X2(p){
     actual:String(p.actualResult1X2??"").trim()
   };
 }
+
 function get1X2Status(p){
   if(!isFinished(p))return "pending";
   if(p.success1X2===true||p.result1X2==="successful")return "success";
   if(p.success1X2===false||p.result1X2==="failed")return "failed";
   return "pending";
 }
+
 function oneXTwoBadge(p){
   const data=get1X2(p);
   if(!data)return "";
@@ -494,10 +511,12 @@ function oneXTwoBadge(p){
   if(status==="failed")label="✕ "+label;
   return `<div class="prediction-1x2">Maç Sonu: <strong>${escapeHtml(label)}</strong></div>`;
 }
+
 function getPeriodData(p,key){
   const data=p[key];
   return data&&typeof data==="object"?data:null;
 }
+
 function periodCard(title,p,key){
   const data=getPeriodData(p,key);
   if(!data)return "";
@@ -508,6 +527,7 @@ function periodCard(title,p,key){
     <div class="period-prediction">${escapeHtml(data.prediction??data.result??"-")}</div>
   </div>`;
 }
+
 function buildPeriodSection(p){
   const cards=[];
   const mainLine=number(p.line)??number(p.barem);
@@ -535,6 +555,7 @@ function buildPeriodSection(p){
     ?`<div class="period-title">Periyot tahminleri</div><div class="period-grid">${cards.join("")}</div>`
     :"";
 }
+
 function buildClassicDetails(p){
   const expected=number(p.expectedTotal);
   const homeExpected=number(p.expectedHome);
@@ -587,6 +608,7 @@ function buildClassicDetails(p){
     ${buildPeriodSection(p)}
   </div>`;
 }
+
 function updateClassicSummary(){
   let completed=0,successful=0,failed=0;
   let completed1X2=0,successful1X2=0,failed1X2=0;
@@ -630,6 +652,7 @@ function mlWinnerShort(winner){
   if(winner==="DRAW"||winner==="TIE")return "Beraberlik";
   return "Belirsiz";
 }
+
 function getMLConsensus(p){
   const models=getMLModels(p);
   const votes=MODEL_NAMES.map(name=>models[name]?.winner).filter(Boolean);
@@ -640,31 +663,51 @@ function getMLConsensus(p){
   return {count:counts[winner],total:votes.length,winner};
 }
 
-function readActualScore(record){
+/*
+ * GERÇEK SKOR OKUMA
+ * Tahmin nesnesindeki homeScore / awayScore alanları kullanılmaz.
+ * Gerçek skor, actual alanlarından veya ml-results.json dosyasından alınır.
+ */
+function readActualScore(record,allowResultScore=false){
   if(!record)return null;
+
   const home=number(
-    record.actualHomeScore??record.homeScore??
-    record.actual?.homeScore??record.result?.homeScore??record.score?.home
+    record.actualHomeScore ??
+    record.actual?.homeScore ??
+    record.result?.homeScore ??
+    (allowResultScore?record.homeScore:null) ??
+    (allowResultScore?record.score?.home:null)
   );
+
   const away=number(
-    record.actualAwayScore??record.awayScore??
-    record.actual?.awayScore??record.result?.awayScore??record.score?.away
+    record.actualAwayScore ??
+    record.actual?.awayScore ??
+    record.result?.awayScore ??
+    (allowResultScore?record.awayScore:null) ??
+    (allowResultScore?record.score?.away:null)
   );
+
   if(home===null||away===null)return null;
   return {home,away};
 }
+
 function getMLActualScore(p){
-  const direct=readActualScore(p);
+  const direct=readActualScore(p,false);
   if(direct)return direct;
+
   const id=String(p.matchId??p.matchKey??"");
-  return readActualScore(actualById.get(id));
+  if(!id)return null;
+
+  return readActualScore(actualById.get(id),true);
 }
+
 function actualWinnerFromScore(score){
   if(!score)return null;
   if(score.home>score.away)return "HOME";
   if(score.away>score.home)return "AWAY";
   return "TIE";
 }
+
 function normalizeMLResult(value){
   const result=String(value??"").toLowerCase();
   if(["success","successful","correct","true","1"].includes(result))return "success";
@@ -672,13 +715,19 @@ function normalizeMLResult(value){
   if(["push","tie","draw"].includes(result))return "push";
   return "pending";
 }
+
 function getMLWinnerResult(model,p){
+  const actual=getMLActualScore(p);
+
+  if(!actual||!model?.winner)return "pending";
+
   const saved=normalizeMLResult(model?.winnerResult);
   if(saved!=="pending")return saved;
-  const actual=actualWinnerFromScore(getMLActualScore(p));
-  if(!actual||!model?.winner)return "pending";
-  return model.winner===actual?"success":"failed";
+
+  const actualWinner=actualWinnerFromScore(actual);
+  return model.winner===actualWinner?"success":"failed";
 }
+
 function getMLTotalResult(model,p){
   const saved=normalizeMLResult(model?.totalResult);
   if(saved!=="pending")return saved;
@@ -695,24 +744,28 @@ function getMLTotalResult(model,p){
   if(direction==="UNDER")return actualTotal<line?"success":"failed";
   return "pending";
 }
+
 function resultClass(result){
   if(result==="success")return "correct";
   if(result==="failed")return "incorrect";
   if(result==="push")return "push";
   return "";
 }
+
 function resultLabel(result){
   if(result==="success")return "✓ DOĞRU";
   if(result==="failed")return "✕ YANLIŞ";
   if(result==="push")return "＝ PUSH";
   return "SONUÇ BEKLİYOR";
 }
+
 function directionText(direction){
   const value=String(direction??"").toUpperCase();
   if(value==="OVER")return "ÜST";
   if(value==="UNDER")return "ALT";
   return "-";
 }
+
 function modelCard(name,m,p,isEnsemble=false){
   if(!m)return "";
 
@@ -745,6 +798,7 @@ function modelCard(name,m,p,isEnsemble=false){
     </div>
   </div>`;
 }
+
 function buildMLDetails(p){
   const models=getMLModels(p);
   const ensemble=getMLEnsemble(p);
@@ -815,28 +869,59 @@ function buildMLDetails(p){
     </div>
   </div>`;
 }
+
+/* ML MAÇ KARTI */
+
 function createMLCard(p){
   const ensemble=getMLEnsemble(p);
   const consensus=getMLConsensus(p);
-  const home=number(ensemble.homeScore);
-  const away=number(ensemble.awayScore);
-  const total=number(ensemble.totalScore);
-  const isHistorical=p.predictionType==="historical_backtest";
+
   const actual=getMLActualScore(p);
-  const winnerResult=getMLWinnerResult(ensemble,p);
+  const hasActual=actual!==null;
+
+  const predictedHome=number(ensemble.homeScore);
+  const predictedAway=number(ensemble.awayScore);
+  const predictedTotal=number(ensemble.totalScore);
+
+  const winnerResult=hasActual
+    ?getMLWinnerResult(ensemble,p)
+    :"pending";
+
   const line=number(ensemble.totalLine)??number(p.totalLine);
   const direction=directionText(ensemble.totalDirection);
 
-  let statusLabel="Gelecek maç";
+  let statusLabel="OYNANMADI";
   let statusClass="pending";
-  if(isHistorical){
-    statusLabel=winnerResult==="success"?"✓ MS DOĞRU":
-      winnerResult==="failed"?"✕ MS YANLIŞ":"Geçmiş maç";
-    statusClass=predictionClass(winnerResult);
+
+  if(hasActual){
+    if(winnerResult==="success"){
+      statusLabel="✓ TAHMİN BAŞARILI";
+      statusClass="success";
+    }else if(winnerResult==="failed"){
+      statusLabel="✕ TAHMİN BAŞARISIZ";
+      statusClass="fail";
+    }else if(winnerResult==="push"){
+      statusLabel="＝ PUSH";
+      statusClass="pending";
+    }else{
+      statusLabel="SONUÇ BEKLİYOR";
+      statusClass="pending";
+    }
+  }else if(p.predictionType==="historical_backtest"){
+    statusLabel="GERÇEK SKOR YOK";
   }
 
+  const scoreClass=winnerResult==="success"
+    ?"correct"
+    :winnerResult==="failed"
+      ?"incorrect"
+      :"";
+
+  const homeScore=hasActual?actual.home:0;
+  const awayScore=hasActual?actual.away:0;
+
   const card=document.createElement("div");
-  card.className="match-card"+(isHistorical?"":" pending-card");
+  card.className="match-card"+(hasActual?"":" pending-card");
 
   card.innerHTML=`
     <div class="match-head" role="button" tabindex="0" aria-expanded="false">
@@ -844,41 +929,67 @@ function createMLCard(p){
         <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
         <span>${escapeHtml(p.league??"NBA")}</span>
       </div>
+
       <div class="teams">
         <div class="team-row">
           <span class="team-name">${escapeHtml(p.homeTeam??"-")}</span>
-          <span class="score">${isHistorical&&actual?actual.home:home!==null?home.toFixed(1):"-"}</span>
+          <span class="score ${scoreClass}">${homeScore}</span>
         </div>
         <div class="team-row">
           <span class="team-name">${escapeHtml(p.awayTeam??"-")}</span>
-          <span class="score">${isHistorical&&actual?actual.away:away!==null?away.toFixed(1):"-"}</span>
+          <span class="score ${scoreClass}">${awayScore}</span>
         </div>
       </div>
+
       <div class="prediction-box">
         <div class="prediction-market">
-          ${isHistorical?"GEÇMİŞ SONUÇ":"ENSEMBLE"} · ${consensus.count}/${consensus.total}
+          ${hasActual?"GERÇEK SKOR":"GERÇEK SKOR"}
         </div>
+
         <div class="prediction ${statusClass}">
-          ${isHistorical?statusLabel:total!==null?total.toFixed(1)+" sayı":"Tahmin yok"}
+          ${escapeHtml(statusLabel)}
         </div>
+
+        <div class="prediction-1x2">
+          <strong>
+            TAHMİN:
+            ${predictedHome!==null?predictedHome.toFixed(1):"-"}
+            -
+            ${predictedAway!==null?predictedAway.toFixed(1):"-"}
+          </strong>
+        </div>
+
+        <div class="prediction-1x2">
+          <strong>
+            TOPLAM:
+            ${predictedTotal!==null?predictedTotal.toFixed(1):"-"}
+          </strong>
+        </div>
+
         <div class="prediction-1x2">
           <strong>${escapeHtml(mlWinnerShort(ensemble.winner))}</strong>
+          · ${consensus.count}/${consensus.total}
         </div>
+
         ${line!==null?`
           <div class="prediction-1x2">
             <strong>${line.toFixed(1)} ${escapeHtml(direction)}</strong>
           </div>`:""}
+
         <span class="expand-icon">▼</span>
       </div>
     </div>
+
     ${buildMLDetails(p)}
   `;
 
   const head=card.querySelector(".match-head");
+
   function toggle(){
     const open=card.classList.toggle("open");
     head.setAttribute("aria-expanded",open?"true":"false");
   }
+
   head.addEventListener("click",toggle);
   head.addEventListener("keydown",event=>{
     if(event.key==="Enter"||event.key===" "){
@@ -886,6 +997,7 @@ function createMLCard(p){
       toggle();
     }
   });
+
   return card;
 }
 
@@ -931,10 +1043,12 @@ function createClassicCard(p){
   `;
 
   const head=card.querySelector(".match-head");
+
   function toggle(){
     const open=card.classList.toggle("open");
     head.setAttribute("aria-expanded",open?"true":"false");
   }
+
   head.addEventListener("click",toggle);
   head.addEventListener("keydown",event=>{
     if(event.key==="Enter"||event.key===" "){
@@ -942,6 +1056,7 @@ function createClassicCard(p){
       toggle();
     }
   });
+
   return card;
 }
 
@@ -973,10 +1088,10 @@ function filterPredictions(){
       return false;
     }
 
-    if(status==="pending"&&p.predictionType!=="upcoming")return false;
+    if(status==="pending"&&getMLActualScore(p)!==null)return false;
 
     if(status!=="all"&&status!=="pending"){
-      if(p.predictionType!=="historical_backtest")return false;
+      if(getMLActualScore(p)===null)return false;
 
       const selected=model==="all"
         ?getMLEnsemble(p)
@@ -1002,6 +1117,7 @@ function setDefaultDate(){
   const source=engine==="ml"?mlPredictions:predictions;
   const dates=[...new Set(source.map(getDate).filter(Boolean))].sort();
   if(!dates.length){dateFilter.value="";return;}
+
   const today=todayString();
   dateFilter.value=dates.includes(today)?today:dates[dates.length-1];
 }
@@ -1028,9 +1144,11 @@ function render(){
 
   const list=document.createElement("div");
   list.className="matches";
+
   for(const p of filtered){
     list.appendChild(engine==="ml"?createMLCard(p):createClassicCard(p));
   }
+
   content.appendChild(list);
 }
 
@@ -1047,6 +1165,7 @@ function buildMLPerformance(){
   for(const name of order){
     const m=metrics[name];
     if(!m)continue;
+
     rows+=`<tr>
       <td>${escapeHtml(name)}</td>
       <td>${m.matches??0}</td>
@@ -1136,6 +1255,7 @@ async function loadML(){
 
   for(const list of resultLists){
     if(!Array.isArray(list))continue;
+
     for(const item of list){
       const id=item.matchId??item.matchKey;
       if(id!==undefined&&id!==null){
@@ -1175,6 +1295,7 @@ async function switchEngine(next){
     render();
   }catch(error){
     console.error(error);
+
     content.innerHTML=`
       <div class="error">
         Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}
