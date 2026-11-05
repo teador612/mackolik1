@@ -5,6 +5,10 @@
 # SABİT / YAPAY BAREM KULLANILMAZ.
 # Doğal referans çizgisi, takımların geçmiş toplam
 # skorlarının ağırlıklı ortalamasından hesaplanır.
+#
+# TEKRAR KONTROLÜ:
+# Aynı maç tahmin oluşturulmadan önce tekilleştirilir.
+# Geçmiş maç istatistiklerinde de tekil liste kullanılır.
 # ============================================================
 
 import json
@@ -58,7 +62,12 @@ def safe_float(value, default=None):
         if not value:
             return default
 
-        return float(value)
+        result = float(value)
+
+        if not math.isfinite(result):
+            return default
+
+        return result
 
     except (TypeError, ValueError):
         return default
@@ -148,7 +157,7 @@ def parse_datetime(value):
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
 
-    return dt
+    return dt.astimezone(timezone.utc)
 
 
 def get_match_datetime(match):
@@ -287,7 +296,6 @@ def has_valid_final_score(match):
     Geçmiş istatistiklerde kullanılabilecek gerçek skor kontrolü.
 
     NBA'de tamamlanmış 0-0 maç sonucu geçerli kabul edilmez.
-    Bu kayıtlar takım ortalamalarına ve bareme katılmaz.
     """
 
     home = get_score(match, "home")
@@ -434,6 +442,119 @@ def match_is_before(history_match, target_match):
 
 
 # ============================================================
+# TEKRAR EDEN MAÇLARI TEMİZLE
+# ============================================================
+
+def get_match_identity(match):
+    """
+    Maç ID'si farklı olsa bile aynı karşılaşmayı tanır.
+
+    Kimlik:
+    Lig + maç tarihi + ev sahibi + deplasman takımı.
+
+    Saat kullanılmaz; aynı maçın farklı saat formatlarıyla
+    kaydedilmesi tekrar oluşmasına neden olmaz.
+    """
+
+    league = normalize_name(get_league(match))
+
+    home = normalize_name(get_team_name(match, "home"))
+    away = normalize_name(get_team_name(match, "away"))
+
+    match_dt = get_match_datetime(match)
+
+    if not home or not away or match_dt is None:
+        match_id = match.get("id")
+
+        if match_id is not None:
+            return ("id", str(match_id))
+
+        return None
+
+    match_date = match_dt.strftime("%Y-%m-%d")
+
+    return (
+        league,
+        match_date,
+        home,
+        away,
+    )
+
+
+def match_information_score(match):
+    """
+    Tekrar eden kayıtlar arasında en dolu kaydı seçer.
+    Tamamlanmış maç kaydı önceliklidir.
+    """
+
+    finished = is_match_finished(match)
+
+    has_home_score = get_score(match, "home") is not None
+    has_away_score = get_score(match, "away") is not None
+
+    score_count = (
+        int(has_home_score)
+        + int(has_away_score)
+    )
+
+    populated_fields = sum(
+        1
+        for value in match.values()
+        if value is not None and value != ""
+    )
+
+    return (
+        int(finished),
+        score_count,
+        populated_fields,
+    )
+
+
+def deduplicate_matches(matches):
+    """
+    Aynı karşılaşmayı tek kayda indirir.
+
+    Aynı maçın tamamlanmış kaydı varsa o korunur.
+    Kayıtların bilgi miktarı eşitse ilk kayıt korunur.
+    """
+
+    unique = {}
+    without_identity = []
+
+    for match in matches:
+        if not isinstance(match, dict):
+            continue
+
+        identity = get_match_identity(match)
+
+        if identity is None:
+            without_identity.append(match)
+            continue
+
+        previous = unique.get(identity)
+
+        if previous is None:
+            unique[identity] = match
+            continue
+
+        if (
+            match_information_score(match)
+            > match_information_score(previous)
+        ):
+            unique[identity] = match
+
+    result = list(unique.values())
+    result.extend(without_identity)
+
+    removed = len(matches) - len(result)
+
+    print(f"🧹 Tekrarlanan maç sayısı: {removed}")
+    print(f"✅ Tekil maç sayısı: {len(result)}")
+
+    return result
+
+
+# ============================================================
 # GEÇMİŞ KAYDI
 # ============================================================
 
@@ -537,36 +658,12 @@ def calculate_team_stats(history):
 
     return {
         "matches": len(history),
-
-        "weightedMatches": round(
-            weight_sum,
-            3
-        ),
-
-        "scored": round(
-            weighted_scored,
-            2
-        ),
-
-        "conceded": round(
-            weighted_conceded,
-            2
-        ),
-
-        "averageScored": round(
-            weighted_scored / weight_sum,
-            2
-        ),
-
-        "averageConceded": round(
-            weighted_conceded / weight_sum,
-            2
-        ),
-
-        "averageTotal": round(
-            weighted_total / weight_sum,
-            2
-        ),
+        "weightedMatches": round(weight_sum, 3),
+        "scored": round(weighted_scored, 2),
+        "conceded": round(weighted_conceded, 2),
+        "averageScored": round(weighted_scored / weight_sum, 2),
+        "averageConceded": round(weighted_conceded / weight_sum, 2),
+        "averageTotal": round(weighted_total / weight_sum, 2),
     }
 
 
@@ -1173,6 +1270,10 @@ def build_prediction_for_match(match, all_matches):
 # ============================================================
 
 def build_predictions(matches):
+    # Önce tüm kaynak kayıtlarını tekilleştir.
+    # Aynı temiz liste hem tahmin hem geçmiş hesaplarında kullanılır.
+    matches = deduplicate_matches(matches)
+
     predictions = []
 
     for match in matches:
