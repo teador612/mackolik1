@@ -7,8 +7,8 @@
 # skorlarının ağırlıklı ortalamasından hesaplanır.
 #
 # TEKRAR KONTROLÜ:
-# Aynı maç tahmin oluşturulmadan önce tekilleştirilir.
-# Geçmiş maç istatistiklerinde de tekil liste kullanılır.
+# Aynı maçın kayıtları silinmez, birleştirilir.
+# Skor ve tamamlanma bilgileri korunur.
 # ============================================================
 
 import json
@@ -292,12 +292,6 @@ def has_real_final_score(match):
 
 
 def has_valid_final_score(match):
-    """
-    Geçmiş istatistiklerde kullanılabilecek gerçek skor kontrolü.
-
-    NBA'de tamamlanmış 0-0 maç sonucu geçerli kabul edilmez.
-    """
-
     home = get_score(match, "home")
     away = get_score(match, "away")
 
@@ -442,20 +436,10 @@ def match_is_before(history_match, target_match):
 
 
 # ============================================================
-# TEKRAR EDEN MAÇLARI TEMİZLE
+# TEKRAR EDEN MAÇLARI BUL VE BİRLEŞTİR
 # ============================================================
 
 def get_match_identity(match):
-    """
-    Maç ID'si farklı olsa bile aynı karşılaşmayı tanır.
-
-    Kimlik:
-    Lig + maç tarihi + ev sahibi + deplasman takımı.
-
-    Saat kullanılmaz; aynı maçın farklı saat formatlarıyla
-    kaydedilmesi tekrar oluşmasına neden olmaz.
-    """
-
     league = normalize_name(get_league(match))
 
     home = normalize_name(get_team_name(match, "home"))
@@ -482,19 +466,12 @@ def get_match_identity(match):
 
 
 def match_information_score(match):
-    """
-    Tekrar eden kayıtlar arasında en dolu kaydı seçer.
-    Tamamlanmış maç kaydı önceliklidir.
-    """
-
-    finished = is_match_finished(match)
-
-    has_home_score = get_score(match, "home") is not None
-    has_away_score = get_score(match, "away") is not None
+    home_score = get_score(match, "home")
+    away_score = get_score(match, "away")
 
     score_count = (
-        int(has_home_score)
-        + int(has_away_score)
+        int(home_score is not None)
+        + int(away_score is not None)
     )
 
     populated_fields = sum(
@@ -504,24 +481,68 @@ def match_information_score(match):
     )
 
     return (
-        int(finished),
+        int(has_real_final_score(match)),
+        int(is_match_finished(match)),
         score_count,
         populated_fields,
     )
 
 
+def merge_match_records(first, second):
+    """
+    Aynı maçın iki kaydını birleştirir.
+    Dolu alanları korur, skorları önceliklendirir.
+    """
+
+    merged = dict(first)
+
+    for key, value in second.items():
+
+        if value is None or value == "":
+            continue
+
+        old_value = merged.get(key)
+
+        if old_value is None or old_value == "":
+            merged[key] = value
+
+    # Ev sahibi skorunu koru.
+    home_score = get_score(second, "home")
+
+    if home_score is not None:
+        merged["homeScore"] = home_score
+
+    # Deplasman skorunu koru.
+    away_score = get_score(second, "away")
+
+    if away_score is not None:
+        merged["awayScore"] = away_score
+
+    # Tamamlanmış kayıttan gelen durum bilgisini koru.
+    if (
+        has_real_final_score(merged)
+        and (
+            is_match_finished(first)
+            or is_match_finished(second)
+        )
+    ):
+        merged["status"] = "finished"
+        merged["played"] = True
+
+    return merged
+
+
 def deduplicate_matches(matches):
     """
-    Aynı karşılaşmayı tek kayda indirir.
-
-    Aynı maçın tamamlanmış kaydı varsa o korunur.
-    Kayıtların bilgi miktarı eşitse ilk kayıt korunur.
+    Aynı karşılaşmaları tekilleştirir.
+    Kayıtları silmek yerine bilgilerini birleştirir.
     """
 
     unique = {}
     without_identity = []
 
     for match in matches:
+
         if not isinstance(match, dict):
             continue
 
@@ -537,19 +558,29 @@ def deduplicate_matches(matches):
             unique[identity] = match
             continue
 
+        merged = merge_match_records(previous, match)
+
         if (
             match_information_score(match)
             > match_information_score(previous)
         ):
-            unique[identity] = match
+            merged = merge_match_records(match, previous)
+
+        unique[identity] = merged
 
     result = list(unique.values())
     result.extend(without_identity)
 
     removed = len(matches) - len(result)
 
+    finished_count = sum(
+        1 for match in result
+        if is_match_finished(match)
+    )
+
     print(f"🧹 Tekrarlanan maç sayısı: {removed}")
     print(f"✅ Tekil maç sayısı: {len(result)}")
+    print(f"🏁 Skoru bulunan tamamlanmış maç: {finished_count}")
 
     return result
 
@@ -1270,8 +1301,6 @@ def build_prediction_for_match(match, all_matches):
 # ============================================================
 
 def build_predictions(matches):
-    # Önce tüm kaynak kayıtlarını tekilleştir.
-    # Aynı temiz liste hem tahmin hem geçmiş hesaplarında kullanılır.
     matches = deduplicate_matches(matches)
 
     predictions = []
