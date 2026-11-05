@@ -1,1427 +1,1364 @@
 
-import json
-import math
-import statistics
-import re
-from datetime import datetime, timezone
-from pathlib import Path
-
-import numpy as np
-
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
-
-from xgboost import XGBRegressor
-from lightgbm import LGBMRegressor
-from catboost import CatBoostRegressor
-
-
-# ============================================================
-# AYARLAR
-# ============================================================
-
-BASE_DIR = Path(__file__).resolve().parent
-
-INPUT_CANDIDATES = [
-    BASE_DIR / "basketball.json",
-    BASE_DIR / "data" / "basketball.json",
-]
-
-OUTPUT_FILE = BASE_DIR / "ml-predictions.json"
-
-LEAGUE_NAME = "NBA"
-
-MIN_TEAM_HISTORY = 3
-MIN_TRAINING_ROWS = 40
-
-RANDOM_STATE = 42
-
-TOTAL_LINE_HISTORY = 50
-MIN_LINE_HISTORY = 10
-
-MODEL_NAMES = [
-    "RandomForest",
-    "XGBoost",
-    "LightGBM",
-    "CatBoost",
-]
-
-
-# ============================================================
-# DOSYA İŞLEMLERİ
-# ============================================================
-
-def load_json(path):
-    with path.open("r", encoding="utf-8") as file:
-        return json.load(file)
-
-
-def save_json(data):
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-
-    temp_file = OUTPUT_FILE.with_suffix(".tmp")
-
-    with temp_file.open("w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=2)
-
-    temp_file.replace(OUTPUT_FILE)
-
-
-def find_input_file():
-    for path in INPUT_CANDIDATES:
-        if path.is_file():
-            return path
-
-    raise FileNotFoundError("basketball.json bulunamadı.")
-
-
-# ============================================================
-# MAÇ KİMLİĞİ VE TEKİLLEŞTİRME
-# ============================================================
-
-def normalize_match_id(value):
-    if value is None:
-        return ""
-
-    value = str(value).strip().lower()
-
-    # nba-401871334 ve 401871334 aynı kimliktir.
-    value = re.sub(r"^(nba[-_:]?)", "", value)
-
-    return value
-
-
-def normalize_team(value):
-    return " ".join(
-        str(value or "").strip().lower().split()
-    )
-
-
-def match_identity(match):
-    match_id = normalize_match_id(match.get("id"))
-
-    if match_id:
-        return "id:" + match_id
-
-    date = get_match_date(match)
-
-    home = normalize_team(match.get("homeTeam"))
-    away = normalize_team(match.get("awayTeam"))
-
-    if date and home and away:
-        return (
-            "match:"
-            + date.isoformat()
-            + "|"
-            + home
-            + "|"
-            + away
-        )
-
-    return None
-
-
-def match_quality(match):
-    quality = 0
-
-    if is_finished(match):
-        quality += 100
-
-    if get_score(match, "homeScore") is not None:
-        quality += 10
-
-    if get_score(match, "awayScore") is not None:
-        quality += 10
-
-    if match.get("homeTeam"):
-        quality += 5
-
-    if match.get("awayTeam"):
-        quality += 5
-
-    if match.get("utcDate"):
-        quality += 2
-
-    if match.get("date"):
-        quality += 1
-
-    return quality
-
-
-def deduplicate_matches(matches):
-    """
-    Aynı maçın farklı ID biçimleriyle gelen kayıtlarını
-    tek kayda indirger.
-
-    Tamamlanmış ve daha dolu kayıt tercih edilir.
-    """
-
-    unique = {}
-
-    for match in matches:
-        if not isinstance(match, dict):
-            continue
-
-        key = match_identity(match)
-
-        if key is None:
-            unique[
-                "unknown:" + str(len(unique))
-            ] = match
-            continue
-
-        existing = unique.get(key)
-
-        if existing is None:
-            unique[key] = match
-            continue
-
-        if match_quality(match) > match_quality(existing):
-            unique[key] = match
-
-    return list(unique.values())
-
-
-# ============================================================
-# TARİH İŞLEMLERİ
-# ============================================================
-
-def parse_date(value):
-    if not value:
-        return None
-
-    try:
-        value = str(value).strip()
-
-        if value.endswith("Z"):
-            value = value[:-1] + "+00:00"
-
-        result = datetime.fromisoformat(value)
-
-        if result.tzinfo is None:
-            result = result.replace(tzinfo=timezone.utc)
-
-        return result.astimezone(timezone.utc)
-
-    except (ValueError, TypeError, OverflowError):
-        return None
-
-
-def get_match_date(match):
-    return (
-        parse_date(match.get("utcDate"))
-        or parse_date(match.get("date"))
-    )
-
-
-def current_utc():
-    return datetime.now(timezone.utc)
-
-
-# ============================================================
-# MAÇ KONTROLLERİ
-# ============================================================
-
-def is_nba(match):
-    league = str(match.get("league", "NBA")).strip().upper()
-
-    return league == LEAGUE_NAME
-
-
-def get_score(match, key):
-    value = match.get(key)
-
-    try:
-        if value is None or value == "":
-            return None
-
-        score = float(value)
-
-        if not math.isfinite(score) or score < 0:
-            return None
-
-        return score
-
-    except (ValueError, TypeError):
-        return None
-
-
-def played_value(match):
-    value = match.get("played")
-
-    if value is True:
-        return True
-
-    if value is False or value is None:
-        return False
-
-    return str(value).strip().lower() in (
-        "true", "1", "yes", "evet"
-    )
-
-
-def get_status(match):
-    return str(match.get("status", "")).strip().upper()
-
-
-def is_finished(match):
-    if not is_nba(match):
-        return False
-
-    status = get_status(match)
-
-    unfinished_words = (
-        "SCHEDULED",
-        "IN_PROGRESS",
-        "IN PROGRESS",
-        "POSTPONED",
-        "CANCELED",
-        "CANCELLED",
-        "NOT_STARTED",
-        "NOT STARTED",
-        "PRE_GAME",
-        "PREGAME",
-        "LIVE",
-        "HALFTIME",
-    )
-
-    if any(word in status for word in unfinished_words):
-        return False
-
-    if not played_value(match):
-        return False
-
-    home_score = get_score(match, "homeScore")
-    away_score = get_score(match, "awayScore")
-
-    if home_score is None or away_score is None:
-        return False
-
-    if home_score == 0 and away_score == 0:
-        if status not in (
-            "FINAL",
-            "STATUS_FINAL",
-            "COMPLETED",
-            "FINISHED",
-        ):
-            return False
-
-    return True
-
-
-def is_upcoming(match):
-    if not is_nba(match):
-        return False
-
-    if played_value(match):
-        return False
-
-    match_date = get_match_date(match)
-
-    if match_date is None:
-        return False
-
-    if match_date.date() < current_utc().date():
-        return False
-
-    status = get_status(match)
-
-    completed_words = (
-        "FINAL",
-        "COMPLETED",
-        "FINISHED",
-        "POSTPONED",
-        "CANCELED",
-        "CANCELLED",
-        "IN_PROGRESS",
-        "IN PROGRESS",
-        "LIVE",
-        "HALFTIME",
-    )
-
-    if any(word in status for word in completed_words):
-        return False
-
-    scheduled_words = (
-        "SCHEDULED",
-        "NOT_STARTED",
-        "NOT STARTED",
-        "PRE_GAME",
-        "PREGAME",
-        "STATUS_SCHEDULED",
-    )
-
-    if any(word in status for word in scheduled_words):
-        return True
-
-    return (
-        get_score(match, "homeScore") is None
-        and get_score(match, "awayScore") is None
-    )
-
-
-# ============================================================
-# MAKİNENİN ALT / ÜST BAREMİ
-# ============================================================
-
-def get_historical_total_line(matches, target_date):
-    historical_totals = []
-
-    for match in matches:
-        if not is_finished(match):
-            continue
-
-        match_date = get_match_date(match)
-
-        if match_date is None or match_date >= target_date:
-            continue
-
-        home_score = get_score(match, "homeScore")
-        away_score = get_score(match, "awayScore")
-
-        if home_score is None or away_score is None:
-            continue
-
-        historical_totals.append({
-            "date": match_date,
-            "total": home_score + away_score,
-        })
-
-    historical_totals.sort(key=lambda item: item["date"])
-
-    recent = historical_totals[-TOTAL_LINE_HISTORY:]
-
-    if len(recent) < MIN_LINE_HISTORY:
-        return None
-
-    average_total = statistics.mean(
-        item["total"] for item in recent
-    )
-
-    line = round(average_total * 2) / 2
-
-    return {
-        "line": round(line, 1),
-        "historyCount": len(recent),
-        "historyAverage": round(average_total, 2),
-        "method": "previous_nba_matches_average",
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#17130f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Basketbol">
+<link rel="manifest" href="manifest.json">
+<title>NBA Basketbol Tahmin</title>
+
+<style>
+:root{
+  color-scheme:dark;
+  --court:#17130f;
+  --panel:#211a14;
+  --line:#493326;
+  --orange:#f28b35;
+  --orange-light:#ffb565;
+  --text:#f7eee4;
+  --muted:#ad9b89;
+  --green:#59dda0;
+  --red:#ff7b81;
+  --yellow:#ffd166;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;background:var(--court);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  font-size:13px
+}
+body{
+  background-image:
+  radial-gradient(ellipse at 50% -15%,#60381c 0,transparent 48%),
+  linear-gradient(180deg,#21170f 0%,#17130f 42%,#120f0c 100%)
+}
+button,input,select{font:inherit}
+.container{width:100%;max-width:760px;margin:0 auto;padding:12px}
+.header{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:12px;padding:15px;border:1px solid #654126;border-radius:14px;
+  background:linear-gradient(135deg,#3a2618,#211811 72%);
+  position:relative;overflow:hidden
+}
+.header:after{
+  content:"🏀";position:absolute;right:95px;top:-16px;font-size:83px;
+  opacity:.09;transform:rotate(-18deg);pointer-events:none
+}
+.title{position:relative;z-index:1;color:#fff7ed;font-size:20px;font-weight:900}
+.subtitle{position:relative;z-index:1;margin-top:5px;color:#d3a77f;font-size:10px}
+.mackolik-btn{
+  position:relative;z-index:1;padding:9px 11px;border:1px solid #765137;
+  border-radius:8px;background:#2b2018;color:#f6ddc4;text-decoration:none;
+  font-size:10px;font-weight:800;white-space:nowrap
+}
+.section-title{
+  margin:14px 2px 7px;color:var(--orange-light);font-size:11px;
+  font-weight:900;text-transform:uppercase;letter-spacing:.5px
+}
+.engine-switch{
+  display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px;
+  padding:6px;border:1px solid var(--line);border-radius:11px;background:#201811
+}
+.engine-btn{
+  min-height:42px;border:1px solid #59402e;border-radius:8px;
+  background:#17120e;color:#c8a98e;font-weight:900;cursor:pointer
+}
+.engine-btn.active{border-color:var(--orange);background:#503019;color:#ffcf9f}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px}
+.summary-card{
+  padding:12px 5px;text-align:center;border:1px solid var(--line);
+  border-radius:11px;background:linear-gradient(145deg,#2c2118,#201812)
+}
+.summary-value{color:#fff7ec;font-size:19px;font-weight:900}
+.summary-label{margin-top:4px;color:var(--muted);font-size:9px}
+.filters{
+  display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;
+  margin-bottom:13px;padding:12px;border:1px solid var(--line);
+  border-radius:12px;background:#201811
+}
+.filter{min-width:0}
+.filter label{display:block;margin:0 0 6px 2px;color:#c8a98e;font-size:10px;font-weight:800}
+.filter input,.filter select,.ml-filter select{
+  width:100%;min-height:39px;padding:8px;border:1px solid #59402e;
+  border-radius:8px;background:#17120e;color:var(--text);outline:none
+}
+input[type=date]{color-scheme:dark}
+.status-line{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  margin:12px 2px 8px;color:var(--muted);font-size:10px
+}
+.status-count{
+  padding:5px 9px;border:1px solid #63432b;border-radius:20px;
+  background:#2a1e14;color:var(--orange-light);font-weight:800
+}
+.matches{display:flex;flex-direction:column;gap:8px}
+.match-card{
+  overflow:hidden;border:1px solid #493326;border-radius:12px;
+  background:linear-gradient(135deg,#271e17,#1e1813)
+}
+.match-card.pending-card{
+  border-color:#80632c;background:linear-gradient(135deg,#332716,#241c13)
+}
+.match-head{
+  width:100%;min-height:70px;padding:10px;display:grid;
+  grid-template-columns:48px minmax(0,1fr) auto;gap:9px;align-items:center;
+  cursor:pointer;user-select:none
+}
+.match-time{text-align:center;color:var(--muted);font-size:9px;line-height:1.4}
+.match-time strong{display:block;margin-bottom:4px;color:var(--orange-light);font-size:11px}
+.teams{min-width:0}
+.team-row{display:flex;align-items:center;justify-content:space-between;gap:6px;line-height:1.6}
+.team-name{
+  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  color:#f5eade;font-size:12px;font-weight:750
+}
+.score{flex:0 0 auto;color:#fff;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums}
+.score.empty{color:#796957}
+.score.correct{color:var(--green)}
+.score.incorrect{color:var(--red)}
+.prediction-box{min-width:108px;text-align:right}
+.prediction-market{color:#b7a28e;font-size:9px;margin-bottom:5px}
+.prediction{
+  display:inline-flex;align-items:center;justify-content:center;min-width:82px;
+  padding:5px 8px;border-radius:6px;font-size:10px;font-weight:900;white-space:nowrap
+}
+.prediction.success{background:#163b2a;color:var(--green);border:1px solid #285d40}
+.prediction.fail{background:#421f21;color:var(--red);border:1px solid #6b3034}
+.prediction.pending{background:#4b3816;color:var(--yellow);border:1px solid #85672a}
+.prediction-1x2{
+  margin-top:5px;display:inline-flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:5px;background:#33271d;color:#d8c2ac;
+  font-size:9px;font-weight:800
+}
+.prediction-1x2 strong{color:#fff4e6;font-size:10px}
+.expand-icon{display:inline-block;margin-left:3px;color:#b18a65;font-size:11px;transition:transform .15s}
+.match-card.open .expand-icon{transform:rotate(180deg)}
+.details{display:none;padding:0 10px 12px;border-top:1px solid #493326;background:#1a140f}
+.match-card.open .details{display:block}
+.detail-title,.period-title{
+  margin:12px 0 7px;color:var(--orange-light);font-size:10px;
+  font-weight:900;text-transform:uppercase;letter-spacing:.6px
+}
+.detail-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:9px 0}
+.detail-box,.x2-card,.period-card{
+  min-width:0;padding:9px 5px;border:1px solid #493326;
+  border-radius:8px;background:#271e17;text-align:center
+}
+.detail-label,.x2-name,.period-name{color:#b19a83;font-size:9px;margin-bottom:5px}
+.detail-value{color:#fff1e2;font-size:12px;font-weight:900;overflow-wrap:anywhere}
+.x2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:7px}
+.x2-value{color:#fff;font-size:15px;font-weight:900}
+.x2-predicted{border-color:#9a673a;background:#3a2819}
+.x2-predicted .x2-value{color:var(--orange-light)}
+.period-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
+.period-line{color:#fff0e0;font-size:11px;font-weight:900}
+.period-prediction{margin-top:4px;color:#d0ad89;font-size:9px;font-weight:750}
+.empty,.loading{
+  padding:27px 14px;border:1px dashed #62452f;border-radius:12px;
+  background:#201811;text-align:center;color:#b8a28c;font-size:11px;line-height:1.7
+}
+.error{padding:14px;border:1px solid #78383a;border-radius:10px;background:#351b1b;color:#ff9c9f;font-size:11px}
+.ml-banner{
+  margin:0 0 10px;padding:11px;border:1px solid #80532d;border-radius:10px;
+  background:linear-gradient(135deg,#382517,#241910);color:#f6d1a9
+}
+.ml-banner strong{color:var(--orange-light)}
+.ml-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+.ml-stat{padding:8px 4px;border:1px solid #493326;border-radius:8px;background:#211811;text-align:center}
+.ml-stat b{display:block;color:#fff;font-size:15px}
+.ml-stat span{display:block;margin-top:3px;color:var(--muted);font-size:9px}
+.ml-model-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
+.ml-model{padding:9px;border:1px solid #493326;border-radius:8px;background:#241b14;text-align:center}
+.ml-model.ensemble{border-color:#9a673a;background:#3a2819}
+.ml-model-name{color:#c5a88c;font-size:9px;font-weight:800}
+.ml-model-score{margin-top:5px;color:#fff;font-size:13px;font-weight:900}
+.ml-note{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.5}
+.ml-consensus{
+  margin-top:8px;padding:8px;border:1px solid #634b2a;border-radius:7px;
+  background:#302414;color:#ffda91;text-align:center;font-size:11px;font-weight:900
+}
+.ml-performance{margin-bottom:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#201811}
+.ml-performance table{width:100%;border-collapse:collapse;font-size:10px}
+.ml-performance th,.ml-performance td{padding:7px 4px;border-bottom:1px solid #493326;text-align:center}
+.ml-performance th{color:#d9ad83;font-weight:900}
+.ml-performance td:first-child,.ml-performance th:first-child{text-align:left}
+.ml-filter{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.ml-pick{
+  display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:8px 5px;
+  border:1px solid #59402e;border-radius:7px;background:#1b1510
+}
+.ml-pick span{color:#b19a83;font-size:8px;font-weight:800}
+.ml-pick strong{color:#fff1e2;font-size:12px;font-weight:900}
+.ml-pick small{color:#b19a83;font-size:8px;font-weight:900}
+.ml-pick.correct{border-color:#28784b;background:#163b2a}
+.ml-pick.correct strong,.ml-pick.correct small{color:#59dda0}
+.ml-pick.incorrect{border-color:#80383b;background:#421f21}
+.ml-pick.incorrect strong,.ml-pick.incorrect small{color:#ff7b81}
+.ml-pick.push{border-color:#85672a;background:#4b3816}
+.ml-pick.push strong,.ml-pick.push small{color:#ffd166}
+.hidden{display:none!important}
+@media(max-width:560px){
+  .container{padding:9px}.header{padding:12px}.title{font-size:18px}
+  .summary{gap:5px}.summary-card{padding:9px 3px}
+  .summary-value{font-size:16px}.summary-label{font-size:8px}
+  .filters{padding:9px;gap:7px}
+  .match-head{grid-template-columns:40px minmax(0,1fr) auto;gap:6px;padding:8px 7px}
+  .team-name{font-size:10px}.score{font-size:12px}
+  .prediction-box{min-width:91px}.prediction{min-width:70px;font-size:9px}
+  .ml-performance{overflow-x:auto}.ml-performance table{min-width:390px}
+}
+@media(max-width:360px){
+  .summary{grid-template-columns:repeat(2,1fr)}
+  .filters{grid-template-columns:1fr}
+  .period-grid{grid-template-columns:repeat(3,1fr)}
+  .header:after{right:65px}
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="title">🏀 Basketbol Tahmin</div>
+      <div class="subtitle" id="headerSubtitle">MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ</div>
+    </div>
+    <a href="https://teador612.github.io/mackolik1/" class="mackolik-btn">⚽ Mackolik</a>
+  </div>
+
+  <div class="section-title">🧠 Tahmin Motoru</div>
+  <div class="engine-switch">
+    <button class="engine-btn active" id="classicBtn" type="button">Klasik Motor</button>
+    <button class="engine-btn" id="mlBtn" type="button">🤖 Yapay Zekâ (ML)</button>
+  </div>
+
+  <div id="classicSummary">
+    <div class="section-title">📊 Maç Toplam Alt / Üst Başarısı</div>
+    <div class="summary">
+      <div class="summary-card"><div class="summary-value" id="successRate">-</div><div class="summary-label">Başarı</div></div>
+      <div class="summary-card"><div class="summary-value" id="successful">-</div><div class="summary-label">Başarılı</div></div>
+      <div class="summary-card"><div class="summary-value" id="failed">-</div><div class="summary-label">Başarısız</div></div>
+      <div class="summary-card"><div class="summary-value" id="completed">-</div><div class="summary-label">Biten</div></div>
+    </div>
+    <div class="section-title">🎯 Maç Sonucu (1X2) Başarısı</div>
+    <div class="summary">
+      <div class="summary-card"><div class="summary-value" id="successRate1X2">-</div><div class="summary-label">Başarı</div></div>
+      <div class="summary-card"><div class="summary-value" id="successful1X2">-</div><div class="summary-label">Başarılı</div></div>
+      <div class="summary-card"><div class="summary-value" id="failed1X2">-</div><div class="summary-label">Başarısız</div></div>
+      <div class="summary-card"><div class="summary-value" id="completed1X2">-</div><div class="summary-label">Biten</div></div>
+    </div>
+  </div>
+
+  <div id="mlSummary" class="hidden">
+    <div class="section-title">🤖 ML Model Performansı</div>
+    <div id="mlPerformance" class="ml-performance"><div class="loading">ML performansı yükleniyor...</div></div>
+    <div class="ml-banner" id="mlInfo">ML tahminleri yükleniyor...</div>
+  </div>
+
+  <div class="filters">
+    <div class="filter">
+      <label for="dateFilter">📅 Tarih</label>
+      <input type="date" id="dateFilter">
+    </div>
+    <div class="filter">
+      <label for="leagueFilter">🏆 Lig</label>
+      <select id="leagueFilter">
+        <option value="all">Tüm ligler</option>
+        <option value="NBA">NBA</option>
+      </select>
+    </div>
+    <div class="filter">
+      <label for="statusFilter">📊 Durum</label>
+      <select id="statusFilter">
+        <option value="all">Tümü</option>
+        <option value="pending">Oynanmamış</option>
+        <option value="success">Başarılı</option>
+        <option value="failed">Başarısız</option>
+        <option value="push">Push</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="mlTypeFilter" class="ml-filter hidden">
+    <select id="mlPeriodFilter">
+      <option value="all">Gelecek + geçmiş maçlar</option>
+      <option value="upcoming">Gelecek maçlar</option>
+      <option value="historical_backtest">Geçmiş backtest maçları</option>
+    </select>
+    <select id="mlModelFilter">
+      <option value="all">Tüm modeller</option>
+      <option value="RandomForest">Random Forest</option>
+      <option value="XGBoost">XGBoost</option>
+      <option value="LightGBM">LightGBM</option>
+      <option value="CatBoost">CatBoost</option>
+      <option value="Ensemble">Ensemble</option>
+    </select>
+  </div>
+
+  <div class="status-line">
+    <span id="dateTitle">Maçlar</span>
+    <span class="status-count" id="matchCount">0 maç</span>
+  </div>
+
+  <div id="content"><div class="loading">🏀 Veriler yükleniyor...</div></div>
+</div>
+
+<script>
+"use strict";
+
+const CACHE_KEY="?v="+Date.now();
+const MODEL_NAMES=["RandomForest","XGBoost","LightGBM","CatBoost"];
+const MODEL_LABELS={
+  RandomForest:"Random Forest",
+  XGBoost:"XGBoost",
+  LightGBM:"LightGBM",
+  CatBoost:"CatBoost"
+};
+
+let engine="classic";
+let predictions=[];
+let mlPredictions=[];
+let mlResults=null;
+let mlMeta=null;
+let actualById=new Map();
+
+const dateFilter=document.getElementById("dateFilter");
+const leagueFilter=document.getElementById("leagueFilter");
+const statusFilter=document.getElementById("statusFilter");
+const mlPeriodFilter=document.getElementById("mlPeriodFilter");
+const mlModelFilter=document.getElementById("mlModelFilter");
+const content=document.getElementById("content");
+const matchCount=document.getElementById("matchCount");
+const dateTitle=document.getElementById("dateTitle");
+
+function escapeHtml(value){
+  return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
+    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+function number(value){
+  if(value===null||value===undefined||value==="")return null;
+  const n=Number(value);
+  return Number.isFinite(n)?n:null;
+}
+
+function normalizeDate(value){
+  if(!value)return "";
+  const text=String(value).trim();
+  if(/^\d{4}-\d{2}-\d{2}$/.test(text))return text;
+  const match=text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return match?match[1]+"-"+match[2]+"-"+match[3]:"";
+}
+
+function todayString(){
+  const now=new Date();
+  return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+}
+
+function formatDate(date){
+  if(!date)return "-";
+  const parts=date.split("-");
+  return parts.length===3?parts[2]+"."+parts[1]+"."+parts[0]:date;
+}
+
+function getDate(p){return normalizeDate(p.date??p.utcDate)}
+
+function getTime(p){
+  if(p.time)return String(p.time);
+  if(p.utcDate){
+    const d=new Date(p.utcDate);
+    if(!Number.isNaN(d.getTime())){
+      return d.toLocaleTimeString("tr-TR",{
+        hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"
+      });
+    }
+  }
+  return "";
+}
+
+/* ---------------- KLASİK MOTOR ---------------- */
+/* Klasik motorun hesaplama mantığı korunmuştur. */
+
+function hasRealScore(p){
+  return number(p.homeScore)!==null&&number(p.awayScore)!==null;
+}
+
+function isFinished(p){
+  if(p.isFinished===true||p.played===true)return true;
+  const values=[p.status,p.matchStatus,p.gameStatus,p.state]
+    .filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
+  const words=[
+    "finished","completed","final","ended","ft","full_time","full time",
+    "bitmiş","bitmis","tamamlandı","tamamlandi"
+  ];
+  return values.some(v=>words.includes(v));
+}
+
+function isStarted(p){
+  if(p.isUnstarted===true)return false;
+  const values=[p.status,p.matchStatus,p.gameStatus,p.state]
+    .filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
+  const pending=[
+    "not_started","not started","scheduled","upcoming","pending","pre-match",
+    "prematch","bekliyor","başlamadı","baslamadi","oynanmadı","oynanmadi"
+  ];
+  if(values.some(v=>pending.includes(v)))return false;
+  const started=[
+    "live","in_progress","in progress","started","playing","ongoing",
+    "finished","completed","final","ended","ft","full_time","full time"
+  ];
+  if(values.some(v=>started.includes(v)))return true;
+  if(p.isLive===true||isFinished(p))return true;
+  if(hasRealScore(p))return true;
+  return false;
+}
+
+function getStatus(p){
+  if(!isFinished(p))return "pending";
+  if(p.result==="successful"||p.success===true)return "success";
+  if(p.result==="failed"||p.success===false)return "failed";
+  if(p.result==="push"||p.result==="Push")return "push";
+  return "pending";
+}
+
+function statusText(status){
+  if(status==="success")return "✓ Başarılı";
+  if(status==="failed")return "✕ Başarısız";
+  if(status==="push")return "＝ Push";
+  return "Bekliyor";
+}
+
+function predictionClass(status){
+  if(status==="success")return "success";
+  if(status==="failed")return "fail";
+  return "pending";
+}
+
+function predictionText(p){
+  const prediction=String(p.prediction??"").trim();
+  const line=number(p.line)??number(p.barem);
+  if(!prediction)return "Tahmin yok";
+  return line===null?prediction:prediction+" "+line.toFixed(2);
+}
+
+function get1X2(p){
+  const prediction=String(p.prediction1X2??"").trim();
+  if(!prediction)return null;
+  return {
+    prediction,
+    confidence:number(p.confidence1X2),
+    home:number(p.homeWinProbability),
+    draw:number(p.drawProbability),
+    away:number(p.awayWinProbability),
+    actual:String(p.actualResult1X2??"").trim()
+  };
+}
+
+function get1X2Status(p){
+  if(!isFinished(p))return "pending";
+  if(p.success1X2===true||p.result1X2==="successful")return "success";
+  if(p.success1X2===false||p.result1X2==="failed")return "failed";
+  return "pending";
+}
+
+function oneXTwoBadge(p){
+  const data=get1X2(p);
+  if(!data)return "";
+  const status=get1X2Status(p);
+  let label=data.prediction;
+  if(status==="success")label="✓ "+label;
+  if(status==="failed")label="✕ "+label;
+  return `<div class="prediction-1x2">Maç Sonu: <strong>${escapeHtml(label)}</strong></div>`;
+}
+
+function getPeriodData(p,key){
+  const data=p[key];
+  return data&&typeof data==="object"?data:null;
+}
+
+function periodCard(title,p,key){
+  const data=getPeriodData(p,key);
+  if(!data)return "";
+  const line=number(data.line)??number(data.barem);
+  return `<div class="period-card">
+    <div class="period-name">${escapeHtml(title)}</div>
+    <div class="period-line">${line!==null?line.toFixed(2):"-"}</div>
+    <div class="period-prediction">${escapeHtml(data.prediction??data.result??"-")}</div>
+  </div>`;
+}
+
+function buildPeriodSection(p){
+  const cards=[];
+  const mainLine=number(p.line)??number(p.barem);
+  if(mainLine!==null){
+    cards.push(`<div class="period-card">
+      <div class="period-name">Maç</div>
+      <div class="period-line">${mainLine.toFixed(2)}</div>
+      <div class="period-prediction">${escapeHtml(p.prediction??"-")}</div>
+    </div>`);
+  }
+  const firstHalf=p.firstHalfTotal??p.firstHalf??null;
+  if(firstHalf&&typeof firstHalf==="object"){
+    const line=number(firstHalf.line)??number(firstHalf.barem);
+    cards.push(`<div class="period-card">
+      <div class="period-name">İY</div>
+      <div class="period-line">${line!==null?line.toFixed(2):"-"}</div>
+      <div class="period-prediction">${escapeHtml(firstHalf.prediction??firstHalf.result??"-")}</div>
+    </div>`);
+  }
+  for(const key of ["q1","q2","q3","q4"]){
+    const card=periodCard(key.toUpperCase(),p,key);
+    if(card)cards.push(card);
+  }
+  return cards.length
+    ?`<div class="period-title">Periyot tahminleri</div><div class="period-grid">${cards.join("")}</div>`
+    :"";
+}
+
+function buildClassicDetails(p){
+  const expected=number(p.expectedTotal);
+  const homeExpected=number(p.expectedHome);
+  const awayExpected=number(p.expectedAway);
+  const confidence=number(p.confidence);
+  const sampleHome=number(p.homeSample);
+  const sampleAway=number(p.awaySample);
+  const x2=get1X2(p);
+
+  return `<div class="details">
+    <div class="detail-top">
+      <div class="detail-box"><div class="detail-label">Maç baremi</div>
+        <div class="detail-value">${number(p.line)!==null?number(p.line).toFixed(2):number(p.barem)!==null?number(p.barem).toFixed(2):"-"}</div>
+      </div>
+      <div class="detail-box"><div class="detail-label">Beklenen toplam</div>
+        <div class="detail-value">${expected!==null?expected.toFixed(2):"-"}</div>
+      </div>
+      <div class="detail-box"><div class="detail-label">Güven</div>
+        <div class="detail-value">${confidence!==null?"%"+Math.round(confidence):"-"}</div>
+      </div>
+    </div>
+    <div class="detail-top">
+      <div class="detail-box"><div class="detail-label">Ev beklenen</div>
+        <div class="detail-value">${homeExpected!==null?homeExpected.toFixed(2):"-"}</div>
+      </div>
+      <div class="detail-box"><div class="detail-label">Deplasman beklenen</div>
+        <div class="detail-value">${awayExpected!==null?awayExpected.toFixed(2):"-"}</div>
+      </div>
+      <div class="detail-box"><div class="detail-label">Örneklem</div>
+        <div class="detail-value">${sampleHome!==null?sampleHome:"-"} / ${sampleAway!==null?sampleAway:"-"}</div>
+      </div>
+    </div>
+    ${x2?`<div class="detail-title">Maç Sonucu Tahmini</div>
+      <div class="x2-grid">
+        <div class="x2-card ${x2.prediction==="1"?"x2-predicted":""}">
+          <div class="x2-name">1 · Ev sahibi</div><div class="x2-value">${x2.home!==null?"%"+x2.home.toFixed(1):"-"}</div>
+        </div>
+        <div class="x2-card ${x2.prediction==="X"?"x2-predicted":""}">
+          <div class="x2-name">X · Beraberlik</div><div class="x2-value">${x2.draw!==null?"%"+x2.draw.toFixed(1):"-"}</div>
+        </div>
+        <div class="x2-card ${x2.prediction==="2"?"x2-predicted":""}">
+          <div class="x2-name">2 · Deplasman</div><div class="x2-value">${x2.away!==null?"%"+x2.away.toFixed(1):"-"}</div>
+        </div>
+      </div>
+      <div class="detail-top">
+        <div class="detail-box"><div class="detail-label">Tahmin</div><div class="detail-value">${escapeHtml(x2.prediction)}</div></div>
+        <div class="detail-box"><div class="detail-label">Güven</div><div class="detail-value">${x2.confidence!==null?"%"+x2.confidence.toFixed(1):"-"}</div></div>
+        <div class="detail-box"><div class="detail-label">Sonuç</div><div class="detail-value">${escapeHtml(x2.actual||"-")}</div></div>
+      </div>`:""}
+    ${buildPeriodSection(p)}
+  </div>`;
+}
+
+function updateClassicSummary(){
+  let completed=0,successful=0,failed=0;
+  let completed1X2=0,successful1X2=0,failed1X2=0;
+
+  for(const p of predictions){
+    const status=getStatus(p);
+    if(status==="success"){completed++;successful++}
+    else if(status==="failed"){completed++;failed++}
+    else if(status==="push")completed++;
+
+    const s=get1X2Status(p);
+    if(s==="success"){completed1X2++;successful1X2++}
+    else if(s==="failed"){completed1X2++;failed1X2++}
+  }
+
+  const denominator=successful+failed;
+  const denominator1=successful1X2+failed1X2;
+
+  document.getElementById("successRate").textContent=
+    "%"+(denominator?successful/denominator*100:0).toFixed(1);
+  document.getElementById("successful").textContent=successful;
+  document.getElementById("failed").textContent=failed;
+  document.getElementById("completed").textContent=completed;
+
+  document.getElementById("successRate1X2").textContent=
+    "%"+(denominator1?successful1X2/denominator1*100:0).toFixed(1);
+  document.getElementById("successful1X2").textContent=successful1X2;
+  document.getElementById("failed1X2").textContent=failed1X2;
+  document.getElementById("completed1X2").textContent=completed1X2;
+}
+
+/* ---------------- ML MOTOR ---------------- */
+
+function getMLPrediction(p){return p.prediction??p}
+function getMLModels(p){return getMLPrediction(p).models??p.models??{}}
+function getMLEnsemble(p){return getMLPrediction(p).ensemble??p.ensemble??{}}
+
+function normalizeMatchId(value){
+  return String(value??"").trim().toLowerCase().replace(/^nba[-_:]?/,"");
+}
+
+function getMLTeamName(p,side){
+  const direct=side==="home"
+    ?p.homeTeam??p.home
+    :p.awayTeam??p.away;
+
+  if(direct)return String(direct);
+
+  const nested=p.teams?.[side];
+
+  if(typeof nested==="string")return nested;
+  if(nested?.name)return String(nested.name);
+
+  return "-";
+}
+
+function mlWinnerShort(winner){
+  if(winner==="HOME")return "MS1";
+  if(winner==="AWAY")return "MS2";
+  if(winner==="DRAW"||winner==="TIE")return "Beraberlik";
+  return "Belirsiz";
+}
+
+function getMLConsensus(p){
+  const models=getMLModels(p);
+  const votes=MODEL_NAMES.map(name=>models[name]?.winner).filter(Boolean);
+  if(!votes.length)return {count:0,total:0,winner:null};
+
+  const counts={};
+  votes.forEach(v=>counts[v]=(counts[v]||0)+1);
+
+  const winner=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+
+  return {count:counts[winner],total:votes.length,winner};
+}
+
+/* GERÇEK SKOR OKUMA */
+
+function readActualScore(record,allowResultScore=false){
+  if(!record)return null;
+
+  const home=number(
+    record.actualHomeScore ??
+    record.actual?.homeScore ??
+    record.result?.homeScore ??
+    (allowResultScore?record.homeScore:null) ??
+    (allowResultScore?record.score?.home:null)
+  );
+
+  const away=number(
+    record.actualAwayScore ??
+    record.actual?.awayScore ??
+    record.result?.awayScore ??
+    (allowResultScore?record.awayScore:null) ??
+    (allowResultScore?record.score?.away:null)
+  );
+
+  if(home===null||away===null)return null;
+
+  return {home,away};
+}
+
+function getMLActualScore(p){
+  const direct=readActualScore(p,false);
+  if(direct)return direct;
+
+  const id=normalizeMatchId(p.matchId??p.matchKey);
+  if(!id)return null;
+
+  return readActualScore(actualById.get(id),true);
+}
+
+function actualWinnerFromScore(score){
+  if(!score)return null;
+  if(score.home>score.away)return "HOME";
+  if(score.away>score.home)return "AWAY";
+  return "TIE";
+}
+
+/*
+ * ÖNEMLİ:
+ * Kayıtlı winnerResult ve totalResult artık doğruluk kaynağı değildir.
+ * Sonuçlar daima gerçek skor üzerinden yeniden hesaplanır.
+ */
+
+function getMLWinnerResult(model,p){
+  const actual=getMLActualScore(p);
+
+  if(!actual||!model?.winner)return "pending";
+
+  const actualWinner=actualWinnerFromScore(actual);
+
+  return model.winner===actualWinner?"success":"failed";
+}
+
+function getMLTotalResult(model,p){
+  const actual=getMLActualScore(p);
+
+  const line=number(model?.totalLine)??number(p.totalLine);
+  const direction=String(model?.totalDirection??"").toUpperCase();
+
+  if(!actual||line===null||!direction)return "pending";
+
+  const actualTotal=actual.home+actual.away;
+
+  if(Math.abs(actualTotal-line)<0.000001)return "push";
+
+  if(direction==="OVER"){
+    return actualTotal>line?"success":"failed";
+  }
+
+  if(direction==="UNDER"){
+    return actualTotal<line?"success":"failed";
+  }
+
+  return "pending";
+}
+
+function resultClass(result){
+  if(result==="success")return "correct";
+  if(result==="failed")return "incorrect";
+  if(result==="push")return "push";
+  return "";
+}
+
+function resultLabel(result){
+  if(result==="success")return "✓ DOĞRU";
+  if(result==="failed")return "✕ YANLIŞ";
+  if(result==="push")return "＝ PUSH";
+  return "SONUÇ BEKLİYOR";
+}
+
+function directionText(direction){
+  const value=String(direction??"").toUpperCase();
+  if(value==="OVER")return "ÜST";
+  if(value==="UNDER")return "ALT";
+  return "-";
+}
+
+function modelCard(name,m,p,isEnsemble=false){
+  if(!m)return "";
+
+  const winnerResult=getMLWinnerResult(m,p);
+  const totalResult=getMLTotalResult(m,p);
+
+  const line=number(m.totalLine)??number(p.totalLine);
+  const direction=directionText(m.totalDirection);
+  const lineText=line!==null?line.toFixed(1)+" "+direction:"Barem yok";
+
+  return `<div class="ml-model ${isEnsemble?"ensemble":""}">
+    <div class="ml-model-name">
+      ${escapeHtml(isEnsemble?"ENSEMBLE · ORTAK TAHMİN":MODEL_LABELS[name]??name)}
+    </div>
+
+    <div class="ml-model-score">
+      ${number(m.homeScore)?.toFixed(1)??"-"} -
+      ${number(m.awayScore)?.toFixed(1)??"-"}
+    </div>
+
+    <div class="ml-note">
+      Tahmini toplam: ${number(m.totalScore)?.toFixed(1)??"-"}
+    </div>
+
+    <div class="ml-pick ${resultClass(winnerResult)}">
+      <span>MAÇ SONUCU</span>
+      <strong>${escapeHtml(mlWinnerShort(m.winner))}</strong>
+      <small>${resultLabel(winnerResult)}</small>
+    </div>
+
+    <div class="ml-pick ${resultClass(totalResult)}">
+      <span>TOPLAM ${escapeHtml(lineText)}</span>
+      <strong>${escapeHtml(direction)}</strong>
+      <small>${resultLabel(totalResult)}</small>
+    </div>
+  </div>`;
+}
+
+function buildMLDetails(p){
+  const models=getMLModels(p);
+  const ensemble=getMLEnsemble(p);
+  const consensus=getMLConsensus(p);
+  const actual=getMLActualScore(p);
+  const isHistorical=p.predictionType==="historical_backtest";
+  const line=number(p.totalLine);
+
+  let cards="";
+
+  for(const name of MODEL_NAMES){
+    cards+=modelCard(name,models[name],p);
+  }
+
+  cards+=modelCard("Ensemble",ensemble,p,true);
+
+  return `<div class="details">
+    <div class="detail-title">🤖 Model tahminleri</div>
+    <div class="ml-model-grid">${cards}</div>
+
+    <div class="ml-consensus">
+      MODEL UZLAŞMASI: ${consensus.count}/${consensus.total}
+      · ${consensus.winner?escapeHtml(mlWinnerShort(consensus.winner)):"Yeterli veri yok"}
+    </div>
+
+    ${line!==null?`
+      <div class="detail-top">
+        <div class="detail-box">
+          <div class="detail-label">Sistemin baremi</div>
+          <div class="detail-value">${line.toFixed(1)}</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">Barem yöntemi</div>
+          <div class="detail-value">Geçmiş maç ortalaması</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">Barem örneklemi</div>
+          <div class="detail-value">${p.totalLineInfo?.historyCount??"-"}</div>
+        </div>
+      </div>`:""}
+
+    ${actual?`
+      <div class="detail-title">Gerçekleşen maç skoru</div>
+      <div class="detail-top">
+        <div class="detail-box">
+          <div class="detail-label">Ev sahibi</div>
+          <div class="detail-value">${actual.home}</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">Deplasman</div>
+          <div class="detail-value">${actual.away}</div>
+        </div>
+        <div class="detail-box">
+          <div class="detail-label">Gerçek toplam</div>
+          <div class="detail-value">${actual.home+actual.away}</div>
+        </div>
+      </div>`:""}
+
+    <div class="detail-top">
+      <div class="detail-box">
+        <div class="detail-label">Eğitim örneklemi</div>
+        <div class="detail-value">${p.trainingSamplesBeforeMatch??"-"}</div>
+      </div>
+      <div class="detail-box">
+        <div class="detail-label">Model sayısı</div>
+        <div class="detail-value">${p.modelCount??consensus.total}</div>
+      </div>
+      <div class="detail-box">
+        <div class="detail-label">Tahmin türü</div>
+        <div class="detail-value">${isHistorical?"Geçmiş backtest":"Gelecek maç"}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ML MAÇ KARTI */
+
+function createMLCard(p){
+  const ensemble=getMLEnsemble(p);
+  const consensus=getMLConsensus(p);
+
+  const actual=getMLActualScore(p);
+  const hasActual=actual!==null;
+
+  const predictedHome=number(ensemble.homeScore);
+  const predictedAway=number(ensemble.awayScore);
+  const predictedTotal=number(ensemble.totalScore);
+
+  const winnerResult=hasActual
+    ?getMLWinnerResult(ensemble,p)
+    :"pending";
+
+  const line=number(ensemble.totalLine)??number(p.totalLine);
+  const direction=directionText(ensemble.totalDirection);
+
+  let statusLabel="OYNANMADI";
+  let statusClass="pending";
+
+  if(hasActual){
+    if(winnerResult==="success"){
+      statusLabel="✓ TAHMİN BAŞARILI";
+      statusClass="success";
+    }else if(winnerResult==="failed"){
+      statusLabel="✕ TAHMİN BAŞARISIZ";
+      statusClass="fail";
+    }else if(winnerResult==="push"){
+      statusLabel="＝ PUSH";
+      statusClass="pending";
+    }else{
+      statusLabel="SONUÇ BEKLİYOR";
+      statusClass="pending";
+    }
+  }else if(p.predictionType==="historical_backtest"){
+    statusLabel="GERÇEK SKOR YOK";
+  }
+
+  const scoreClass=winnerResult==="success"
+    ?"correct"
+    :winnerResult==="failed"
+      ?"incorrect"
+      :"";
+
+  const card=document.createElement("div");
+  card.className="match-card"+(hasActual?"":" pending-card");
+
+  card.innerHTML=`
+    <div class="match-head" role="button" tabindex="0" aria-expanded="false">
+      <div class="match-time">
+        <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
+        <span>${escapeHtml(p.league??"NBA")}</span>
+      </div>
+
+      <div class="teams">
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(getMLTeamName(p,"home"))}</span>
+          <span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.home:"-"}</span>
+        </div>
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(getMLTeamName(p,"away"))}</span>
+          <span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.away:"-"}</span>
+        </div>
+      </div>
+
+      <div class="prediction-box">
+        <div class="prediction-market">GERÇEK SKOR</div>
+
+        <div class="prediction ${statusClass}">
+          ${escapeHtml(statusLabel)}
+        </div>
+
+        <div class="prediction-1x2">
+          <strong>
+            TAHMİN:
+            ${predictedHome!==null?predictedHome.toFixed(1):"-"}
+            -
+            ${predictedAway!==null?predictedAway.toFixed(1):"-"}
+          </strong>
+        </div>
+
+        <div class="prediction-1x2">
+          <strong>TOPLAM: ${predictedTotal!==null?predictedTotal.toFixed(1):"-"}</strong>
+        </div>
+
+        <div class="prediction-1x2">
+          <strong>${escapeHtml(mlWinnerShort(ensemble.winner))}</strong>
+          · ${consensus.count}/${consensus.total}
+        </div>
+
+        ${line!==null?`
+          <div class="prediction-1x2">
+            <strong>${line.toFixed(1)} ${escapeHtml(direction)}</strong>
+          </div>`:""}
+
+        <span class="expand-icon">▼</span>
+      </div>
+    </div>
+
+    ${buildMLDetails(p)}
+  `;
+
+  const head=card.querySelector(".match-head");
+
+  function toggle(){
+    const open=card.classList.toggle("open");
+    head.setAttribute("aria-expanded",open?"true":"false");
+  }
+
+  head.addEventListener("click",toggle);
+
+  head.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      toggle();
+    }
+  });
+
+  return card;
+}
+
+/* ---------------- KART VE FİLTRELER ---------------- */
+
+function createClassicCard(p){
+  const status=getStatus(p);
+  const home=p.home??p.homeTeam??"-";
+  const away=p.away??p.awayTeam??"-";
+  const homeScore=number(p.homeScore);
+  const awayScore=number(p.awayScore);
+  const hasScore=homeScore!==null&&awayScore!==null;
+  const x2=get1X2(p);
+
+  const card=document.createElement("div");
+  card.className="match-card";
+
+  if(status==="pending")card.classList.add("pending-card");
+
+  card.innerHTML=`
+    <div class="match-head" role="button" tabindex="0" aria-expanded="false">
+      <div class="match-time">
+        <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
+        <span>${escapeHtml(p.league??"")}</span>
+      </div>
+      <div class="teams">
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(home)}</span>
+          <span class="score ${hasScore?"":"empty"}">${hasScore?homeScore:"-"}</span>
+        </div>
+        <div class="team-row">
+          <span class="team-name">${escapeHtml(away)}</span>
+          <span class="score ${hasScore?"":"empty"}">${hasScore?awayScore:"-"}</span>
+        </div>
+      </div>
+      <div class="prediction-box">
+        <div class="prediction-market">${escapeHtml(statusText(status))}</div>
+        <div class="prediction ${predictionClass(status)}">${escapeHtml(predictionText(p))}</div>
+        ${x2?oneXTwoBadge(p):""}
+        <span class="expand-icon">▼</span>
+      </div>
+    </div>
+    ${buildClassicDetails(p)}
+  `;
+
+  const head=card.querySelector(".match-head");
+
+  function toggle(){
+    const open=card.classList.toggle("open");
+    head.setAttribute("aria-expanded",open?"true":"false");
+  }
+
+  head.addEventListener("click",toggle);
+
+  head.addEventListener("keydown",event=>{
+    if(event.key==="Enter"||event.key===" "){
+      event.preventDefault();
+      toggle();
+    }
+  });
+
+  return card;
+}
+
+function filterPredictions(){
+  const date=dateFilter.value;
+  const league=leagueFilter.value;
+  const status=statusFilter.value;
+
+  if(engine==="classic"){
+    return predictions.filter(p=>{
+      if(date&&getDate(p)!==date)return false;
+      if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
+      if(status!=="all"&&getStatus(p)!==status)return false;
+      return true;
+    });
+  }
+
+  const period=mlPeriodFilter.value;
+  const model=mlModelFilter.value;
+
+  return mlPredictions.filter(p=>{
+    if(date&&getDate(p)!==date)return false;
+    if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
+    if(period!=="all"&&p.predictionType!==period)return false;
+
+    if(model==="Ensemble"){
+      if(!getMLEnsemble(p)?.winner)return false;
+    }else if(model!=="all"&&!getMLModels(p)?.[model]){
+      return false;
     }
 
+    const actual=getMLActualScore(p);
 
-def get_total_direction(predicted_total, total_line):
-    if predicted_total is None or total_line is None:
-        return None
+    if(status==="pending"&&actual!==null)return false;
 
-    if predicted_total > total_line:
-        return "OVER"
+    if(status!=="all"&&status!=="pending"){
+      if(actual===null)return false;
 
-    if predicted_total < total_line:
-        return "UNDER"
+      const selected=model==="all"||model==="Ensemble"
+        ?getMLEnsemble(p)
+        :getMLModels(p)[model];
 
-    return "PUSH"
+      if(!selected)return false;
 
+      const winnerStatus=getMLWinnerResult(selected,p);
+      const totalStatus=getMLTotalResult(selected,p);
 
-def evaluate_total_direction(predicted_direction, actual_total, total_line):
-    if actual_total is None or total_line is None:
-        return None
-
-    if math.isclose(actual_total, total_line, abs_tol=0.000001):
-        return "push"
-
-    if predicted_direction == "OVER":
-        return "success" if actual_total > total_line else "failed"
-
-    if predicted_direction == "UNDER":
-        return "success" if actual_total < total_line else "failed"
-
-    return "push"
-
-
-# ============================================================
-# MAÇ SONUCU
-# ============================================================
-
-def get_winner(home_score, away_score):
-    if home_score > away_score:
-        return "HOME"
-
-    if away_score > home_score:
-        return "AWAY"
-
-    return "TIE"
-
-
-def evaluate_winner(predicted_winner, actual_winner):
-    if not predicted_winner or not actual_winner:
-        return None
-
-    return (
-        "success"
-        if predicted_winner == actual_winner
-        else "failed"
-    )
-
-
-# ============================================================
-# TAKIM GEÇMİŞİ
-# ============================================================
-
-def collect_team_history(matches, team_name, target_date):
-    history = []
-
-    target_team = normalize_team(team_name)
-
-    for match in matches:
-        if not is_finished(match):
-            continue
-
-        match_date = get_match_date(match)
-
-        if match_date is None or match_date >= target_date:
-            continue
-
-        home = str(match.get("homeTeam", "")).strip()
-        away = str(match.get("awayTeam", "")).strip()
-
-        home_score = get_score(match, "homeScore")
-        away_score = get_score(match, "awayScore")
-
-        if home_score is None or away_score is None:
-            continue
-
-        if normalize_team(home) == target_team:
-            history.append({
-                "date": match_date,
-                "scored": home_score,
-                "conceded": away_score,
-                "is_home": True,
-                "opponent": away,
-                "won": home_score > away_score,
-            })
-
-        elif normalize_team(away) == target_team:
-            history.append({
-                "date": match_date,
-                "scored": away_score,
-                "conceded": home_score,
-                "is_home": False,
-                "opponent": home,
-                "won": away_score > home_score,
-            })
-
-    history.sort(key=lambda item: item["date"])
-
-    return history
-
-
-def average(values, default=0.0):
-    return float(statistics.mean(values)) if values else default
-
-
-def safe_std(values):
-    if len(values) < 2:
-        return 0.0
-
-    return float(statistics.pstdev(values))
-
-
-# ============================================================
-# TAKIM ÖZELLİKLERİ
-# ============================================================
-
-def team_features(history, target_date, prefix, target_is_home):
-    if len(history) < MIN_TEAM_HISTORY:
-        return None
-
-    recent5 = history[-5:]
-    recent10 = history[-10:]
-
-    scored = [item["scored"] for item in history]
-    conceded = [item["conceded"] for item in history]
-
-    totals = [
-        item["scored"] + item["conceded"]
-        for item in history
-    ]
-
-    recent_scored = [item["scored"] for item in recent5]
-    recent_conceded = [item["conceded"] for item in recent5]
-
-    recent10_scored = [item["scored"] for item in recent10]
-    recent10_conceded = [item["conceded"] for item in recent10]
-
-    home_games = [
-        item for item in history if item["is_home"]
-    ]
-
-    away_games = [
-        item for item in history if not item["is_home"]
-    ]
-
-    role_games = home_games if target_is_home else away_games
-
-    recent_wins = sum(item["won"] for item in recent5)
-    total_wins = sum(item["won"] for item in history)
-
-    last_date = history[-1]["date"]
-
-    rest_days = max(
-        0,
-        (target_date.date() - last_date.date()).days
-    )
-
-    games_last_7_days = sum(
-        1
-        for item in history
-        if 0 <= (target_date - item["date"]).days <= 7
-    )
-
-    return {
-        f"{prefix}_games": len(history),
-
-        f"{prefix}_last5_scored": average(recent_scored),
-        f"{prefix}_last5_conceded": average(recent_conceded),
-
-        f"{prefix}_last10_scored": average(recent10_scored),
-        f"{prefix}_last10_conceded": average(recent10_conceded),
-
-        f"{prefix}_all_scored": average(scored),
-        f"{prefix}_all_conceded": average(conceded),
-
-        f"{prefix}_last5_total": average([
-            item["scored"] + item["conceded"]
-            for item in recent5
-        ]),
-
-        f"{prefix}_all_total": average(totals),
-
-        f"{prefix}_scored_std": safe_std(recent10_scored),
-        f"{prefix}_conceded_std": safe_std(recent10_conceded),
-
-        f"{prefix}_win_rate": total_wins / len(history),
-        f"{prefix}_last5_win_rate": recent_wins / len(recent5),
-
-        f"{prefix}_home_scored": average(
-            [item["scored"] for item in home_games],
-            average(scored)
-        ),
-
-        f"{prefix}_home_conceded": average(
-            [item["conceded"] for item in home_games],
-            average(conceded)
-        ),
-
-        f"{prefix}_away_scored": average(
-            [item["scored"] for item in away_games],
-            average(scored)
-        ),
-
-        f"{prefix}_away_conceded": average(
-            [item["conceded"] for item in away_games],
-            average(conceded)
-        ),
-
-        f"{prefix}_role_scored": average(
-            [item["scored"] for item in role_games],
-            average(scored)
-        ),
-
-        f"{prefix}_role_conceded": average(
-            [item["conceded"] for item in role_games],
-            average(conceded)
-        ),
-
-        f"{prefix}_role_games": len(role_games),
-
-        f"{prefix}_rest_days": min(rest_days, 14),
-        f"{prefix}_games_last7": games_last_7_days,
+      if(status==="success"&&winnerStatus!=="success"&&totalStatus!=="success")return false;
+      if(status==="failed"&&winnerStatus!=="failed"&&totalStatus!=="failed")return false;
+      if(status==="push"&&winnerStatus!=="push"&&totalStatus!=="push")return false;
     }
 
+    return true;
+  });
+}
 
-# ============================================================
-# ÖZELLİK ÜRETİMİ
-# ============================================================
+function setDefaultDate(){
+  const source=engine==="ml"?mlPredictions:predictions;
+  const dates=[...new Set(source.map(getDate).filter(Boolean))].sort();
 
-def build_features(matches, match):
-    target_date = get_match_date(match)
+  if(!dates.length){
+    dateFilter.value="";
+    return;
+  }
 
-    if target_date is None:
-        return None
+  const today=todayString();
+  dateFilter.value=dates.includes(today)?today:dates[dates.length-1];
+}
 
-    home_team = str(match.get("homeTeam", "")).strip()
-    away_team = str(match.get("awayTeam", "")).strip()
+function render(){
+  if(engine==="classic")updateClassicSummary();
 
-    if not home_team or not away_team:
-        return None
+  const filtered=filterPredictions().sort((a,b)=>{
+    const dateA=getDate(a);
+    const dateB=getDate(b);
+    const timeA=a.utcDate??(dateA+"T"+(a.time??"00:00"));
+    const timeB=b.utcDate??(dateB+"T"+(b.time??"00:00"));
+    return String(timeA).localeCompare(String(timeB));
+  });
 
-    home_history = collect_team_history(
-        matches, home_team, target_date
-    )
+  content.innerHTML="";
+  matchCount.textContent=filtered.length+" maç";
+  dateTitle.textContent=dateFilter.value?formatDate(dateFilter.value):"Maçlar";
 
-    away_history = collect_team_history(
-        matches, away_team, target_date
-    )
+  if(!filtered.length){
+    content.innerHTML='<div class="empty">🏀 Bu tarihte filtrelere uygun maç bulunamadı.</div>';
+    return;
+  }
 
-    if (
-        len(home_history) < MIN_TEAM_HISTORY
-        or len(away_history) < MIN_TEAM_HISTORY
-    ):
-        return None
+  const list=document.createElement("div");
+  list.className="matches";
 
-    home_data = team_features(
-        home_history, target_date, "home", True
-    )
+  for(const p of filtered){
+    list.appendChild(engine==="ml"?createMLCard(p):createClassicCard(p));
+  }
 
-    away_data = team_features(
-        away_history, target_date, "away", False
-    )
+  content.appendChild(list);
+}
 
-    if home_data is None or away_data is None:
-        return None
+/* ---------------- ML PERFORMANS ---------------- */
 
-    features = {}
+function buildMLPerformance(){
+  const target=document.getElementById("mlPerformance");
+  const metrics=mlResults?.backtestMetrics??{};
+  const rankings=mlResults?.backtestRankings??[];
 
-    features.update(home_data)
-    features.update(away_data)
+  let rows="";
+  const order=rankings.length?rankings.map(x=>x.model):MODEL_NAMES.concat("Ensemble");
 
-    home_vs_away = [
-        item for item in home_history
-        if normalize_team(item["opponent"]) == normalize_team(away_team)
-    ]
+  for(const name of order){
+    const m=metrics[name];
+    if(!m)continue;
 
-    away_vs_home = [
-        item for item in away_history
-        if normalize_team(item["opponent"]) == normalize_team(home_team)
-    ]
+    rows+=`<tr>
+      <td>${escapeHtml(name)}</td>
+      <td>${m.matches??0}</td>
+      <td>${number(m.totalMAE)?.toFixed(2)??"-"}</td>
+      <td>${number(m.winnerAccuracy)!==null?"%"+number(m.winnerAccuracy).toFixed(1):"-"}</td>
+    </tr>`;
+  }
 
-    h2h = home_vs_away + away_vs_home
+  const backtestCount=mlResults?.backtestSummary?.totalEvaluatedMatches??0;
+  const pending=Array.isArray(mlResults?.pending)?mlResults.pending.length:0;
+  const liveCount=Array.isArray(mlResults?.history)?mlResults.history.length:0;
 
-    unique_h2h = {}
+  target.innerHTML=`
+    <strong>Geçmiş walk-forward testi</strong>
+    <table>
+      <thead>
+        <tr><th>Model</th><th>Maç</th><th>Toplam MAE</th><th>Kazanan</th></tr>
+      </thead>
+      <tbody>${rows||'<tr><td colspan="4">Backtest verisi bulunamadı.</td></tr>'}</tbody>
+    </table>
+    <div class="ml-stats">
+      <div class="ml-stat"><b>${backtestCount}</b><span>Test edilen geçmiş maç</span></div>
+      <div class="ml-stat"><b>${pending}</b><span>Bekleyen canlı tahmin</span></div>
+      <div class="ml-stat"><b>${liveCount}</b><span>Değerlendirilen canlı maç</span></div>
+    </div>
+    <div class="ml-note">
+      MAE ne kadar düşükse skor tahmin hatası o kadar düşüktür.
+      Kazanan yüzdesi geçmiş test performansıdır; canlı başarı garantisi değildir.
+    </div>
+  `;
+}
 
-    for item in h2h:
-        key = item["date"]
-        unique_h2h[key] = item
+function renderMLInfo(){
+  const diagnostics=mlMeta?.diagnostics??{};
+  const training=mlMeta?.training??{};
 
-    h2h = sorted(
-        unique_h2h.values(),
-        key=lambda item: item["date"]
-    )
+  document.getElementById("mlInfo").innerHTML=`
+    <strong>ML motoru:</strong> ${escapeHtml(training.status??"Veri yüklendi")}
+    · Eğitim maçları: ${training.completedMatches??"-"}
+    · Eğitim örneklemi: ${training.trainingSamples??"-"}
+    · Geçmiş tahmin: ${diagnostics.historicalPredicted??0}
+    · Gelecek tahmin: ${diagnostics.upcomingPredicted??0}
+    · Temizlenen tekrar: ${diagnostics.removedDuplicates??0}
+  `;
+}
 
-    recent_h2h = h2h[-5:]
+/* ---------------- DOSYA YÜKLEME ---------------- */
 
-    features["h2h_games"] = len(h2h)
+async function fetchJSON(path){
+  const response=await fetch(path+CACHE_KEY,{cache:"no-store"});
+  if(!response.ok)throw new Error(path+" alınamadı (HTTP "+response.status+")");
+  return response.json();
+}
 
-    features["h2h_home_scored"] = average(
-        [item["scored"] for item in recent_h2h],
-        home_data["home_all_scored"]
-    )
+async function loadClassic(){
+  const data=await fetchJSON("predictions.json");
 
-    features["h2h_away_scored"] = average(
-        [item["scored"] for item in recent_h2h],
-        away_data["away_all_scored"]
-    )
+  const raw=Array.isArray(data)?data:
+    (Array.isArray(data.predictions)?data.predictions:[]);
 
-    features["h2h_home_win_rate"] = (
-        average([
-            1.0 if item["won"] else 0.0
-            for item in recent_h2h
-        ])
-        if recent_h2h else 0.5
-    )
+  predictions=raw.filter(p=>{
+    const league=String(p.league??"").trim().toLowerCase();
+    return league!=="euroleague"&&league!=="eurocup";
+  });
+}
 
-    features["month"] = target_date.month
-    features["weekday"] = target_date.weekday()
+async function loadML(){
+  const [predictionData,resultData]=await Promise.all([
+    fetchJSON("ml-predictions.json"),
+    fetchJSON("ml-results.json")
+  ]);
 
-    features["month_sin"] = math.sin(
-        2 * math.pi * target_date.month / 12
-    )
+  mlMeta=predictionData;
+  mlResults=resultData;
 
-    features["month_cos"] = math.cos(
-        2 * math.pi * target_date.month / 12
-    )
+  const raw=Array.isArray(predictionData.predictions)
+    ?predictionData.predictions
+    :[];
 
-    features["weekday_sin"] = math.sin(
-        2 * math.pi * target_date.weekday() / 7
-    )
+  // HTML tarafında da mükerrer maç kartlarını engelle.
+  const unique=new Map();
 
-    features["weekday_cos"] = math.cos(
-        2 * math.pi * target_date.weekday() / 7
-    )
+  for(const p of raw){
+    if(String(p.league??"NBA").toUpperCase()!=="NBA")continue;
 
-    return features
+    if(!["upcoming","historical_backtest"].includes(p.predictionType))continue;
 
+    const id=normalizeMatchId(p.matchId??p.matchKey);
 
-# ============================================================
-# MODELLER - MEVCUT PARAMETRELER KORUNDU
-# ============================================================
+    const fallbackKey=[
+      getDate(p),
+      getMLTeamName(p,"home").toLowerCase(),
+      getMLTeamName(p,"away").toLowerCase()
+    ].join("|");
 
-def create_models():
-    return {
-        "RandomForest": RandomForestRegressor(
-            n_estimators=350,
-            max_depth=8,
-            min_samples_leaf=2,
-            max_features=0.85,
-            random_state=RANDOM_STATE,
-            n_jobs=2
-        ),
+    const key=id||fallbackKey;
 
-        "XGBoost": XGBRegressor(
-            n_estimators=250,
-            max_depth=3,
-            learning_rate=0.04,
-            subsample=0.85,
-            colsample_bytree=0.85,
-            objective="reg:squarederror",
-            random_state=RANDOM_STATE,
-            n_jobs=2,
-            verbosity=0
-        ),
+    if(!unique.has(key)){
+      unique.set(key,p);
+    }else{
+      const old=unique.get(key);
 
-        "LightGBM": LGBMRegressor(
-            n_estimators=250,
-            max_depth=-1,
-            num_leaves=15,
-            learning_rate=0.03,
-            min_child_samples=5,
-            verbosity=-1,
-            random_state=RANDOM_STATE,
-            n_jobs=2
-        ),
-
-        "CatBoost": CatBoostRegressor(
-            iterations=250,
-            depth=5,
-            learning_rate=0.04,
-            loss_function="RMSE",
-            random_seed=RANDOM_STATE,
-            verbose=False,
-            allow_writing_files=False,
-            thread_count=2
-        ),
+      // Gerçek skor bulunan kayıt tercih edilir.
+      if(!getMLActualScore(old)&&getMLActualScore(p)){
+        unique.set(key,p);
+      }
     }
+  }
 
+  mlPredictions=[...unique.values()];
 
-# ============================================================
-# GEÇMİŞ EĞİTİM VERİSİ
-# ============================================================
+  actualById=new Map();
 
-def build_training_data(matches):
-    finished = [
-        match for match in matches
-        if is_finished(match)
-        and get_match_date(match) is not None
-    ]
+  const resultLists=[
+    resultData.backtestHistory,
+    resultData.history
+  ];
 
-    finished.sort(key=lambda item: get_match_date(item))
+  for(const list of resultLists){
+    if(!Array.isArray(list))continue;
 
-    feature_rows = []
-    home_targets = []
-    away_targets = []
-    sample_dates = []
+    for(const item of list){
+      const id=normalizeMatchId(item.matchId??item.matchKey);
 
-    for match in finished:
-        features = build_features(matches, match)
-
-        if features is None:
-            continue
-
-        home_score = get_score(match, "homeScore")
-        away_score = get_score(match, "awayScore")
-
-        if home_score is None or away_score is None:
-            continue
-
-        feature_rows.append(features)
-        home_targets.append(home_score)
-        away_targets.append(away_score)
-        sample_dates.append(get_match_date(match))
-
-    return feature_rows, home_targets, away_targets, sample_dates
-
-
-# ============================================================
-# MODEL EĞİTİMİ
-# ============================================================
-
-def fit_models(X, y_home, y_away):
-    trained_models = {}
-
-    definitions = create_models()
-
-    for model_name in MODEL_NAMES:
-        home_model = definitions[model_name]
-        away_model = create_models()[model_name]
-
-        home_model.fit(X, y_home)
-        away_model.fit(X, y_away)
-
-        trained_models[model_name] = {
-            "home": home_model,
-            "away": away_model,
-        }
-
-    return trained_models
-
-
-def build_validation(X, y_home, y_away):
-    row_count = len(X)
-    split_index = int(row_count * 0.80)
-
-    validation = {}
-
-    if split_index < 25 or row_count - split_index < 5:
-        return validation
-
-    X_train = X[:split_index]
-    X_valid = X[split_index:]
-
-    y_home_train = y_home[:split_index]
-    y_home_valid = y_home[split_index:]
-
-    y_away_train = y_away[:split_index]
-    y_away_valid = y_away[split_index:]
-
-    for model_name in MODEL_NAMES:
-        home_model = create_models()[model_name]
-        away_model = create_models()[model_name]
-
-        home_model.fit(X_train, y_home_train)
-        away_model.fit(X_train, y_away_train)
-
-        home_pred = home_model.predict(X_valid)
-        away_pred = away_model.predict(X_valid)
-
-        validation[model_name] = {
-            "homeMAE": round(
-                float(mean_absolute_error(y_home_valid, home_pred)), 3
-            ),
-            "awayMAE": round(
-                float(mean_absolute_error(y_away_valid, away_pred)), 3
-            ),
-            "totalMAE": round(
-                float(mean_absolute_error(
-                    y_home_valid + y_away_valid,
-                    home_pred + away_pred
-                )), 3
-            ),
-            "validationMatches": len(X_valid),
-        }
-
-    return validation
-
-
-# ============================================================
-# TAHMİN
-# ============================================================
-
-def clamp_score(value):
-    return round(max(60.0, min(180.0, float(value))), 1)
-
-
-def make_model_prediction(models, features, feature_names, total_line):
-    feature_vector = np.array(
-        [[features[name] for name in feature_names]],
-        dtype=float
-    )
-
-    model_output = {}
-    home_values = []
-    away_values = []
-
-    for model_name, model_pair in models.items():
-        home_score = clamp_score(
-            model_pair["home"].predict(feature_vector)[0]
-        )
-
-        away_score = clamp_score(
-            model_pair["away"].predict(feature_vector)[0]
-        )
-
-        total_score = round(home_score + away_score, 1)
-
-        winner = get_winner(home_score, away_score)
-
-        direction = get_total_direction(total_score, total_line)
-
-        model_output[model_name] = {
-            "homeScore": home_score,
-            "awayScore": away_score,
-            "totalScore": total_score,
-            "totalLine": total_line,
-            "totalDirection": direction,
-            "winner": winner,
-        }
-
-        home_values.append(home_score)
-        away_values.append(away_score)
-
-    ensemble_home = clamp_score(average(home_values))
-    ensemble_away = clamp_score(average(away_values))
-
-    ensemble_total = round(ensemble_home + ensemble_away, 1)
-
-    ensemble = {
-        "homeScore": ensemble_home,
-        "awayScore": ensemble_away,
-        "totalScore": ensemble_total,
-        "totalLine": total_line,
-        "totalDirection": get_total_direction(
-            ensemble_total, total_line
-        ),
-        "winner": get_winner(ensemble_home, ensemble_away),
+      if(id){
+        actualById.set(id,item);
+      }
     }
+  }
 
-    return {
-        "models": model_output,
-        "ensemble": ensemble,
+  buildMLPerformance();
+  renderMLInfo();
+}
+
+/* ---------------- MOTOR DEĞİŞTİRME ---------------- */
+
+async function switchEngine(next){
+  engine=next;
+
+  document.getElementById("classicBtn").classList.toggle("active",engine==="classic");
+  document.getElementById("mlBtn").classList.toggle("active",engine==="ml");
+
+  document.getElementById("classicSummary").classList.toggle("hidden",engine!=="classic");
+  document.getElementById("mlSummary").classList.toggle("hidden",engine!=="ml");
+  document.getElementById("mlTypeFilter").classList.toggle("hidden",engine!=="ml");
+
+  document.getElementById("headerSubtitle").textContent=engine==="ml"
+    ?"NBA · RANDOM FOREST · XGBOOST · LIGHTGBM · CATBOOST · ENSEMBLE"
+    :"MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ";
+
+  statusFilter.value="all";
+  content.innerHTML='<div class="loading">🏀 Veriler yükleniyor...</div>';
+
+  try{
+    if(engine==="classic")await loadClassic();
+    else await loadML();
+
+    setDefaultDate();
+    render();
+  }catch(error){
+    console.error(error);
+
+    content.innerHTML=`
+      <div class="error">
+        Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}
+        <br><br>
+        ${engine==="ml"
+          ?"ml-predictions.json ve ml-results.json dosyalarının basketbol klasöründe bulunduğunu kontrol et."
+          :"predictions.json dosyasını kontrol et."}
+      </div>`;
+
+    if(engine==="ml"){
+      document.getElementById("mlPerformance").innerHTML=
+        '<div class="error">ML performans dosyası yüklenemedi.</div>';
+      document.getElementById("mlInfo").textContent="ML verisi yüklenemedi.";
     }
-
-
-# ============================================================
-# HEDEF MAÇLAR
-# ============================================================
-
-def build_target_matches(matches):
-    targets = []
-    seen = set()
-
-    for match in matches:
-        if not is_nba(match):
-            continue
-
-        if not (is_finished(match) or is_upcoming(match)):
-            continue
-
-        match_date = get_match_date(match)
-
-        if match_date is None:
-            continue
-
-        key = match_identity(match)
-
-        if key in seen:
-            continue
-
-        seen.add(key)
-        targets.append(match)
-
-    targets.sort(key=lambda item: get_match_date(item))
-
-    return targets
-
-
-# ============================================================
-# WALK-FORWARD TAHMİN
-# ============================================================
-
-def generate_predictions(
-    nba_matches,
-    targets,
-    feature_rows,
-    home_targets,
-    away_targets,
-    sample_dates,
-    feature_names
-):
-    predictions = []
-
-    stats = {
-        "historicalCandidates": sum(
-            1 for match in targets if is_finished(match)
-        ),
-        "historicalPredicted": 0,
-        "upcomingCandidates": sum(
-            1 for match in targets if is_upcoming(match)
-        ),
-        "upcomingPredicted": 0,
-        "skippedInsufficientHistory": 0,
-        "skippedInsufficientTraining": 0,
-        "skippedInsufficientLineHistory": 0,
-    }
-
-    if not feature_rows:
-        return predictions, stats
-
-    X_all = np.array([
-        [row[name] for name in feature_names]
-        for row in feature_rows
-    ], dtype=float)
-
-    y_home_all = np.array(home_targets, dtype=float)
-    y_away_all = np.array(away_targets, dtype=float)
-
-    model_cache = {}
-
-    for match in targets:
-        target_date = get_match_date(match)
-
-        if target_date is None:
-            continue
-
-        features = build_features(nba_matches, match)
-
-        if features is None:
-            stats["skippedInsufficientHistory"] += 1
-            continue
-
-        train_indices = [
-            index
-            for index, sample_date in enumerate(sample_dates)
-            if sample_date < target_date
-        ]
-
-        if len(train_indices) < MIN_TRAINING_ROWS:
-            stats["skippedInsufficientTraining"] += 1
-            continue
-
-        line_data = get_historical_total_line(
-            nba_matches, target_date
-        )
-
-        if line_data is None:
-            stats["skippedInsufficientLineHistory"] += 1
-            continue
-
-        cache_key = target_date.isoformat()
-
-        if cache_key not in model_cache:
-            model_cache[cache_key] = fit_models(
-                X_all[train_indices],
-                y_home_all[train_indices],
-                y_away_all[train_indices]
-            )
-
-        features = {
-            name: features.get(name, 0.0)
-            for name in feature_names
-        }
-
-        prediction = make_model_prediction(
-            model_cache[cache_key],
-            features,
-            feature_names,
-            line_data["line"]
-        )
-
-        historical = is_finished(match)
-
-        actual_home = (
-            get_score(match, "homeScore") if historical else None
-        )
-
-        actual_away = (
-            get_score(match, "awayScore") if historical else None
-        )
-
-        actual_total = (
-            round(actual_home + actual_away, 1)
-            if actual_home is not None and actual_away is not None
-            else None
-        )
-
-        actual_winner = (
-            get_winner(actual_home, actual_away)
-            if actual_home is not None and actual_away is not None
-            else None
-        )
-
-        if historical:
-            for model_result in prediction["models"].values():
-                model_result["totalResult"] = evaluate_total_direction(
-                    model_result["totalDirection"],
-                    actual_total,
-                    model_result["totalLine"]
-                )
-
-                model_result["winnerResult"] = evaluate_winner(
-                    model_result["winner"],
-                    actual_winner
-                )
-
-            ensemble = prediction["ensemble"]
-
-            ensemble["totalResult"] = evaluate_total_direction(
-                ensemble["totalDirection"],
-                actual_total,
-                ensemble["totalLine"]
-            )
-
-            ensemble["winnerResult"] = evaluate_winner(
-                ensemble["winner"],
-                actual_winner
-            )
-
-        result = {
-            "matchId": normalize_match_id(match.get("id")) or None,
-            "sourceMatchId": match.get("id"),
-
-            "date": match.get("date"),
-            "utcDate": match.get("utcDate"),
-
-            "league": LEAGUE_NAME,
-
-            "homeTeam": match.get("homeTeam"),
-            "awayTeam": match.get("awayTeam"),
-
-            "predictionType": (
-                "historical_backtest" if historical else "upcoming"
-            ),
-
-            "trainingSamplesBeforeMatch": len(train_indices),
-            "trainingCutoff": target_date.isoformat(),
-
-            "modelCount": len(MODEL_NAMES),
-
-            "totalLine": line_data["line"],
-
-            "totalLineInfo": {
-                "method": line_data["method"],
-                "historyCount": line_data["historyCount"],
-                "historyAverage": line_data["historyAverage"],
-            },
-
-            "actualHomeScore": actual_home,
-            "actualAwayScore": actual_away,
-            "actualTotal": actual_total,
-            "actualWinner": actual_winner,
-
-            "prediction": prediction,
-        }
-
-        predictions.append(result)
-
-        if historical:
-            stats["historicalPredicted"] += 1
-        else:
-            stats["upcomingPredicted"] += 1
-
-        ensemble = prediction["ensemble"]
-
-        print(
-            f"[{'GEÇMİŞ' if historical else 'GELECEK'}] "
-            f"{result['homeTeam']} - {result['awayTeam']} | "
-            f"Tahmin: {ensemble['homeScore']}-"
-            f"{ensemble['awayScore']} | "
-            f"Barem: {line_data['line']} | "
-            f"{ensemble['totalDirection']} | "
-            f"{ensemble['winner']} | "
-            f"Eğitim: {len(train_indices)} maç"
-        )
-
-    return predictions, stats
-
-
-# ============================================================
-# ANA İŞLEM
-# ============================================================
-
-def main():
-    print("=" * 65)
-    print("NBA MACHINE LEARNING - WALK FORWARD")
-    print("ALT / ÜST + MS1 / MS2 TAHMİN SİSTEMİ")
-    print("=" * 65)
-
-    input_file = find_input_file()
-    data = load_json(input_file)
-
-    all_matches = data.get("matches", [])
-
-    if not isinstance(all_matches, list):
-        raise ValueError(
-            "basketball.json içindeki matches alanı geçersiz."
-        )
-
-    original_count = len(all_matches)
-
-    all_matches = deduplicate_matches(all_matches)
-
-    removed_duplicates = original_count - len(all_matches)
-
-    nba_matches = [
-        match for match in all_matches
-        if is_nba(match)
-    ]
-
-    finished_matches = [
-        match for match in nba_matches
-        if is_finished(match)
-    ]
-
-    upcoming_matches = [
-        match for match in nba_matches
-        if is_upcoming(match)
-    ]
-
-    targets = build_target_matches(nba_matches)
-
-    print("Veri dosyası:", input_file)
-    print("İlk kayıt:", original_count)
-    print("Tekilleştirme sonrası:", len(all_matches))
-    print("Temizlenen tekrar:", removed_duplicates)
-    print("NBA maçları:", len(nba_matches))
-    print("Tamamlanan NBA maçları:", len(finished_matches))
-    print("Yaklaşan NBA maçları:", len(upcoming_matches))
-
-    print("\nGeçmiş eğitim verisi hazırlanıyor...")
-
-    (
-        feature_rows,
-        home_targets,
-        away_targets,
-        sample_dates
-    ) = build_training_data(nba_matches)
-
-    print("Eğitim örneği:", len(feature_rows))
-
-    output = {
-        "updatedAt": current_utc().isoformat(),
-        "source": input_file.name,
-        "league": LEAGUE_NAME,
-        "predictionMethod": "walk_forward",
-        "historicalPredictionsEnabled": True,
-        "models": MODEL_NAMES,
-
-        "deduplication": {
-            "originalRecords": original_count,
-            "uniqueRecords": len(all_matches),
-            "removedDuplicates": removed_duplicates,
-            "method": "normalized_match_id",
-        },
-
-        "totalLineMethod": {
-            "name": "previous_nba_matches_average",
-            "historyMatches": TOTAL_LINE_HISTORY,
-            "minimumHistory": MIN_LINE_HISTORY,
-            "rounding": 0.5,
-            "description": (
-                "Hedef maçtan önce tamamlanmış son NBA maçlarının "
-                "toplam sayı ortalaması 0.5 bareme yuvarlanır."
-            ),
-        },
-
-        "training": {
-            "completedMatches": len(finished_matches),
-            "trainingSamples": len(feature_rows),
-            "minimumTeamHistory": MIN_TEAM_HISTORY,
-            "minimumTrainingRows": MIN_TRAINING_ROWS,
-            "featureCount": 0,
-            "validation": {},
-        },
-
-        "diagnostics": {
-            "totalRecords": original_count,
-            "uniqueRecords": len(all_matches),
-            "removedDuplicates": removed_duplicates,
-            "nbaMatches": len(nba_matches),
-            "finishedMatches": len(finished_matches),
-            "upcomingMatches": len(upcoming_matches),
-            "historicalCandidates": 0,
-            "historicalPredicted": 0,
-            "upcomingPredicted": 0,
-            "skippedInsufficientHistory": 0,
-            "skippedInsufficientTraining": 0,
-            "skippedInsufficientLineHistory": 0,
-            "todayUTC": current_utc().date().isoformat(),
-        },
-
-        "predictions": [],
-    }
-
-    if len(feature_rows) < MIN_TRAINING_ROWS:
-        output["training"]["status"] = "insufficient_data"
-        output["training"]["message"] = (
-            f"En az {MIN_TRAINING_ROWS} eğitim örneği gerekiyor."
-        )
-
-        output["summary"] = {
-            "historicalMatches": len(finished_matches),
-            "historicalPredictedMatches": 0,
-            "upcomingMatches": len(upcoming_matches),
-            "predictedUpcomingMatches": 0,
-            "predictedMatches": 0,
-        }
-
-        save_json(output)
-
-        print("\nYeterli eğitim verisi bulunamadı.")
-        print("Çıktı:", OUTPUT_FILE)
-        return
-
-    feature_names = list(feature_rows[0].keys())
-
-    output["training"]["status"] = "trained"
-    output["training"]["featureCount"] = len(feature_names)
-
-    print("\nGenel model doğrulaması hazırlanıyor...")
-
-    X_all = np.array([
-        [row[name] for name in feature_names]
-        for row in feature_rows
-    ], dtype=float)
-
-    y_home_all = np.array(home_targets, dtype=float)
-    y_away_all = np.array(away_targets, dtype=float)
-
-    validation = build_validation(
-        X_all,
-        y_home_all,
-        y_away_all
-    )
-
-    output["training"]["validation"] = validation
-
-    for name, metrics in validation.items():
-        print(
-            f"{name}: "
-            f"Ev MAE={metrics['homeMAE']} | "
-            f"Dep MAE={metrics['awayMAE']} | "
-            f"Toplam MAE={metrics['totalMAE']}"
-        )
-
-    print("\nWalk-forward tahminleri başlıyor...")
-
-    predictions, stats = generate_predictions(
-        nba_matches,
-        targets,
-        feature_rows,
-        home_targets,
-        away_targets,
-        sample_dates,
-        feature_names
-    )
-
-    output["predictions"] = predictions
-    output["diagnostics"].update(stats)
-
-    output["summary"] = {
-        "historicalMatches": stats["historicalCandidates"],
-        "historicalPredictedMatches": stats["historicalPredicted"],
-        "upcomingMatches": stats["upcomingCandidates"],
-        "predictedUpcomingMatches": stats["upcomingPredicted"],
-        "predictedMatches": len(predictions),
-        "modelCount": len(MODEL_NAMES),
-    }
-
-    save_json(output)
-
-    print("\n" + "=" * 65)
-    print("NBA ML TAHMİN RAPORU")
-    print("=" * 65)
-
-    print("Geçmiş maç adayı:", stats["historicalCandidates"])
-    print("Tahmini üretilen geçmiş maç:", stats["historicalPredicted"])
-    print("Gelecek maç adayı:", stats["upcomingCandidates"])
-    print("Tahmini üretilen gelecek maç:", stats["upcomingPredicted"])
-    print("Temizlenen mükerrer kayıt:", removed_duplicates)
-    print("Yetersiz takım geçmişi:", stats["skippedInsufficientHistory"])
-    print("Yetersiz eğitim verisi:", stats["skippedInsufficientTraining"])
-    print("Yetersiz barem geçmişi:", stats["skippedInsufficientLineHistory"])
-    print("Toplam ML tahmini:", len(predictions))
-
-    print("Çıktı:", OUTPUT_FILE)
-    print("=" * 65)
-
-
-if __name__ == "__main__":
-    main()
+  }
+}
+
+document.getElementById("classicBtn").addEventListener("click",()=>switchEngine("classic"));
+document.getElementById("mlBtn").addEventListener("click",()=>switchEngine("ml"));
+
+dateFilter.addEventListener("change",render);
+leagueFilter.addEventListener("change",render);
+statusFilter.addEventListener("change",render);
+mlPeriodFilter.addEventListener("change",render);
+mlModelFilter.addEventListener("change",render);
+
+switchEngine("classic");
+</script>
+
+<script>
+if("serviceWorker" in navigator){
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").catch(error=>{
+      console.error("Service Worker kaydedilemedi:",error);
+    });
+  });
+}
+</script>
+</body>
+</html>
