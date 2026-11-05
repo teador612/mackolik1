@@ -1,3 +1,4 @@
+
 # ============================================================
 # NBA BASKETBOL TAHMİN SİSTEMİ
 #
@@ -281,6 +282,29 @@ def has_real_final_score(match):
     return home is not None and away is not None
 
 
+def has_valid_final_score(match):
+    """
+    Geçmiş istatistiklerde kullanılabilecek gerçek skor kontrolü.
+
+    NBA'de tamamlanmış 0-0 maç sonucu geçerli kabul edilmez.
+    Bu kayıtlar takım ortalamalarına ve bareme katılmaz.
+    """
+
+    home = get_score(match, "home")
+    away = get_score(match, "away")
+
+    if home is None or away is None:
+        return False
+
+    if home < 0 or away < 0:
+        return False
+
+    if home == 0 and away == 0:
+        return False
+
+    return True
+
+
 def is_match_finished(match):
     if is_explicitly_unstarted(match):
         return False
@@ -417,6 +441,9 @@ def make_history_record(match):
     if not is_match_finished(match):
         return None
 
+    if not has_valid_final_score(match):
+        return None
+
     home = get_team_name(match, "home")
     away = get_team_name(match, "away")
 
@@ -549,6 +576,9 @@ def find_team_history(matches, team_name, target_match):
 
     for match in matches:
         if not is_match_finished(match):
+            continue
+
+        if not has_valid_final_score(match):
             continue
 
         if not match_is_before(match, target_match):
@@ -724,7 +754,7 @@ def calculate_natural_reference(history):
     for index, item in enumerate(ordered):
         total = safe_float(item.get("total"))
 
-        if total is None:
+        if total is None or total < 0:
             continue
 
         valid.append(total)
@@ -825,6 +855,12 @@ def calculate_natural_prediction(expected_total, reference):
 
 def calculate_actual(match):
     if not is_match_finished(match):
+        return {
+            "actualTotal": None,
+            "actualResult1X2": None,
+        }
+
+    if not has_valid_final_score(match):
         return {
             "actualTotal": None,
             "actualResult1X2": None,
