@@ -222,7 +222,7 @@ window.SPORT_TOTO_DATA = {
       {"number":12,"home":"Lens","away":"Como","result":"2"},
       {"number":13,"home":"S. Prag","away":"Arsenal","result":"2"},
       {"number":14,"home":"Celtic","away":"Beşiktaş","result":null},
-      {"number":15,"home":"Trabzonspor","away":"Freiburg","result":null},
+      {"number":15,"home":"Trabzonspor","away":"Freiburg","result":"2"},
     ],
   }
 };
