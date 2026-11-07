@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -161,15 +162,36 @@ input[type=date]{color-scheme:dark}
   background:#201811;text-align:center;color:#b8a28c;font-size:11px;line-height:1.7
 }
 .error{padding:14px;border:1px solid #78383a;border-radius:10px;background:#351b1b;color:#ff9c9f;font-size:11px}
-.ml-banner{
-  margin:0 0 10px;padding:11px;border:1px solid #80532d;border-radius:10px;
-  background:linear-gradient(135deg,#382517,#241910);color:#f6d1a9
+
+/* ML başarı oranı */
+.ml-performance{
+  margin-bottom:10px;padding:15px;border:1px solid var(--line);
+  border-radius:11px;background:linear-gradient(145deg,#2c2118,#201812);
+  text-align:center
 }
-.ml-banner strong{color:var(--orange-light)}
-.ml-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
-.ml-stat{padding:8px 4px;border:1px solid #493326;border-radius:8px;background:#211811;text-align:center}
-.ml-stat b{display:block;color:#fff;font-size:15px}
-.ml-stat span{display:block;margin-top:3px;color:var(--muted);font-size:9px}
+.ml-success-rate{
+  color:var(--green);font-size:32px;font-weight:900;
+  font-variant-numeric:tabular-nums
+}
+.ml-success-label{
+  margin-top:5px;color:var(--muted);font-size:10px;font-weight:900;
+  letter-spacing:.5px
+}
+.ml-success-panel{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:13px
+}
+.ml-success-item{
+  padding:10px 5px;border:1px solid var(--line);
+  border-radius:8px;background:#211811
+}
+.ml-success-item strong{display:block;font-size:19px}
+.ml-success-item span{
+  display:block;margin-top:4px;color:var(--muted);font-size:9px
+}
+.ml-success-note{
+  margin-top:10px;color:var(--muted);font-size:9px;line-height:1.5
+}
+
 .ml-model-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
 .ml-model{padding:9px;border:1px solid #493326;border-radius:8px;background:#241b14;text-align:center}
 .ml-model.ensemble{border-color:#9a673a;background:#3a2819}
@@ -180,11 +202,6 @@ input[type=date]{color-scheme:dark}
   margin-top:8px;padding:8px;border:1px solid #634b2a;border-radius:7px;
   background:#302414;color:#ffda91;text-align:center;font-size:11px;font-weight:900
 }
-.ml-performance{margin-bottom:10px;padding:11px;border:1px solid var(--line);border-radius:11px;background:#201811}
-.ml-performance table{width:100%;border-collapse:collapse;font-size:10px}
-.ml-performance th,.ml-performance td{padding:7px 4px;border-bottom:1px solid #493326;text-align:center}
-.ml-performance th{color:#d9ad83;font-weight:900}
-.ml-performance td:first-child,.ml-performance th:first-child{text-align:left}
 .ml-filter{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .ml-pick{
   display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:8px 5px;
@@ -200,45 +217,30 @@ input[type=date]{color-scheme:dark}
 .ml-pick.push{border-color:#85672a;background:#4b3816}
 .ml-pick.push strong,.ml-pick.push small{color:#ffd166}
 
-/* Yeni tahmin görünümü */
+/* Ana kart tahminleri */
 .ml-main-predictions{
-  display:flex;
-  flex-direction:column;
-  align-items:flex-end;
-  gap:6px;
-  margin-top:5px;
+  display:flex;flex-direction:column;align-items:flex-end;
+  gap:6px;margin-top:5px
 }
 .ml-main-pick{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  min-width:100px;
-  padding:6px 9px;
-  border-radius:6px;
-  font-size:10px;
-  font-weight:900;
-  white-space:nowrap;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:100px;padding:6px 9px;border-radius:6px;
+  font-size:10px;font-weight:900;white-space:nowrap
 }
 .ml-main-pick.success{
-  background:#163b2a;
-  color:var(--green);
-  border:1px solid #285d40;
+  background:#163b2a;color:var(--green);border:1px solid #285d40
 }
 .ml-main-pick.fail{
-  background:#421f21;
-  color:var(--red);
-  border:1px solid #6b3034;
+  background:#421f21;color:var(--red);border:1px solid #6b3034
 }
 .ml-main-pick.pending{
-  background:#4b3816;
-  color:var(--yellow);
-  border:1px solid #85672a;
+  background:#4b3816;color:var(--yellow);border:1px solid #85672a
+}
+.ml-main-pick.push{
+  background:#4b3816;color:var(--yellow);border:1px solid #85672a
 }
 .ml-main-label{
-  color:#b7a28e;
-  font-size:8px;
-  font-weight:800;
-  margin-bottom:3px;
+  color:#b7a28e;font-size:8px;font-weight:800;margin-bottom:3px
 }
 .hidden{display:none!important}
 
@@ -250,7 +252,6 @@ input[type=date]{color-scheme:dark}
   .match-head{grid-template-columns:40px minmax(0,1fr) auto;gap:6px;padding:8px 7px}
   .team-name{font-size:10px}.score{font-size:12px}
   .prediction-box{min-width:91px}.prediction{min-width:70px;font-size:9px}
-  .ml-performance{overflow-x:auto}.ml-performance table{min-width:390px}
 }
 @media(max-width:360px){
   .summary{grid-template-columns:repeat(2,1fr)}
@@ -296,11 +297,10 @@ input[type=date]{color-scheme:dark}
   </div>
 
   <div id="mlSummary" class="hidden">
-    <div class="section-title">🤖 ML Model Performansı</div>
+    <div class="section-title">🏀 MS Tahmin Başarı Oranı</div>
     <div id="mlPerformance" class="ml-performance">
-      <div class="loading">ML performansı yükleniyor...</div>
+      <div class="loading">MS başarı oranı hesaplanıyor...</div>
     </div>
-    <div class="ml-banner" id="mlInfo">ML tahminleri yükleniyor...</div>
   </div>
 
   <div class="filters">
@@ -672,10 +672,21 @@ function getMLTeamName(p,side){
 }
 
 function mlWinnerShort(winner){
-  if(winner==="HOME")return "MS1";
-  if(winner==="AWAY")return "MS2";
-  if(winner==="DRAW"||winner==="TIE")return "Beraberlik";
+  const value=normalizeWinner(winner);
+  if(value==="HOME")return "MS1";
+  if(value==="AWAY")return "MS2";
+  if(value==="TIE")return "Beraberlik";
   return "Belirsiz";
+}
+
+function normalizeWinner(winner){
+  const value=String(winner??"").trim().toUpperCase();
+
+  if(["HOME","HOME_WIN","1","MS1"].includes(value))return "HOME";
+  if(["AWAY","AWAY_WIN","2","MS2"].includes(value))return "AWAY";
+  if(["DRAW","TIE","X","0","BERABERLIK","BERABERLİK"].includes(value))return "TIE";
+
+  return value;
 }
 
 function getMLConsensus(p){
@@ -684,7 +695,10 @@ function getMLConsensus(p){
   if(!votes.length)return {count:0,total:0,winner:null};
 
   const counts={};
-  votes.forEach(v=>counts[v]=(counts[v]||0)+1);
+  votes.forEach(v=>{
+    const normalized=normalizeWinner(v);
+    counts[normalized]=(counts[normalized]||0)+1;
+  });
 
   const winner=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
 
@@ -739,7 +753,7 @@ function getMLWinnerResult(model,p){
 
   const actualWinner=actualWinnerFromScore(actual);
 
-  return model.winner===actualWinner?"success":"failed";
+  return normalizeWinner(model.winner)===actualWinner?"success":"failed";
 }
 
 function getMLTotalResult(model,p){
@@ -924,6 +938,7 @@ function createMLCard(p){
   function pickClass(result){
     if(result==="success")return "success";
     if(result==="failed")return "fail";
+    if(result==="push")return "push";
     return "pending";
   }
 
@@ -975,13 +990,15 @@ function createMLCard(p){
               <div class="ml-main-label">ALT / ÜST</div>
               <div class="ml-main-pick ${pickClass(totalResult)}">
                 ${escapeHtml(totalPrediction)}
+                ${totalResult==="success"?" ✓":totalResult==="failed"?" ✕":totalResult==="push"?" ＝":""}
               </div>
             </div>`:""}
 
           <div>
-            <div class="ml-main-label">MAÇ SONUCU</div>
+            <div class="ml-main-label">MS TAHMİNİ</div>
             <div class="ml-main-pick ${pickClass(winnerResult)}">
               ${escapeHtml(winnerPrediction)}
+              ${winnerResult==="success"?" ✓":winnerResult==="failed"?" ✕":winnerResult==="push"?" ＝":""}
             </div>
           </div>
 
@@ -1185,63 +1202,85 @@ function render(){
   content.appendChild(list);
 }
 
-/* ---------------- ML PERFORMANS ---------------- */
+/* ---------------- ML MS BAŞARI ORANI ---------------- */
 
 function buildMLPerformance(){
   const target=document.getElementById("mlPerformance");
-  const metrics=mlResults?.backtestMetrics??{};
-  const rankings=mlResults?.backtestRankings??[];
 
-  let rows="";
-  const order=rankings.length?rankings.map(x=>x.model):MODEL_NAMES.concat("Ensemble");
+  const records=[
+    ...(Array.isArray(mlResults?.backtestHistory)
+      ?mlResults.backtestHistory:[]),
+    ...(Array.isArray(mlResults?.history)
+      ?mlResults.history:[]
+    )
+  ];
 
-  for(const name of order){
-    const m=metrics[name];
-    if(!m)continue;
+  const unique=new Map();
 
-    rows+=`<tr>
-      <td>${escapeHtml(name)}</td>
-      <td>${m.matches??0}</td>
-      <td>${number(m.totalMAE)?.toFixed(2)??"-"}</td>
-      <td>${number(m.winnerAccuracy)!==null?"%"+number(m.winnerAccuracy).toFixed(1):"-"}</td>
-    </tr>`;
+  for(const p of records){
+    const id=normalizeMatchId(p.matchId??p.matchKey);
+
+    const fallback=[
+      getDate(p),
+      getMLTeamName(p,"home").toLowerCase(),
+      getMLTeamName(p,"away").toLowerCase()
+    ].join("|");
+
+    const key=id||fallback;
+
+    if(!unique.has(key)){
+      unique.set(key,p);
+    }else{
+      const old=unique.get(key);
+      if(!getMLActualScore(old)&&getMLActualScore(p)){
+        unique.set(key,p);
+      }
+    }
   }
 
-  const backtestCount=mlResults?.backtestSummary?.totalEvaluatedMatches??0;
-  const pending=Array.isArray(mlResults?.pending)?mlResults.pending.length:0;
-  const liveCount=Array.isArray(mlResults?.history)?mlResults.history.length:0;
+  let correct=0;
+  let incorrect=0;
+
+  for(const p of unique.values()){
+    const ensemble=getMLEnsemble(p);
+    const actual=getMLActualScore(p);
+
+    if(!actual||!ensemble?.winner)continue;
+
+    const result=getMLWinnerResult(ensemble,p);
+
+    if(result==="success")correct++;
+    else if(result==="failed")incorrect++;
+  }
+
+  const total=correct+incorrect;
+  const rate=total>0?(correct/total*100).toFixed(1):null;
 
   target.innerHTML=`
-    <strong>Geçmiş walk-forward testi</strong>
-    <table>
-      <thead>
-        <tr><th>Model</th><th>Maç</th><th>Toplam MAE</th><th>Kazanan</th></tr>
-      </thead>
-      <tbody>${rows||'<tr><td colspan="4">Backtest verisi bulunamadı.</td></tr>'}</tbody>
-    </table>
-    <div class="ml-stats">
-      <div class="ml-stat"><b>${backtestCount}</b><span>Test edilen geçmiş maç</span></div>
-      <div class="ml-stat"><b>${pending}</b><span>Bekleyen canlı tahmin</span></div>
-      <div class="ml-stat"><b>${liveCount}</b><span>Değerlendirilen canlı maç</span></div>
+    <div class="ml-success-rate">
+      ${rate!==null?"%"+rate:"-"}
     </div>
-    <div class="ml-note">
-      MAE ne kadar düşükse skor tahmin hatası o kadar düşüktür.
-      Kazanan yüzdesi geçmiş test performansıdır; canlı başarı garantisi değildir.
+
+    <div class="ml-success-label">
+      ENSEMBLE MS BAŞARISI
     </div>
-  `;
-}
 
-function renderMLInfo(){
-  const diagnostics=mlMeta?.diagnostics??{};
-  const training=mlMeta?.training??{};
+    <div class="ml-success-panel">
+      <div class="ml-success-item">
+        <strong style="color:var(--green)">${correct}</strong>
+        <span>Doğru MS</span>
+      </div>
 
-  document.getElementById("mlInfo").innerHTML=`
-    <strong>ML motoru:</strong> ${escapeHtml(training.status??"Veri yüklendi")}
-    · Eğitim maçları: ${training.completedMatches??"-"}
-    · Eğitim örneklemi: ${training.trainingSamples??"-"}
-    · Geçmiş tahmin: ${diagnostics.historicalPredicted??0}
-    · Gelecek tahmin: ${diagnostics.upcomingPredicted??0}
-    · Temizlenen tekrar: ${diagnostics.removedDuplicates??0}
+      <div class="ml-success-item">
+        <strong style="color:var(--red)">${incorrect}</strong>
+        <span>Yanlış MS</span>
+      </div>
+    </div>
+
+    <div class="ml-success-note">
+      Tamamlanmış maçların Ensemble MS1, MS2 ve beraberlik tahminleri gerçek sonuçlarla karşılaştırılır.
+      Oynanmamış maçlar hesaba katılmaz.
+    </div>
   `;
 }
 
@@ -1328,7 +1367,6 @@ async function loadML(){
   }
 
   buildMLPerformance();
-  renderMLInfo();
 }
 
 /* ---------------- MOTOR DEĞİŞTİRME ---------------- */
@@ -1370,8 +1408,7 @@ async function switchEngine(next){
 
     if(engine==="ml"){
       document.getElementById("mlPerformance").innerHTML=
-        '<div class="error">ML performans dosyası yüklenemedi.</div>';
-      document.getElementById("mlInfo").textContent="ML verisi yüklenemedi.";
+        '<div class="error">MS başarı oranı yüklenemedi.</div>';
     }
   }
 }
