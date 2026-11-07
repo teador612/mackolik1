@@ -13,16 +13,10 @@
 <style>
 :root{
   color-scheme:dark;
-  --court:#17130f;
-  --panel:#211a14;
-  --line:#493326;
-  --orange:#f28b35;
-  --orange-light:#ffb565;
-  --text:#f7eee4;
-  --muted:#ad9b89;
-  --green:#59dda0;
-  --red:#ff7b81;
-  --yellow:#ffd166;
+  --court:#17130f;--panel:#211a14;--line:#493326;
+  --orange:#f28b35;--orange-light:#ffb565;
+  --text:#f7eee4;--muted:#ad9b89;
+  --green:#59dda0;--red:#ff7b81;--yellow:#ffd166;
 }
 *{box-sizing:border-box}
 html,body{
@@ -31,8 +25,7 @@ html,body{
   font-size:13px
 }
 body{
-  background-image:
-  radial-gradient(ellipse at 50% -15%,#60381c 0,transparent 48%),
+  background-image:radial-gradient(ellipse at 50% -15%,#60381c 0,transparent 48%),
   linear-gradient(180deg,#21170f 0%,#17130f 42%,#120f0c 100%)
 }
 button,input,select{font:inherit}
@@ -69,11 +62,11 @@ button,input,select{font:inherit}
 .engine-btn.active{border-color:var(--orange);background:#503019;color:#ffcf9f}
 .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:8px}
 .summary-card{
-  padding:17px 5px;text-align:center;border:1px solid var(--line);
-  border-radius:13px;background:linear-gradient(145deg,#2c2118,#201812)
+  padding:12px 5px;text-align:center;border:1px solid var(--line);
+  border-radius:11px;background:linear-gradient(145deg,#2c2118,#201812)
 }
-.summary-value{color:#fff7ec;font-size:23px;font-weight:900}
-.summary-label{margin-top:5px;color:var(--muted);font-size:9px}
+.summary-value{color:#fff7ec;font-size:19px;font-weight:900}
+.summary-label{margin-top:4px;color:var(--muted);font-size:9px}
 .filters{
   display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:8px;
   margin-bottom:13px;padding:12px;border:1px solid var(--line);
@@ -111,10 +104,7 @@ input[type=date]{color-scheme:dark}
 .match-time strong{display:block;margin-bottom:4px;color:var(--orange-light);font-size:11px}
 .teams{min-width:0}
 .team-row{display:flex;align-items:center;justify-content:space-between;gap:6px;line-height:1.6}
-.team-name{
-  min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  color:#f5eade;font-size:12px;font-weight:750
-}
+.team-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f5eade;font-size:12px;font-weight:750}
 .score{flex:0 0 auto;color:#fff;font-size:14px;font-weight:900;font-variant-numeric:tabular-nums}
 .score.empty{color:#796957}
 .score.correct{color:var(--green)}
@@ -138,14 +128,11 @@ input[type=date]{color-scheme:dark}
 .match-card.open .expand-icon{transform:rotate(180deg)}
 .details{display:none;padding:0 10px 12px;border-top:1px solid #493326;background:#1a140f}
 .match-card.open .details{display:block}
-.detail-title,.period-title{
-  margin:12px 0 7px;color:var(--orange-light);font-size:10px;
-  font-weight:900;text-transform:uppercase;letter-spacing:.6px
-}
+.detail-title,.period-title{margin:12px 0 7px;color:var(--orange-light);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.6px}
 .detail-top{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:9px 0}
 .detail-box,.x2-card,.period-card{
-  min-width:0;padding:9px 5px;border:1px solid #493326;
-  border-radius:8px;background:#271e17;text-align:center
+  min-width:0;padding:9px 5px;border:1px solid #493326;border-radius:8px;
+  background:#271e17;text-align:center
 }
 .detail-label,.x2-name,.period-name{color:#b19a83;font-size:9px;margin-bottom:5px}
 .detail-value{color:#fff1e2;font-size:12px;font-weight:900;overflow-wrap:anywhere}
@@ -162,23 +149,19 @@ input[type=date]{color-scheme:dark}
 }
 .error{padding:14px;border:1px solid #78383a;border-radius:10px;background:#351b1b;color:#ff9c9f;font-size:11px}
 
-/* ML başarı panelleri */
+/* ML başarı paneli */
 .ml-performance{
-  margin-bottom:10px;
+  margin-bottom:10px;padding:15px;border:1px solid var(--line);
+  border-radius:11px;background:linear-gradient(145deg,#2c2118,#201812);
+  text-align:center
 }
-.ml-performance .summary{
-  margin-bottom:13px;
-}
-.ml-performance .summary-card{
-  padding:17px 5px;
-  background:linear-gradient(145deg,#2c2118,#201812);
-}
-.ml-performance .summary-value{
-  font-size:23px;
-}
-.ml-performance .summary-label{
-  font-size:9px;
-}
+.ml-success-rate{color:var(--green);font-size:32px;font-weight:900;font-variant-numeric:tabular-nums}
+.ml-success-label{margin-top:5px;color:var(--muted);font-size:10px;font-weight:900;letter-spacing:.5px}
+.ml-success-panel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:13px}
+.ml-success-item{padding:10px 5px;border:1px solid var(--line);border-radius:8px;background:#211811}
+.ml-success-item strong{display:block;font-size:19px}
+.ml-success-item span{display:block;margin-top:4px;color:var(--muted);font-size:9px}
+.ml-success-note{margin-top:10px;color:var(--muted);font-size:9px;line-height:1.5}
 
 .ml-model-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:10px}
 .ml-model{padding:9px;border:1px solid #493326;border-radius:8px;background:#241b14;text-align:center}
@@ -186,15 +169,8 @@ input[type=date]{color-scheme:dark}
 .ml-model-name{color:#c5a88c;font-size:9px;font-weight:800}
 .ml-model-score{margin-top:5px;color:#fff;font-size:13px;font-weight:900}
 .ml-note{margin-top:7px;color:var(--muted);font-size:9px;line-height:1.5}
-.ml-consensus{
-  margin-top:8px;padding:8px;border:1px solid #634b2a;border-radius:7px;
-  background:#302414;color:#ffda91;text-align:center;font-size:11px;font-weight:900
-}
-.ml-filter{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
-.ml-pick{
-  display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:8px 5px;
-  border:1px solid #59402e;border-radius:7px;background:#1b1510
-}
+.ml-consensus{margin-top:8px;padding:8px;border:1px solid #634b2a;border-radius:7px;background:#302414;color:#ffda91;text-align:center;font-size:11px;font-weight:900}
+.ml-pick{display:flex;flex-direction:column;gap:4px;margin-top:8px;padding:8px 5px;border:1px solid #59402e;border-radius:7px;background:#1b1510}
 .ml-pick span{color:#b19a83;font-size:8px;font-weight:800}
 .ml-pick strong{color:#fff1e2;font-size:12px;font-weight:900}
 .ml-pick small{color:#b19a83;font-size:8px;font-weight:900}
@@ -204,50 +180,29 @@ input[type=date]{color-scheme:dark}
 .ml-pick.incorrect strong,.ml-pick.incorrect small{color:#ff7b81}
 .ml-pick.push{border-color:#85672a;background:#4b3816}
 .ml-pick.push strong,.ml-pick.push small{color:#ffd166}
-
-/* Ana kart tahminleri */
-.ml-main-predictions{
-  display:flex;flex-direction:column;align-items:flex-end;
-  gap:6px;margin-top:5px
-}
-.ml-main-pick{
-  display:inline-flex;align-items:center;justify-content:center;
-  min-width:100px;padding:6px 9px;border-radius:6px;
-  font-size:10px;font-weight:900;white-space:nowrap
-}
-.ml-main-pick.success{
-  background:#163b2a;color:var(--green);border:1px solid #285d40
-}
-.ml-main-pick.fail{
-  background:#421f21;color:var(--red);border:1px solid #6b3034
-}
-.ml-main-pick.pending{
-  background:#4b3816;color:var(--yellow);border:1px solid #85672a
-}
-.ml-main-pick.push{
-  background:#4b3816;color:var(--yellow);border:1px solid #85672a
-}
-.ml-main-label{
-  color:#b7a28e;font-size:8px;font-weight:800;margin-bottom:3px
-}
+.ml-main-predictions{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-top:5px}
+.ml-main-pick{display:inline-flex;align-items:center;justify-content:center;min-width:100px;padding:6px 9px;border-radius:6px;font-size:10px;font-weight:900;white-space:nowrap}
+.ml-main-pick.success{background:#163b2a;color:var(--green);border:1px solid #285d40}
+.ml-main-pick.fail{background:#421f21;color:var(--red);border:1px solid #6b3034}
+.ml-main-pick.pending,.ml-main-pick.push{background:#4b3816;color:var(--yellow);border:1px solid #85672a}
+.ml-main-label{color:#b7a28e;font-size:8px;font-weight:800;margin-bottom:3px}
+.ml-filter{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
 .hidden{display:none!important}
 
 @media(max-width:560px){
   .container{padding:9px}.header{padding:12px}.title{font-size:18px}
-  .summary{gap:5px}.summary-card{padding:12px 3px}
-  .summary-value{font-size:17px}.summary-label{font-size:8px}
+  .summary{gap:5px}.summary-card{padding:9px 3px}
+  .summary-value{font-size:16px}.summary-label{font-size:8px}
   .filters{padding:9px;gap:7px}
   .match-head{grid-template-columns:40px minmax(0,1fr) auto;gap:6px;padding:8px 7px}
   .team-name{font-size:10px}.score{font-size:12px}
   .prediction-box{min-width:91px}.prediction{min-width:70px;font-size:9px}
-  .ml-performance .summary{gap:5px}
-  .ml-performance .summary-card{padding:12px 3px}
-  .ml-performance .summary-value{font-size:17px}
 }
 @media(max-width:360px){
   .summary{grid-template-columns:repeat(2,1fr)}
   .filters{grid-template-columns:1fr}
   .period-grid{grid-template-columns:repeat(3,1fr)}
+  .ml-success-panel{grid-template-columns:1fr}
   .header:after{right:65px}
 }
 </style>
@@ -255,7 +210,6 @@ input[type=date]{color-scheme:dark}
 
 <body>
 <div class="container">
-
   <div class="header">
     <div>
       <div class="title">🏀 Basketbol Tahmin</div>
@@ -288,69 +242,23 @@ input[type=date]{color-scheme:dark}
   </div>
 
   <div id="mlSummary" class="hidden">
-    <div class="ml-performance">
-      <div class="section-title">📊 MAÇ TOPLAM ALT / ÜST BAŞARISI</div>
-      <div class="summary">
-        <div class="summary-card">
-          <div class="summary-value" id="mlTotalRate">-</div>
-          <div class="summary-label">Başarı</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlTotalSuccess">-</div>
-          <div class="summary-label">Başarılı</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlTotalFailed">-</div>
-          <div class="summary-label">Başarısız</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlTotalCompleted">-</div>
-          <div class="summary-label">Biten</div>
-        </div>
-      </div>
-
-      <div class="section-title">🎯 MAÇ SONUCU (1X2) BAŞARISI</div>
-      <div class="summary">
-        <div class="summary-card">
-          <div class="summary-value" id="mlWinnerRate">-</div>
-          <div class="summary-label">Başarı</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlWinnerSuccess">-</div>
-          <div class="summary-label">Başarılı</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlWinnerFailed">-</div>
-          <div class="summary-label">Başarısız</div>
-        </div>
-        <div class="summary-card">
-          <div class="summary-value" id="mlWinnerCompleted">-</div>
-          <div class="summary-label">Biten</div>
-        </div>
-      </div>
+    <div class="section-title">🏀 MS Tahmin Başarı Oranı</div>
+    <div id="mlPerformance" class="ml-performance">
+      <div class="loading">MS başarı oranı hesaplanıyor...</div>
     </div>
   </div>
 
   <div class="filters">
-    <div class="filter">
-      <label for="dateFilter">📅 Tarih</label>
-      <input type="date" id="dateFilter">
-    </div>
+    <div class="filter"><label for="dateFilter">📅 Tarih</label><input type="date" id="dateFilter"></div>
     <div class="filter">
       <label for="leagueFilter">🏆 Lig</label>
-      <select id="leagueFilter">
-        <option value="all">Tüm ligler</option>
-        <option value="NBA">NBA</option>
-      </select>
+      <select id="leagueFilter"><option value="all">Tüm ligler</option><option value="NBA">NBA</option></select>
     </div>
     <div class="filter">
       <label for="statusFilter">📊 Durum</label>
       <select id="statusFilter">
-        <option value="all">Tümü</option>
-        <option value="pending">Oynanmamış</option>
-        <option value="success">Başarılı</option>
-        <option value="failed">Başarısız</option>
-        <option value="push">Push</option>
+        <option value="all">Tümü</option><option value="pending">Oynanmamış</option>
+        <option value="success">Başarılı</option><option value="failed">Başarısız</option><option value="push">Push</option>
       </select>
     </div>
   </div>
@@ -362,20 +270,13 @@ input[type=date]{color-scheme:dark}
       <option value="historical_backtest">Geçmiş backtest maçları</option>
     </select>
     <select id="mlModelFilter">
-      <option value="all">Tüm modeller</option>
-      <option value="RandomForest">Random Forest</option>
-      <option value="XGBoost">XGBoost</option>
-      <option value="LightGBM">LightGBM</option>
-      <option value="CatBoost">CatBoost</option>
-      <option value="Ensemble">Ensemble</option>
+      <option value="all">Tüm modeller</option><option value="RandomForest">Random Forest</option>
+      <option value="XGBoost">XGBoost</option><option value="LightGBM">LightGBM</option>
+      <option value="CatBoost">CatBoost</option><option value="Ensemble">Ensemble</option>
     </select>
   </div>
 
-  <div class="status-line">
-    <span id="dateTitle">Maçlar</span>
-    <span class="status-count" id="matchCount">0 maç</span>
-  </div>
-
+  <div class="status-line"><span id="dateTitle">Maçlar</span><span class="status-count" id="matchCount">0 maç</span></div>
   <div id="content"><div class="loading">🏀 Veriler yükleniyor...</div></div>
 </div>
 
@@ -384,12 +285,7 @@ input[type=date]{color-scheme:dark}
 
 const CACHE_KEY="?v="+Date.now();
 const MODEL_NAMES=["RandomForest","XGBoost","LightGBM","CatBoost"];
-const MODEL_LABELS={
-  RandomForest:"Random Forest",
-  XGBoost:"XGBoost",
-  LightGBM:"LightGBM",
-  CatBoost:"CatBoost"
-};
+const MODEL_LABELS={RandomForest:"Random Forest",XGBoost:"XGBoost",LightGBM:"LightGBM",CatBoost:"CatBoost"};
 
 let engine="classic";
 let predictions=[];
@@ -408,16 +304,12 @@ const matchCount=document.getElementById("matchCount");
 const dateTitle=document.getElementById("dateTitle");
 
 function escapeHtml(value){
-  return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;")
-    .replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  return String(value??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
-
 function number(value){
   if(value===null||value===undefined||value==="")return null;
-  const n=Number(value);
-  return Number.isFinite(n)?n:null;
+  const n=Number(value);return Number.isFinite(n)?n:null;
 }
-
 function normalizeDate(value){
   if(!value)return "";
   const text=String(value).trim();
@@ -425,69 +317,43 @@ function normalizeDate(value){
   const match=text.match(/^(\d{4})-(\d{2})-(\d{2})/);
   return match?match[1]+"-"+match[2]+"-"+match[3]:"";
 }
-
 function todayString(){
   const now=new Date();
   return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
 }
-
 function formatDate(date){
-  if(!date)return "-";
-  const parts=date.split("-");
+  if(!date)return "-";const parts=date.split("-");
   return parts.length===3?parts[2]+"."+parts[1]+"."+parts[0]:date;
 }
-
 function getDate(p){return normalizeDate(p.date??p.utcDate)}
-
 function getTime(p){
   if(p.time)return String(p.time);
   if(p.utcDate){
     const d=new Date(p.utcDate);
-    if(!Number.isNaN(d.getTime())){
-      return d.toLocaleTimeString("tr-TR",{
-        hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"
-      });
-    }
+    if(!Number.isNaN(d.getTime()))return d.toLocaleTimeString("tr-TR",{hour:"2-digit",minute:"2-digit",timeZone:"Europe/Istanbul"});
   }
   return "";
 }
 
-/* ---------------- KLASİK MOTOR ---------------- */
-
-function hasRealScore(p){
-  return number(p.homeScore)!==null&&number(p.awayScore)!==null;
-}
-
+/* KLASİK MOTOR */
+function hasRealScore(p){return number(p.homeScore)!==null&&number(p.awayScore)!==null}
 function isFinished(p){
   if(p.isFinished===true||p.played===true)return true;
-  const values=[p.status,p.matchStatus,p.gameStatus,p.state]
-    .filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
-  const words=[
-    "finished","completed","final","ended","ft","full_time","full time",
-    "bitmiş","bitmis","tamamlandı","tamamlandi"
-  ];
+  const values=[p.status,p.matchStatus,p.gameStatus,p.state].filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
+  const words=["finished","completed","final","ended","ft","full_time","full time","bitmiş","bitmis","tamamlandı","tamamlandi"];
   return values.some(v=>words.includes(v));
 }
-
 function isStarted(p){
   if(p.isUnstarted===true)return false;
-  const values=[p.status,p.matchStatus,p.gameStatus,p.state]
-    .filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
-  const pending=[
-    "not_started","not started","scheduled","upcoming","pending","pre-match",
-    "prematch","bekliyor","başlamadı","baslamadi","oynanmadı","oynanmadi"
-  ];
+  const values=[p.status,p.matchStatus,p.gameStatus,p.state].filter(v=>v!==null&&v!==undefined).map(v=>String(v).trim().toLowerCase());
+  const pending=["not_started","not started","scheduled","upcoming","pending","pre-match","prematch","bekliyor","başlamadı","baslamadi","oynanmadı","oynanmadi"];
   if(values.some(v=>pending.includes(v)))return false;
-  const started=[
-    "live","in_progress","in progress","started","playing","ongoing",
-    "finished","completed","final","ended","ft","full_time","full time"
-  ];
+  const started=["live","in_progress","in progress","started","playing","ongoing","finished","completed","final","ended","ft","full_time","full time"];
   if(values.some(v=>started.includes(v)))return true;
   if(p.isLive===true||isFinished(p))return true;
   if(hasRealScore(p))return true;
   return false;
 }
-
 function getStatus(p){
   if(!isFinished(p))return "pending";
   if(p.result==="successful"||p.success===true)return "success";
@@ -495,210 +361,140 @@ function getStatus(p){
   if(p.result==="push"||p.result==="Push")return "push";
   return "pending";
 }
-
 function statusText(status){
   if(status==="success")return "✓ Başarılı";
   if(status==="failed")return "✕ Başarısız";
   if(status==="push")return "＝ Push";
   return "Bekliyor";
 }
-
-function predictionClass(status){
-  if(status==="success")return "success";
-  if(status==="failed")return "fail";
-  return "pending";
-}
-
+function predictionClass(status){return status==="success"?"success":status==="failed"?"fail":"pending"}
 function predictionText(p){
   const prediction=String(p.prediction??"").trim();
   const line=number(p.line)??number(p.barem);
   if(!prediction)return "Tahmin yok";
   return line===null?prediction:prediction+" "+line.toFixed(2);
 }
-
 function get1X2(p){
   const prediction=String(p.prediction1X2??"").trim();
   if(!prediction)return null;
-  return {
-    prediction,
-    confidence:number(p.confidence1X2),
-    home:number(p.homeWinProbability),
-    draw:number(p.drawProbability),
-    away:number(p.awayWinProbability),
-    actual:String(p.actualResult1X2??"").trim()
-  };
+  return {prediction,confidence:number(p.confidence1X2),home:number(p.homeWinProbability),draw:number(p.drawProbability),away:number(p.awayWinProbability),actual:String(p.actualResult1X2??"").trim()};
 }
-
 function get1X2Status(p){
   if(!isFinished(p))return "pending";
   if(p.success1X2===true||p.result1X2==="successful")return "success";
   if(p.success1X2===false||p.result1X2==="failed")return "failed";
   return "pending";
 }
-
 function oneXTwoBadge(p){
-  const data=get1X2(p);
-  if(!data)return "";
-  const status=get1X2Status(p);
-  let label=data.prediction;
+  const data=get1X2(p);if(!data)return "";
+  const status=get1X2Status(p);let label=data.prediction;
   if(status==="success")label="✓ "+label;
   if(status==="failed")label="✕ "+label;
   return `<div class="prediction-1x2">Maç Sonu: <strong>${escapeHtml(label)}</strong></div>`;
 }
-
-function getPeriodData(p,key){
-  const data=p[key];
-  return data&&typeof data==="object"?data:null;
-}
-
+function getPeriodData(p,key){const data=p[key];return data&&typeof data==="object"?data:null}
 function periodCard(title,p,key){
-  const data=getPeriodData(p,key);
-  if(!data)return "";
+  const data=getPeriodData(p,key);if(!data)return "";
   const line=number(data.line)??number(data.barem);
-  return `<div class="period-card">
-    <div class="period-name">${escapeHtml(title)}</div>
-    <div class="period-line">${line!==null?line.toFixed(2):"-"}</div>
-    <div class="period-prediction">${escapeHtml(data.prediction??data.result??"-")}</div>
-  </div>`;
+  return `<div class="period-card"><div class="period-name">${escapeHtml(title)}</div><div class="period-line">${line!==null?line.toFixed(2):"-"}</div><div class="period-prediction">${escapeHtml(data.prediction??data.result??"-")}</div></div>`;
 }
-
 function buildPeriodSection(p){
-  const cards=[];
-  const mainLine=number(p.line)??number(p.barem);
-  if(mainLine!==null){
-    cards.push(`<div class="period-card">
-      <div class="period-name">Maç</div>
-      <div class="period-line">${mainLine.toFixed(2)}</div>
-      <div class="period-prediction">${escapeHtml(p.prediction??"-")}</div>
-    </div>`);
-  }
+  const cards=[];const mainLine=number(p.line)??number(p.barem);
+  if(mainLine!==null)cards.push(`<div class="period-card"><div class="period-name">Maç</div><div class="period-line">${mainLine.toFixed(2)}</div><div class="period-prediction">${escapeHtml(p.prediction??"-")}</div></div>`);
   const firstHalf=p.firstHalfTotal??p.firstHalf??null;
   if(firstHalf&&typeof firstHalf==="object"){
     const line=number(firstHalf.line)??number(firstHalf.barem);
-    cards.push(`<div class="period-card">
-      <div class="period-name">İY</div>
-      <div class="period-line">${line!==null?line.toFixed(2):"-"}</div>
-      <div class="period-prediction">${escapeHtml(firstHalf.prediction??firstHalf.result??"-")}</div>
-    </div>`);
+    cards.push(`<div class="period-card"><div class="period-name">İY</div><div class="period-line">${line!==null?line.toFixed(2):"-"}</div><div class="period-prediction">${escapeHtml(firstHalf.prediction??firstHalf.result??"-")}</div></div>`);
   }
-  for(const key of ["q1","q2","q3","q4"]){
-    const card=periodCard(key.toUpperCase(),p,key);
-    if(card)cards.push(card);
-  }
-  return cards.length
-    ?`<div class="period-title">Periyot tahminleri</div><div class="period-grid">${cards.join("")}</div>`
-    :"";
+  for(const key of ["q1","q2","q3","q4"]){const card=periodCard(key.toUpperCase(),p,key);if(card)cards.push(card)}
+  return cards.length?`<div class="period-title">Periyot tahminleri</div><div class="period-grid">${cards.join("")}</div>`:"";
 }
-
 function buildClassicDetails(p){
-  const expected=number(p.expectedTotal);
-  const homeExpected=number(p.expectedHome);
-  const awayExpected=number(p.expectedAway);
-  const confidence=number(p.confidence);
-  const sampleHome=number(p.homeSample);
-  const sampleAway=number(p.awaySample);
-  const x2=get1X2(p);
-
+  const expected=number(p.expectedTotal),homeExpected=number(p.expectedHome),awayExpected=number(p.expectedAway),confidence=number(p.confidence);
+  const sampleHome=number(p.homeSample),sampleAway=number(p.awaySample),x2=get1X2(p);
   return `<div class="details">
     <div class="detail-top">
-      <div class="detail-box"><div class="detail-label">Maç baremi</div>
-        <div class="detail-value">${number(p.line)!==null?number(p.line).toFixed(2):number(p.barem)!==null?number(p.barem).toFixed(2):"-"}</div>
-      </div>
-      <div class="detail-box"><div class="detail-label">Beklenen toplam</div>
-        <div class="detail-value">${expected!==null?expected.toFixed(2):"-"}</div>
-      </div>
-      <div class="detail-box"><div class="detail-label">Güven</div>
-        <div class="detail-value">${confidence!==null?"%"+Math.round(confidence):"-"}</div>
-      </div>
+      <div class="detail-box"><div class="detail-label">Maç baremi</div><div class="detail-value">${number(p.line)!==null?number(p.line).toFixed(2):number(p.barem)!==null?number(p.barem).toFixed(2):"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Beklenen toplam</div><div class="detail-value">${expected!==null?expected.toFixed(2):"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Güven</div><div class="detail-value">${confidence!==null?"%"+Math.round(confidence):"-"}</div></div>
     </div>
     <div class="detail-top">
-      <div class="detail-box"><div class="detail-label">Ev beklenen</div>
-        <div class="detail-value">${homeExpected!==null?homeExpected.toFixed(2):"-"}</div>
-      </div>
-      <div class="detail-box"><div class="detail-label">Deplasman beklenen</div>
-        <div class="detail-value">${awayExpected!==null?awayExpected.toFixed(2):"-"}</div>
-      </div>
-      <div class="detail-box"><div class="detail-label">Örneklem</div>
-        <div class="detail-value">${sampleHome!==null?sampleHome:"-"} / ${sampleAway!==null?sampleAway:"-"}</div>
-      </div>
+      <div class="detail-box"><div class="detail-label">Ev beklenen</div><div class="detail-value">${homeExpected!==null?homeExpected.toFixed(2):"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Deplasman beklenen</div><div class="detail-value">${awayExpected!==null?awayExpected.toFixed(2):"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Örneklem</div><div class="detail-value">${sampleHome!==null?sampleHome:"-"} / ${sampleAway!==null?sampleAway:"-"}</div></div>
     </div>
-    ${x2?`<div class="detail-title">Maç Sonucu Tahmini</div>
-      <div class="x2-grid">
-        <div class="x2-card ${x2.prediction==="1"?"x2-predicted":""}">
-          <div class="x2-name">1 · Ev sahibi</div><div class="x2-value">${x2.home!==null?"%"+x2.home.toFixed(1):"-"}</div>
-        </div>
-        <div class="x2-card ${x2.prediction==="X"?"x2-predicted":""}">
-          <div class="x2-name">X · Beraberlik</div><div class="x2-value">${x2.draw!==null?"%"+x2.draw.toFixed(1):"-"}</div>
-        </div>
-        <div class="x2-card ${x2.prediction==="2"?"x2-predicted":""}">
-          <div class="x2-name">2 · Deplasman</div><div class="x2-value">${x2.away!==null?"%"+x2.away.toFixed(1):"-"}</div>
-        </div>
-      </div>
-      <div class="detail-top">
-        <div class="detail-box"><div class="detail-label">Tahmin</div><div class="detail-value">${escapeHtml(x2.prediction)}</div></div>
-        <div class="detail-box"><div class="detail-label">Güven</div><div class="detail-value">${x2.confidence!==null?"%"+x2.confidence.toFixed(1):"-"}</div></div>
-        <div class="detail-box"><div class="detail-label">Sonuç</div><div class="detail-value">${escapeHtml(x2.actual||"-")}</div></div>
-      </div>`:""}
+    ${x2?`<div class="detail-title">Maç Sonucu Tahmini</div><div class="x2-grid">
+      <div class="x2-card ${x2.prediction==="1"?"x2-predicted":""}"><div class="x2-name">1 · Ev sahibi</div><div class="x2-value">${x2.home!==null?"%"+x2.home.toFixed(1):"-"}</div></div>
+      <div class="x2-card ${x2.prediction==="X"?"x2-predicted":""}"><div class="x2-name">X · Beraberlik</div><div class="x2-value">${x2.draw!==null?"%"+x2.draw.toFixed(1):"-"}</div></div>
+      <div class="x2-card ${x2.prediction==="2"?"x2-predicted":""}"><div class="x2-name">2 · Deplasman</div><div class="x2-value">${x2.away!==null?"%"+x2.away.toFixed(1):"-"}</div></div>
+    </div><div class="detail-top">
+      <div class="detail-box"><div class="detail-label">Tahmin</div><div class="detail-value">${escapeHtml(x2.prediction)}</div></div>
+      <div class="detail-box"><div class="detail-label">Güven</div><div class="detail-value">${x2.confidence!==null?"%"+x2.confidence.toFixed(1):"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Sonuç</div><div class="detail-value">${escapeHtml(x2.actual||"-")}</div></div>
+    </div>`:""}
     ${buildPeriodSection(p)}
   </div>`;
 }
-
 function updateClassicSummary(){
-  let completed=0,successful=0,failed=0;
-  let completed1X2=0,successful1X2=0,failed1X2=0;
-
+  let completed=0,successful=0,failed=0,completed1X2=0,successful1X2=0,failed1X2=0;
   for(const p of predictions){
     const status=getStatus(p);
-    if(status==="success"){completed++;successful++}
-    else if(status==="failed"){completed++;failed++}
-    else if(status==="push")completed++;
-
+    if(status==="success"){completed++;successful++}else if(status==="failed"){completed++;failed++}else if(status==="push")completed++;
     const s=get1X2Status(p);
-    if(s==="success"){completed1X2++;successful1X2++}
-    else if(s==="failed"){completed1X2++;failed1X2++}
+    if(s==="success"){completed1X2++;successful1X2++}else if(s==="failed"){completed1X2++;failed1X2++}
   }
-
-  const denominator=successful+failed;
-  const denominator1=successful1X2+failed1X2;
-
-  document.getElementById("successRate").textContent=
-    "%"+(denominator?successful/denominator*100:0).toFixed(1);
+  const denominator=successful+failed,denominator1=successful1X2+failed1X2;
+  document.getElementById("successRate").textContent="%"+(denominator?successful/denominator*100:0).toFixed(1);
   document.getElementById("successful").textContent=successful;
   document.getElementById("failed").textContent=failed;
   document.getElementById("completed").textContent=completed;
-
-  document.getElementById("successRate1X2").textContent=
-    "%"+(denominator1?successful1X2/denominator1*100:0).toFixed(1);
+  document.getElementById("successRate1X2").textContent="%"+(denominator1?successful1X2/denominator1*100:0).toFixed(1);
   document.getElementById("successful1X2").textContent=successful1X2;
   document.getElementById("failed1X2").textContent=failed1X2;
   document.getElementById("completed1X2").textContent=completed1X2;
 }
 
-/* ---------------- ML MOTOR ---------------- */
-
+/* ML MOTOR */
 function getMLPrediction(p){return p.prediction??p}
 function getMLModels(p){return getMLPrediction(p).models??p.models??{}}
-function getMLEnsemble(p){return getMLPrediction(p).ensemble??p.ensemble??{}}
 
-function normalizeMatchId(value){
-  return String(value??"").trim().toLowerCase().replace(/^nba[-_:]?/,"");
+/* Ensemble alanı hem tahmin JSON'undan hem sonuç JSON'undan okunur. */
+function getMLEnsemble(p){
+  const prediction=getMLPrediction(p);
+  if(prediction?.ensemble)return prediction.ensemble;
+  if(p?.ensemble)return p.ensemble;
+
+  const evaluated=p?.models?.Ensemble??prediction?.models?.Ensemble;
+  if(evaluated){
+    return {
+      homeScore:evaluated.predictedHome??evaluated.homeScore,
+      awayScore:evaluated.predictedAway??evaluated.awayScore,
+      totalScore:evaluated.predictedTotal??evaluated.totalScore,
+      winner:evaluated.predictedWinner??evaluated.winner,
+      actualWinner:evaluated.actualWinner,
+      winnerCorrect:evaluated.winnerCorrect,
+      totalLine:evaluated.totalLine,
+      totalDirection:evaluated.totalDirection
+    };
+  }
+  return {};
 }
-
+function normalizeMatchId(value){return String(value??"").trim().toLowerCase().replace(/^nba[-_:]?/,"")}
 function getMLTeamName(p,side){
-  const direct=side==="home"
-    ?p.homeTeam??p.home
-    :p.awayTeam??p.away;
-
+  const direct=side==="home"?p.homeTeam??p.home:p.awayTeam??p.away;
   if(direct)return String(direct);
-
   const nested=p.teams?.[side];
-
   if(typeof nested==="string")return nested;
   if(nested?.name)return String(nested.name);
-
   return "-";
 }
-
+function normalizeWinner(winner){
+  const value=String(winner??"").trim().toUpperCase();
+  if(["HOME","HOME_WIN","1","MS1"].includes(value))return "HOME";
+  if(["AWAY","AWAY_WIN","2","MS2"].includes(value))return "AWAY";
+  if(["DRAW","TIE","X","0","BERABERLIK","BERABERLİK"].includes(value))return "TIE";
+  return value;
+}
 function mlWinnerShort(winner){
   const value=normalizeWinner(winner);
   if(value==="HOME")return "MS1";
@@ -706,773 +502,323 @@ function mlWinnerShort(winner){
   if(value==="TIE")return "Beraberlik";
   return "Belirsiz";
 }
-
-function normalizeWinner(winner){
-  const value=String(winner??"").trim().toUpperCase();
-
-  if(["HOME","HOME_WIN","1","MS1"].includes(value))return "HOME";
-  if(["AWAY","AWAY_WIN","2","MS2"].includes(value))return "AWAY";
-  if(["DRAW","TIE","X","0","BERABERLIK","BERABERLİK"].includes(value))return "TIE";
-
-  return value;
-}
-
 function getMLConsensus(p){
   const models=getMLModels(p);
-  const votes=MODEL_NAMES.map(name=>models[name]?.winner).filter(Boolean);
+  const votes=MODEL_NAMES.map(name=>models[name]?.winner??models[name]?.predictedWinner).filter(Boolean);
   if(!votes.length)return {count:0,total:0,winner:null};
-
   const counts={};
-  votes.forEach(v=>{
-    const normalized=normalizeWinner(v);
-    counts[normalized]=(counts[normalized]||0)+1;
-  });
-
+  votes.forEach(v=>{const n=normalizeWinner(v);counts[n]=(counts[n]||0)+1});
   const winner=Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
-
   return {count:counts[winner],total:votes.length,winner};
 }
-
 function readActualScore(record,allowResultScore=false){
   if(!record)return null;
-
-  const home=number(
-    record.actualHomeScore ??
-    record.actual?.homeScore ??
-    record.result?.homeScore ??
-    (allowResultScore?record.homeScore:null) ??
-    (allowResultScore?record.score?.home:null)
-  );
-
-  const away=number(
-    record.actualAwayScore ??
-    record.actual?.awayScore ??
-    record.result?.awayScore ??
-    (allowResultScore?record.awayScore:null) ??
-    (allowResultScore?record.score?.away:null)
-  );
-
-  if(home===null||away===null)return null;
-
-  return {home,away};
+  const home=number(record.actualHomeScore??record.actual?.homeScore??record.result?.homeScore??
+    (allowResultScore?record.homeScore:null)??(allowResultScore?record.score?.home:null));
+  const away=number(record.actualAwayScore??record.actual?.awayScore??record.result?.awayScore??
+    (allowResultScore?record.awayScore:null)??(allowResultScore?record.score?.away:null));
+  return home===null||away===null?null:{home,away};
 }
-
 function getMLActualScore(p){
   const direct=readActualScore(p,false);
   if(direct)return direct;
-
   const id=normalizeMatchId(p.matchId??p.matchKey);
-  if(id){
-    const stored=readActualScore(actualById.get(id),true);
-    if(stored)return stored;
-  }
-
-  return readActualScore(p,true);
+  if(id&&actualById.has(id))return readActualScore(actualById.get(id),true);
+  return null;
 }
-
 function actualWinnerFromScore(score){
   if(!score)return null;
   if(score.home>score.away)return "HOME";
   if(score.away>score.home)return "AWAY";
   return "TIE";
 }
-
 function getMLWinnerResult(model,p){
   const actual=getMLActualScore(p);
-
-  if(!actual||!model?.winner)return "pending";
-
-  const actualWinner=actualWinnerFromScore(actual);
-
-  return normalizeWinner(model.winner)===actualWinner?"success":"failed";
+  if(!actual||!model)return "pending";
+  if(typeof model.winnerCorrect==="boolean")return model.winnerCorrect?"success":"failed";
+  const predicted=model.winner??model.predictedWinner;
+  if(!predicted)return "pending";
+  return normalizeWinner(predicted)===actualWinnerFromScore(actual)?"success":"failed";
 }
-
 function getMLTotalResult(model,p){
   const actual=getMLActualScore(p);
-
   const line=number(model?.totalLine)??number(p.totalLine);
   const direction=String(model?.totalDirection??"").toUpperCase();
-
   if(!actual||line===null||!direction)return "pending";
-
-  const actualTotal=actual.home+actual.away;
-
-  if(Math.abs(actualTotal-line)<0.000001)return "push";
-
-  if(direction==="OVER"){
-    return actualTotal>line?"success":"failed";
-  }
-
-  if(direction==="UNDER"){
-    return actualTotal<line?"success":"failed";
-  }
-
+  const total=actual.home+actual.away;
+  if(Math.abs(total-line)<0.000001)return "push";
+  if(direction==="OVER")return total>line?"success":"failed";
+  if(direction==="UNDER")return total<line?"success":"failed";
   return "pending";
 }
-
-function resultClass(result){
-  if(result==="success")return "correct";
-  if(result==="failed")return "incorrect";
-  if(result==="push")return "push";
-  return "";
-}
-
-function resultLabel(result){
-  if(result==="success")return "✓ DOĞRU";
-  if(result==="failed")return "✕ YANLIŞ";
-  if(result==="push")return "＝ PUSH";
-  return "SONUÇ BEKLİYOR";
-}
-
+function resultClass(result){return result==="success"?"correct":result==="failed"?"incorrect":result==="push"?"push":""}
+function resultLabel(result){return result==="success"?"✓ DOĞRU":result==="failed"?"✕ YANLIŞ":result==="push"?"＝ PUSH":"SONUÇ BEKLİYOR"}
 function directionText(direction){
   const value=String(direction??"").toUpperCase();
   if(value==="OVER")return "ÜST";
   if(value==="UNDER")return "ALT";
   return "-";
 }
-
 function modelCard(name,m,p,isEnsemble=false){
   if(!m)return "";
-
-  const winnerResult=getMLWinnerResult(m,p);
-  const totalResult=getMLTotalResult(m,p);
-
-  const line=number(m.totalLine)??number(p.totalLine);
-  const direction=directionText(m.totalDirection);
+  const winnerResult=getMLWinnerResult(m,p),totalResult=getMLTotalResult(m,p);
+  const line=number(m.totalLine)??number(p.totalLine),direction=directionText(m.totalDirection);
   const lineText=line!==null?line.toFixed(1)+" "+direction:"Barem yok";
-
   return `<div class="ml-model ${isEnsemble?"ensemble":""}">
-    <div class="ml-model-name">
-      ${escapeHtml(isEnsemble?"ENSEMBLE · ORTAK TAHMİN":MODEL_LABELS[name]??name)}
-    </div>
-
-    <div class="ml-model-score">
-      ${number(m.homeScore)?.toFixed(1)??"-"} -
-      ${number(m.awayScore)?.toFixed(1)??"-"}
-    </div>
-
-    <div class="ml-note">
-      Tahmini toplam: ${number(m.totalScore)?.toFixed(1)??"-"}
-    </div>
-
-    <div class="ml-pick ${resultClass(winnerResult)}">
-      <span>MAÇ SONUCU</span>
-      <strong>${escapeHtml(mlWinnerShort(m.winner))}</strong>
-      <small>${resultLabel(winnerResult)}</small>
-    </div>
-
-    <div class="ml-pick ${resultClass(totalResult)}">
-      <span>ALT / ÜST ${escapeHtml(lineText)}</span>
-      <strong>${escapeHtml(direction)}</strong>
-      <small>${resultLabel(totalResult)}</small>
-    </div>
+    <div class="ml-model-name">${escapeHtml(isEnsemble?"ENSEMBLE · ORTAK TAHMİN":MODEL_LABELS[name]??name)}</div>
+    <div class="ml-model-score">${number(m.homeScore??m.predictedHome)?.toFixed(1)??"-"} - ${number(m.awayScore??m.predictedAway)?.toFixed(1)??"-"}</div>
+    <div class="ml-note">Tahmini toplam: ${number(m.totalScore??m.predictedTotal)?.toFixed(1)??"-"}</div>
+    <div class="ml-pick ${resultClass(winnerResult)}"><span>MAÇ SONUCU</span><strong>${escapeHtml(mlWinnerShort(m.winner??m.predictedWinner))}</strong><small>${resultLabel(winnerResult)}</small></div>
+    <div class="ml-pick ${resultClass(totalResult)}"><span>ALT / ÜST ${escapeHtml(lineText)}</span><strong>${escapeHtml(direction)}</strong><small>${resultLabel(totalResult)}</small></div>
   </div>`;
 }
-
 function buildMLDetails(p){
-  const models=getMLModels(p);
-  const ensemble=getMLEnsemble(p);
-  const consensus=getMLConsensus(p);
-  const actual=getMLActualScore(p);
-  const isHistorical=p.predictionType==="historical_backtest";
-  const line=number(p.totalLine);
-
+  const models=getMLModels(p),ensemble=getMLEnsemble(p),consensus=getMLConsensus(p),actual=getMLActualScore(p);
+  const isHistorical=p.predictionType==="historical_backtest",line=number(p.totalLine);
   let cards="";
-
-  for(const name of MODEL_NAMES){
-    cards+=modelCard(name,models[name],p);
-  }
-
+  for(const name of MODEL_NAMES)cards+=modelCard(name,models[name],p);
   cards+=modelCard("Ensemble",ensemble,p,true);
-
   return `<div class="details">
     <div class="detail-title">🤖 Model tahminleri</div>
     <div class="ml-model-grid">${cards}</div>
-
-    <div class="ml-consensus">
-      MODEL UZLAŞMASI: ${consensus.count}/${consensus.total}
-      · ${consensus.winner?escapeHtml(mlWinnerShort(consensus.winner)):"Yeterli veri yok"}
-    </div>
-
-    ${line!==null?`
-      <div class="detail-top">
-        <div class="detail-box">
-          <div class="detail-label">Sistemin baremi</div>
-          <div class="detail-value">${line.toFixed(1)}</div>
-        </div>
-        <div class="detail-box">
-          <div class="detail-label">Barem yöntemi</div>
-          <div class="detail-value">Geçmiş maç ortalaması</div>
-        </div>
-        <div class="detail-box">
-          <div class="detail-label">Barem örneklemi</div>
-          <div class="detail-value">${p.totalLineInfo?.historyCount??"-"}</div>
-        </div>
-      </div>`:""}
-
-    ${actual?`
-      <div class="detail-title">Gerçekleşen maç skoru</div>
-      <div class="detail-top">
-        <div class="detail-box">
-          <div class="detail-label">Ev sahibi</div>
-          <div class="detail-value">${actual.home}</div>
-        </div>
-        <div class="detail-box">
-          <div class="detail-label">Deplasman</div>
-          <div class="detail-value">${actual.away}</div>
-        </div>
-        <div class="detail-box">
-          <div class="detail-label">Gerçek toplam</div>
-          <div class="detail-value">${actual.home+actual.away}</div>
-        </div>
-      </div>`:""}
-
+    <div class="ml-consensus">MODEL UZLAŞMASI: ${consensus.count}/${consensus.total} · ${consensus.winner?escapeHtml(mlWinnerShort(consensus.winner)):"Yeterli veri yok"}</div>
+    ${line!==null?`<div class="detail-top">
+      <div class="detail-box"><div class="detail-label">Sistemin baremi</div><div class="detail-value">${line.toFixed(1)}</div></div>
+      <div class="detail-box"><div class="detail-label">Barem yöntemi</div><div class="detail-value">Geçmiş maç ortalaması</div></div>
+      <div class="detail-box"><div class="detail-label">Barem örneklemi</div><div class="detail-value">${p.totalLineInfo?.historyCount??"-"}</div></div>
+    </div>`:""}
+    ${actual?`<div class="detail-title">Gerçekleşen maç skoru</div><div class="detail-top">
+      <div class="detail-box"><div class="detail-label">Ev sahibi</div><div class="detail-value">${actual.home}</div></div>
+      <div class="detail-box"><div class="detail-label">Deplasman</div><div class="detail-value">${actual.away}</div></div>
+      <div class="detail-box"><div class="detail-label">Gerçek toplam</div><div class="detail-value">${actual.home+actual.away}</div></div>
+    </div>`:""}
     <div class="detail-top">
-      <div class="detail-box">
-        <div class="detail-label">Eğitim örneklemi</div>
-        <div class="detail-value">${p.trainingSamplesBeforeMatch??"-"}</div>
-      </div>
-      <div class="detail-box">
-        <div class="detail-label">Model sayısı</div>
-        <div class="detail-value">${p.modelCount??consensus.total}</div>
-      </div>
-      <div class="detail-box">
-        <div class="detail-label">Tahmin türü</div>
-        <div class="detail-value">${isHistorical?"Geçmiş backtest":"Gelecek maç"}</div>
-      </div>
+      <div class="detail-box"><div class="detail-label">Eğitim örneklemi</div><div class="detail-value">${p.trainingSamplesBeforeMatch??"-"}</div></div>
+      <div class="detail-box"><div class="detail-label">Model sayısı</div><div class="detail-value">${p.modelCount??consensus.total}</div></div>
+      <div class="detail-box"><div class="detail-label">Tahmin türü</div><div class="detail-value">${isHistorical?"Geçmiş backtest":"Gelecek maç"}</div></div>
     </div>
   </div>`;
 }
-
-/* ---------------- ML MAÇ KARTI ---------------- */
-
 function createMLCard(p){
-  const ensemble=getMLEnsemble(p);
-  const consensus=getMLConsensus(p);
-  const actual=getMLActualScore(p);
-  const hasActual=actual!==null;
-
-  const predictedHome=number(ensemble.homeScore);
-  const predictedAway=number(ensemble.awayScore);
-
-  const winnerResult=hasActual
-    ?getMLWinnerResult(ensemble,p)
-    :"pending";
-
-  const totalResult=hasActual
-    ?getMLTotalResult(ensemble,p)
-    :"pending";
-
-  function pickClass(result){
-    if(result==="success")return "success";
-    if(result==="failed")return "fail";
-    if(result==="push")return "push";
-    return "pending";
-  }
-
-  const scoreClass=winnerResult==="success"
-    ?"correct"
-    :winnerResult==="failed"
-      ?"incorrect"
-      :"";
-
-  const totalPrediction=lineTextForCard(ensemble,p);
-  const winnerPrediction=mlWinnerShort(ensemble.winner);
-  const line=number(ensemble.totalLine)??number(p.totalLine);
-  const direction=directionText(ensemble.totalDirection);
-
+  const ensemble=getMLEnsemble(p),consensus=getMLConsensus(p),actual=getMLActualScore(p),hasActual=actual!==null;
+  const predictedHome=number(ensemble.homeScore??ensemble.predictedHome),predictedAway=number(ensemble.awayScore??ensemble.predictedAway);
+  const winnerResult=hasActual?getMLWinnerResult(ensemble,p):"pending";
+  const totalResult=hasActual?getMLTotalResult(ensemble,p):"pending";
+  const line=number(ensemble.totalLine)??number(p.totalLine),direction=directionText(ensemble.totalDirection);
+  function pickClass(result){return result==="success"?"success":result==="failed"?"fail":result==="push"?"push":"pending"}
+  const scoreClass=winnerResult==="success"?"correct":winnerResult==="failed"?"incorrect":"";
+  const totalPrediction=line!==null&&direction!=="-"?direction+" "+line.toFixed(1):"Alt/Üst tahmini yok";
+  const winnerPrediction=mlWinnerShort(ensemble.winner??ensemble.predictedWinner);
   const card=document.createElement("div");
   card.className="match-card"+(hasActual?"":" pending-card");
-
-  card.innerHTML=`
-    <div class="match-head" role="button" tabindex="0" aria-expanded="false">
-
-      <div class="match-time">
-        <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
-        <span>${escapeHtml(p.league??"NBA")}</span>
-      </div>
-
-      <div class="teams">
-        <div class="team-row">
-          <span class="team-name">${escapeHtml(getMLTeamName(p,"home"))}</span>
-          <span class="score ${hasActual?scoreClass:"empty"}">
-            ${hasActual?actual.home:"-"}
-          </span>
-        </div>
-        <div class="team-row">
-          <span class="team-name">${escapeHtml(getMLTeamName(p,"away"))}</span>
-          <span class="score ${hasActual?scoreClass:"empty"}">
-            ${hasActual?actual.away:"-"}
-          </span>
-        </div>
-      </div>
-
-      <div class="prediction-box">
-        <div class="prediction-market">TAHMİNLER</div>
-
-        <div class="ml-main-predictions">
-
-          ${line!==null&&direction!=="-"?`
-            <div>
-              <div class="ml-main-label">ALT / ÜST</div>
-              <div class="ml-main-pick ${pickClass(totalResult)}">
-                ${escapeHtml(totalPrediction)}
-                ${totalResult==="success"?" ✓":totalResult==="failed"?" ✕":totalResult==="push"?" ＝":""}
-              </div>
-            </div>`:""}
-
-          <div>
-            <div class="ml-main-label">MS TAHMİNİ</div>
-            <div class="ml-main-pick ${pickClass(winnerResult)}">
-              ${escapeHtml(winnerPrediction)}
-              ${winnerResult==="success"?" ✓":winnerResult==="failed"?" ✕":winnerResult==="push"?" ＝":""}
-            </div>
-          </div>
-
-        </div>
-
-        <div class="prediction-1x2">
-          <strong>
-            SKOR:
-            ${predictedHome!==null?predictedHome.toFixed(1):"-"}
-            -
-            ${predictedAway!==null?predictedAway.toFixed(1):"-"}
-          </strong>
-        </div>
-
-        <div class="prediction-1x2">
-          <strong>UZLAŞMA: ${consensus.count}/${consensus.total}</strong>
-        </div>
-
-        <span class="expand-icon">▼</span>
-      </div>
+  card.innerHTML=`<div class="match-head" role="button" tabindex="0" aria-expanded="false">
+    <div class="match-time"><strong>${escapeHtml(getTime(p)||"🏀")}</strong><span>${escapeHtml(p.league??"NBA")}</span></div>
+    <div class="teams">
+      <div class="team-row"><span class="team-name">${escapeHtml(getMLTeamName(p,"home"))}</span><span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.home:"-"}</span></div>
+      <div class="team-row"><span class="team-name">${escapeHtml(getMLTeamName(p,"away"))}</span><span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.away:"-"}</span></div>
     </div>
-
-    ${buildMLDetails(p)}
-  `;
-
+    <div class="prediction-box">
+      <div class="prediction-market">TAHMİNLER</div>
+      <div class="ml-main-predictions">
+        ${line!==null&&direction!=="-"?`<div><div class="ml-main-label">ALT / ÜST</div><div class="ml-main-pick ${pickClass(totalResult)}">${escapeHtml(totalPrediction)} ${totalResult==="success"?"✓":totalResult==="failed"?"✕":totalResult==="push"?"＝":""}</div></div>`:""}
+        <div><div class="ml-main-label">MS TAHMİNİ</div><div class="ml-main-pick ${pickClass(winnerResult)}">${escapeHtml(winnerPrediction)} ${winnerResult==="success"?"✓":winnerResult==="failed"?"✕":winnerResult==="push"?"＝":""}</div></div>
+      </div>
+      <div class="prediction-1x2"><strong>SKOR: ${predictedHome!==null?predictedHome.toFixed(1):"-"} - ${predictedAway!==null?predictedAway.toFixed(1):"-"}</strong></div>
+      <div class="prediction-1x2"><strong>UZLAŞMA: ${consensus.count}/${consensus.total}</strong></div>
+      <span class="expand-icon">▼</span>
+    </div>
+  </div>${buildMLDetails(p)}`;
   const head=card.querySelector(".match-head");
-
-  function toggle(){
-    const open=card.classList.toggle("open");
-    head.setAttribute("aria-expanded",open?"true":"false");
-  }
-
+  function toggle(){const open=card.classList.toggle("open");head.setAttribute("aria-expanded",open?"true":"false")}
   head.addEventListener("click",toggle);
-
-  head.addEventListener("keydown",event=>{
-    if(event.key==="Enter"||event.key===" "){
-      event.preventDefault();
-      toggle();
-    }
-  });
-
+  head.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle()}});
   return card;
 }
-
-function lineTextForCard(ensemble,p){
-  const line=number(ensemble.totalLine)??number(p.totalLine);
-  const direction=directionText(ensemble.totalDirection);
-  return line!==null&&direction!=="-"
-    ?direction+" "+line.toFixed(1)
-    :"Alt/Üst tahmini yok";
-}
-
-/* ---------------- KLASİK MAÇ KARTI ---------------- */
-
 function createClassicCard(p){
-  const status=getStatus(p);
-  const home=p.home??p.homeTeam??"-";
-  const away=p.away??p.awayTeam??"-";
-  const homeScore=number(p.homeScore);
-  const awayScore=number(p.awayScore);
-  const hasScore=homeScore!==null&&awayScore!==null;
-  const x2=get1X2(p);
-
-  const card=document.createElement("div");
-  card.className="match-card";
-
+  const status=getStatus(p),home=p.home??p.homeTeam??"-",away=p.away??p.awayTeam??"-";
+  const homeScore=number(p.homeScore),awayScore=number(p.awayScore),hasScore=homeScore!==null&&awayScore!==null,x2=get1X2(p);
+  const card=document.createElement("div");card.className="match-card";
   if(status==="pending")card.classList.add("pending-card");
-
-  card.innerHTML=`
-    <div class="match-head" role="button" tabindex="0" aria-expanded="false">
-      <div class="match-time">
-        <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
-        <span>${escapeHtml(p.league??"")}</span>
-      </div>
-      <div class="teams">
-        <div class="team-row">
-          <span class="team-name">${escapeHtml(home)}</span>
-          <span class="score ${hasScore?"":"empty"}">${hasScore?homeScore:"-"}</span>
-        </div>
-        <div class="team-row">
-          <span class="team-name">${escapeHtml(away)}</span>
-          <span class="score ${hasScore?"":"empty"}">${hasScore?awayScore:"-"}</span>
-        </div>
-      </div>
-      <div class="prediction-box">
-        <div class="prediction-market">${escapeHtml(statusText(status))}</div>
-        <div class="prediction ${predictionClass(status)}">${escapeHtml(predictionText(p))}</div>
-        ${x2?oneXTwoBadge(p):""}
-        <span class="expand-icon">▼</span>
-      </div>
+  card.innerHTML=`<div class="match-head" role="button" tabindex="0" aria-expanded="false">
+    <div class="match-time"><strong>${escapeHtml(getTime(p)||"🏀")}</strong><span>${escapeHtml(p.league??"")}</span></div>
+    <div class="teams">
+      <div class="team-row"><span class="team-name">${escapeHtml(home)}</span><span class="score ${hasScore?"":"empty"}">${hasScore?homeScore:"-"}</span></div>
+      <div class="team-row"><span class="team-name">${escapeHtml(away)}</span><span class="score ${hasScore?"":"empty"}">${hasScore?awayScore:"-"}</span></div>
     </div>
-    ${buildClassicDetails(p)}
-  `;
-
+    <div class="prediction-box"><div class="prediction-market">${escapeHtml(statusText(status))}</div><div class="prediction ${predictionClass(status)}">${escapeHtml(predictionText(p))}</div>${x2?oneXTwoBadge(p):""}<span class="expand-icon">▼</span></div>
+  </div>${buildClassicDetails(p)}`;
   const head=card.querySelector(".match-head");
-
-  function toggle(){
-    const open=card.classList.toggle("open");
-    head.setAttribute("aria-expanded",open?"true":"false");
-  }
-
+  function toggle(){const open=card.classList.toggle("open");head.setAttribute("aria-expanded",open?"true":"false")}
   head.addEventListener("click",toggle);
-
-  head.addEventListener("keydown",event=>{
-    if(event.key==="Enter"||event.key===" "){
-      event.preventDefault();
-      toggle();
-    }
-  });
-
+  head.addEventListener("keydown",event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();toggle()}});
   return card;
 }
 
-/* ---------------- FİLTRELER ---------------- */
-
+/* FİLTRELER */
 function filterPredictions(){
-  const date=dateFilter.value;
-  const league=leagueFilter.value;
-  const status=statusFilter.value;
-
-  if(engine==="classic"){
-    return predictions.filter(p=>{
-      if(date&&getDate(p)!==date)return false;
-      if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
-      if(status!=="all"&&getStatus(p)!==status)return false;
-      return true;
-    });
-  }
-
-  const period=mlPeriodFilter.value;
-  const model=mlModelFilter.value;
-
+  const date=dateFilter.value,league=leagueFilter.value,status=statusFilter.value;
+  if(engine==="classic")return predictions.filter(p=>{
+    if(date&&getDate(p)!==date)return false;
+    if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
+    if(status!=="all"&&getStatus(p)!==status)return false;
+    return true;
+  });
+  const period=mlPeriodFilter.value,model=mlModelFilter.value;
   return mlPredictions.filter(p=>{
     if(date&&getDate(p)!==date)return false;
     if(league!=="all"&&String(p.league??"").toLowerCase()!==league.toLowerCase())return false;
     if(period!=="all"&&p.predictionType!==period)return false;
-
-    if(model==="Ensemble"){
-      if(!getMLEnsemble(p)?.winner)return false;
-    }else if(model!=="all"&&!getMLModels(p)?.[model]){
-      return false;
-    }
-
+    if(model==="Ensemble"){if(!getMLEnsemble(p)?.winner&&!getMLEnsemble(p)?.predictedWinner)return false}
+    else if(model!=="all"&&!getMLModels(p)?.[model])return false;
     const actual=getMLActualScore(p);
-
     if(status==="pending"&&actual!==null)return false;
-
     if(status!=="all"&&status!=="pending"){
       if(actual===null)return false;
-
-      const selected=model==="all"||model==="Ensemble"
-        ?getMLEnsemble(p)
-        :getMLModels(p)[model];
-
+      const selected=model==="all"||model==="Ensemble"?getMLEnsemble(p):getMLModels(p)[model];
       if(!selected)return false;
-
-      const winnerStatus=getMLWinnerResult(selected,p);
-      const totalStatus=getMLTotalResult(selected,p);
-
-      if(status==="success"&&winnerStatus!=="success"&&totalStatus!=="success")return false;
-      if(status==="failed"&&winnerStatus!=="failed"&&totalStatus!=="failed")return false;
-      if(status==="push"&&winnerStatus!=="push"&&totalStatus!=="push")return false;
+      const wr=getMLWinnerResult(selected,p),tr=getMLTotalResult(selected,p);
+      if(status==="success"&&wr!=="success"&&tr!=="success")return false;
+      if(status==="failed"&&wr!=="failed"&&tr!=="failed")return false;
+      if(status==="push"&&wr!=="push"&&tr!=="push")return false;
     }
-
     return true;
   });
 }
-
 function setDefaultDate(){
-  const source=engine==="ml"?mlPredictions:predictions;
-  const dates=[...new Set(source.map(getDate).filter(Boolean))].sort();
-
-  if(!dates.length){
-    dateFilter.value="";
-    return;
-  }
-
-  const today=todayString();
-  dateFilter.value=dates.includes(today)?today:dates[dates.length-1];
+  const source=engine==="ml"?mlPredictions:predictions,dates=[...new Set(source.map(getDate).filter(Boolean))].sort();
+  if(!dates.length){dateFilter.value="";return}
+  const today=todayString();dateFilter.value=dates.includes(today)?today:dates[dates.length-1];
 }
-
 function render(){
   if(engine==="classic")updateClassicSummary();
-
   const filtered=filterPredictions().sort((a,b)=>{
-    const dateA=getDate(a);
-    const dateB=getDate(b);
-    const timeA=a.utcDate??(dateA+"T"+(a.time??"00:00"));
-    const timeB=b.utcDate??(dateB+"T"+(b.time??"00:00"));
-    return String(timeA).localeCompare(String(timeB));
+    const da=getDate(a),db=getDate(b),ta=a.utcDate??(da+"T"+(a.time??"00:00")),tb=b.utcDate??(db+"T"+(b.time??"00:00"));
+    return String(ta).localeCompare(String(tb));
   });
-
-  content.innerHTML="";
-  matchCount.textContent=filtered.length+" maç";
-  dateTitle.textContent=dateFilter.value?formatDate(dateFilter.value):"Maçlar";
-
-  if(!filtered.length){
-    content.innerHTML='<div class="empty">🏀 Bu tarihte filtrelere uygun maç bulunamadı.</div>';
-    return;
-  }
-
-  const list=document.createElement("div");
-  list.className="matches";
-
-  for(const p of filtered){
-    list.appendChild(engine==="ml"?createMLCard(p):createClassicCard(p));
-  }
-
+  content.innerHTML="";matchCount.textContent=filtered.length+" maç";dateTitle.textContent=dateFilter.value?formatDate(dateFilter.value):"Maçlar";
+  if(!filtered.length){content.innerHTML='<div class="empty">🏀 Bu tarihte filtrelere uygun maç bulunamadı.</div>';return}
+  const list=document.createElement("div");list.className="matches";
+  for(const p of filtered)list.appendChild(engine==="ml"?createMLCard(p):createClassicCard(p));
   content.appendChild(list);
 }
 
-/* ---------------- ML BAŞARI PANELLERİ ---------------- */
-
+/* ML MS BAŞARI PANELİ */
 function buildMLPerformance(){
+  const target=document.getElementById("mlPerformance");
   const records=[
-    ...(Array.isArray(mlResults?.backtestHistory)
-      ?mlResults.backtestHistory:[]),
-    ...(Array.isArray(mlResults?.history)
-      ?mlResults.history:[]
-    )
+    ...(Array.isArray(mlResults?.backtestHistory)?mlResults.backtestHistory:[]),
+    ...(Array.isArray(mlResults?.history)?mlResults.history:[])
   ];
 
   const unique=new Map();
-
   for(const p of records){
     const id=normalizeMatchId(p.matchId??p.matchKey);
-
-    const fallback=[
-      getDate(p),
-      getMLTeamName(p,"home").toLowerCase(),
-      getMLTeamName(p,"away").toLowerCase()
-    ].join("|");
-
+    const fallback=[getDate(p),getMLTeamName(p,"home").toLowerCase(),getMLTeamName(p,"away").toLowerCase()].join("|");
     const key=id||fallback;
-
-    if(!unique.has(key)){
-      unique.set(key,p);
-    }else{
-      const old=unique.get(key);
-      if(!getMLActualScore(old)&&getMLActualScore(p)){
-        unique.set(key,p);
-      }
-    }
+    if(!unique.has(key))unique.set(key,p);
+    else if(!getMLActualScore(unique.get(key))&&getMLActualScore(p))unique.set(key,p);
   }
 
-  let totalCorrect=0;
-  let totalIncorrect=0;
-  let winnerCorrect=0;
-  let winnerIncorrect=0;
-
+  let correct=0,incorrect=0;
   for(const p of unique.values()){
     const ensemble=getMLEnsemble(p);
     const actual=getMLActualScore(p);
-
     if(!actual)continue;
 
-    // Alt / Üst başarısı
-    const totalResult=getMLTotalResult(ensemble,p);
-
-    if(totalResult==="success")totalCorrect++;
-    else if(totalResult==="failed")totalIncorrect++;
-
-    // MS 1X2 başarısı
-    const winnerResult=getMLWinnerResult(ensemble,p);
-
-    if(winnerResult==="success")winnerCorrect++;
-    else if(winnerResult==="failed")winnerIncorrect++;
+    const result=getMLWinnerResult(ensemble,p);
+    if(result==="success")correct++;
+    else if(result==="failed")incorrect++;
   }
 
-  const totalCompleted=totalCorrect+totalIncorrect;
-  const winnerCompleted=winnerCorrect+winnerIncorrect;
+  const total=correct+incorrect;
+  const rate=total?(correct/total*100).toFixed(1):"0.0";
 
-  const totalRate=totalCompleted
-    ?(totalCorrect/totalCompleted*100).toFixed(1)
-    :"0.0";
-
-  const winnerRate=winnerCompleted
-    ?(winnerCorrect/winnerCompleted*100).toFixed(1)
-    :"0.0";
-
-  // ALT / ÜST paneli
-  document.getElementById("mlTotalRate").textContent="%"+totalRate;
-  document.getElementById("mlTotalSuccess").textContent=totalCorrect;
-  document.getElementById("mlTotalFailed").textContent=totalIncorrect;
-  document.getElementById("mlTotalCompleted").textContent=totalCompleted;
-
-  // MS 1X2 paneli
-  document.getElementById("mlWinnerRate").textContent="%"+winnerRate;
-  document.getElementById("mlWinnerSuccess").textContent=winnerCorrect;
-  document.getElementById("mlWinnerFailed").textContent=winnerIncorrect;
-  document.getElementById("mlWinnerCompleted").textContent=winnerCompleted;
+  target.innerHTML=`
+    <div class="ml-success-rate">%${rate}</div>
+    <div class="ml-success-label">ENSEMBLE MS BAŞARISI</div>
+    <div class="ml-success-panel">
+      <div class="ml-success-item"><strong style="color:var(--green)">${correct}</strong><span>Doğru MS</span></div>
+      <div class="ml-success-item"><strong style="color:var(--red)">${incorrect}</strong><span>Yanlış MS</span></div>
+      <div class="ml-success-item"><strong>${total}</strong><span>Biten maç</span></div>
+    </div>
+    <div class="ml-success-note">Tamamlanmış maçların Ensemble MS1, MS2 ve beraberlik tahminleri gerçek sonuçlarla karşılaştırılır. Beraberlik tahminleri de hesaba katılır.</div>`;
 }
 
-/* ---------------- DOSYA YÜKLEME ---------------- */
-
+/* DOSYA YÜKLEME */
 async function fetchJSON(path){
   const response=await fetch(path+CACHE_KEY,{cache:"no-store"});
   if(!response.ok)throw new Error(path+" alınamadı (HTTP "+response.status+")");
   return response.json();
 }
-
 async function loadClassic(){
   const data=await fetchJSON("predictions.json");
-
-  const raw=Array.isArray(data)?data:
-    (Array.isArray(data.predictions)?data.predictions:[]);
-
-  predictions=raw.filter(p=>{
-    const league=String(p.league??"").trim().toLowerCase();
-    return league!=="euroleague"&&league!=="eurocup";
-  });
+  const raw=Array.isArray(data)?data:(Array.isArray(data.predictions)?data.predictions:[]);
+  predictions=raw.filter(p=>{const league=String(p.league??"").trim().toLowerCase();return league!=="euroleague"&&league!=="eurocup"});
 }
-
 async function loadML(){
-  const [predictionData,resultData]=await Promise.all([
-    fetchJSON("ml-predictions.json"),
-    fetchJSON("ml-results.json")
-  ]);
+  const [predictionData,resultData]=await Promise.all([fetchJSON("ml-predictions.json"),fetchJSON("ml-results.json")]);
+  mlMeta=predictionData;mlResults=resultData;
 
-  mlMeta=predictionData;
-  mlResults=resultData;
-
-  const raw=Array.isArray(predictionData.predictions)
-    ?predictionData.predictions
-    :[];
-
+  const raw=Array.isArray(predictionData.predictions)?predictionData.predictions:[];
   const unique=new Map();
-
   for(const p of raw){
     if(String(p.league??"NBA").toUpperCase()!=="NBA")continue;
-
     if(!["upcoming","historical_backtest"].includes(p.predictionType))continue;
-
     const id=normalizeMatchId(p.matchId??p.matchKey);
-
-    const fallbackKey=[
-      getDate(p),
-      getMLTeamName(p,"home").toLowerCase(),
-      getMLTeamName(p,"away").toLowerCase()
-    ].join("|");
-
-    const key=id||fallbackKey;
-
-    if(!unique.has(key)){
-      unique.set(key,p);
-    }else{
-      const old=unique.get(key);
-
-      if(!getMLActualScore(old)&&getMLActualScore(p)){
-        unique.set(key,p);
-      }
-    }
+    const fallback=[getDate(p),getMLTeamName(p,"home").toLowerCase(),getMLTeamName(p,"away").toLowerCase()].join("|");
+    const key=id||fallback;
+    if(!unique.has(key))unique.set(key,p);
+    else if(!getMLActualScore(unique.get(key))&&getMLActualScore(p))unique.set(key,p);
   }
-
   mlPredictions=[...unique.values()];
 
   actualById=new Map();
-
-  const resultLists=[
-    resultData.backtestHistory,
-    resultData.history
-  ];
-
-  for(const list of resultLists){
+  for(const list of [resultData.backtestHistory,resultData.history]){
     if(!Array.isArray(list))continue;
-
     for(const item of list){
       const id=normalizeMatchId(item.matchId??item.matchKey);
-
-      if(id){
-        actualById.set(id,item);
-      }
+      if(id)actualById.set(id,item);
     }
   }
-
   buildMLPerformance();
 }
 
-/* ---------------- MOTOR DEĞİŞTİRME ---------------- */
-
+/* MOTOR DEĞİŞTİRME */
 async function switchEngine(next){
   engine=next;
-
   document.getElementById("classicBtn").classList.toggle("active",engine==="classic");
   document.getElementById("mlBtn").classList.toggle("active",engine==="ml");
-
   document.getElementById("classicSummary").classList.toggle("hidden",engine!=="classic");
   document.getElementById("mlSummary").classList.toggle("hidden",engine!=="ml");
   document.getElementById("mlTypeFilter").classList.toggle("hidden",engine!=="ml");
-
   document.getElementById("headerSubtitle").textContent=engine==="ml"
     ?"NBA · RANDOM FOREST · XGBOOST · LIGHTGBM · CATBOOST · ENSEMBLE"
     :"MAÇ TOPLAM ALT / ÜST · 1 / 2 · PERİYOT ANALİZİ";
-
   statusFilter.value="all";
   content.innerHTML='<div class="loading">🏀 Veriler yükleniyor...</div>';
-
   try{
-    if(engine==="classic")await loadClassic();
-    else await loadML();
-
-    setDefaultDate();
-    render();
+    if(engine==="classic")await loadClassic();else await loadML();
+    setDefaultDate();render();
   }catch(error){
     console.error(error);
-
-    content.innerHTML=`
-      <div class="error">
-        Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}
-        <br><br>
-        ${engine==="ml"
-          ?"ml-predictions.json ve ml-results.json dosyalarının basketbol klasöründe bulunduğunu kontrol et."
-          :"predictions.json dosyasını kontrol et."}
-      </div>`;
-
-    if(engine==="ml"){
-      document.getElementById("mlTotalRate").textContent="-";
-      document.getElementById("mlTotalSuccess").textContent="-";
-      document.getElementById("mlTotalFailed").textContent="-";
-      document.getElementById("mlTotalCompleted").textContent="-";
-
-      document.getElementById("mlWinnerRate").textContent="-";
-      document.getElementById("mlWinnerSuccess").textContent="-";
-      document.getElementById("mlWinnerFailed").textContent="-";
-      document.getElementById("mlWinnerCompleted").textContent="-";
-    }
+    content.innerHTML=`<div class="error">Veri yüklenirken hata oluştu: ${escapeHtml(error.message)}<br><br>${engine==="ml"?"ml-predictions.json ve ml-results.json dosyalarının basketbol klasöründe bulunduğunu kontrol et.":"predictions.json dosyasını kontrol et."}</div>`;
+    if(engine==="ml")document.getElementById("mlPerformance").innerHTML='<div class="error">MS başarı oranı yüklenemedi.</div>';
   }
 }
-
 document.getElementById("classicBtn").addEventListener("click",()=>switchEngine("classic"));
 document.getElementById("mlBtn").addEventListener("click",()=>switchEngine("ml"));
-
 dateFilter.addEventListener("change",render);
 leagueFilter.addEventListener("change",render);
 statusFilter.addEventListener("change",render);
 mlPeriodFilter.addEventListener("change",render);
 mlModelFilter.addEventListener("change",render);
-
 switchEngine("classic");
 </script>
 
 <script>
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./sw.js").catch(error=>{
-      console.error("Service Worker kaydedilemedi:",error);
-    });
+    navigator.serviceWorker.register("./sw.js").catch(error=>console.error("Service Worker kaydedilemedi:",error));
   });
 }
 </script>
