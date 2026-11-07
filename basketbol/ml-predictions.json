@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-06T22:43:18.021699+00:00",
+  "updatedAt": "2026-11-07T04:39:13.537041+00:00",
   "source": "basketball.json",
   "league": "NBA",
   "predictionMethod": "walk_forward",
@@ -63,15 +63,15 @@
     "removedDuplicates": 0,
     "nbaMatches": 425,
     "finishedMatches": 207,
-    "upcomingMatches": 204,
+    "upcomingMatches": 202,
     "historicalCandidates": 207,
     "historicalPredicted": 108,
-    "upcomingPredicted": 204,
+    "upcomingPredicted": 202,
     "skippedInsufficientHistory": 58,
     "skippedInsufficientTraining": 41,
     "skippedInsufficientLineHistory": 0,
-    "todayUTC": "2026-11-06",
-    "upcomingCandidates": 204
+    "todayUTC": "2026-11-07",
+    "upcomingCandidates": 202
   },
   "predictions": [
     {
@@ -8387,140 +8387,6 @@
           "winner": "HOME",
           "totalResult": "success",
           "winnerResult": "success"
-        }
-      }
-    },
-    {
-      "matchId": "401909936",
-      "sourceMatchId": "401909936",
-      "date": "2026-11-06",
-      "utcDate": "2026-11-06T02:00Z",
-      "league": "NBA",
-      "homeTeam": "Phoenix Suns",
-      "awayTeam": "Orlando Magic",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 149,
-      "trainingCutoff": "2026-11-06T02:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 223.0,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 223.02
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 114.0,
-            "awayScore": 118.5,
-            "totalScore": 232.5,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          },
-          "XGBoost": {
-            "homeScore": 115.5,
-            "awayScore": 121.7,
-            "totalScore": 237.2,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          },
-          "LightGBM": {
-            "homeScore": 115.4,
-            "awayScore": 122.7,
-            "totalScore": 238.1,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          },
-          "CatBoost": {
-            "homeScore": 116.7,
-            "awayScore": 119.9,
-            "totalScore": 236.6,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          }
-        },
-        "ensemble": {
-          "homeScore": 115.4,
-          "awayScore": 120.7,
-          "totalScore": 236.1,
-          "totalLine": 223.0,
-          "totalDirection": "OVER",
-          "winner": "AWAY"
-        }
-      }
-    },
-    {
-      "matchId": "401909937",
-      "sourceMatchId": "401909937",
-      "date": "2026-11-06",
-      "utcDate": "2026-11-06T03:00Z",
-      "league": "NBA",
-      "homeTeam": "Golden State Warriors",
-      "awayTeam": "Miami Heat",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 149,
-      "trainingCutoff": "2026-11-06T03:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 223.0,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 223.02
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 121.6,
-            "awayScore": 110.7,
-            "totalScore": 232.3,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          },
-          "XGBoost": {
-            "homeScore": 121.7,
-            "awayScore": 108.9,
-            "totalScore": 230.6,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          },
-          "LightGBM": {
-            "homeScore": 125.7,
-            "awayScore": 108.0,
-            "totalScore": 233.7,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          },
-          "CatBoost": {
-            "homeScore": 123.2,
-            "awayScore": 111.0,
-            "totalScore": 234.2,
-            "totalLine": 223.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          }
-        },
-        "ensemble": {
-          "homeScore": 123.0,
-          "awayScore": 109.7,
-          "totalScore": 232.7,
-          "totalLine": 223.0,
-          "totalDirection": "OVER",
-          "winner": "HOME"
         }
       }
     },
@@ -22062,9 +21928,9 @@
   "summary": {
     "historicalMatches": 207,
     "historicalPredictedMatches": 108,
-    "upcomingMatches": 204,
-    "predictedUpcomingMatches": 204,
-    "predictedMatches": 312,
+    "upcomingMatches": 202,
+    "predictedUpcomingMatches": 202,
+    "predictedMatches": 310,
     "modelCount": 4
   }
 }
