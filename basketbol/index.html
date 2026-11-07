@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -200,7 +199,49 @@ input[type=date]{color-scheme:dark}
 .ml-pick.incorrect strong,.ml-pick.incorrect small{color:#ff7b81}
 .ml-pick.push{border-color:#85672a;background:#4b3816}
 .ml-pick.push strong,.ml-pick.push small{color:#ffd166}
+
+/* Yeni tahmin görünümü */
+.ml-main-predictions{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:6px;
+  margin-top:5px;
+}
+.ml-main-pick{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:100px;
+  padding:6px 9px;
+  border-radius:6px;
+  font-size:10px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.ml-main-pick.success{
+  background:#163b2a;
+  color:var(--green);
+  border:1px solid #285d40;
+}
+.ml-main-pick.fail{
+  background:#421f21;
+  color:var(--red);
+  border:1px solid #6b3034;
+}
+.ml-main-pick.pending{
+  background:#4b3816;
+  color:var(--yellow);
+  border:1px solid #85672a;
+}
+.ml-main-label{
+  color:#b7a28e;
+  font-size:8px;
+  font-weight:800;
+  margin-bottom:3px;
+}
 .hidden{display:none!important}
+
 @media(max-width:560px){
   .container{padding:9px}.header{padding:12px}.title{font-size:18px}
   .summary{gap:5px}.summary-card{padding:9px 3px}
@@ -256,7 +297,9 @@ input[type=date]{color-scheme:dark}
 
   <div id="mlSummary" class="hidden">
     <div class="section-title">🤖 ML Model Performansı</div>
-    <div id="mlPerformance" class="ml-performance"><div class="loading">ML performansı yükleniyor...</div></div>
+    <div id="mlPerformance" class="ml-performance">
+      <div class="loading">ML performansı yükleniyor...</div>
+    </div>
     <div class="ml-banner" id="mlInfo">ML tahminleri yükleniyor...</div>
   </div>
 
@@ -382,7 +425,6 @@ function getTime(p){
 }
 
 /* ---------------- KLASİK MOTOR ---------------- */
-/* Klasik motorun hesaplama mantığı korunmuştur. */
 
 function hasRealScore(p){
   return number(p.homeScore)!==null&&number(p.awayScore)!==null;
@@ -649,8 +691,6 @@ function getMLConsensus(p){
   return {count:counts[winner],total:votes.length,winner};
 }
 
-/* GERÇEK SKOR OKUMA */
-
 function readActualScore(record,allowResultScore=false){
   if(!record)return null;
 
@@ -691,12 +731,6 @@ function actualWinnerFromScore(score){
   if(score.away>score.home)return "AWAY";
   return "TIE";
 }
-
-/*
- * ÖNEMLİ:
- * Kayıtlı winnerResult ve totalResult artık doğruluk kaynağı değildir.
- * Sonuçlar daima gerçek skor üzerinden yeniden hesaplanır.
- */
 
 function getMLWinnerResult(model,p){
   const actual=getMLActualScore(p);
@@ -783,7 +817,7 @@ function modelCard(name,m,p,isEnsemble=false){
     </div>
 
     <div class="ml-pick ${resultClass(totalResult)}">
-      <span>TOPLAM ${escapeHtml(lineText)}</span>
+      <span>ALT / ÜST ${escapeHtml(lineText)}</span>
       <strong>${escapeHtml(direction)}</strong>
       <small>${resultLabel(totalResult)}</small>
     </div>
@@ -865,45 +899,32 @@ function buildMLDetails(p){
   </div>`;
 }
 
-/* ML MAÇ KARTI */
+/* ---------------- ML MAÇ KARTI ---------------- */
 
 function createMLCard(p){
   const ensemble=getMLEnsemble(p);
   const consensus=getMLConsensus(p);
-
   const actual=getMLActualScore(p);
   const hasActual=actual!==null;
 
   const predictedHome=number(ensemble.homeScore);
   const predictedAway=number(ensemble.awayScore);
-  const predictedTotal=number(ensemble.totalScore);
 
   const winnerResult=hasActual
     ?getMLWinnerResult(ensemble,p)
     :"pending";
 
+  const totalResult=hasActual
+    ?getMLTotalResult(ensemble,p)
+    :"pending";
+
   const line=number(ensemble.totalLine)??number(p.totalLine);
   const direction=directionText(ensemble.totalDirection);
 
-  let statusLabel="OYNANMADI";
-  let statusClass="pending";
-
-  if(hasActual){
-    if(winnerResult==="success"){
-      statusLabel="✓ TAHMİN BAŞARILI";
-      statusClass="success";
-    }else if(winnerResult==="failed"){
-      statusLabel="✕ TAHMİN BAŞARISIZ";
-      statusClass="fail";
-    }else if(winnerResult==="push"){
-      statusLabel="＝ PUSH";
-      statusClass="pending";
-    }else{
-      statusLabel="SONUÇ BEKLİYOR";
-      statusClass="pending";
-    }
-  }else if(p.predictionType==="historical_backtest"){
-    statusLabel="GERÇEK SKOR YOK";
+  function pickClass(result){
+    if(result==="success")return "success";
+    if(result==="failed")return "fail";
+    return "pending";
   }
 
   const scoreClass=winnerResult==="success"
@@ -912,11 +933,18 @@ function createMLCard(p){
       ?"incorrect"
       :"";
 
+  const totalPrediction=line!==null&&direction!=="-"
+    ?direction+" "+line.toFixed(1)
+    :"Alt/Üst tahmini yok";
+
+  const winnerPrediction=mlWinnerShort(ensemble.winner);
+
   const card=document.createElement("div");
   card.className="match-card"+(hasActual?"":" pending-card");
 
   card.innerHTML=`
     <div class="match-head" role="button" tabindex="0" aria-expanded="false">
+
       <div class="match-time">
         <strong>${escapeHtml(getTime(p)||"🏀")}</strong>
         <span>${escapeHtml(p.league??"NBA")}</span>
@@ -925,24 +953,43 @@ function createMLCard(p){
       <div class="teams">
         <div class="team-row">
           <span class="team-name">${escapeHtml(getMLTeamName(p,"home"))}</span>
-          <span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.home:"-"}</span>
+          <span class="score ${hasActual?scoreClass:"empty"}">
+            ${hasActual?actual.home:"-"}
+          </span>
         </div>
         <div class="team-row">
           <span class="team-name">${escapeHtml(getMLTeamName(p,"away"))}</span>
-          <span class="score ${hasActual?scoreClass:"empty"}">${hasActual?actual.away:"-"}</span>
+          <span class="score ${hasActual?scoreClass:"empty"}">
+            ${hasActual?actual.away:"-"}
+          </span>
         </div>
       </div>
 
       <div class="prediction-box">
-        <div class="prediction-market">GERÇEK SKOR</div>
+        <div class="prediction-market">TAHMİNLER</div>
 
-        <div class="prediction ${statusClass}">
-          ${escapeHtml(statusLabel)}
+        <div class="ml-main-predictions">
+
+          ${line!==null&&direction!=="-"?`
+            <div>
+              <div class="ml-main-label">ALT / ÜST</div>
+              <div class="ml-main-pick ${pickClass(totalResult)}">
+                ${escapeHtml(totalPrediction)}
+              </div>
+            </div>`:""}
+
+          <div>
+            <div class="ml-main-label">MAÇ SONUCU</div>
+            <div class="ml-main-pick ${pickClass(winnerResult)}">
+              ${escapeHtml(winnerPrediction)}
+            </div>
+          </div>
+
         </div>
 
         <div class="prediction-1x2">
           <strong>
-            TAHMİN:
+            SKOR:
             ${predictedHome!==null?predictedHome.toFixed(1):"-"}
             -
             ${predictedAway!==null?predictedAway.toFixed(1):"-"}
@@ -950,18 +997,8 @@ function createMLCard(p){
         </div>
 
         <div class="prediction-1x2">
-          <strong>TOPLAM: ${predictedTotal!==null?predictedTotal.toFixed(1):"-"}</strong>
+          <strong>UZLAŞMA: ${consensus.count}/${consensus.total}</strong>
         </div>
-
-        <div class="prediction-1x2">
-          <strong>${escapeHtml(mlWinnerShort(ensemble.winner))}</strong>
-          · ${consensus.count}/${consensus.total}
-        </div>
-
-        ${line!==null?`
-          <div class="prediction-1x2">
-            <strong>${line.toFixed(1)} ${escapeHtml(direction)}</strong>
-          </div>`:""}
 
         <span class="expand-icon">▼</span>
       </div>
@@ -989,7 +1026,7 @@ function createMLCard(p){
   return card;
 }
 
-/* ---------------- KART VE FİLTRELER ---------------- */
+/* ---------------- KLASİK MAÇ KARTI ---------------- */
 
 function createClassicCard(p){
   const status=getStatus(p);
@@ -1049,6 +1086,8 @@ function createClassicCard(p){
 
   return card;
 }
+
+/* ---------------- FİLTRELER ---------------- */
 
 function filterPredictions(){
   const date=dateFilter.value;
@@ -1239,7 +1278,6 @@ async function loadML(){
     ?predictionData.predictions
     :[];
 
-  // HTML tarafında da mükerrer maç kartlarını engelle.
   const unique=new Map();
 
   for(const p of raw){
@@ -1262,7 +1300,6 @@ async function loadML(){
     }else{
       const old=unique.get(key);
 
-      // Gerçek skor bulunan kayıt tercih edilir.
       if(!getMLActualScore(old)&&getMLActualScore(p)){
         unique.set(key,p);
       }
