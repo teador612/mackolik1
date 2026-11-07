@@ -125,8 +125,33 @@ def safe_score(match, key):
     return score
 
 
+def normalize_match_id(value):
+    """
+    ESPN maç kimliğinin nba- gibi ön eklerini kaldırır.
+    Örnek: nba-401909922 -> 401909922
+    """
+    if value is None:
+        return None
+
+    value = str(value).strip()
+
+    if not value:
+        return None
+
+    lowered = value.lower()
+
+    for prefix in ("nba-", "nba_", "nba:"):
+        if lowered.startswith(prefix):
+            return value[len(prefix):].strip()
+
+    return value
+
+
 def get_match_id(match):
     value = match.get("id")
+
+    if value is None:
+        value = match.get("sourceId")
 
     if value is None:
         return None
@@ -318,15 +343,50 @@ def clean_prediction(prediction):
 # ============================================================
 
 def build_match_lookup(matches):
+    """
+    Maçları hem id hem sourceId hem de normalize edilmiş kimlikleriyle
+    indeksler. Böylece nba-401909922 ile 401909922 aynı maçı bulur.
+    """
     lookup = {}
 
     for match in matches:
-        match_id = get_match_id(match)
-
-        if not match_id:
+        if not isinstance(match, dict):
             continue
 
-        lookup[match_id] = match
+        raw_ids = (
+            match.get("id"),
+            match.get("sourceId"),
+        )
+
+        aliases = set()
+
+        for raw_id in raw_ids:
+            if raw_id is None:
+                continue
+
+            raw_id = str(raw_id).strip()
+
+            if not raw_id:
+                continue
+
+            aliases.add(raw_id)
+
+            normalized_id = normalize_match_id(raw_id)
+
+            if normalized_id:
+                aliases.add(normalized_id)
+
+        if not aliases:
+            continue
+
+        # Aynı kimlik birden fazla kayıtta varsa tamamlanmış olanı koru.
+        for alias in aliases:
+            previous = lookup.get(alias)
+
+            if previous is None:
+                lookup[alias] = match
+            elif is_finished(match) and not is_finished(previous):
+                lookup[alias] = match
 
     return lookup
 
