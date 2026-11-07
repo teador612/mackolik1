@@ -12,8 +12,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 INPUT_CANDIDATES = [
-    BASE_DIR / "basketball.json",
     BASE_DIR / "data" / "basketball.json",
+    BASE_DIR / "basketball.json",
 ]
 
 PREDICTIONS_FILE = BASE_DIR / "ml-predictions.json"
