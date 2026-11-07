@@ -23,8 +23,8 @@ from catboost import CatBoostRegressor
 BASE_DIR = Path(__file__).resolve().parent
 
 INPUT_CANDIDATES = [
-    BASE_DIR / "basketball.json",
     BASE_DIR / "data" / "basketball.json",
+    BASE_DIR / "basketball.json",
 ]
 
 OUTPUT_FILE = BASE_DIR / "ml-predictions.json"
