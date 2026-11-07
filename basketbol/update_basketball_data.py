@@ -112,18 +112,39 @@ def make_match_id(league, season, home, away, utc_date):
     ).hexdigest()[:20]
 
 
+def normalize_source_id(match):
+    """
+    ESPN kaynak ID'sini ortak biçime getirir.
+    Eski kayıt: id='nba-401909922', sourceId='401909922'
+    Yeni kayıt: id='401909922'
+    """
+    for value in (match.get("sourceId"), match.get("id")):
+        value = clean_text(value)
+        if not value:
+            continue
+        value = re.sub(r"^nba[-_:]", "", value, flags=re.IGNORECASE)
+        if value:
+            return value
+    return ""
+
+
 def match_key(match):
+    # Öncelik ESPN kaynak ID'sinde. Böylece tarih/sezon formatı farklılığı
+    # aynı maçın ikinci kez eklenmesine neden olmaz.
+    source_id = normalize_source_id(match)
+    if source_id:
+        return ("NBA_ID", source_id)
+
+    # Kaynak ID'si olmayan eski kayıtlar için güvenli yedek anahtar.
+    raw_date = clean_text(match.get("date") or match.get("utcDate", ""))
+    date_only = raw_date[:10]
+
     return (
         clean_text(match.get("league")).upper(),
-        clean_text(match.get("season")),
+        date_only,
         normalize_team(match.get("homeTeam")),
         normalize_team(match.get("awayTeam")),
-        clean_text(
-            match.get("date")
-            or match.get("utcDate", "")[:10]
-        ),
     )
-
 
 # ============================================================
 # PERİYOT İŞLEMLERİ
@@ -216,6 +237,7 @@ def build_match(
 
     match = {
         "id": str(match_id),
+        "sourceId": str(match_id),
         "league": "NBA",
         "season": "2026",
         "date": utc_date[:10],
@@ -293,7 +315,6 @@ def merge_match(old, new):
         safe_int(old.get("homeScore")) is not None
         and safe_int(old.get("awayScore")) is not None
     )
-
     new_has_score = (
         safe_int(new.get("homeScore")) is not None
         and safe_int(new.get("awayScore")) is not None
@@ -301,45 +322,47 @@ def merge_match(old, new):
 
     # Yeni maç bilgilerini uygula.
     for field in (
-        "league",
-        "season",
-        "date",
-        "utcDate",
-        "homeTeam",
-        "awayTeam",
+        "league", "season", "date", "utcDate",
+        "homeTeam", "awayTeam", "sourceId",
     ):
         if new.get(field) not in (None, ""):
             merged[field] = new[field]
 
-    # Eski maç ID'sini koru.
+    # Mevcut ID'yi koru; sourceId ise ESPN ID'si olarak güncel kalsın.
     if old.get("id"):
         merged["id"] = old["id"]
     elif new.get("id"):
         merged["id"] = new["id"]
 
-    # Skorları güncelle.
-    if new_has_score:
-        if new_played or not old_played or not old_has_score:
-            merged["homeScore"] = new["homeScore"]
-            merged["awayScore"] = new["awayScore"]
+    if new.get("sourceId"):
+        merged["sourceId"] = str(new["sourceId"])
+    elif new.get("id"):
+        merged["sourceId"] = str(new["id"])
 
-    # Tamamlanmış maç geriye dönmesin.
+    # ESPN maçı tamamlandı olarak bildirdiyse skor ve durum kesinlikle güncellensin.
+    if new_played and new_has_score:
+        merged["homeScore"] = new["homeScore"]
+        merged["awayScore"] = new["awayScore"]
+    elif not old_played and new_has_score:
+        # Henüz tamamlanmamış maçta gelen geçici skor yalnızca eski kayıt da
+        # tamamlanmamışsa kullanılabilir.
+        merged["homeScore"] = new["homeScore"]
+        merged["awayScore"] = new["awayScore"]
+    elif old_has_score:
+        merged["homeScore"] = old["homeScore"]
+        merged["awayScore"] = old["awayScore"]
+
+    # Tamamlanmış bir maç tekrar scheduled durumuna düşürülmesin.
     merged["played"] = old_played or new_played
 
-    # Durum bilgisi.
     if new.get("status"):
-        if not old_played or new_played:
+        if new_played or not old_played:
             merged["status"] = new["status"]
 
-    # Periyot bilgilerini birleştir.
+    # Periyot verilerini birleştir.
     old_periods = old.get("periods")
     new_periods = new.get("periods")
-
-    periods = (
-        dict(old_periods)
-        if isinstance(old_periods, dict)
-        else {}
-    )
+    periods = dict(old_periods) if isinstance(old_periods, dict) else {}
 
     if isinstance(new_periods, dict):
         for key, value in new_periods.items():
@@ -351,17 +374,10 @@ def merge_match(old, new):
         merged["hasPeriodData"] = True
     else:
         merged["hasPeriodData"] = False
-
         if periods:
             merged["periods"] = periods
 
-    # Eski tamamlanmış maçın skoru korunur.
-    if old_played and old_has_score and not new_has_score:
-        merged["homeScore"] = old["homeScore"]
-        merged["awayScore"] = old["awayScore"]
-
     return merged
-
 
 def merge_matches(old_matches, new_matches):
     merged = {}
@@ -369,12 +385,10 @@ def merge_matches(old_matches, new_matches):
     for match in old_matches:
         if not isinstance(match, dict):
             continue
-
         if clean_text(match.get("league")).upper() != "NBA":
             continue
 
         key = match_key(match)
-
         if all(key):
             merged[key] = match
 
@@ -384,17 +398,14 @@ def merge_matches(old_matches, new_matches):
     for match in new_matches:
         if not isinstance(match, dict):
             continue
-
         if clean_text(match.get("league")).upper() != "NBA":
             continue
 
         key = match_key(match)
-
         if not all(key):
             continue
 
         old = merged.get(key)
-
         if old is None:
             merged[key] = match
             added += 1
@@ -413,8 +424,22 @@ def merge_matches(old_matches, new_matches):
     print(f"🔁 Güncellenen maç: {updated}")
     print(f"📦 Birleşik toplam: {len(result)}")
 
-    return result
+    # Örnek sorunlu maç için birleştirme sonucunu görünür kıl.
+    target = next(
+        (m for m in result if normalize_source_id(m) == "401909922"),
+        None,
+    )
+    if target:
+        print(
+            "🔎 401909922 kontrolü: "
+            f"id={target.get('id')} | "
+            f"sourceId={target.get('sourceId')} | "
+            f"skor={target.get('homeScore')}-{target.get('awayScore')} | "
+            f"played={target.get('played')} | "
+            f"status={target.get('status')}"
+        )
 
+    return result
 
 # ============================================================
 # NBA TARİH ARALIĞI
@@ -632,47 +657,45 @@ def deduplicate(matches):
     for match in matches:
         if not isinstance(match, dict):
             continue
-
         if clean_text(match.get("league")).upper() != "NBA":
             continue
 
         key = match_key(match)
-
         if not all(key):
             continue
 
         old = unique.get(key)
-
         if old is None:
             unique[key] = match
             continue
 
-        old_has_score = (
-            old.get("homeScore") is not None
-            and old.get("awayScore") is not None
-        )
+        old_played = old.get("played") is True
+        new_played = match.get("played") is True
 
+        # Tamamlanmış kayıt, planlanmış kayda göre önceliklidir.
+        if new_played and not old_played:
+            unique[key] = match
+            continue
+        if old_played and not new_played:
+            continue
+
+        old_has_score = (
+            safe_int(old.get("homeScore")) is not None
+            and safe_int(old.get("awayScore")) is not None
+        )
         new_has_score = (
-            match.get("homeScore") is not None
-            and match.get("awayScore") is not None
+            safe_int(match.get("homeScore")) is not None
+            and safe_int(match.get("awayScore")) is not None
         )
 
         if new_has_score and not old_has_score:
             unique[key] = match
             continue
 
-        if match.get("played") and not old.get("played"):
-            unique[key] = match
-            continue
-
-        if (
-            match.get("hasPeriodData")
-            and not old.get("hasPeriodData")
-        ):
+        if match.get("hasPeriodData") and not old.get("hasPeriodData"):
             unique[key] = match
 
     return list(unique.values())
-
 
 # ============================================================
 # MAÇLARI SIRALA
