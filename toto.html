@@ -274,7 +274,7 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
         <button type="button" class="guarantee-option active" data-guarantee="13">13 garanti</button>
         <button type="button" class="guarantee-option" data-guarantee="14">14 garanti</button>
       </div>
-    <span class="small">AI her maçta olasılığı en yüksek iki sonucu önerir; işaretleri maç kartlarından düzenleyebilirsin.</span>
+    <span class="small">AI, garanti seviyesine göre en kararsız maçlarda çift işaret önerir; seçimleri maç kartlarından değiştirebilirsin.</span>
       <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">AI önerisini uygula</button>
     </div>
     <div class="coupon-totals">
@@ -568,6 +568,7 @@ window.SPORT_TOTO_META = {
 </script>
 
 
+
 <script>
 const AI_URL = "https://teador612.github.io/ai/predictions.json";
 const OUTCOMES = ["1", "X", "2"];
@@ -737,6 +738,7 @@ function ensureSelections(game, index, analysis) {
 
 function applyAISelectionsForGuarantee() {
   const games = getWeekGames(activeWeek);
+  const candidates = [];
   games.forEach((game, index) => {
     const analysis = getPrediction(game);
     const key = selectionKey(game, index);
@@ -745,9 +747,13 @@ function applyAISelectionsForGuarantee() {
       return;
     }
     const ranked = OUTCOMES.slice().sort((a, b) => analysis.probabilities[b] - analysis.probabilities[a]);
-    // Two AI-leading marks per match keep automatic systems bounded to 2^15 rows.
-    selectedOutcomes.set(key, ranked.slice(0, 2));
+    selectedOutcomes.set(key, [ranked[0]]);
+    candidates.push({ key, pair: ranked.slice(0, 2), confidence: analysis.probabilities[ranked[0]], index });
   });
+  const doublesByGuarantee = { 12: 8, 13: 6, 14: 4 };
+  const doubles = doublesByGuarantee[guaranteeTarget] || 6;
+  candidates.sort((a, b) => a.confidence - b.confidence || a.index - b.index);
+  candidates.slice(0, doubles).forEach(candidate => selectedOutcomes.set(candidate.key, candidate.pair));
   autoSelections = true;
 }
 
