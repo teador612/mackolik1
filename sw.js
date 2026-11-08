@@ -1,11 +1,12 @@
-const CACHE_NAME = "mackolik-v1";
+const CACHE_NAME = "mackolik-v2";
 
 const FILES = [
     "./",
     "./index.html",
     "./style.css",
     "./app.js",
-    "./manifest.json"
+    "./manifest.json",
+    "./icon.svg"
 ];
 
 self.addEventListener(
