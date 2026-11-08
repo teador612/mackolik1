@@ -145,6 +145,49 @@ select:focus, button:focus-visible, summary:focus-visible { outline: 3px solid r
 .details[open] summary::after { content: "−"; }
 .details-content { padding: 0 0 14px; color: #5f7066; font-size: 11px; }
 .details-content .notice { margin-top: 0 !important; margin-bottom: 0 !important; border-radius: 10px; }
+.coupon-builder { margin-bottom: 14px; }
+.coupon-heading { align-items: flex-start; }
+.coupon-heading .small { margin-top: 4px; }
+.coupon-modes { display: inline-flex; gap: 4px; margin: 5px 0 13px; padding: 4px; border: 1px solid #e4ebe5; border-radius: 11px; background: #f5f8f5; }
+.mode-button, .guarantee-option, .copy-button {
+  min-height: 36px;
+  padding: 8px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #5c6c62;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 680;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.mode-button:hover, .guarantee-option:hover { color: var(--green-deep); background: #eaf2ec; }
+.mode-button.active, .guarantee-option.active { border-color: #d6e6d9; color: #145d3d; background: #fff; box-shadow: 0 2px 5px rgba(21, 61, 39, .06); }
+.guarantee-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 13px; padding: 11px 12px; border: 1px solid #e5ede7; border-radius: 11px; background: #f8faf8; }
+.guarantee-picker[hidden] { display: none !important; }
+.picker-label { color: #4d6255; font-size: 11px; font-weight: 720; }
+.guarantee-options { display: flex; gap: 4px; padding: 3px; border: 1px solid #e3ebe4; border-radius: 10px; background: #f1f5f1; }
+.coupon-totals { display: grid; grid-template-columns: 1fr 1fr 1.25fr auto; align-items: center; gap: 13px; padding: 13px 14px; border: 1px solid #dce9df; border-radius: 12px; background: linear-gradient(105deg, #f5faf6, #edf6ef); }
+.coupon-totals > div { display: flex; flex-direction: column; gap: 3px; }
+.total-label { color: #748278; font-size: 10px; font-weight: 650; }
+.coupon-totals strong { color: #244637; font-size: 17px; font-weight: 760; font-variant-numeric: tabular-nums; }
+.coupon-totals .total-cost strong { color: #0e6545; font-size: 21px; }
+.copy-button { border-color: var(--green); color: #fff; background: var(--green); }
+.copy-button:hover:not(:disabled) { background: #0e6244; }
+.copy-button:disabled { cursor: not-allowed; opacity: .45; }
+.coupon-preview { margin-top: 11px; }
+.coupon-preview summary { padding: 7px 0; color: #506d5b; cursor: pointer; font-size: 11px; font-weight: 680; }
+.coupon-preview textarea { display: block; width: 100%; min-height: 120px; margin-top: 7px; padding: 10px; resize: vertical; border: 1px solid #e1e9e3; border-radius: 9px; color: #344b3e; background: #fbfdfb; font: 11px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
+.coupon-message { margin-top: 10px; color: #52705c; font-size: 11px; line-height: 1.6; }
+.coupon-disclaimer { margin-top: 5px; color: #8b968e; font-size: 10px; line-height: 1.55; }
+.pick-control { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px 13px; }
+.pick-head { display: flex; flex-direction: column; gap: 2px; color: #5f7066; font-size: 10px; font-weight: 700; }
+.pick-head small { color: #87948b; font-size: 9px; font-weight: 500; }
+.pick-head small strong { color: #26704b; }
+.outcome-buttons { display: flex; gap: 5px; }
+.outcome-select { min-width: 34px; height: 31px; border: 1px solid #e1e9e3; border-radius: 8px; color: #63736a; background: #fff; font-size: 11px; font-weight: 730; transition: all .15s; }
+.outcome-select:hover { border-color: #8cb49a; color: #165d3d; }
+.outcome-select.selected { border-color: #26764f; color: #fff; background: #26764f; box-shadow: 0 2px 5px rgba(23, 94, 59, .18); }
+.outcome-select:focus-visible { outline: 3px solid rgba(19, 118, 83, .2); outline-offset: 2px; }
 .empty { padding: 25px; color: var(--muted); text-align: center; line-height: 1.7; }
 footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size: 10px; }
 
@@ -169,6 +212,9 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
   .probability-block { padding: 0 15px 13px; }
   .match-info { padding: 0 15px 13px; }
   .details { padding: 0 15px; }
+  .coupon-totals { grid-template-columns: 1fr 1fr; gap: 12px 8px; }
+  .coupon-totals .copy-button { grid-column: 1 / -1; }
+  .pick-control { align-items: flex-start; padding-inline: 15px; }
 }
 
 </style>
@@ -207,6 +253,42 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
       <span id="benchmark">AI tahmin kaynağı yükleniyor...</span>
       <br>AI sisteminde eşleşen tahmin yoksa maç açıkça işaretlenir.
     </div>
+  </section>
+
+  <section id="couponBuilder" class="panel coupon-builder">
+    <div class="section-head coupon-heading">
+      <div>
+        <h2>Kupon oluşturucu</h2>
+        <div class="small">AI tahminleriyle tekli kupon hazırla veya seçimlerini garanti sistemine dönüştür.</div>
+      </div>
+      <span id="couponStatus" class="badge blue">Tahminler yükleniyor</span>
+    </div>
+    <div class="coupon-modes" role="group" aria-label="Kupon sistemi seç">
+      <button type="button" id="singleModeBtn" class="mode-button active" data-mode="single">Normal tekli sistem</button>
+      <button type="button" id="guaranteeModeBtn" class="mode-button" data-mode="guarantee">Garantili sistem</button>
+    </div>
+    <div id="guaranteePicker" class="guarantee-picker" hidden>
+      <span class="picker-label">Garanti seviyesi</span>
+      <div class="guarantee-options">
+        <button type="button" class="guarantee-option" data-guarantee="12">12 garanti</button>
+        <button type="button" class="guarantee-option active" data-guarantee="13">13 garanti</button>
+        <button type="button" class="guarantee-option" data-guarantee="14">14 garanti</button>
+      </div>
+      <span class="small">AI, garanti seviyesine göre ek sonuç önerir; maç kartlarından düzenleyebilirsin.</span>
+      <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">AI önerisini uygula</button>
+    </div>
+    <div class="coupon-totals">
+      <div><span class="total-label">Oluşan kolon</span><strong id="couponColumns">—</strong></div>
+      <div><span class="total-label">Kolon bedeli</span><strong id="columnPrice">10 TL</strong></div>
+      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="couponCost">—</strong></div>
+      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Kolonları kopyala</button>
+    </div>
+    <details class="coupon-preview">
+      <summary>Oluşan kolonları incele</summary>
+      <textarea id="columnOutput" readonly aria-label="Oluşan Spor Toto kolonları" placeholder="Kupon kolonları burada listelenecek."></textarea>
+    </details>
+    <div id="couponMessage" class="coupon-message">AI tahminleri yüklendiğinde kupon hazırlanır.</div>
+    <div class="coupon-disclaimer">Garanti, işaretlediğin seçenekler içindeki sonuçlar için kolonların isabet kapsamını anlatır; ikramiye veya kazanç garantisi değildir.</div>
   </section>
 
   <section id="matchList" class="match-list">
@@ -249,6 +331,14 @@ const $ = id => document.getElementById(id);
 let totoData = null;
 let aiData = null;
 let activeWeek = null;
+let couponMode = "single";
+let guaranteeTarget = 13;
+let autoSelections = true;
+let selectedOutcomes = new Map();
+let generatedColumns = [];
+const COLUMN_PRICE = 10;
+const MAX_SCENARIOS = 32768;
+const MAX_GENERATED_COLUMNS = 5000;
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -360,6 +450,258 @@ function probabilityMarkup(probabilities) {
   </div>`;
 }
 
+function selectionKey(game, index) {
+  const home = normalizeTeam(game.home ?? game.evSahibi ?? "");
+  const away = normalizeTeam(game.away ?? game.deplasman ?? "");
+  return [activeWeek, game.number ?? index + 1, home, away].join("|");
+}
+
+function ensureSelections(game, index, analysis) {
+  const key = selectionKey(game, index);
+  if (!selectedOutcomes.has(key)) {
+    selectedOutcomes.set(key, analysis.probabilities ? [analysis.selection] : []);
+  }
+  return { key, values: selectedOutcomes.get(key) };
+}
+
+function applyAISelectionsForGuarantee() {
+  const minimumCoverage = { 12: 60, 13: 66, 14: 72 }[guaranteeTarget] || 66;
+  const games = getWeekGames(activeWeek);
+  games.forEach((game, index) => {
+    const analysis = getPrediction(game);
+    const key = selectionKey(game, index);
+    if (!analysis.probabilities) {
+      selectedOutcomes.set(key, []);
+      return;
+    }
+    const ranked = OUTCOMES.slice().sort((a, b) => analysis.probabilities[b] - analysis.probabilities[a]);
+    const picks = [];
+    let coverage = 0;
+    for (const outcome of ranked) {
+      picks.push(outcome);
+      coverage += analysis.probabilities[outcome];
+      if (coverage >= minimumCoverage || picks.length === 3) break;
+    }
+    selectedOutcomes.set(key, picks);
+  });
+  autoSelections = true;
+}
+
+function selectionMarkup(key, values, analysis) {
+  const buttons = OUTCOMES.map(outcome => {
+    const active = values.includes(outcome);
+    const odds = analysis.probabilities?.[outcome];
+    return `<button type="button" class="outcome-select${active ? " selected" : ""}"
+      data-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
+      aria-pressed="${active}" title="${outcome} olasılığı ${probabilityLabel(odds)}">${outcome}</button>`;
+  }).join("");
+  const hint = analysis.probabilities
+    ? (couponMode === "guarantee"
+      ? `AI işaretleri: <strong>${escapeHTML(values.join(" "))}</strong>`
+      : `AI önerisi: <strong>${escapeHTML(analysis.selection)}</strong>`)
+    : "Tahmin yok · seçimini kendin belirle";
+  return `<div class="pick-control">
+    <div class="pick-head"><span>${couponMode === "single" ? "Tekli kupon seçimi" : "Sistem işaretleri"}</span><small>${hint}</small></div>
+    <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">${buttons}</div>
+  </div>`;
+}
+
+function decodeDigits(id, sizes, strides) {
+  return sizes.map((size, index) => Math.floor(id / strides[index]) % size);
+}
+
+function visitWithinRadius(center, errors, sizes, strides, visit) {
+  const digits = decodeDigits(center, sizes, strides);
+  function walk(position, remaining, value) {
+    if (position === sizes.length) {
+      visit(value);
+      return;
+    }
+    walk(position + 1, remaining, value);
+    if (remaining > 0) {
+      for (let choice = 0; choice < sizes[position]; choice++) {
+        if (choice !== digits[position]) {
+          walk(position + 1, remaining - 1,
+            value + (choice - digits[position]) * strides[position]);
+        }
+      }
+    }
+  }
+  walk(0, errors, center);
+}
+
+function makeCoveredSystem(choices, guarantee) {
+  const sizes = choices.map(list => list.length);
+  let total = sizes.reduce((value, size) => value * size, 1);
+  if (total > MAX_SCENARIOS) return { total, rows: null, reason: "large" };
+  const errors = 15 - guarantee;
+  const strides = Array(sizes.length);
+  let stride = 1;
+  for (let i = sizes.length - 1; i >= 0; i--) {
+    strides[i] = stride;
+    stride *= sizes[i];
+  }
+  const neighborhood = [];
+  visitWithinRadius(0, errors, sizes, strides, id => neighborhood.push(id));
+  const covered = new Uint8Array(total);
+  const selected = new Uint8Array(total);
+  let left = total;
+  const centers = [];
+
+  while (left > 0) {
+    let best = -1, bestScore = -1;
+    // Greedy search over a bounded, evenly spread sample keeps large systems responsive.
+    const samples = Math.min(total, 96);
+    const offset = (centers.length * 104729) % total;
+    const step = Math.max(1, Math.floor(total / samples));
+    for (let sample = 0; sample < samples; sample++) {
+      const candidate = (offset + sample * step) % total;
+      if (selected[candidate]) continue;
+      let score = 0;
+      visitWithinRadius(candidate, errors, sizes, strides, scenario => {
+        if (!covered[scenario]) score++;
+      });
+      if (score > bestScore) {
+        best = candidate;
+        bestScore = score;
+      }
+    }
+    // If the sample missed all remaining pockets, selecting an uncovered scenario
+    // itself always makes progress and preserves the advertised coverage.
+    if (best < 0 || bestScore === 0) {
+      for (let candidate = 0; candidate < total; candidate++) {
+        if (!covered[candidate]) { best = candidate; break; }
+      }
+    }
+    if (best < 0) return { total, rows: null, reason: "failed" };
+    selected[best] = 1;
+    visitWithinRadius(best, errors, sizes, strides, scenario => {
+      if (!covered[scenario]) {
+        covered[scenario] = 1;
+        left--;
+      }
+    });
+    centers.push(best);
+  }
+
+  const rows = centers.map(center => decodeDigits(center, sizes, strides)
+    .map((choice, index) => choices[index][choice]));
+  return { total, rows, reason: "" };
+}
+
+function readCurrentChoices(games) {
+  return games.map((game, index) => {
+    const analysis = getPrediction(game);
+    return ensureSelections(game, index, analysis).values;
+  });
+}
+
+function updateCouponPanel(games = getWeekGames(activeWeek)) {
+  const singleButton = $("singleModeBtn"), guaranteeButton = $("guaranteeModeBtn");
+  singleButton.classList.toggle("active", couponMode === "single");
+  guaranteeButton.classList.toggle("active", couponMode === "guarantee");
+  singleButton.setAttribute("aria-pressed", couponMode === "single");
+  guaranteeButton.setAttribute("aria-pressed", couponMode === "guarantee");
+  $("guaranteePicker").hidden = couponMode !== "guarantee";
+  document.querySelectorAll("[data-guarantee]").forEach(button => {
+    button.classList.toggle("active", Number(button.dataset.guarantee) === guaranteeTarget);
+    button.setAttribute("aria-pressed", Number(button.dataset.guarantee) === guaranteeTarget);
+  });
+  const choices = readCurrentChoices(games);
+  const incomplete = choices.some(list => !list.length || (couponMode === "single" && list.length !== 1));
+  generatedColumns = [];
+  const message = $("couponMessage");
+  if (!games.length || incomplete) {
+    $("couponColumns").textContent = "—";
+    $("couponCost").textContent = "—";
+    $("columnOutput").value = "";
+    $("copyColumnsBtn").disabled = true;
+    $("couponStatus").textContent = "Seçimleri tamamla";
+    message.textContent = "Her maç için en az bir sonuç seç. Normal sistemde her maçta tek sonuç işaretlenir.";
+    return;
+  }
+
+  let result;
+  if (couponMode === "single") {
+    result = { rows: [choices.map(list => list[0])], total: 1, reason: "" };
+  } else {
+    result = makeCoveredSystem(choices, guaranteeTarget);
+  }
+
+  if (!result.rows) {
+    $("couponColumns").textContent = result.total.toLocaleString("tr-TR") + " olasılık";
+    $("couponCost").textContent = "—";
+    $("columnOutput").value = "";
+    $("copyColumnsBtn").disabled = true;
+    $("couponStatus").textContent = "Sistem çok büyük";
+    message.textContent = "Bu seçim kombinasyonu tarayıcıda güvenli biçimde indirgenemeyecek kadar geniş. Bazı maçlardaki çift/üçlü seçimleri azaltıp tekrar dene.";
+    return;
+  }
+
+  generatedColumns = result.rows;
+  const totalCost = generatedColumns.length * COLUMN_PRICE;
+  $("couponColumns").textContent = generatedColumns.length.toLocaleString("tr-TR");
+  $("couponCost").textContent = totalCost.toLocaleString("tr-TR") + " TL";
+  $("columnOutput").value = generatedColumns.map((row, index) =>
+    String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
+  $("copyColumnsBtn").disabled = false;
+  $("couponStatus").textContent = couponMode === "single" ? "Tekli kupon hazır" : guaranteeTarget + " sistemi hazır";
+  message.textContent = couponMode === "single"
+    ? "Normal tekli sistem: AI’nin en yüksek olasılıklı seçimi kullanılır. İstersen maç kartından tekli seçimi değiştirebilirsin."
+    : guaranteeTarget + " garanti: " + (autoSelections ? "AI olasılıklarına göre önerilen" : "elle düzenlenen") +
+      " işaretlerin tüm birleşimleri tarandı; her birleşimde en az " + guaranteeTarget +
+      " isabetli bir kolon bulunur. Kolon sayısı en aza indirme iddiası taşımaz.";
+}
+
+function setCouponMode(mode) {
+  couponMode = mode;
+  if (mode === "guarantee") {
+    applyAISelectionsForGuarantee();
+  } else {
+    getWeekGames(activeWeek).forEach((game, index) => {
+      const key = selectionKey(game, index);
+      const analysis = getPrediction(game);
+      const current = selectedOutcomes.get(key) || [];
+      const keep = analysis.probabilities && current.includes(analysis.selection)
+        ? analysis.selection : current[0];
+      selectedOutcomes.set(key, keep ? [keep] : []);
+    });
+  }
+  renderWeek();
+}
+
+function handleOutcomeClick(button) {
+  const key = button.dataset.matchKey;
+  const outcome = button.dataset.outcome;
+  let values = selectedOutcomes.get(key) || [];
+  if (couponMode === "single") {
+    values = [outcome];
+  } else if (values.includes(outcome)) {
+    if (values.length === 1) return;
+    values = values.filter(value => value !== outcome);
+  } else {
+    values = [...values, outcome];
+  }
+  selectedOutcomes.set(key, values);
+  autoSelections = false;
+  renderWeek();
+}
+
+async function copyColumns() {
+  if (!generatedColumns.length) return;
+  try {
+    await navigator.clipboard.writeText($("columnOutput").value);
+    $("copyColumnsBtn").textContent = "Kopyalandı";
+    setTimeout(() => { $("copyColumnsBtn").textContent = "Kolonları kopyala"; }, 1400);
+  } catch {
+    $("columnOutput").focus();
+    $("columnOutput").select();
+    document.execCommand("copy");
+    $("copyColumnsBtn").textContent = "Kopyalandı";
+    setTimeout(() => { $("copyColumnsBtn").textContent = "Kolonları kopyala"; }, 1400);
+  }
+}
+
 function normalizeResult(value) {
   const result = String(value ?? "").trim().toLocaleUpperCase("tr-TR");
   if (["1", "X", "2"].includes(result)) return result;
@@ -411,6 +753,7 @@ function renderWeek() {
     const home = game.home ?? game.evSahibi ?? "Ev sahibi bilinmiyor";
     const away = game.away ?? game.deplasman ?? "Deplasman bilinmiyor";
     const analysis = getPrediction(game);
+    const pickState = ensureSelections(game, index, analysis);
     const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
     const available = Boolean(analysis.probabilities);
     const status = result
@@ -440,6 +783,7 @@ function renderWeek() {
           <small>${available ? probabilityLabel(bestProbability) + " AI olasılığı" : "AI verisi bekleniyor"}</small>
         </div></div>
         ${available ? probabilityMarkup(analysis.probabilities) : ""}
+        ${selectionMarkup(pickState.key, pickState.values, analysis)}
         <div class="match-info">
           <span class="badge ${status.className}">${status.icon} ${status.label}</span>
           ${available ? `<span class="tag">İsim eşleşmesi: <strong>%${(analysis.confidence * 100).toFixed(0)}</strong></span>
@@ -466,6 +810,7 @@ function renderWeek() {
   $("statSettled").textContent = settled;
   $("statAccuracy").textContent = settled ? "%" + (won / settled * 100).toFixed(1) : "—";
   $("weekBadge").textContent = activeWeek ? activeWeek + ". Hafta · " + analyzed + "/" + games.length + " AI tahmini" : "Hafta —";
+  updateCouponPanel(games);
   return { games, analyzed };
 }
 
@@ -502,9 +847,28 @@ async function loadData() {
 
 $("weekSelect").addEventListener("change", event => {
   activeWeek = event.target.value;
+  if (couponMode === "guarantee" && autoSelections) applyAISelectionsForGuarantee();
   updateMessage();
 });
 $("refreshBtn").addEventListener("click", loadData);
+$("singleModeBtn").addEventListener("click", () => setCouponMode("single"));
+$("guaranteeModeBtn").addEventListener("click", () => setCouponMode("guarantee"));
+document.querySelectorAll("[data-guarantee]").forEach(button => {
+  button.addEventListener("click", () => {
+    guaranteeTarget = Number(button.dataset.guarantee);
+    if (couponMode === "guarantee" && autoSelections) applyAISelectionsForGuarantee();
+    renderWeek();
+  });
+});
+$("autoOptionsBtn").addEventListener("click", () => {
+  applyAISelectionsForGuarantee();
+  renderWeek();
+});
+$("matchList").addEventListener("click", event => {
+  const button = event.target.closest(".outcome-select");
+  if (button) handleOutcomeClick(button);
+});
+$("copyColumnsBtn").addEventListener("click", copyColumns);
 loadData();
 
 </script>
