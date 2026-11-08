@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1220">
-<title>Spor Toto Analiz Sistemi</title>
+<title>NEXUS | Spor Toto Tahmin Merkezi</title>
 <style>
 :root{color-scheme:dark;--bg:#0b1220;--panel:#121d2e;--panel2:#18263a;--border:#293b53;--text:#edf4ff;--muted:#9aacc3}
 *{box-sizing:border-box}
@@ -53,8 +53,8 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
 <body>
 <header>
   <div class="container" style="padding:0 4px">
-    <h1>⚽ Spor Toto Analiz</h1>
-    <div class="subtitle">8 market · Aynı markette birebir aynı açılış oranı · En yeni 5 sonuç · 1 / X / 2</div>
+    <h1>⚽ Spor Toto Tahmin Merkezi</h1>
+    <div class="subtitle">AI tahminleri · Takım adına göre fikstür eşleştirme · Spor Toto 1 / X / 2</div>
   </div>
 </header>
 
@@ -75,15 +75,14 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
 
   <section class="panel">
     <div class="section-head">
-      <h2>Hafta analizi</h2>
+      <h2>AI tahmin analizi</h2>
       <span id="weekBadge" class="badge">Hafta —</span>
     </div>
     <div class="small">
-      İY 1, İY 2, İY 1,5 Üst, MS 1, MS 2, MS X, KG Var ve 2,5 Üst
-      marketleri ayrı ayrı incelenir. Her markette aynı açılış oranına
-      sahip en yeni en fazla 5 sonuçlanmış maç kullanılır. Son 30 gün
-      sınırı yoktur. Market sonuç yüzdeleri eşit ağırlıkla birleştirilerek
-      tek bir 1/X/2 tahmini oluşturulur.
+      Her Spor Toto maçı AI sistemindeki fikstürle ev sahibi ve deplasman adları üzerinden eşleştirilir.
+      1 / X / 2 tahmini, AI kaynağındaki MS 1, MS X ve MS 2 olasılıklarından en yüksek olanıdır.
+      <span id="benchmark">AI tahmin kaynağı yükleniyor...</span>
+      <br>AI sisteminde eşleşen tahmin yoksa maç açıkça işaretlenir.
     </div>
   </section>
 
@@ -92,857 +91,282 @@ footer{text-align:center;padding:20px;color:var(--muted);font-size:11px}
   </section>
 
   <section class="panel">
-    <h2>Taranan marketler</h2>
+    <h2>Veri kaynağı ve eşleştirme</h2>
     <div class="small">
-      İY 1 · İY 2 · İY 1,5 Üst · MS 1 · MS 2 · MS X · KG Var · 2,5 Üst
+      Tahmin kaynağı: <strong>https://teador612.github.io/ai/predictions.json</strong>.
+      Ana Spor Toto seçimi AI dosyasındaki MS 1, MS X ve MS 2 tahminlerinden alınır.
       <br><br>
-      Her market yalnızca kendi açılış oranıyla eşleştirilir. Eksik örnekler
-      başka marketlerden tamamlanmaz. Hiçbir markette eşleşme yoksa tahmin
-      üretilmez. Tüm mevcut geçmiş taranır; tarih sınırı uygulanmaz.
+      Türkçe karakterler, noktalama, kısaltmalar ve sponsor adları normalize edilir; benzer isimler
+      puanlanarak eşleştirilir. Eşleşme güveni düşük veya birden fazla aday yakınsa tahmin bağlanmaz.
     </div>
   </section>
 </main>
 
-<footer>Spor Toto Analiz · V2 JSON ve Spor Toto haftalık verileri kullanılır.</footer>
+<footer>NEXUS Spor Toto · Tahmin kaynağı: teador612.github.io/ai/predictions.json</footer>
 
 <script src="./data/spor-toto-data.js"></script>
 <script>
-"use strict";
-
-const CONFIG = {
-  DATA_URL: "./data/v2-data.json",
-  MAX_MATCHES_PER_MARKET: 5,
-  FUZZY_TEAM_THRESHOLD: 0.76,
-  FUZZY_SIDE_THRESHOLD: 0.68
-};
-
-const SCAN_MARKET_IDS = ["iy1","iy2","iy15ust","ms1","ms2","msx","kgvar","au25ust"];
-
-const SCAN_LABELS = {
-  iy1:"İY 1", iy2:"İY 2", iy15ust:"İY 1,5 Üst",
-  ms1:"MS 1", ms2:"MS 2", msx:"MS X",
-  kgvar:"KG Var", au25ust:"2,5 Üst"
-};
-
-const MARKET_ALIASES = {
-  "1":"ms1","ms1":"ms1","ms 1":"ms1",
-  "2":"ms2","ms2":"ms2","ms 2":"ms2",
-  "0":"msx","x":"msx","ms0":"msx","msx":"msx","ms x":"msx",
-  "iy1":"iy1","iy 1":"iy1",
-  "iy2":"iy2","iy 2":"iy2",
-  "iy15ust":"iy15ust","iy 1 5 ust":"iy15ust","iy 1 5 u":"iy15ust",
-  "kgvar":"kgvar","kg var":"kgvar","var":"kgvar",
-  "au25ust":"au25ust","2 5 ust":"au25ust","2 5 u":"au25ust"
-};
-
+const AI_URL = "https://teador612.github.io/ai/predictions.json";
+const OUTCOMES = ["1", "X", "2"];
 const TEAM_ALIASES = {
-  "atl junior":"atletico junior",
-  "atl junior barranquilla":"junior barranquilla",
-  "junior barranquilla":"junior barranquilla",
-  "sporting cristal lima":"sporting cristal",
-  "man utd":"manchester united",
-  "man united":"manchester united",
-  "manchester utd":"manchester united",
-  "ath madrid":"atletico madrid",
-  "atletico de madrid":"atletico madrid",
-  "inter milan":"inter",
-  "internazionale":"inter",
-  "ac milan":"milan",
-  "psg":"paris saint germain",
-  "paris sg":"paris saint germain",
-  "bayern munchen":"bayern munich",
-  "dortmund":"borussia dortmund",
-  "tottenham hotspur":"tottenham",
-  "newcastle united":"newcastle",
-  "wolverhampton wanderers":"wolves",
-  "wolverhampton":"wolves"
+  "man utd": "manchester united", "manchester utd": "manchester united", "man united": "manchester united",
+  "a villa": "aston villa", "atl madrid": "atletico madrid", "ath madrid": "atletico madrid",
+  "atletico de madrid": "atletico madrid", "atletico madrid": "atletico madrid",
+  "paris st germain": "paris saint germain", "paris sg": "paris saint germain", psg: "paris saint germain",
+  "rams basaksehir": "istanbul basaksehir", basaksehir: "istanbul basaksehir",
+  "inter milan": "inter", internazionale: "inter",
+  "atletico mineiro": "atletico mineiro", "atletico mg": "atletico mineiro",
+  "caykur rizespor": "caykur rizespor", "rize spor": "caykur rizespor",
+  "como 1907": "como",
+  "tumoşan konyaspor": "konyaspor", "tumosan konyaspor": "konyaspor",
+  "arca corum fk": "corum", "corum fk": "corum"
 };
-
-const TOKEN_ALIASES = {
-  utd:"united",ath:"atletico",atl:"atletico",dep:"deportivo",
-  depor:"deportivo",munchen:"munich",muenchen:"munich"
-};
-
-const IGNORABLE_TOKENS = new Set([
-  "fc","cf","sc","afc","club","football","futbol","futebol","de","del","the"
-]);
-
-let allMatches = [];
-let historicalMatches = [];
-let totoData = null;
-let activeWeek = null;
-let exactTeamIndex = new Map();
-let teamRecordCache = new Map();
-let similarityCache = new Map();
-let analysisCache = new WeakMap();
-
+const IGNORE = new Set(["fc", "cf", "sc", "afc", "club", "football", "futbol", "the"]);
 const $ = id => document.getElementById(id);
-
-function showMessage(text,type="") {
-  const el=$("message");
-  el.textContent=text;
-  el.className="notice"+(type?" "+type:"");
-}
-
-function normalizeBasic(value) {
-  return String(value??"")
-    .toLocaleLowerCase("tr-TR")
-    .replace(/ı/g,"i").replace(/ş/g,"s").replace(/ğ/g,"g")
-    .replace(/ü/g,"u").replace(/ö/g,"o").replace(/ç/g,"c")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-    .replace(/&/g," and ")
-    .replace(/[^a-z0-9]+/g," ")
-    .trim().replace(/\s+/g," ");
-}
-
-function canonicalTeam(value) {
-  let s=normalizeBasic(value);
-  if(!s) return "";
-  if(TEAM_ALIASES[s]) return normalizeBasic(TEAM_ALIASES[s]);
-  s=s.split(" ").map(t=>TOKEN_ALIASES[t]||t)
-    .filter(t=>!IGNORABLE_TOKENS.has(t)).join(" ");
-  return normalizeBasic(TEAM_ALIASES[s]||s);
-}
-
-function getHome(m) {
-  return String(m?.home??m?.homeTeam??m?.home_team??m?.evSahibi??m?.ev??m?.team1??"").trim();
-}
-
-function getAway(m) {
-  return String(m?.away??m?.awayTeam??m?.away_team??m?.deplasman??m?.team2??"").trim();
-}
-
-function parseNumber(value) {
-  if(value===null||value===undefined||value==="") return null;
-  if(typeof value==="object") {
-    for(const k of ["opening","open","odd","odds","price","value"]) {
-      if(value[k]!==undefined) {
-        const n=parseNumber(value[k]);
-        if(n!==null) return n;
-      }
-    }
-    return null;
-  }
-  const s=String(value).trim().replace(",",".");
-  if(!/^\d+(?:\.\d+)?$/.test(s)) return null;
-  const n=Number(s);
-  return Number.isFinite(n)&&n>1?n:null;
-}
-
-function formatOdd(n) {
-  return n==null?"—":Number(n).toFixed(2);
-}
-
-function parseDate(value) {
-  if(!value) return null;
-  if(typeof value==="number") {
-    const d=new Date(value>1e12?value:value*1000);
-    return Number.isNaN(d.getTime())?null:d;
-  }
-  const s=String(value).trim();
-  const m=s.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})/);
-  if(m) {
-    const d=new Date(Number(m[3]),Number(m[2])-1,Number(m[1]));
-    return Number.isNaN(d.getTime())?null:d;
-  }
-  const d=new Date(s);
-  return Number.isNaN(d.getTime())?null:d;
-}
-
-function getDate(m) {
-  return parseDate(m?.date??m?.matchDate??m?.tarih??m?.datetime??
-    m?.kickoff??m?.startTime??m?.fixtureDate);
-}
-
-function getScorePair(m) {
-  if(!m||typeof m!=="object") return null;
-
-  for(const value of [m.score,m.fullTimeScore,m.full_time_score,m.resultScore]) {
-    if(typeof value==="string") {
-      const found=value.trim().match(/^(\d{1,2})\s*[-:]\s*(\d{1,2})$/);
-      if(found) return [Number(found[1]),Number(found[2])];
-    }
-
-    if(Array.isArray(value)&&value.length>=2) {
-      const h=Number(value[0]),a=Number(value[1]);
-      if(Number.isInteger(h)&&Number.isInteger(a)&&h>=0&&a>=0) return [h,a];
-    }
-
-    if(value&&typeof value==="object") {
-      const home=value.home??value.homeScore??value.home_score;
-      const away=value.away??value.awayScore??value.away_score;
-      if(home!=null&&away!=null&&home!==""&&away!=="") {
-        const h=Number(home),a=Number(away);
-        if(Number.isInteger(h)&&Number.isInteger(a)&&h>=0&&a>=0) return [h,a];
-      }
-    }
-  }
-
-  const home=m.homeScore??m.home_score??m.goalsHome;
-  const away=m.awayScore??m.away_score??m.goalsAway;
-  if(home!=null&&away!=null&&home!==""&&away!=="") {
-    const h=Number(home),a=Number(away);
-    if(Number.isInteger(h)&&Number.isInteger(a)&&h>=0&&a>=0) return [h,a];
-  }
-  return null;
-}
-
-function normalizeOutcome(value) {
-  if(value==null) return null;
-  const s=String(value).trim().toUpperCase().replace(/\s+/g,"");
-  if(["1","MS1","HOME"].includes(s)) return "1";
-  if(["X","MSX","DRAW","0","MS0"].includes(s)) return "X";
-  if(["2","MS2","AWAY"].includes(s)) return "2";
-  return null;
-}
-
-function getOutcome(m) {
-  if(m?._prepared) return m._outcome;
-
-  const pair=getScorePair(m);
-  if(pair) return pair[0]>pair[1]?"1":pair[0]<pair[1]?"2":"X";
-
-  return normalizeOutcome(
-    m?.outcome??m?.result1X2??m?.msResult??m?.matchResult??m?.sonuc??m?.result
-  );
-}
-
-function getOpeningOdds(m) {
-  if(!m||typeof m!=="object") return {};
-  if(m._prepared) return m._openingOddsRaw;
-
-  const candidates=[m.odds,m.openingOdds,m.opening_odds,m.openOdds,m.open_odds,m.marketOdds];
-  const combined={};
-
-  for(const candidate of candidates) {
-    if(candidate&&typeof candidate==="object"&&!Array.isArray(candidate)) {
-      for(const [key,value] of Object.entries(candidate)) {
-        if(combined[key]===undefined||parseNumber(combined[key])===null) combined[key]=value;
-      }
-    }
-  }
-
-  for(const key of Object.keys(m)) {
-    if(parseNumber(m[key])!==null&&combined[key]===undefined) combined[key]=m[key];
-  }
-
-  return combined;
-}
-
-function normalizedMarketKey(key) {
-  return normalizeBasic(key).replace(/[^a-z0-9]/g,"");
-}
-
-function scanMarketId(key) {
-  const basic=normalizeBasic(key);
-  const compact=basic.replace(/[^a-z0-9]/g,"");
-  return MARKET_ALIASES[basic]||MARKET_ALIASES[compact]||null;
-}
-
-function prepareMatch(m,index) {
-  // ÖNEMLİ: Sonucu _prepared işaretinden önce hesapla.
-  const outcome=getOutcome(m);
-  const rawOdds=getOpeningOdds(m);
-
-  const scanEntriesById=new Map();
-  const oddsByNorm=Object.create(null);
-  const oddsEntries=[];
-  const seenMarkets=new Set();
-
-  for(const [key,value] of Object.entries(rawOdds)) {
-    const odd=parseNumber(value);
-    if(odd===null) continue;
-
-    const norm=normalizedMarketKey(key);
-    if(!norm||seenMarkets.has(norm)) continue;
-
-    seenMarkets.add(norm);
-    oddsByNorm[norm]=odd;
-    oddsEntries.push({key,norm,odd});
-
-    const scanId=scanMarketId(key);
-    if(scanId&&!scanEntriesById.has(scanId)) {
-      scanEntriesById.set(scanId,{key,norm,odd,scanId});
-    }
-  }
-
-  const scanOddsEntries=[...scanEntriesById.values()];
-  const scanOddsById=Object.create(null);
-
-  for(const entry of scanOddsEntries) {
-    scanOddsById[entry.scanId]=entry.odd;
-  }
-
-  const date=getDate(m);
-
-  m._cacheId=index;
-  m._home=getHome(m);
-  m._away=getAway(m);
-  m._canonicalHome=canonicalTeam(m._home);
-  m._canonicalAway=canonicalTeam(m._away);
-  m._teamKey=m._canonicalHome+"||"+m._canonicalAway;
-  m._dateObj=date;
-  m._dateTime=date?date.getTime():0;
-  m._outcome=outcome;
-  m._openingOddsRaw=rawOdds;
-  m._oddsByNorm=oddsByNorm;
-  m._oddsEntries=oddsEntries;
-  m._oddsKeys=oddsEntries.map(x=>x.key);
-  m._oddsCount=oddsEntries.length;
-  m._scanOddsEntries=scanOddsEntries;
-  m._scanOddsById=scanOddsById;
-  m._scanOddsCount=scanOddsEntries.length;
-
-  // Bu işaret en son konulmalı.
-  m._prepared=true;
-  return m;
-}
-
-function getOdd(m,key) {
-  const scanId=scanMarketId(key);
-  if(m?._prepared) {
-    if(scanId&&m._scanOddsById[scanId]!==undefined) return m._scanOddsById[scanId];
-    return m._oddsByNorm[normalizedMarketKey(key)]??null;
-  }
-
-  const odds=getOpeningOdds(m);
-  if(odds[key]!==undefined) return parseNumber(odds[key]);
-
-  const actual=Object.keys(odds).find(k=>normalizedMarketKey(k)===normalizedMarketKey(key));
-  if(actual) return parseNumber(odds[actual]);
-
-  const alternate=Object.keys(odds).find(k=>scanMarketId(k)===scanId);
-  return alternate?parseNumber(odds[alternate]):null;
-}
-
-function bigrams(value) {
-  const s=" "+canonicalTeam(value)+" ";
-  const arr=[];
-  for(let i=0;i<s.length-1;i++) arr.push(s.slice(i,i+2));
-  return arr;
-}
-
-function diceSimilarity(a,b) {
-  const ca=canonicalTeam(a),cb=canonicalTeam(b);
-  if(!ca||!cb) return 0;
-  if(ca===cb) return 1;
-
-  const aa=bigrams(ca),bb=bigrams(cb),counts=new Map();
-  for(const x of aa) counts.set(x,(counts.get(x)||0)+1);
-
-  let common=0;
-  for(const x of bb) {
-    const n=counts.get(x)||0;
-    if(n>0){common++;counts.set(x,n-1);}
-  }
-  return 2*common/(aa.length+bb.length);
-}
-
-function tokenSimilarity(a,b) {
-  const aa=new Set(canonicalTeam(a).split(" ").filter(Boolean));
-  const bb=new Set(canonicalTeam(b).split(" ").filter(Boolean));
-  if(!aa.size||!bb.size) return 0;
-
-  let common=0;
-  for(const x of aa) if(bb.has(x)) common++;
-  return 2*common/(aa.size+bb.size);
-}
-
-function teamSimilarity(a,b) {
-  const ca=canonicalTeam(a),cb=canonicalTeam(b);
-  if(!ca||!cb) return 0;
-  if(ca===cb) return 1;
-
-  const cacheKey=ca+"||"+cb;
-  if(similarityCache.has(cacheKey)) return similarityCache.get(cacheKey);
-
-  let score=tokenSimilarity(ca,cb)*.58+diceSimilarity(ca,cb)*.42;
-  const aa=ca.replace(/\s/g,""),bb=cb.replace(/\s/g,"");
-
-  if(aa.length>=5&&bb.length>=5&&(aa.includes(bb)||bb.includes(aa))) {
-    score=Math.max(score,.82);
-  }
-
-  similarityCache.set(cacheKey,score);
-  similarityCache.set(cb+"||"+ca,score);
-  return score;
-}
-
-function compareFixture(home,away,m) {
-  const hs=teamSimilarity(home,m._home);
-  const as=teamSimilarity(away,m._away);
-
-  if(hs<CONFIG.FUZZY_SIDE_THRESHOLD||as<CONFIG.FUZZY_SIDE_THRESHOLD) return null;
-
-  const combined=(hs+as)/2;
-  if(combined<CONFIG.FUZZY_TEAM_THRESHOLD) return null;
-
-  return {match:m,homeScore:hs,awayScore:as,combined};
-}
-
-function sortTeamCandidates(a,b) {
-  if(a.exact!==b.exact) return a.exact?-1:1;
-  if(a.unplayed!==b.unplayed) return a.unplayed?-1:1;
-  if((a.oddsCount>0)!==(b.oddsCount>0)) return a.oddsCount>0?-1:1;
-  if(a.combined!==b.combined) return b.combined-a.combined;
-  if(a.oddsCount!==b.oddsCount) return b.oddsCount-a.oddsCount;
-  return b.time-a.time;
-}
-
-function makeTeamCandidate(match,combined,homeScore,awayScore,exact) {
-  return {
-    match,combined,homeScore,awayScore,
-    oddsCount:match._scanOddsCount,
-    unplayed:match._outcome===null,
-    time:match._dateTime,
-    exact
-  };
-}
-
-function finishTeamMatch(candidates) {
-  if(!candidates.length) return null;
-  candidates.sort(sortTeamCandidates);
-
-  const best=candidates[0];
-  const second=candidates.find(c=>
-    c.match._canonicalHome!==best.match._canonicalHome||
-    c.match._canonicalAway!==best.match._canonicalAway
-  );
-
-  if(second&&!best.exact&&Math.abs(best.combined-second.combined)<.045) return null;
-
-  const target=best.match;
-  target._matchConfidence=best.combined;
-  target._homeConfidence=best.homeScore;
-  target._awayConfidence=best.awayScore;
-  target._matchedUnplayed=best.unplayed;
-  return target;
-}
-
-function getMatchingTeamRecord(home,away) {
-  const exactHome=canonicalTeam(home),exactAway=canonicalTeam(away);
-  if(!exactHome||!exactAway) return null;
-
-  const cacheKey=exactHome+"||"+exactAway;
-  if(teamRecordCache.has(cacheKey)) return teamRecordCache.get(cacheKey);
-
-  const exactCandidates=exactTeamIndex.get(cacheKey);
-  if(exactCandidates?.length) {
-    const result=finishTeamMatch(exactCandidates.map(m=>makeTeamCandidate(m,1,1,1,true)));
-    teamRecordCache.set(cacheKey,result);
-    return result;
-  }
-
-  const candidates=[];
-  for(const m of allMatches) {
-    if(!m._home||!m._away) continue;
-    const c=compareFixture(home,away,m);
-    if(c) candidates.push(makeTeamCandidate(m,c.combined,c.homeScore,c.awayScore,false));
-  }
-
-  const result=finishTeamMatch(candidates);
-  teamRecordCache.set(cacheKey,result);
-  return result;
-}
-
-function buildHistoricalMatches() {
-  const now=Date.now();
-
-  historicalMatches=allMatches
-    .filter(m=>m._outcome!==null&&(!m._dateTime||m._dateTime<=now))
-    .sort((a,b)=>(b._dateTime||0)-(a._dateTime||0));
-}
-
-function getHistoricalMatches() {
-  return historicalMatches;
-}
-
-function analyzeMarket(target,scanId,history) {
-  const targetOdd=getOdd(target,scanId);
-
-  const out={
-    scanId,
-    key:scanId,
-    label:SCAN_LABELS[scanId]||scanId,
-    targetOdd,
-    sample:0,
-    counts:{"1":0,"X":0,"2":0},
-    rates:{"1":null,"X":null,"2":null},
-    matches:[]
-  };
-
-  if(targetOdd===null) return out;
-
-  const matches=[];
-
-  for(const old of history) {
-    if(old===target) continue;
-
-    const oldOdd=getOdd(old,scanId);
-    if(oldOdd===null||oldOdd!==targetOdd) continue;
-    if(!["1","X","2"].includes(old._outcome)) continue;
-
-    matches.push(old);
-    if(matches.length>=CONFIG.MAX_MATCHES_PER_MARKET) break;
-  }
-
-  out.matches=matches;
-  out.sample=matches.length;
-
-  for(const old of matches) out.counts[old._outcome]++;
-
-  if(out.sample) {
-    for(const result of ["1","X","2"]) {
-      out.rates[result]=out.counts[result]/out.sample*100;
-    }
-  }
-
-  return out;
-}
-
-function getMarketAnalyses(target,history) {
-  if(!target) return [];
-  return SCAN_MARKET_IDS.map(id=>analyzeMarket(target,id,history));
-}
-
-function combineMarketProbabilities(markets) {
-  const usable=markets.filter(m=>m.sample>0);
-  if(!usable.length) return null;
-
-  const result={"1":0,"X":0,"2":0};
-
-  for(const market of usable) {
-    for(const outcome of ["1","X","2"]) {
-      result[outcome]+=market.rates[outcome];
-    }
-  }
-
-  for(const outcome of ["1","X","2"]) {
-    result[outcome]/=usable.length;
-  }
-
-  const total=result["1"]+result["X"]+result["2"];
-  if(!Number.isFinite(total)||total<=0) return null;
-
-  for(const outcome of ["1","X","2"]) result[outcome]=result[outcome]/total*100;
-
-  return {
-    probabilities:result,
-    usableMarkets:usable.length,
-    totalSamples:usable.reduce((sum,m)=>sum+m.sample,0)
-  };
-}
-
-function bestOutcome(probabilities) {
-  if(!probabilities) return null;
-  return ["1","X","2"].sort((a,b)=>probabilities[b]-probabilities[a])[0];
-}
-
-function choosePrediction(target,history) {
-  if(!target) {
-    return {
-      selection:"—",confidence:null,probabilities:null,markets:[],
-      similarCount:0,usableMarkets:0,method:"missing",
-      reason:"Takım isimleri V2 verisinde eşleşmedi."
-    };
-  }
-
-  const cached=analysisCache.get(target);
-  if(cached) return cached;
-
-  const markets=getMarketAnalyses(target,history);
-  const combined=combineMarketProbabilities(markets);
-
-  if(!combined) {
-    const result={
-      selection:"—",confidence:null,probabilities:null,markets,
-      similarCount:0,usableMarkets:0,method:"insufficient",
-      reason:"Sekiz markette de birebir aynı açılış oranına sahip sonuçlanmış maç bulunamadı."
-    };
-    analysisCache.set(target,result);
-    return result;
-  }
-
-  const probabilities=combined.probabilities;
-  const selection=bestOutcome(probabilities);
-
-  const result={
-    selection,
-    confidence:probabilities[selection],
-    probabilities,
-    markets,
-    similarCount:combined.totalSamples,
-    usableMarkets:combined.usableMarkets,
-    method:"exact-odds-last-five",
-    reason:`${combined.usableMarkets}/8 markette eşleşme bulundu. Her markette en yeni en fazla ${CONFIG.MAX_MATCHES_PER_MARKET} birebir aynı oranlı sonuç kullanıldı.`
-  };
-
-  analysisCache.set(target,result);
-  return result;
-}
+let totoData = null;
+let aiData = null;
+let activeWeek = null;
 
 function escapeHTML(value) {
-  return String(value??"").replace(/[&<>"']/g,ch=>({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-  })[ch]);
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
 }
 
-function rateClass(rate) {
-  if(rate==null) return "";
-  return rate>=70?"high":rate>=55?"mid":"low";
+function normalizeTeam(value) {
+  let name = String(value ?? "")
+    .toLocaleLowerCase("tr-TR").replace(/ı/g, "i")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ")
+    .trim().replace(/\s+/g, " ");
+  name = TEAM_ALIASES[name] || name;
+  name = name.split(" ").filter(token => !IGNORE.has(token)).join(" ");
+  return name.replace(/\butd\b/g, "united").replace(/\s+/g, " ").trim();
 }
 
-function predictionClass(rate) {
-  if(rate==null) return "";
-  return rate>=65?"high":rate>=55?"medium":"";
+function levenshtein(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const current = [i];
+    for (let j = 1; j <= b.length; j++) {
+      current[j] = Math.min(current[j - 1] + 1, previous[j] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    previous = current;
+  }
+  return previous[b.length];
 }
 
-function renderDetails(analysis,target,history) {
-  if(!analysis.markets?.length) analysis.markets=getMarketAnalyses(target,history);
-
-  const p=analysis.probabilities;
-  const summary=p?`
-    <div class="notice" style="margin-top:12px;margin-bottom:0">
-      <strong>Tek sonuç: ${escapeHTML(analysis.selection)}</strong>
-      <br>MS1 %${p["1"].toFixed(1)} · MS X %${p["X"].toFixed(1)} · MS2 %${p["2"].toFixed(1)}
-      <br>Eşleşen market: ${analysis.usableMarkets||0}/8 · Kullanılan örnek: ${analysis.similarCount||0}
-    </div>`:"";
-
-  const rows=analysis.markets.map(m=>`
-    <tr>
-      <td>${escapeHTML(m.label)}</td>
-      <td>${formatOdd(m.targetOdd)}</td>
-      <td>${m.sample}/5</td>
-      <td>${m.counts["1"]}</td>
-      <td>${m.counts["X"]}</td>
-      <td>${m.counts["2"]}</td>
-      <td class="rate ${rateClass(m.rates["1"])}">${m.rates["1"]==null?"—":"%"+m.rates["1"].toFixed(1)}</td>
-      <td class="rate ${rateClass(m.rates["X"])}">${m.rates["X"]==null?"—":"%"+m.rates["X"].toFixed(1)}</td>
-      <td class="rate ${rateClass(m.rates["2"])}">${m.rates["2"]==null?"—":"%"+m.rates["2"].toFixed(1)}</td>
-    </tr>`).join("");
-
-  const recentRows=analysis.markets.map(m=>`
-    <tr>
-      <td>${escapeHTML(m.label)}</td>
-      <td>${m.sample?m.matches.map(x=>escapeHTML(x._home+" "+x._outcome+" "+x._away)).join(" · "):"Eşleşme yok"}</td>
-    </tr>`).join("");
-
-  return `
-    <div class="details-content">
-      ${summary}
-      <div class="table-wrap" style="margin-top:12px">
-        <table>
-          <thead><tr><th>Market</th><th>Açılış oranı</th><th>Örnek</th><th>MS1</th><th>MS X</th><th>MS2</th><th>MS1 %</th><th>MS X %</th><th>MS2 %</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-      <p class="small">Her markette aynı açılış oranına sahip en yeni en fazla 5 sonuçlanmış maç kullanılır. Son 30 gün sınırı yoktur.</p>
-      <div class="table-wrap" style="margin-top:12px">
-        <table>
-          <thead><tr><th>Market</th><th>Eşleşen maçlar ve sonuçları</th></tr></thead>
-          <tbody>${recentRows}</tbody>
-        </table>
-      </div>
-    </div>`;
+function teamSimilarity(left, right) {
+  const a = normalizeTeam(left), b = normalizeTeam(right);
+  if (!a || !b) return 0;
+  if (a === b) return 1;
+  const compactA = a.replace(/ /g, ""), compactB = b.replace(/ /g, "");
+  if (Math.min(compactA.length, compactB.length) >= 6 &&
+      (compactA.includes(compactB) || compactB.includes(compactA))) return 0.94;
+  const tokenA = new Set(a.split(" ")), tokenB = new Set(b.split(" "));
+  const intersection = [...tokenA].filter(token => tokenB.has(token)).length;
+  const tokenScore = intersection / Math.max(tokenA.size, tokenB.size);
+  const editScore = 1 - levenshtein(compactA, compactB) / Math.max(compactA.length, compactB.length);
+  return Math.max(tokenScore * 0.9, editScore);
 }
 
-function totoResult(game) {
-  return normalizeOutcome(game.result??game.outcome??game.sonuc);
+function pairSimilarity(home, away, prediction) {
+  const homeScore = teamSimilarity(home, prediction.home);
+  const awayScore = teamSimilarity(away, prediction.away);
+  return { homeScore, awayScore, score: (homeScore + awayScore) / 2, minimum: Math.min(homeScore, awayScore) };
 }
 
-function renderWeek() {
-  const games=getTotoGames(activeWeek);
-  const history=getHistoricalMatches();
+function dayDistance(date) {
+  const value = Date.parse(String(date || "") + "T12:00:00");
+  if (!Number.isFinite(value)) return Number.MAX_SAFE_INTEGER;
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  return Math.abs(value - today.getTime());
+}
 
-  $("weekBadge").textContent=`${activeWeek}. Hafta`;
-  $("statMatches").textContent=games.length;
+function findAIMatch(game) {
+  const home = game.home ?? game.evSahibi ?? "";
+  const away = game.away ?? game.deplasman ?? "";
+  const candidates = (aiData?.predictions || []).map(match => ({ match, ...pairSimilarity(home, away, match) }))
+    .filter(item => item.minimum >= 0.76 && item.score >= 0.84)
+    .sort((a, b) => b.score - a.score || dayDistance(a.match.date) - dayDistance(b.match.date));
+  if (!candidates.length) return { match: null, confidence: 0, ambiguous: false };
+  if (candidates[1] && candidates[0].score - candidates[1].score < 0.025 &&
+      dayDistance(candidates[0].match.date) === dayDistance(candidates[1].match.date)) {
+    return { match: null, confidence: candidates[0].score, ambiguous: true };
+  }
+  return { match: candidates[0].match, confidence: candidates[0].score, ambiguous: false };
+}
 
-  let analyzed=0,settled=0,won=0;
+function getPrediction(game) {
+  const found = findAIMatch(game);
+  const match = found.match;
+  if (!match) return { ...found, probabilities: null, selection: "" };
+  const probabilities = {};
+  const aiKeys = { "1": "MS 1", X: "MS X", "2": "MS 2" };
+  for (const key of OUTCOMES) {
+    const value = Number(match.joint_markets?.[aiKeys[key]]?.probability);
+    if (!Number.isFinite(value)) return { ...found, match: null, probabilities: null, selection: "" };
+    probabilities[key] = value * 100;
+  }
+  const selection = OUTCOMES.reduce((best, key) => probabilities[key] > probabilities[best] ? key : best, "1");
+  return { ...found, probabilities, selection, primary: match.primary || null };
+}
 
-  $("matchList").innerHTML=games.map((game,index)=>{
-    const home=game.home??game.evSahibi??"Ev sahibi bilinmiyor";
-    const away=game.away??game.deplasman??"Deplasman bilinmiyor";
-    const target=getMatchingTeamRecord(home,away);
-    const analysis=choosePrediction(target,history);
-    const selection=analysis.selection;
-    const result=totoResult(game);
+function probabilityLabel(value) {
+  return Number.isFinite(value) ? "%" + value.toFixed(1) : "—";
+}
 
-    let status;
-    if(!result) status={label:"Bekliyor",className:"yellow",icon:"●"};
-    else if(selection==="—") status={label:"Tahmin yok",className:"yellow",icon:"●"};
-    else if(selection===result) status={label:"Başarılı",className:"green",icon:"✓"};
-    else status={label:"Başarısız",className:"red",icon:"✕"};
+function normalizeResult(value) {
+  const result = String(value ?? "").trim().toLocaleUpperCase("tr-TR");
+  if (["1", "X", "2"].includes(result)) return result;
+  if (result === "0") return "X";
+  return "";
+}
 
-    if(analysis.probabilities) analyzed++;
-    if(result&&selection!=="—"){settled++;if(selection===result)won++;}
-
-    const confidence=analysis.confidence==null?"Tahmin yok":`%${analysis.confidence.toFixed(1)} olasılık`;
-    const matchScore=target?`Takım eşleşmesi %${(target._matchConfidence*100).toFixed(0)}`:"Takım eşleşmedi";
-    const source=target?(target._matchedUnplayed?"Oynanmamış kayıt":"Geçmiş kayıt"):"";
-    const marketCount=analysis.markets.filter(m=>m.targetOdd!==null).length;
-
-    return `
-      <article class="match">
-        <div class="match-top">
-          <div>
-            <div class="match-no">Maç ${escapeHTML(game.number??index+1)}</div>
-            <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
-          </div>
-          <div class="prediction ${predictionClass(analysis.confidence)}">
-            ${escapeHTML(selection)}<small>${escapeHTML(confidence)}</small>
-          </div>
-        </div>
-        <div class="match-info">
-          <span class="badge ${status.className}">${status.icon} ${status.label}</span>
-          <span class="tag">${escapeHTML(matchScore)}</span>
-          ${source?`<span class="tag">${escapeHTML(source)}</span>`:""}
-          <span class="tag">Eşleşen örnek: <strong>${analysis.similarCount}</strong></span>
-          <span class="tag">Oranı bulunan market: <strong>${marketCount}/8</strong></span>
-          ${result?`<span class="tag">Gerçek sonuç: <strong>${escapeHTML(result)}</strong></span>`:""}
-        </div>
-        <details class="details">
-          <summary>Market analizi ve tahmin ayrıntıları</summary>
-          <div class="details-content"><div class="small">Market ayrıntıları hazırlanıyor...</div></div>
-          <div class="small" style="padding-top:10px">
-            ${escapeHTML(analysis.reason)}
-            ${target?`<br>V2: ${escapeHTML(target._home)} – ${escapeHTML(target._away)}`:""}
-            ${target?`<br>Oranı bulunan market: ${marketCount}/8`:""}
-          </div>
-        </details>
-      </article>`;
-  }).join("")||'<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
-
-  $("matchList").querySelectorAll("details.details").forEach((details,index)=>{
-    const game=games[index];
-    if(!game) return;
-
-    const home=game.home??game.evSahibi??"Ev sahibi bilinmiyor";
-    const away=game.away??game.deplasman??"Deplasman bilinmiyor";
-    const target=getMatchingTeamRecord(home,away);
-    const analysis=choosePrediction(target,history);
-    let rendered=false;
-
-    details.addEventListener("toggle",()=>{
-      if(!details.open||rendered) return;
-      const content=details.querySelector(".details-content");
-      if(!content) return;
-      content.outerHTML=renderDetails(analysis,target,history);
-      rendered=true;
-    });
-  });
-
-  $("statAnalyzed").textContent=`${analyzed}/${games.length}`;
-  $("statSettled").textContent=settled;
-  $("statAccuracy").textContent=settled?`%${(won/settled*100).toFixed(1)}`:"—";
+function setMessage(text, type = "") {
+  const el = $("message");
+  el.textContent = text;
+  el.className = "notice" + (type ? " " + type : "");
 }
 
 function getWeeks() {
-  const weeks=totoData?.weeks;
-  if(!weeks||typeof weeks!=="object") return [];
-  return Object.keys(weeks).filter(k=>Array.isArray(weeks[k])).sort((a,b)=>Number(a)-Number(b));
+  const weeks = totoData?.weeks;
+  return weeks && typeof weeks === "object"
+    ? Object.keys(weeks).filter(key => Array.isArray(weeks[key])).sort((a, b) => Number(a) - Number(b)) : [];
 }
 
-function getTotoGames(week) {
-  const games=totoData?.weeks?.[week];
-  return Array.isArray(games)?games:[];
+function getWeekGames(week) {
+  const games = totoData?.weeks?.[week];
+  return Array.isArray(games) ? games : [];
 }
 
 function renderWeekOptions() {
-  const weeks=getWeeks();
-  const select=$("weekSelect");
-  select.innerHTML="";
-
-  if(!weeks.length) {
-    select.innerHTML='<option value="">Hafta bulunamadı</option>';
-    activeWeek=null;
+  const weeks = getWeeks(), select = $("weekSelect");
+  select.innerHTML = "";
+  if (!weeks.length) {
+    select.innerHTML = '<option value="">Hafta bulunamadı</option>';
+    activeWeek = null;
     return;
   }
-
-  const preferred=String(totoData.currentWeek??weeks[weeks.length-1]);
-  activeWeek=weeks.includes(preferred)?preferred:weeks[weeks.length-1];
-
-  for(const week of weeks) {
-    const option=document.createElement("option");
-    option.value=week;
-    option.textContent=`${week}. Hafta`;
-    option.selected=week===activeWeek;
+  const preferred = String(totoData.currentWeek ?? weeks[weeks.length - 1]);
+  activeWeek = weeks.includes(preferred) ? preferred : weeks[weeks.length - 1];
+  for (const week of weeks) {
+    const option = document.createElement("option");
+    option.value = week;
+    option.textContent = week + ". Hafta";
+    option.selected = week === activeWeek;
     select.appendChild(option);
   }
 }
 
-function prepareAllData(rawMatches) {
-  allMatches=rawMatches.filter(m=>m&&typeof m==="object");
-  exactTeamIndex=new Map();
-  teamRecordCache=new Map();
-  similarityCache=new Map();
-  analysisCache=new WeakMap();
+function renderWeek() {
+  const games = getWeekGames(activeWeek);
+  let analyzed = 0, settled = 0, won = 0;
+  $("statMatches").textContent = games.length;
+  const cards = games.map((game, index) => {
+    const home = game.home ?? game.evSahibi ?? "Ev sahibi bilinmiyor";
+    const away = game.away ?? game.deplasman ?? "Deplasman bilinmiyor";
+    const analysis = getPrediction(game);
+    const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
+    const available = Boolean(analysis.probabilities);
+    const status = result
+      ? (available ? (analysis.selection === result
+        ? { label: "Başarılı", className: "green", icon: "✓" }
+        : { label: "Başarısız", className: "red", icon: "✕" })
+        : { label: "Sonuç belli", className: "blue", icon: "●" })
+      : (available ? { label: "Bekliyor", className: "yellow", icon: "●" }
+        : { label: analysis.ambiguous ? "Eşleşme doğrulanamadı" : "AI tahmini yok", className: "yellow", icon: "●" });
+    if (available) analyzed++;
+    if (available && result) {
+      settled++;
+      if (analysis.selection === result) won++;
+    }
+    const bestProbability = available ? analysis.probabilities[analysis.selection] : null;
+    const predictionClass = bestProbability >= 60 ? "high" : bestProbability >= 45 ? "medium" : "";
+    const primaryText = analysis.primary?.label
+      ? escapeHTML(analysis.primary.label) + " · " + probabilityLabel(Number(analysis.primary.probability) * 100)
+      : "";
+    return `
+      <article class="match">
+        <div class="match-top"><div>
+          <div class="match-no">Maç ${escapeHTML(game.number ?? index + 1)}</div>
+          <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
+        </div><div class="prediction ${available ? predictionClass : ""}">
+          ${available ? escapeHTML(analysis.selection) : "—"}
+          <small>${available ? probabilityLabel(bestProbability) + " AI olasılığı" : "AI verisi bekleniyor"}</small>
+        </div></div>
+        <div class="match-info">
+          <span class="badge ${status.className}">${status.icon} ${status.label}</span>
+          ${available ? `<span class="tag">İsim eşleşmesi: <strong>%${(analysis.confidence * 100).toFixed(0)}</strong></span>
+            <span class="tag">AI maçı: <strong>${escapeHTML(analysis.match.date)} ${escapeHTML(analysis.match.time || "")}</strong></span>`
+            : `<span class="tag">${analysis.ambiguous ? "Birden fazla olası maç bulundu; güvenli eşleşme yapılamadı." : "AI tahmin dosyasında uygun maç bulunamadı."}</span>`}
+          ${result ? `<span class="tag">Gerçek sonuç: <strong>${escapeHTML(result)}</strong></span>` : ""}
+        </div>
+        <details class="details"><summary>AI tahmin ayrıntıları</summary>
+          <div class="details-content">
+            ${available ? `<div class="notice" style="margin-top:12px;margin-bottom:0">
+                <strong>Spor Toto seçimi: ${escapeHTML(analysis.selection)}</strong>
+                <br>1: ${probabilityLabel(analysis.probabilities["1"])} · X: ${probabilityLabel(analysis.probabilities.X)} · 2: ${probabilityLabel(analysis.probabilities["2"])}
+                ${primaryText ? `<br>AI sisteminin ana tahmini: ${primaryText}` : ""}
+                <br>AI fikstürü: ${escapeHTML(analysis.match.home)} – ${escapeHTML(analysis.match.away)} · ${escapeHTML(analysis.match.league || "")}
+                <br>İsim eşleşme puanı: %${(analysis.confidence * 100).toFixed(1)}
+              </div>`
+              : `<div class="empty">${analysis.ambiguous ? "Benzer isimli birden fazla AI fikstürü bulundu. Yanlış maça tahmin bağlamamak için seçim yapılmadı." : "Bu fikstür için AI sisteminde tahmin bulunamadı."}</div>`}
+          </div>
+        </details>
+      </article>`;
+  }).join("");
+  $("matchList").innerHTML = cards || '<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
+  $("statAnalyzed").textContent = analyzed + "/" + games.length;
+  $("statSettled").textContent = settled;
+  $("statAccuracy").textContent = settled ? "%" + (won / settled * 100).toFixed(1) : "—";
+  $("weekBadge").textContent = activeWeek ? activeWeek + ". Hafta · " + analyzed + "/" + games.length + " AI tahmini" : "Hafta —";
+  return { games, analyzed };
+}
 
-  allMatches.forEach((m,index)=>{
-    prepareMatch(m,index);
-    if(!m._canonicalHome||!m._canonicalAway) return;
-    if(!exactTeamIndex.has(m._teamKey)) exactTeamIndex.set(m._teamKey,[]);
-    exactTeamIndex.get(m._teamKey).push(m);
-  });
-
-  buildHistoricalMatches();
+function updateMessage() {
+  const { games, analyzed } = renderWeek();
+  const generated = aiData.generated_at ? new Date(aiData.generated_at).toLocaleString("tr-TR") : "tarih bilgisi yok";
+  $("benchmark").textContent = "AI veri zamanı: " + generated + " · " +
+    Number(aiData.prediction_count || aiData.predictions.length).toLocaleString("tr-TR") + " tahmin kaydı";
+  setMessage("AI verisi güncellendi: " + generated + " · " + games.length + " Spor Toto maçı, " + analyzed +
+    " AI eşleşmesi. Tahminler AI sisteminin MS 1, MS X ve MS 2 olasılıklarından alınır.", analyzed === games.length ? "good" : "");
 }
 
 async function loadData() {
-  $("refreshBtn").disabled=true;
-  showMessage("Spor Toto ve V2 verileri yükleniyor...");
-
+  $("refreshBtn").disabled = true;
+  setMessage("Spor Toto fikstürleri ve AI tahminleri yükleniyor...");
   try {
-    if(!window.SPORT_TOTO_DATA||!window.SPORT_TOTO_DATA.weeks) {
-      throw new Error("data/spor-toto-data.js yüklenemedi veya SPORT_TOTO_DATA bulunamadı.");
-    }
-
-    totoData=window.SPORT_TOTO_DATA;
-
-    const response=await fetch(CONFIG.DATA_URL+"?t="+Date.now(),{cache:"no-store"});
-    if(!response.ok) throw new Error(`V2 verisi alınamadı. HTTP ${response.status}.`);
-
-    const json=await response.json();
-    const rawMatches=Array.isArray(json)?json:
-      Array.isArray(json.matches)?json.matches:
-      Array.isArray(json.data)?json.data:[];
-
-    if(!rawMatches.length) throw new Error("v2-data.json içinde maç listesi bulunamadı.");
-
-    showMessage("Maç verileri hazırlanıyor...");
-    await new Promise(resolve=>requestAnimationFrame(resolve));
-
-    prepareAllData(rawMatches);
+    if (!window.SPORT_TOTO_DATA?.weeks) throw new Error("Spor Toto haftalık fikstür verisi yüklenemedi.");
+    totoData = window.SPORT_TOTO_DATA;
+    const response = await fetch(AI_URL + "?t=" + Date.now(), { cache: "no-store" });
+    if (!response.ok) throw new Error("AI tahmin dosyası alınamadı (HTTP " + response.status + ").");
+    aiData = await response.json();
+    if (!Array.isArray(aiData.predictions)) throw new Error("AI tahmin dosyasında maç listesi bulunamadı.");
     renderWeekOptions();
-
-    if(!activeWeek) throw new Error("Spor Toto haftaları bulunamadı.");
-
-    renderWeek();
-
-    const withResults=allMatches.reduce((n,m)=>n+(m._outcome!==null?1:0),0);
-    const withOdds=allMatches.reduce((n,m)=>n+(m._scanOddsCount>0?1:0),0);
-
-    showMessage(
-      `Veriler yüklendi: ${getWeeks().length} hafta, ${allMatches.length} V2 maçı, `+
-      `${withResults} sonuçlu maç, ${withOdds} seçili marketlerden en az birine sahip kayıt. `+
-      `Tüm geçmiş taranıyor; son 30 gün sınırı yok. Her markette en yeni en fazla 5 birebir oran eşleşmesi aranıyor.`,
-      "good"
-    );
-  } catch(error) {
+    if (!activeWeek) throw new Error("Spor Toto haftaları bulunamadı.");
+    updateMessage();
+  } catch (error) {
     console.error(error);
-    showMessage("Veri yükleme hatası: "+error.message,"error");
-    $("matchList").innerHTML='<div class="panel empty">Veriler yüklenemedi. Hata mesajı yukarıda gösteriliyor.</div>';
+    setMessage("Veri yükleme hatası: " + error.message, "error");
+    $("matchList").innerHTML = '<div class="panel empty">Veriler yüklenemedi. Hata mesajı yukarıda gösteriliyor.</div>';
   } finally {
-    $("refreshBtn").disabled=false;
+    $("refreshBtn").disabled = false;
   }
 }
 
-$("weekSelect").addEventListener("change",event=>{
-  activeWeek=event.target.value;
-  renderWeek();
+$("weekSelect").addEventListener("change", event => {
+  activeWeek = event.target.value;
+  updateMessage();
 });
-
-$("refreshBtn").addEventListener("click",loadData);
+$("refreshBtn").addEventListener("click", loadData);
 loadData();
+
 </script>
 </body>
 </html>
