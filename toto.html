@@ -478,6 +478,7 @@ summary:focus-visible {
 }
 
 .coupon-builder { margin-bottom: 14px; }
+.coupon-assist { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin:5px 0 13px; padding:10px 12px; border:1px solid #e5ede7; border-radius:11px; color:#52685a; background:#f8faf8; font-size:11px; }
 
 .coupon-heading { align-items: flex-start; }
 .coupon-heading .small { margin-top: 4px; }
@@ -800,87 +801,29 @@ footer {
   </section>
 
   <section id="couponBuilder" class="panel coupon-builder">
-
     <div class="section-head coupon-heading">
       <div>
         <h2>Kupon oluşturucu</h2>
-        <div class="small">
-          AI tahminleriyle tekli kupon hazırla veya seçimlerini garanti sistemine dönüştür.
-        </div>
+        <div class="small">AI, ilk iki olasılık arasındaki fark 8 puan veya daha azsa çift işaret önerir. Çiftler kolon sayısını artırır.</div>
       </div>
       <span id="couponStatus" class="badge blue">Tahminler yükleniyor</span>
     </div>
-
-    <div class="coupon-modes" role="group" aria-label="Kupon sistemi seç">
-      <button type="button" id="singleModeBtn"
-        class="mode-button active" data-mode="single">
-        Normal tekli sistem
-      </button>
-      <button type="button" id="guaranteeModeBtn"
-        class="mode-button" data-mode="guarantee">
-        Garantili sistem
-      </button>
+    <div class="coupon-assist">
+      <span id="doubleCount">AI önerisi hazırlanıyor...</span>
+      <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">AI önerisini uygula</button>
     </div>
-
-    <div id="guaranteePicker" class="guarantee-picker" hidden>
-      <span class="picker-label">Garanti seviyesi</span>
-
-      <div class="guarantee-options">
-        <button type="button" class="guarantee-option" data-guarantee="12">
-          12 garanti
-        </button>
-        <button type="button" class="guarantee-option active" data-guarantee="13">
-          13 garanti
-        </button>
-        <button type="button" class="guarantee-option" data-guarantee="14">
-          14 garanti
-        </button>
-      </div>
-
-      <span class="small">
-        AI, garanti seviyesine göre en kararsız maçlarda çift işaret önerir;
-        seçimleri maç kartlarından değiştirebilirsin.
-      </span>
-
-      <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">
-        AI önerisini uygula
-      </button>
-    </div>
-
     <div class="coupon-totals">
-      <div>
-        <span class="total-label">Oluşan kolon</span>
-        <strong id="couponColumns">—</strong>
-      </div>
-      <div>
-        <span class="total-label">Kolon bedeli</span>
-        <strong id="columnPrice">10 TL</strong>
-      </div>
-      <div class="total-cost">
-        <span class="total-label">Tahmini tutar</span>
-        <strong id="couponCost">—</strong>
-      </div>
-      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>
-        Kolonları kopyala
-      </button>
+      <div><span class="total-label">Oluşan kolon</span><strong id="couponColumns">—</strong></div>
+      <div><span class="total-label">Kolon bedeli</span><strong id="columnPrice">10 TL</strong></div>
+      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="couponCost">—</strong></div>
+      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Kolonları kopyala</button>
     </div>
-
     <details class="coupon-preview">
       <summary>Oluşan kolonları incele</summary>
-      <textarea id="columnOutput" readonly
-        aria-label="Oluşan Spor Toto kolonları"
-        placeholder="Kupon kolonları burada listelenecek."></textarea>
+      <textarea id="columnOutput" readonly aria-label="Oluşan Spor Toto kolonları" placeholder="Kupon kolonları burada listelenecek."></textarea>
     </details>
-
-    <div id="couponMessage" class="coupon-message">
-      AI tahminleri yüklendiğinde kupon hazırlanır.
-    </div>
-
-    <div class="coupon-disclaimer">
-      Garanti, işaretlediğin seçenekler içindeki sonuçlar için kolonların isabet
-      kapsamını anlatır; ikramiye veya kazanç garantisi değildir.
-    </div>
-
+    <div id="couponMessage" class="coupon-message">AI tahminleri yüklendiğinde kupon hazırlanır.</div>
+    <div class="coupon-disclaimer">Çift işaret, o maç için iki kolon seçeneği oluşturur; ikramiye veya kazanç garantisi vermez. Seçili olmayan sonuçlar kupon kapsamına girmez.</div>
   </section>
 
   <section id="matchList" class="match-list">
@@ -906,9 +849,266 @@ footer {
   NEXUS Spor Toto · Tahmin kaynağı: teador612.github.io/ai/predictions.json
 </footer>
 
-<script src="./data/spor-toto-data.js"></script>
+<script>
+/* Otomatik oluşturulan Spor Toto verisi. */
+window.SPORT_TOTO_DATA = {
+  season: "2026-2027",
+  currentWeek: 14,
+  weeks: {
+    "1": [
+      {"number":1,"home":"Galatasaray","away":"Çorum FK","result":"X"},
+      {"number":2,"home":"Kasımpaşa","away":"Trabzonspor","result":"X"},
+      {"number":3,"home":"Konyaspor","away":"Çaykur Rizespor","result":"2"},
+      {"number":4,"home":"Gaziantep FK","away":"Corendon Alanyaspor","result":"X"},
+      {"number":5,"home":"Gençlerbirliği","away":"Fenerbahçe","result":"1"},
+      {"number":6,"home":"Rams Başakşehir","away":"Kocaelispor","result":"1"},
+      {"number":7,"home":"Amed Sportif Faaliyetler","away":"Erzurumspor FK","result":"1"},
+      {"number":8,"home":"Beşiktaş","away":"Eyüpspor","result":"1"},
+      {"number":9,"home":"Samsunspor","away":"Göztepe","result":"X"},
+      {"number":10,"home":"Arsenal","away":"Manchester City","result":"1"},
+      {"number":11,"home":"Lens","away":"Paris St Germain","result":"1"},
+      {"number":12,"home":"Sevilla","away":"Rayo Vallecano","result":"1"},
+      {"number":13,"home":"Racing Santander","away":"Villarreal","result":"X"},
+      {"number":14,"home":"Espanyol","away":"Levante","result":"1"},
+      {"number":15,"home":"Celta Vigo","away":"Osasuna","result":"1"},
+    ],
+    "2": [
+      {"number":1,"home":"Erzurumspor FK","away":"Galatasaray","result":"2"},
+      {"number":2,"home":"Çaykur Rizespor","away":"Samsunspor","result":"2"},
+      {"number":3,"home":"Arca Çorum FK","away":"Kasımpaşa","result":"2"},
+      {"number":4,"home":"Fenerbahçe","away":"Tümosan Konyaspor","result":"1"},
+      {"number":5,"home":"Eyüpspor","away":"Gaziantep FK","result":"2"},
+      {"number":6,"home":"Trabzonspor","away":"İstanbul Başakşehir","result":"1"},
+      {"number":7,"home":"Corendon Alanyaspor","away":"Beşiktaş","result":"1"},
+      {"number":8,"home":"Göztepe","away":"Gençlerbirliği","result":"2"},
+      {"number":9,"home":"Kocaelispor","away":"Amed Sportif Faaliyetler","result":"1"},
+      {"number":10,"home":"Borussia Dortmund","away":"Bayern Münih","result":"2"},
+      {"number":11,"home":"Marsilya","away":"Strasbourg","result":"1"},
+      {"number":12,"home":"Newcastle Utd.","away":"Liverpool","result":"X"},
+      {"number":13,"home":"Real Betis","away":"Real Sociedad","result":"1"},
+      {"number":14,"home":"Atletico Madrid","away":"Villarreal","result":"X"},
+      {"number":15,"home":"Torino","away":"Milan","result":"2"},
+    ],
+    "3": [
+      {"number":1,"home":"Gençlerbirliği","away":"Erzurumspor FK","result":"X"},
+      {"number":2,"home":"Tümosan Konyaspor","away":"Kocaelispor","result":"2"},
+      {"number":3,"home":"Galatasaray","away":"Göztepe","result":"1"},
+      {"number":4,"home":"Gaziantep FK","away":"Çaykur Rizespor","result":"2"},
+      {"number":5,"home":"Eyüpspor","away":"Corendon Alanyaspor","result":"1"},
+      {"number":6,"home":"İstanbul Başakşehir","away":"Kasımpaşa","result":"X"},
+      {"number":7,"home":"Samsunspor","away":"Fenerbahçe","result":"2"},
+      {"number":8,"home":"Amed Sportif Faaliyetler","away":"Trabzonspor","result":"1"},
+      {"number":9,"home":"Beşiktaş","away":"Arca Çorum FK","result":"1"},
+      {"number":10,"home":"Borussia Dortmund","away":"Hamburger SV","result":"1"},
+      {"number":11,"home":"Lille","away":"Paris St Germain","result":"X"},
+      {"number":12,"home":"Monaco","away":"Marsilya","result":"1"},
+      {"number":13,"home":"T. Hotspur","away":"Newcastle Utd.","result":"2"},
+      {"number":14,"home":"Sevilla","away":"Atletico Madrid","result":"2"},
+      {"number":15,"home":"Cagliari","away":"Inter","result":"2"},
+    ],
+    "4": [
+      {"number":1,"home":"Erzurumspor FK","away":"Tümosan Konyaspor","result":"1"},
+      {"number":2,"home":"Kasımpaşa","away":"Amed Sportif Faaliyetler","result":"X"},
+      {"number":3,"home":"Arca Çorum FK","away":"Eyüpspor","result":"1"},
+      {"number":4,"home":"Fenerbahçe","away":"Beşiktaş","result":"2"},
+      {"number":5,"home":"İstanbul Başakşehir","away":"Galatasaray","result":"2"},
+      {"number":6,"home":"Kocaelispor","away":"Samsunspor","result":"1"},
+      {"number":7,"home":"Trabzonspor","away":"Gençlerbirliği","result":"1"},
+      {"number":8,"home":"Çaykur Rizespor","away":"Corendon Alanyaspor","result":"2"},
+      {"number":9,"home":"Göztepe","away":"Gaziantep FK","result":"2"},
+      {"number":10,"home":"Everton","away":"Manchester Utd.","result":"X"},
+      {"number":11,"home":"Arsenal","away":"Chelsea","result":"1"},
+      {"number":12,"home":"Athletic Bilbao","away":"Atletico Madrid","result":"1"},
+      {"number":13,"home":"Inter","away":"Napoli","result":"1"},
+      {"number":14,"home":"Roma","away":"Atalanta","result":"1"},
+      {"number":15,"home":"Juventus","away":"Milan","result":"X"},
+    ],
+    "5": [
+      {"number":1,"home":"Beşiktaş","away":"Erzurumspor FK","result":"1"},
+      {"number":2,"home":"Eyüpspor","away":"Çaykur Rizespor","result":"2"},
+      {"number":3,"home":"Samsunspor","away":"Arca Çorum FK","result":"2"},
+      {"number":4,"home":"Corendon Alanyaspor","away":"Göztepe","result":"X"},
+      {"number":5,"home":"Tümosan Konyaspor","away":"Trabzonspor","result":"1"},
+      {"number":6,"home":"Gençlerbirliği","away":"Kasımpaşa","result":"2"},
+      {"number":7,"home":"Amed Sportif Faaliyetler","away":"İstanbul Başakşehir","result":"1"},
+      {"number":8,"home":"Galatasaray","away":"Kocaelispor","result":"1"},
+      {"number":9,"home":"Gaziantep FK","away":"Fenerbahçe","result":"X"},
+      {"number":10,"home":"Augsburg","away":"Bayer Leverkusen","result":"X"},
+      {"number":11,"home":"Rennes","away":"Marsilya","result":"1"},
+      {"number":12,"home":"Chelsea","away":"Hull City","result":"X"},
+      {"number":13,"home":"Manchester Utd.","away":"M. City","result":"2"},
+      {"number":14,"home":"Levante","away":"Barcelona","result":"2"},
+      {"number":15,"home":"Lazio","away":"Milan","result":"X"},
+    ],
+    "6": [
+      {"number":1,"home":"Kasımpaşa","away":"Tümosan Konyaspor","result":"X"},
+      {"number":2,"home":"Kocaelispor","away":"Gaziantep FK","result":"1"},
+      {"number":3,"home":"Arca Çorum FK","away":"Corendon Alanyaspor","result":"2"},
+      {"number":4,"home":"İstanbul Başakşehir","away":"Gençlerbirliği","result":"1"},
+      {"number":5,"home":"Trabzonspor","away":"Galatasaray","result":"1"},
+      {"number":6,"home":"Erzurumspor FK","away":"Samsunspor","result":"1"},
+      {"number":7,"home":"Fenerbahçe","away":"Eyüpspor","result":"1"},
+      {"number":8,"home":"Amed Sportif Faaliyetler","away":"Beşiktaş","result":"1"},
+      {"number":9,"home":"Göztepe","away":"Çaykur Rizespor","result":"X"},
+      {"number":10,"home":"Vfb Stuttgart","away":"Borussia Dortmund","result":"2"},
+      {"number":11,"home":"Bayer Leverkusen","away":"RB Leipzig","result":"1"},
+      {"number":12,"home":"Tottenham Hotspur","away":"Aston Villa","result":"2"},
+      {"number":13,"home":"Newcastle Utd.","away":"H. City","result":"1"},
+      {"number":14,"home":"Atletico Madrid","away":"Real Madrid","result":"1"},
+      {"number":15,"home":"Roma","away":"Inter","result":"X"},
+    ],
+    "7": [
+      {"number":1,"home":"Türkiye","away":"Fransa","result":"2"},
+      {"number":2,"home":"Türkiye","away":"İtalya","result":"2"},
+      {"number":3,"home":"İsveç","away":"Romanya","result":"1"},
+      {"number":4,"home":"İtalya","away":"Belçika","result":"2"},
+      {"number":5,"home":"Slovenya","away":"İskoçya","result":"X"},
+      {"number":6,"home":"Bulgaristan","away":"Lüksemburg","result":"2"},
+      {"number":7,"home":"Kuzey Makedonya Cumhuriyeti","away":"İsviçre","result":"2"},
+      {"number":8,"home":"Çekya","away":"Hırvatistan","result":"2"},
+      {"number":9,"home":"İngiltere","away":"İspanya","result":"2"},
+      {"number":10,"home":"Litvanya","away":"Azerbaycan","result":"X"},
+      {"number":11,"home":"Avusturya","away":"Kosova","result":"1"},
+      {"number":12,"home":"Danimarka","away":"Galler","result":"1"},
+      {"number":13,"home":"Sırbistan","away":"Hollanda","result":"2"},
+      {"number":14,"home":"Almanya","away":"Yunanistan","result":"2"},
+      {"number":15,"home":"Norveç","away":"Portekiz","result":"2"},
+    ],
+    "8": [
+      {"number":1,"home":"Belçika","away":"Türkiye","result":"1"},
+      {"number":2,"home":"İtalya","away":"Türkiye","result":"1"},
+      {"number":3,"home":"Bosna Hersek","away":"İsveç","result":"X"},
+      {"number":4,"home":"Fransa","away":"İtalya","result":"X"},
+      {"number":5,"home":"Macaristan","away":"Gürcistan","result":"1"},
+      {"number":6,"home":"Polonya","away":"Romanya","result":"1"},
+      {"number":7,"home":"Hırvatistan","away":"İngiltere","result":"2"},
+      {"number":8,"home":"Kuzey Makedonya Cumhuriyeti","away":"İskoçya","result":"2"},
+      {"number":9,"home":"İspanya","away":"Çekya","result":"1"},
+      {"number":10,"home":"İsviçre","away":"Slovenya","result":"1"},
+      {"number":11,"home":"Galler","away":"Danimarka","result":"2"},
+      {"number":12,"home":"Hollanda","away":"Sırbistan","result":"1"},
+      {"number":13,"home":"Portekiz","away":"Norveç","result":"1"},
+      {"number":14,"home":"Yunanistan","away":"Almanya","result":"X"},
+      {"number":15,"home":"Fransa","away":"Belçika","result":"1"},
+    ],
+    "9": [
+      {"number":1,"home":"Galatasaray","away":"Kasımpaşa","result":"1"},
+      {"number":2,"home":"Gençlerbirliği","away":"Amed Sportif Faaliyetler","result":"X"},
+      {"number":3,"home":"Corendon Alanyaspor","away":"Erzurumspor FK","result":"X"},
+      {"number":4,"home":"Samsunspor","away":"Trabzonspor","result":"2"},
+      {"number":5,"home":"Çaykur Rizespor","away":"Fenerbahçe","result":"2"},
+      {"number":6,"home":"Tümosan Konyaspor","away":"İstanbul Başakşehir","result":"X"},
+      {"number":7,"home":"Gaziantep FK","away":"Arca Çorum FK","result":"2"},
+      {"number":8,"home":"Beşiktaş","away":"Kocaelispor","result":"1"},
+      {"number":9,"home":"Eyüpspor","away":"Göztepe","result":"2"},
+      {"number":10,"home":"Augsburg","away":"Bayern Münih","result":"X"},
+      {"number":11,"home":"RB Leipzig","away":"Eintracht Frankfurt","result":"1"},
+      {"number":12,"home":"Manchester Utd.","away":"T. Hotspur","result":"X"},
+      {"number":13,"home":"Liverpool","away":"Manchester City","result":"2"},
+      {"number":14,"home":"Real Madrid","away":"Villarreal","result":"1"},
+      {"number":15,"home":"Como","away":"Roma","result":"X"},
+    ],
+    "10": [
+      {"number":1,"home":"Arca Çorum FK","away":"Çaykur Rizespor","result":"1"},
+      {"number":2,"home":"Erzurumspor FK","away":"Eyüpspor","result":"1"},
+      {"number":3,"home":"Amed Sportif Faaliyetler","away":"Tümosan Konyaspor","result":"1"},
+      {"number":4,"home":"Gençlerbirliği","away":"Galatasaray","result":"2"},
+      {"number":5,"home":"Fenerbahçe","away":"Corendon Alanyaspor","result":"1"},
+      {"number":6,"home":"Kasımpaşa","away":"Samsunspor","result":"1"},
+      {"number":7,"home":"Kocaelispor","away":"Göztepe","result":"2"},
+      {"number":8,"home":"İstanbul Başakşehir","away":"Gaziantep FK","result":"1"},
+      {"number":9,"home":"Trabzonspor","away":"Beşiktaş","result":null},
+      {"number":10,"home":"Everton","away":"Chelsea","result":"2"},
+      {"number":11,"home":"Brentford","away":"Liverpool","result":"2"},
+      {"number":12,"home":"Real Betis","away":"Barcelona","result":"2"},
+      {"number":13,"home":"Real Madrid","away":"Sevilla","result":"1"},
+      {"number":14,"home":"Milan","away":"Atalanta","result":"1"},
+      {"number":15,"home":"Juventus","away":"Lazio","result":"2"},
+    ],
+    "11": [
+      {"number":1,"home":"Corendon Alanyaspor","away":"Kocaelispor","result":"2"},
+      {"number":2,"home":"Eyüpspor","away":"Kasımpaşa","result":"2"},
+      {"number":3,"home":"Gaziantep FK","away":"Erzurumspor FK","result":"2"},
+      {"number":4,"home":"Samsunspor","away":"Amed Sportif Faaliyetler","result":"2"},
+      {"number":5,"home":"Tümosan Konyaspor","away":"Gençlerbirliği","result":"1"},
+      {"number":6,"home":"Göztepe","away":"Arca Çorum FK","result":"1"},
+      {"number":7,"home":"Beşiktaş","away":"İstanbul Başakşehir","result":"1"},
+      {"number":8,"home":"Çaykur Rizespor","away":"Trabzonspor","result":"2"},
+      {"number":9,"home":"Galatasaray","away":"Fenerbahçe","result":"1"},
+      {"number":10,"home":"Borussia Dortmund","away":"Eintracht Frankfurt","result":"1"},
+      {"number":11,"home":"Monaco","away":"Lille","result":"X"},
+      {"number":12,"home":"Paris St Germain","away":"Olympique Lyon","result":"1"},
+      {"number":13,"home":"Chelsea","away":"Tottenham Hotspur","result":"2"},
+      {"number":14,"home":"Barcelona","away":"Real Madrid","result":"2"},
+      {"number":15,"home":"Napoli","away":"Roma","result":"X"},
+    ],
+    "12": [
+      {"number":1,"home":"T. Konyaspor","away":"Galatasaray","result":"2"},
+      {"number":2,"home":"Erzurumspor FK","away":"A. Çorum FK","result":"2"},
+      {"number":3,"home":"Kocaelispor","away":"Ç. Rizespor","result":"X"},
+      {"number":4,"home":"Fenerbahçe","away":"Göztepe","result":"2"},
+      {"number":5,"home":"A.S. Faaliyetler","away":"Eyüpspor","result":"1"},
+      {"number":6,"home":"İ. Başakşehir","away":"Samsunspor","result":"1"},
+      {"number":7,"home":"Trabzonspor","away":"Gaziantep FK","result":"1"},
+      {"number":8,"home":"Kasımpaşa","away":"Beşiktaş","result":"X"},
+      {"number":9,"home":"Gençlerbirliği","away":"C. Alanyaspor","result":"1"},
+      {"number":10,"home":"B. Münih","away":"B. Dortmund","result":"X"},
+      {"number":11,"home":"Chelsea","away":"Manchester Utd.","result":"1"},
+      {"number":12,"home":"Liverpool","away":"Arsenal","result":"2"},
+      {"number":13,"home":"A. Bilbao","away":"R. Sociedad","result":"1"},
+      {"number":14,"home":"Milan","away":"Inter","result":"1"},
+      {"number":15,"home":"Juventus","away":"Napoli","result":"1"},
+    ],
+    "13": [
+      {"number":1,"home":"Galatasaray","away":"V. Stuttgart","result":"1"},
+      {"number":2,"home":"Shakhtar D.","away":"Sporting CP","result":"2"},
+      {"number":3,"home":"A. Madrid","away":"B. Münih","result":"2"},
+      {"number":4,"home":"Barcelona","away":"A. Villa","result":"1"},
+      {"number":5,"home":"Manchester Utd.","away":"Roma","result":"1"},
+      {"number":6,"home":"Villarreal","away":"P.S. Germain","result":"2"},
+      {"number":7,"home":"AEK","away":"R. Madrid","result":"2"},
+      {"number":8,"home":"Fenerbahçe","away":"Liverpool","result":"1"},
+      {"number":9,"home":"B. Dortmund","away":"R. Betis","result":"1"},
+      {"number":10,"home":"R. Leipzig","away":"M. City","result":"2"},
+      {"number":11,"home":"Porto","away":"Napoli","result":"1"},
+      {"number":12,"home":"Lens","away":"Como","result":"2"},
+      {"number":13,"home":"S. Prag","away":"Arsenal","result":"2"},
+      {"number":14,"home":"Celtic","away":"Beşiktaş","result":null},
+      {"number":15,"home":"Trabzonspor","away":"Freiburg","result":"2"},
+    ],
+    "14": [
+      {"number":1,"home":"Gaziantep FK","away":"Kasımpaşa","result":"2"},
+      {"number":2,"home":"Eyüpspor","away":"Kocaelispor","result":"2"},
+      {"number":3,"home":"Samsunspor","away":"Tümosan Konyaspor","result":"1"},
+      {"number":4,"home":"Galatasaray","away":"Amed Sportif Faaliyetler","result":"1"},
+      {"number":5,"home":"Göztepe","away":"İstanbul Başakşehir","result":"2"},
+      {"number":6,"home":"Çaykur Rizespor","away":"Erzurumspor FK","result":null},
+      {"number":7,"home":"Arca Çorum FK","away":"Fenerbahçe","result":null},
+      {"number":8,"home":"Corendon Alanyaspor","away":"Trabzonspor","result":null},
+      {"number":9,"home":"Beşiktaş","away":"Gençlerbirliği","result":null},
+      {"number":10,"home":"Vfb Stuttgart","away":"Werder Bremen","result":"1"},
+      {"number":11,"home":"Manchester Utd.","away":"A. Villa","result":null},
+      {"number":12,"home":"Valencia","away":"Real Madrid","result":"2"},
+      {"number":13,"home":"Atl Madrid","away":"Barcelona","result":null},
+      {"number":14,"home":"Napoli","away":"Lazio","result":null},
+      {"number":15,"home":"Inter","away":"Como","result":null},
+    ],
+  }
+};
+
+window.SPORT_TOTO_META = {
+  season: "2026-2027",
+  currentWeek: 14,
+  matchesPerWeek: 15,
+  historyDays: 60,
+  exactOdds: true,
+  minimumSample: 5
+};
+
+</script>
 
 <script>
+
 "use strict";
 
 const AI_URL = "https://teador612.github.io/ai/predictions.json";
@@ -972,8 +1172,6 @@ let totoData = null;
 let aiData = null;
 let activeWeek = null;
 
-let couponMode = "single";
-let guaranteeTarget = 13;
 let autoSelections = true;
 
 let selectedOutcomes = new Map();
@@ -981,8 +1179,6 @@ let predictionCache = new Map();
 let generatedColumns = [];
 
 const COLUMN_PRICE = 10;
-const MAX_SCENARIOS = 32768;
-const MAX_GENERATED_COLUMNS = 5000;
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
@@ -1284,54 +1480,19 @@ function ensureSelections(game, index, analysis) {
   };
 }
 
-function applyAISelectionsForGuarantee() {
+function applyAISuggestions() {
   const games = getWeekGames(activeWeek);
-  const candidates = [];
-
   games.forEach((game, index) => {
     const analysis = getPrediction(game);
     const key = selectionKey(game, index);
-
     if (!analysis.probabilities) {
       selectedOutcomes.set(key, []);
       return;
     }
-
-    const ranked = OUTCOMES.slice().sort(
-      (a, b) =>
-        analysis.probabilities[b] - analysis.probabilities[a]
-    );
-
-    selectedOutcomes.set(key, [ranked[0]]);
-
-    candidates.push({
-      key,
-      pair: ranked.slice(0, 2),
-      confidence: analysis.probabilities[ranked[0]],
-      index
-    });
+    const ranked = OUTCOMES.slice().sort((a, b) => analysis.probabilities[b] - analysis.probabilities[a]);
+    const gap = analysis.probabilities[ranked[0]] - analysis.probabilities[ranked[1]];
+    selectedOutcomes.set(key, gap <= 8 ? ranked.slice(0, 2) : [ranked[0]]);
   });
-
-  const doublesByGuarantee = {
-    12: 8,
-    13: 6,
-    14: 4
-  };
-
-  const doubles = doublesByGuarantee[guaranteeTarget] || 6;
-
-  candidates.sort(
-    (a, b) =>
-      a.confidence - b.confidence ||
-      a.index - b.index
-  );
-
-  candidates
-    .slice(0, doubles)
-    .forEach(candidate => {
-      selectedOutcomes.set(candidate.key, candidate.pair);
-    });
-
   autoSelections = true;
 }
 
@@ -1339,197 +1500,17 @@ function selectionMarkup(key, values, analysis) {
   const buttons = OUTCOMES.map(outcome => {
     const active = values.includes(outcome);
     const odds = analysis.probabilities?.[outcome];
-
-    return `
-      <button
-        type="button"
-        class="outcome-select${active ? " selected" : ""}"
-        data-match-key="${escapeHTML(key)}"
-        data-outcome="${outcome}"
-        aria-pressed="${active}"
-        title="${outcome} olasılığı ${probabilityLabel(odds)}">
-        ${outcome}
-      </button>
-    `;
+    return `<button type="button" class="outcome-select${active ? " selected" : ""}"
+      data-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
+      aria-pressed="${active}" title="${outcome} olasılığı ${probabilityLabel(odds)}">${outcome}</button>`;
   }).join("");
-
   const hint = analysis.probabilities
-    ? (
-      couponMode === "guarantee"
-        ? `AI işaretleri: <strong>${escapeHTML(values.join(" "))}</strong>`
-        : `AI önerisi: <strong>${escapeHTML(analysis.selection)}</strong>`
-    )
+    ? `Kupon işareti: <strong>${escapeHTML(values.join(" "))}</strong>`
     : "Tahmin yok · seçimini kendin belirle";
-
-  return `
-    <div class="pick-control">
-      <div class="pick-head">
-        <span>
-          ${couponMode === "single" ? "Tekli kupon seçimi" : "Sistem işaretleri"}
-        </span>
-        <small>${hint}</small>
-      </div>
-
-      <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">
-        ${buttons}
-      </div>
-    </div>
-  `;
-}
-
-function decodeDigits(id, sizes, strides) {
-  return sizes.map(
-    (size, index) =>
-      Math.floor(id / strides[index]) % size
-  );
-}
-
-function visitWithinRadius(center, errors, sizes, strides, visit) {
-  const digits = decodeDigits(center, sizes, strides);
-
-  function walk(position, remaining, value) {
-    if (position === sizes.length) {
-      visit(value);
-      return;
-    }
-
-    walk(position + 1, remaining, value);
-
-    if (remaining > 0) {
-      for (let choice = 0; choice < sizes[position]; choice++) {
-        if (choice !== digits[position]) {
-          walk(
-            position + 1,
-            remaining - 1,
-            value + (choice - digits[position]) * strides[position]
-          );
-        }
-      }
-    }
-  }
-
-  walk(0, errors, center);
-}
-
-function makeCoveredSystem(choices, guarantee) {
-  const sizes = choices.map(list => list.length);
-
-  const total = sizes.reduce(
-    (value, size) => value * size,
-    1
-  );
-
-  if (total > MAX_SCENARIOS) {
-    return {
-      total,
-      rows: null,
-      reason: "large"
-    };
-  }
-
-  const errors = 15 - guarantee;
-
-  const strides = Array(sizes.length);
-  let stride = 1;
-
-  for (let i = sizes.length - 1; i >= 0; i--) {
-    strides[i] = stride;
-    stride *= sizes[i];
-  }
-
-  const covered = new Uint8Array(total);
-  const selected = new Uint8Array(total);
-
-  let left = total;
-  const centers = [];
-
-  while (
-    left > 0 &&
-    centers.length < MAX_GENERATED_COLUMNS
-  ) {
-    let best = -1;
-    let bestScore = -1;
-
-    const samples = Math.min(total, 12);
-    const offset = (centers.length * 104729) % total;
-    const step = Math.max(1, Math.floor(total / samples));
-
-    for (let sample = 0; sample < samples; sample++) {
-      const candidate = (offset + sample * step) % total;
-
-      if (selected[candidate]) continue;
-
-      let score = 0;
-
-      visitWithinRadius(
-        candidate,
-        errors,
-        sizes,
-        strides,
-        scenario => {
-          if (!covered[scenario]) score++;
-        }
-      );
-
-      if (score > bestScore) {
-        best = candidate;
-        bestScore = score;
-      }
-    }
-
-    if (best < 0 || bestScore === 0) {
-      for (let candidate = 0; candidate < total; candidate++) {
-        if (!covered[candidate]) {
-          best = candidate;
-          break;
-        }
-      }
-    }
-
-    if (best < 0) {
-      return {
-        total,
-        rows: null,
-        reason: "failed"
-      };
-    }
-
-    selected[best] = 1;
-
-    visitWithinRadius(
-      best,
-      errors,
-      sizes,
-      strides,
-      scenario => {
-        if (!covered[scenario]) {
-          covered[scenario] = 1;
-          left--;
-        }
-      }
-    );
-
-    centers.push(best);
-  }
-
-  if (left > 0) {
-    return {
-      total,
-      rows: null,
-      reason: "column-limit"
-    };
-  }
-
-  const rows = centers.map(center =>
-    decodeDigits(center, sizes, strides)
-      .map((choice, index) => choices[index][choice])
-  );
-
-  return {
-    total,
-    rows,
-    reason: ""
-  };
+  return `<div class="pick-control">
+    <div class="pick-head"><span>Kupon seçimi · en fazla 2 işaret</span><small>${hint}</small></div>
+    <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">${buttons}</div>
+  </div>`;
 }
 
 function readCurrentChoices(games) {
@@ -1545,176 +1526,50 @@ function readCurrentChoices(games) {
 }
 
 function updateCouponPanel(games = getWeekGames(activeWeek)) {
-  const singleButton = $("singleModeBtn");
-  const guaranteeButton = $("guaranteeModeBtn");
-
-  singleButton.classList.toggle(
-    "active",
-    couponMode === "single"
-  );
-
-  guaranteeButton.classList.toggle(
-    "active",
-    couponMode === "guarantee"
-  );
-
-  singleButton.setAttribute(
-    "aria-pressed",
-    couponMode === "single"
-  );
-
-  guaranteeButton.setAttribute(
-    "aria-pressed",
-    couponMode === "guarantee"
-  );
-
-  $("guaranteePicker").hidden =
-    couponMode !== "guarantee";
-
-  document.querySelectorAll("[data-guarantee]").forEach(button => {
-    const active =
-      Number(button.dataset.guarantee) === guaranteeTarget;
-
-    button.classList.toggle("active", active);
-    button.setAttribute("aria-pressed", active);
-  });
-
   const choices = readCurrentChoices(games);
-
-  const incomplete = choices.some(list =>
-    !list.length ||
-    (couponMode === "single" && list.length !== 1)
-  );
-
+  const incomplete = choices.some(list => !list.length);
+  const doubleCount = choices.filter(list => list.length === 2).length;
+  $("doubleCount").textContent = doubleCount + " maçta çift işaret · sınır yok";
   generatedColumns = [];
-
   const message = $("couponMessage");
-
   if (!games.length || incomplete) {
     $("couponColumns").textContent = "—";
     $("couponCost").textContent = "—";
     $("columnOutput").value = "";
     $("copyColumnsBtn").disabled = true;
     $("couponStatus").textContent = "Seçimleri tamamla";
-
-    message.textContent =
-      "Her maç için en az bir sonuç seç. Normal sistemde her maçta tek sonuç işaretlenir.";
-
+    message.textContent = "Her maçta en az bir sonuç seç. Bir maçta en fazla iki sonuç işaretleyebilirsin.";
     return;
   }
 
-  let result;
-
-  if (couponMode === "single") {
-    result = {
-      rows: [choices.map(list => list[0])],
-      total: 1,
-      reason: ""
-    };
-  } else {
-    result = makeCoveredSystem(
-      choices,
-      guaranteeTarget
-    );
-  }
-
-  if (!result.rows) {
-    $("couponColumns").textContent =
-      result.total.toLocaleString("tr-TR") + " olasılık";
-
-    $("couponCost").textContent = "—";
-    $("columnOutput").value = "";
-    $("copyColumnsBtn").disabled = true;
-    $("couponStatus").textContent = "Sistem çok büyük";
-
-    message.textContent =
-      "Bu seçim kombinasyonu tarayıcıda güvenli biçimde indirgenemeyecek kadar geniş. Bazı maçlardaki çift/üçlü seçimleri azaltıp tekrar dene.";
-
-    return;
-  }
-
-  generatedColumns = result.rows;
-
-  const totalCost =
-    generatedColumns.length * COLUMN_PRICE;
-
-  $("couponColumns").textContent =
-    generatedColumns.length.toLocaleString("tr-TR");
-
-  $("couponCost").textContent =
-    totalCost.toLocaleString("tr-TR") + " TL";
-
-  $("columnOutput").value = generatedColumns
-    .map((row, index) =>
-      String(index + 1).padStart(2, "0") +
-      "  " +
-      row.join(" · ")
-    )
-    .join("\n");
-
+  generatedColumns = choices.reduce((rows, options) =>
+    rows.flatMap(row => options.map(option => [...row, option])), [[]]);
+  const totalCost = generatedColumns.length * COLUMN_PRICE;
+  $("couponColumns").textContent = generatedColumns.length.toLocaleString("tr-TR");
+  $("couponCost").textContent = totalCost.toLocaleString("tr-TR") + " TL";
+  $("columnOutput").value = generatedColumns.map((row, index) =>
+    String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
   $("copyColumnsBtn").disabled = false;
-
-  $("couponStatus").textContent =
-    couponMode === "single"
-      ? "Tekli kupon hazır"
-      : guaranteeTarget + " sistemi hazır";
-
-  message.textContent =
-    couponMode === "single"
-      ? "Normal tekli sistem: AI’nin en yüksek olasılıklı seçimi kullanılır. İstersen maç kartından tekli seçimi değiştirebilirsin."
-      : guaranteeTarget +
-        " garanti: " +
-        (autoSelections ? "AI olasılıklarına göre önerilen" : "elle düzenlenen") +
-        " işaretlerin tüm birleşimleri tarandı; her birleşimde en az " +
-        guaranteeTarget +
-        " isabetli bir kolon bulunur. Kolon sayısını en aza indirme iddiası taşımaz.";
-}
-
-function setCouponMode(mode) {
-  couponMode = mode;
-
-  if (mode === "guarantee") {
-    applyAISelectionsForGuarantee();
-  } else {
-    getWeekGames(activeWeek).forEach((game, index) => {
-      const key = selectionKey(game, index);
-      const analysis = getPrediction(game);
-      const current = selectedOutcomes.get(key) || [];
-
-      const keep =
-        analysis.probabilities &&
-        current.includes(analysis.selection)
-          ? analysis.selection
-          : current[0];
-
-      selectedOutcomes.set(key, keep ? [keep] : []);
-    });
-  }
-
-  renderWeek();
+  $("couponStatus").textContent = doubleCount ? doubleCount + " çift seçim · kupon hazır" : "Tekli kupon hazır";
+  message.textContent = (autoSelections
+    ? "AI, en yüksek iki olasılık arasındaki fark 8 puan veya daha az olan maçlara çift işaret önerir."
+    : "Seçimlerini kendin düzenliyorsun.") +
+    " İşaretsiz sonucu tıklayarak çift ekle, seçili sonuçlardan birini tıklayarak kaldır. Maç sayısında sınır yok; her maçta en fazla iki sonuç seçebilirsin.";
 }
 
 function handleOutcomeClick(button) {
   const key = button.dataset.matchKey;
   const outcome = button.dataset.outcome;
-
   let values = selectedOutcomes.get(key) || [];
-
-  if (couponMode === "single") {
-    values = [outcome];
-  } else if (values.includes(outcome)) {
+  if (values.includes(outcome)) {
     if (values.length === 1) return;
-
-    values = values.filter(
-      value => value !== outcome
-    );
+    values = values.filter(value => value !== outcome);
   } else {
+    if (values.length >= 2) return;
     values = [...values, outcome];
   }
-
   selectedOutcomes.set(key, values);
   autoSelections = false;
-
   renderWeek();
 }
 
@@ -1848,28 +1703,7 @@ function renderWeek() {
 
     const available = Boolean(analysis.probabilities);
 
-    /*
-      BAŞARI KONTROLÜ
-
-      Normal tekli sistem:
-      Sadece AI/tekli seçimi doğruysa başarılı.
-
-      Garantili sistem:
-      İşaretlenen 1, X veya 2 seçeneklerinden
-      gerçek sonuçla eşleşen en az biri varsa başarılı.
-
-      Böylece 1-X, X-2, 1-2 ve 1-X-2
-      kombinasyonlarının tamamı desteklenir.
-    */
-    const systemHit = Boolean(
-      result &&
-      available &&
-      (
-        couponMode === "guarantee"
-          ? pickState.values.includes(result)
-          : analysis.selection === result
-      )
-    );
+    const systemHit = Boolean(result && available && pickState.values.includes(result));
 
     const status = result
       ? (
@@ -2181,6 +2015,7 @@ async function loadData() {
       );
     }
 
+    if (autoSelections) applyAISuggestions();
     updateMessage();
 
   } catch (error) {
@@ -2202,59 +2037,14 @@ async function loadData() {
 /* Hafta seçimi */
 $("weekSelect").addEventListener("change", event => {
   activeWeek = event.target.value;
-
-  if (
-    couponMode === "guarantee" &&
-    autoSelections
-  ) {
-    applyAISelectionsForGuarantee();
-  }
-
+  if (autoSelections) applyAISuggestions();
   updateMessage();
 });
-
-/* Verileri yenile */
-$("refreshBtn").addEventListener(
-  "click",
-  loadData
-);
-
-/* Kupon modları */
-$("singleModeBtn").addEventListener(
-  "click",
-  () => setCouponMode("single")
-);
-
-$("guaranteeModeBtn").addEventListener(
-  "click",
-  () => setCouponMode("guarantee")
-);
-
-/* Garanti seviyesi */
-document.querySelectorAll("[data-guarantee]").forEach(button => {
-  button.addEventListener("click", () => {
-    guaranteeTarget = Number(
-      button.dataset.guarantee
-    );
-
-    if (
-      couponMode === "guarantee" &&
-      autoSelections
-    ) {
-      applyAISelectionsForGuarantee();
-    }
-
-    renderWeek();
-  });
-});
-
-/* AI önerisini uygula */
+$("refreshBtn").addEventListener("click", loadData);
 $("autoOptionsBtn").addEventListener("click", () => {
-  applyAISelectionsForGuarantee();
+  applyAISuggestions();
   renderWeek();
 });
-
-/* Maç seçimleri */
 $("matchList").addEventListener("click", event => {
   const button = event.target.closest(".outcome-select");
 
@@ -2271,6 +2061,7 @@ $("copyColumnsBtn").addEventListener(
 
 /* İlk yükleme */
 loadData();
+
 
 </script>
 
