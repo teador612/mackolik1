@@ -1,7 +1,7 @@
 /* Otomatik oluşturulan Spor Toto verisi. */
 window.SPORT_TOTO_DATA = {
   season: "2026-2027",
-  currentWeek: 14,
+  currentWeek: 15,
   weeks: {
     "1": [
       {"number":1,"home":"Galatasaray","away":"Çorum FK","result":"X"},
@@ -241,12 +241,29 @@ window.SPORT_TOTO_DATA = {
       {"number":14,"home":"Napoli","away":"Lazio","result":"X"},
       {"number":15,"home":"Inter","away":"Como","result":"1"},
     ],
+    "15": [
+      {"number":1,"home":"Fransa","away":"Türkiye","result":null},
+      {"number":2,"home":"Bulgaristan","away":"İzlanda","result":null},
+      {"number":3,"home":"Lihtenştayn","away":"Azerbaycan","result":null},
+      {"number":4,"home":"Lüksemburg","away":"Estonya","result":null},
+      {"number":5,"home":"Slovakya","away":"Faroe Adaları","result":null},
+      {"number":6,"home":"Gürcistan","away":"Macaristan","result":null},
+      {"number":7,"home":"Norveç","away":"Galler","result":null},
+      {"number":8,"home":"Portekiz","away":"Danimarka","result":null},
+      {"number":9,"home":"Belçika","away":"İtalya","result":null},
+      {"number":10,"home":"Hırvatistan","away":"Çekya","result":null},
+      {"number":11,"home":"İspanya","away":"İngiltere","result":null},
+      {"number":12,"home":"Almanya","away":"Hollanda","result":null},
+      {"number":13,"home":"Kuzey Makedonya Cumhuriyeti","away":"Slovenya","result":null},
+      {"number":14,"home":"Yunanistan","away":"Sırbistan","result":null},
+      {"number":15,"home":"İsviçre","away":"İskoçya","result":null},
+    ],
   }
 };
 
 window.SPORT_TOTO_META = {
   season: "2026-2027",
-  currentWeek: 14,
+  currentWeek: 15,
   matchesPerWeek: 15,
   historyDays: 60,
   exactOdds: true,
