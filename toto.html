@@ -906,7 +906,6 @@ footer {
   NEXUS Spor Toto · Tahmin kaynağı: teador612.github.io/ai/predictions.json
 </footer>
 
-<!-- Güncel Spor Toto verisi ayrı dosyadan yüklenir. -->
 <script src="./data/spor-toto-data.js"></script>
 
 <script>
@@ -920,59 +919,43 @@ const TEAM_ALIASES = {
   "man utd": "manchester united",
   "manchester utd": "manchester united",
   "man united": "manchester united",
-
   "a villa": "aston villa",
   "atl madrid": "atletico madrid",
   "ath madrid": "atletico madrid",
   "atletico de madrid": "atletico madrid",
   "atletico madrid": "atletico madrid",
-
   "paris st germain": "paris saint germain",
   "paris sg": "paris saint germain",
   "p s germain": "paris saint germain",
   "psg": "paris saint germain",
-
   "rams basaksehir": "istanbul basaksehir",
   "basaksehir": "istanbul basaksehir",
-
   "inter milan": "inter",
   "internazionale": "inter",
-
   "atletico mineiro": "atletico mineiro",
   "atletico mg": "atletico mineiro",
-
   "caykur rizespor": "caykur rizespor",
   "rize spor": "caykur rizespor",
-
   "como 1907": "como",
-
   "tumosan konyaspor": "konyaspor",
   "t konyaspor": "konyaspor",
-
   "arca corum fk": "corum",
   "corum fk": "corum",
   "a corum fk": "corum",
-
   "m city": "manchester city",
   "man city": "manchester city",
-
   "b munih": "bayern munich",
   "bayern munchen": "bayern munich",
-
   "b dortmund": "borussia dortmund",
   "r madrid": "real madrid",
   "r betis": "real betis",
   "r leipzig": "rb leipzig",
-
   "a madrid": "atletico madrid",
   "a bilbao": "athletic bilbao",
-
   "v stuttgart": "vfb stuttgart",
   "vfb stuttgart": "vfb stuttgart",
-
   "s prag": "sparta prague",
   "shakhtar d": "shakhtar donetsk",
-
   "c alanyaspor": "alanyaspor",
   "i basaksehir": "istanbul basaksehir",
   "c rizespor": "caykur rizespor",
@@ -1865,11 +1848,34 @@ function renderWeek() {
 
     const available = Boolean(analysis.probabilities);
 
+    /*
+      BAŞARI KONTROLÜ
+
+      Normal tekli sistem:
+      Sadece AI/tekli seçimi doğruysa başarılı.
+
+      Garantili sistem:
+      İşaretlenen 1, X veya 2 seçeneklerinden
+      gerçek sonuçla eşleşen en az biri varsa başarılı.
+
+      Böylece 1-X, X-2, 1-2 ve 1-X-2
+      kombinasyonlarının tamamı desteklenir.
+    */
+    const systemHit = Boolean(
+      result &&
+      available &&
+      (
+        couponMode === "guarantee"
+          ? pickState.values.includes(result)
+          : analysis.selection === result
+      )
+    );
+
     const status = result
       ? (
         available
           ? (
-            analysis.selection === result
+            systemHit
               ? {
                   label: "Başarılı",
                   className: "green",
@@ -1908,7 +1914,7 @@ function renderWeek() {
     if (available && result) {
       settled++;
 
-      if (analysis.selection === result) {
+      if (systemHit) {
         won++;
       }
     }
