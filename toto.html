@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0b1220">
 <title>NEXUS | Spor Toto Tahmin Merkezi</title>
+
 <style>
 :root {
   color-scheme: light;
@@ -27,7 +28,12 @@
 }
 
 * { box-sizing: border-box; }
-html { background: var(--canvas); scroll-behavior: smooth; }
+
+html {
+  background: var(--canvas);
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   background: var(--canvas);
@@ -35,6 +41,7 @@ body {
   font: 14px/1.55 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+
 button, select { font: inherit; }
 button { cursor: pointer; }
 button:disabled { cursor: wait; opacity: .65; }
@@ -48,17 +55,42 @@ header {
     radial-gradient(ellipse at 84% 0%, rgba(66, 143, 104, .26), transparent 36%),
     linear-gradient(116deg, #0d3026 0%, #123e30 55%, #194d39 100%);
 }
-header::before, header::after {
+
+header::before,
+header::after {
   position: absolute;
   pointer-events: none;
   content: "";
   border: 1px solid rgba(230, 248, 235, .09);
   border-radius: 50%;
 }
-header::before { width: 360px; height: 360px; right: -100px; top: -220px; }
-header::after { width: 240px; height: 240px; right: 12%; top: -180px; }
-.container { position: relative; width: min(1160px, 100%); margin: 0 auto; padding: 22px; }
-header .container { z-index: 1; padding: 0 22px !important; }
+
+header::before {
+  width: 360px;
+  height: 360px;
+  right: -100px;
+  top: -220px;
+}
+
+header::after {
+  width: 240px;
+  height: 240px;
+  right: 12%;
+  top: -180px;
+}
+
+.container {
+  position: relative;
+  width: min(1160px, 100%);
+  margin: 0 auto;
+  padding: 22px;
+}
+
+header .container {
+  z-index: 1;
+  padding: 0 22px !important;
+}
+
 header .container::before {
   display: block;
   margin-bottom: 10px;
@@ -68,10 +100,34 @@ header .container::before {
   font-weight: 750;
   letter-spacing: .18em;
 }
-h1 { margin: 0 0 7px; font-size: clamp(25px, 3.8vw, 34px); font-weight: 720; letter-spacing: -.035em; line-height: 1.12; }
-h2 { margin: 0; color: var(--ink); font-size: 17px; font-weight: 700; letter-spacing: -.015em; }
-.subtitle, .small { color: var(--muted); font-size: 12px; line-height: 1.7; }
-header .subtitle { color: #bed3c6; font-size: 13px; }
+
+h1 {
+  margin: 0 0 7px;
+  font-size: clamp(25px, 3.8vw, 34px);
+  font-weight: 720;
+  letter-spacing: -.035em;
+  line-height: 1.12;
+}
+
+h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+.subtitle, .small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+header .subtitle {
+  color: #bed3c6;
+  font-size: 13px;
+}
+
 main.container { padding-top: 24px; }
 
 .toolbar {
@@ -85,6 +141,7 @@ main.container { padding-top: 24px; }
   background: var(--surface);
   box-shadow: var(--shadow);
 }
+
 select, .primary {
   min-height: 43px;
   padding: 10px 14px;
@@ -93,62 +150,348 @@ select, .primary {
   color: var(--ink);
   background: var(--surface-soft);
 }
-select { min-width: 190px; font-weight: 650; }
-select:focus, button:focus-visible, summary:focus-visible { outline: 3px solid rgba(19, 118, 83, .22); outline-offset: 2px; }
-.primary { border-color: var(--green); color: #fff; background: var(--green); font-weight: 650; transition: background .18s, transform .18s; }
-.primary:hover:not(:disabled) { background: #0e6244; transform: translateY(-1px); }
 
-.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 0 0 15px; }
-.stat, .panel, .match { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); box-shadow: var(--shadow); }
-.stat { position: relative; min-height: 102px; padding: 17px 18px; overflow: hidden; }
-.stat::before { position: absolute; inset: 0 auto 0 0; width: 3px; background: #94b9a3; content: ""; }
-.stat-label { margin-bottom: 8px; color: var(--muted); font-size: 11px; font-weight: 620; letter-spacing: .025em; }
-.stat-value { color: var(--ink); font-size: 25px; font-weight: 730; letter-spacing: -.04em; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.panel { margin-bottom: 15px; padding: 18px 20px; }
+select {
+  min-width: 190px;
+  font-weight: 650;
+}
+
+select:focus,
+button:focus-visible,
+summary:focus-visible {
+  outline: 3px solid rgba(19, 118, 83, .22);
+  outline-offset: 2px;
+}
+
+.primary {
+  border-color: var(--green);
+  color: #fff;
+  background: var(--green);
+  font-weight: 650;
+  transition: background .18s, transform .18s;
+}
+
+.primary:hover:not(:disabled) {
+  background: #0e6244;
+  transform: translateY(-1px);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0 0 15px;
+}
+
+.stat, .panel, .match {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.stat {
+  position: relative;
+  min-height: 102px;
+  padding: 17px 18px;
+  overflow: hidden;
+}
+
+.stat::before {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: #94b9a3;
+  content: "";
+}
+
+.stat-label {
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 620;
+  letter-spacing: .025em;
+}
+
+.stat-value {
+  color: var(--ink);
+  font-size: 25px;
+  font-weight: 730;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel {
+  margin-bottom: 15px;
+  padding: 18px 20px;
+}
+
 .panel .small { max-width: 900px; }
-.notice { margin: 0 0 13px; padding: 12px 15px; border: 1px solid #dce8df; border-radius: 12px; color: #40554a; background: #eef5f0; font-size: 12px; line-height: 1.6; }
-.notice.good { border-color: #d3e9da; color: #245d3e; background: #eaf5ed; }
-.notice.error { border-color: #f0d1ce; color: #873a35; background: #fff1ef; }
-.section-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 9px; }
-.badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border-radius: 999px; color: #52655a; background: #edf2ee; font-size: 10px; font-weight: 720; letter-spacing: .025em; }
-.badge.green { color: #176641; background: var(--green-soft); }
-.badge.red { color: #a43f3b; background: var(--red-soft); }
-.badge.yellow { color: #8c631e; background: var(--amber-soft); }
-.badge.blue { color: #3f668a; background: #edf4fa; }
 
-.match-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; margin-bottom: 16px; }
-.match { min-width: 0; overflow: hidden; transition: border-color .18s, box-shadow .18s, transform .18s; }
-.match:hover { transform: translateY(-2px); border-color: #cbdccf; box-shadow: 0 14px 34px rgba(19, 49, 35, .09); }
-.match-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px 13px; }
-.match-no { margin-bottom: 4px; color: #819087; font-size: 10px; font-weight: 720; letter-spacing: .09em; text-transform: uppercase; }
-.teams { color: var(--ink); font-size: 15px; font-weight: 710; letter-spacing: -.02em; line-height: 1.4; overflow-wrap: anywhere; }
-.prediction { flex: 0 0 auto; min-width: 72px; padding: 9px 11px; border: 1px solid #cfe6d5; border-radius: 12px; color: #145c3b; background: var(--green-soft); text-align: center; font-size: 22px; font-weight: 780; line-height: 1.05; }
-.prediction small { display: block; margin-top: 5px; color: #5e7968; font-size: 9px; font-weight: 650; letter-spacing: 0; white-space: nowrap; }
-.prediction.medium { border-color: #f1dfba; color: #805719; background: var(--amber-soft); }
+.notice {
+  margin: 0 0 13px;
+  padding: 12px 15px;
+  border: 1px solid #dce8df;
+  border-radius: 12px;
+  color: #40554a;
+  background: #eef5f0;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.notice.good {
+  border-color: #d3e9da;
+  color: #245d3e;
+  background: #eaf5ed;
+}
+
+.notice.error {
+  border-color: #f0d1ce;
+  color: #873a35;
+  background: #fff1ef;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 9px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  color: #52655a;
+  background: #edf2ee;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: .025em;
+}
+
+.badge.green {
+  color: #176641;
+  background: var(--green-soft);
+}
+
+.badge.red {
+  color: #a43f3b;
+  background: var(--red-soft);
+}
+
+.badge.yellow {
+  color: #8c631e;
+  background: var(--amber-soft);
+}
+
+.badge.blue {
+  color: #3f668a;
+  background: #edf4fa;
+}
+
+.match-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+  margin-bottom: 16px;
+}
+
+.match {
+  min-width: 0;
+  overflow: hidden;
+  transition: border-color .18s, box-shadow .18s, transform .18s;
+}
+
+.match:hover {
+  transform: translateY(-2px);
+  border-color: #cbdccf;
+  box-shadow: 0 14px 34px rgba(19, 49, 35, .09);
+}
+
+.match-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 17px 18px 13px;
+}
+
+.match-no {
+  margin-bottom: 4px;
+  color: #819087;
+  font-size: 10px;
+  font-weight: 720;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+
+.teams {
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 710;
+  letter-spacing: -.02em;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.prediction {
+  flex: 0 0 auto;
+  min-width: 72px;
+  padding: 9px 11px;
+  border: 1px solid #cfe6d5;
+  border-radius: 12px;
+  color: #145c3b;
+  background: var(--green-soft);
+  text-align: center;
+  font-size: 22px;
+  font-weight: 780;
+  line-height: 1.05;
+}
+
+.prediction small {
+  display: block;
+  margin-top: 5px;
+  color: #5e7968;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.prediction.medium {
+  border-color: #f1dfba;
+  color: #805719;
+  background: var(--amber-soft);
+}
+
 .prediction.medium small { color: #8f7549; }
+
 .probability-block { padding: 0 18px 14px; }
-.probability-track { display: flex; width: 100%; height: 6px; gap: 2px; overflow: hidden; border-radius: 20px; background: #e8ede9; }
-.probability-track span { min-width: 2px; height: 100%; transition: width .2s; }
+
+.probability-track {
+  display: flex;
+  width: 100%;
+  height: 6px;
+  gap: 2px;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #e8ede9;
+}
+
+.probability-track span {
+  min-width: 2px;
+  height: 100%;
+  transition: width .2s;
+}
+
 .probability-track .p-home { background: var(--green); }
 .probability-track .p-draw { background: var(--amber); }
 .probability-track .p-away { background: #6685a2; }
-.probability-values { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 9px; }
-.probability-value { display: flex; align-items: baseline; justify-content: space-between; gap: 5px; color: #67766e; font-size: 10px; }
-.probability-value strong { color: var(--ink); font-size: 11px; font-weight: 720; font-variant-numeric: tabular-nums; }
-.match-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0 18px 14px; }
-.tag { padding: 5px 8px; border: 1px solid #e8eee9; border-radius: 8px; color: #68776f; background: #f8faf8; font-size: 10px; }
-.tag strong { color: #344b3d; font-weight: 700; }
-.details { border-top: 1px solid #edf1ee; padding: 0 18px; background: #fcfdfc; }
-.details summary { padding: 12px 0; color: #456251; cursor: pointer; font-size: 11px; font-weight: 700; list-style: none; }
+
+.probability-values {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.probability-value {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 5px;
+  color: #67766e;
+  font-size: 10px;
+}
+
+.probability-value strong {
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.match-info {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 0 18px 14px;
+}
+
+.tag {
+  padding: 5px 8px;
+  border: 1px solid #e8eee9;
+  border-radius: 8px;
+  color: #68776f;
+  background: #f8faf8;
+  font-size: 10px;
+}
+
+.tag strong {
+  color: #344b3d;
+  font-weight: 700;
+}
+
+.details {
+  border-top: 1px solid #edf1ee;
+  padding: 0 18px;
+  background: #fcfdfc;
+}
+
+.details summary {
+  padding: 12px 0;
+  color: #456251;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  list-style: none;
+}
+
 .details summary::-webkit-details-marker { display: none; }
-.details summary::after { float: right; color: #7e9686; content: "+"; font-size: 15px; line-height: 1; }
+
+.details summary::after {
+  float: right;
+  color: #7e9686;
+  content: "+";
+  font-size: 15px;
+  line-height: 1;
+}
+
 .details[open] summary::after { content: "−"; }
-.details-content { padding: 0 0 14px; color: #5f7066; font-size: 11px; }
-.details-content .notice { margin-top: 0 !important; margin-bottom: 0 !important; border-radius: 10px; }
+
+.details-content {
+  padding: 0 0 14px;
+  color: #5f7066;
+  font-size: 11px;
+}
+
+.details-content .notice {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  border-radius: 10px;
+}
+
 .coupon-builder { margin-bottom: 14px; }
+
 .coupon-heading { align-items: flex-start; }
 .coupon-heading .small { margin-top: 4px; }
-.coupon-modes { display: inline-flex; gap: 4px; margin: 5px 0 13px; padding: 4px; border: 1px solid #e4ebe5; border-radius: 11px; background: #f5f8f5; }
+
+.coupon-modes {
+  display: inline-flex;
+  gap: 4px;
+  margin: 5px 0 13px;
+  padding: 4px;
+  border: 1px solid #e4ebe5;
+  border-radius: 11px;
+  background: #f5f8f5;
+}
+
 .mode-button, .guarantee-option, .copy-button {
   min-height: 36px;
   padding: 8px 12px;
@@ -160,36 +503,208 @@ select:focus, button:focus-visible, summary:focus-visible { outline: 3px solid r
   font-weight: 680;
   transition: background .15s, color .15s, border-color .15s;
 }
-.mode-button:hover, .guarantee-option:hover { color: var(--green-deep); background: #eaf2ec; }
-.mode-button.active, .guarantee-option.active { border-color: #d6e6d9; color: #145d3d; background: #fff; box-shadow: 0 2px 5px rgba(21, 61, 39, .06); }
-.guarantee-picker { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 13px; padding: 11px 12px; border: 1px solid #e5ede7; border-radius: 11px; background: #f8faf8; }
+
+.mode-button:hover,
+.guarantee-option:hover {
+  color: var(--green-deep);
+  background: #eaf2ec;
+}
+
+.mode-button.active,
+.guarantee-option.active {
+  border-color: #d6e6d9;
+  color: #145d3d;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(21, 61, 39, .06);
+}
+
+.guarantee-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 0 0 13px;
+  padding: 11px 12px;
+  border: 1px solid #e5ede7;
+  border-radius: 11px;
+  background: #f8faf8;
+}
+
 .guarantee-picker[hidden] { display: none !important; }
-.picker-label { color: #4d6255; font-size: 11px; font-weight: 720; }
-.guarantee-options { display: flex; gap: 4px; padding: 3px; border: 1px solid #e3ebe4; border-radius: 10px; background: #f1f5f1; }
-.coupon-totals { display: grid; grid-template-columns: 1fr 1fr 1.25fr auto; align-items: center; gap: 13px; padding: 13px 14px; border: 1px solid #dce9df; border-radius: 12px; background: linear-gradient(105deg, #f5faf6, #edf6ef); }
-.coupon-totals > div { display: flex; flex-direction: column; gap: 3px; }
-.total-label { color: #748278; font-size: 10px; font-weight: 650; }
-.coupon-totals strong { color: #244637; font-size: 17px; font-weight: 760; font-variant-numeric: tabular-nums; }
-.coupon-totals .total-cost strong { color: #0e6545; font-size: 21px; }
-.copy-button { border-color: var(--green); color: #fff; background: var(--green); }
+
+.picker-label {
+  color: #4d6255;
+  font-size: 11px;
+  font-weight: 720;
+}
+
+.guarantee-options {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid #e3ebe4;
+  border-radius: 10px;
+  background: #f1f5f1;
+}
+
+.coupon-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.25fr auto;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 14px;
+  border: 1px solid #dce9df;
+  border-radius: 12px;
+  background: linear-gradient(105deg, #f5faf6, #edf6ef);
+}
+
+.coupon-totals > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.total-label {
+  color: #748278;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.coupon-totals strong {
+  color: #244637;
+  font-size: 17px;
+  font-weight: 760;
+  font-variant-numeric: tabular-nums;
+}
+
+.coupon-totals .total-cost strong {
+  color: #0e6545;
+  font-size: 21px;
+}
+
+.copy-button {
+  border-color: var(--green);
+  color: #fff;
+  background: var(--green);
+}
+
 .copy-button:hover:not(:disabled) { background: #0e6244; }
-.copy-button:disabled { cursor: not-allowed; opacity: .45; }
+
+.copy-button:disabled {
+  cursor: not-allowed;
+  opacity: .45;
+}
+
 .coupon-preview { margin-top: 11px; }
-.coupon-preview summary { padding: 7px 0; color: #506d5b; cursor: pointer; font-size: 11px; font-weight: 680; }
-.coupon-preview textarea { display: block; width: 100%; min-height: 120px; margin-top: 7px; padding: 10px; resize: vertical; border: 1px solid #e1e9e3; border-radius: 9px; color: #344b3e; background: #fbfdfb; font: 11px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace; }
-.coupon-message { margin-top: 10px; color: #52705c; font-size: 11px; line-height: 1.6; }
-.coupon-disclaimer { margin-top: 5px; color: #8b968e; font-size: 10px; line-height: 1.55; }
-.pick-control { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 18px 13px; }
-.pick-head { display: flex; flex-direction: column; gap: 2px; color: #5f7066; font-size: 10px; font-weight: 700; }
-.pick-head small { color: #87948b; font-size: 9px; font-weight: 500; }
+
+.coupon-preview summary {
+  padding: 7px 0;
+  color: #506d5b;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 680;
+}
+
+.coupon-preview textarea {
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  margin-top: 7px;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid #e1e9e3;
+  border-radius: 9px;
+  color: #344b3e;
+  background: #fbfdfb;
+  font: 11px/1.7 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+.coupon-message {
+  margin-top: 10px;
+  color: #52705c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.coupon-disclaimer {
+  margin-top: 5px;
+  color: #8b968e;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.pick-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 18px 13px;
+}
+
+.pick-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #5f7066;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pick-head small {
+  color: #87948b;
+  font-size: 9px;
+  font-weight: 500;
+}
+
 .pick-head small strong { color: #26704b; }
-.outcome-buttons { display: flex; gap: 5px; }
-.outcome-select { min-width: 34px; height: 31px; border: 1px solid #e1e9e3; border-radius: 8px; color: #63736a; background: #fff; font-size: 11px; font-weight: 730; transition: all .15s; }
-.outcome-select:hover { border-color: #8cb49a; color: #165d3d; }
-.outcome-select.selected { border-color: #26764f; color: #fff; background: #26764f; box-shadow: 0 2px 5px rgba(23, 94, 59, .18); }
-.outcome-select:focus-visible { outline: 3px solid rgba(19, 118, 83, .2); outline-offset: 2px; }
-.empty { padding: 25px; color: var(--muted); text-align: center; line-height: 1.7; }
-footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size: 10px; }
+
+.outcome-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.outcome-select {
+  min-width: 34px;
+  height: 31px;
+  border: 1px solid #e1e9e3;
+  border-radius: 8px;
+  color: #63736a;
+  background: #fff;
+  font-size: 11px;
+  font-weight: 730;
+  transition: all .15s;
+}
+
+.outcome-select:hover {
+  border-color: #8cb49a;
+  color: #165d3d;
+}
+
+.outcome-select.selected {
+  border-color: #26764f;
+  color: #fff;
+  background: #26764f;
+  box-shadow: 0 2px 5px rgba(23, 94, 59, .18);
+}
+
+.outcome-select:focus-visible {
+  outline: 3px solid rgba(19, 118, 83, .2);
+  outline-offset: 2px;
+}
+
+.empty {
+  padding: 25px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.7;
+}
+
+footer {
+  padding: 10px 20px 26px;
+  color: #839188;
+  text-align: center;
+  font-size: 10px;
+}
 
 @media (max-width: 760px) {
   header { padding: 27px 15px 30px; }
@@ -197,14 +712,21 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
   main.container { padding-top: 17px; }
   .match-list { grid-template-columns: 1fr; }
 }
+
 @media (max-width: 540px) {
   .container { padding: 13px; }
   header .container { padding: 0 2px !important; }
   .toolbar { align-items: stretch; padding: 10px; }
   select { flex: 1; min-width: 0; }
   .primary { padding-inline: 12px; }
-  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
-  .stat { min-height: 88px; padding: 13px 14px; }
+  .stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+  .stat {
+    min-height: 88px;
+    padding: 13px 14px;
+  }
   .stat-value { font-size: 22px; }
   .panel { padding: 15px; }
   .match-top { padding: 15px 15px 12px; }
@@ -214,20 +736,27 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
   .details { padding: 0 15px; }
   .coupon-totals { grid-template-columns: 1fr 1fr; gap: 12px 8px; }
   .coupon-totals .copy-button { grid-column: 1 / -1; }
-  .pick-control { align-items: flex-start; padding-inline: 15px; }
+  .pick-control {
+    align-items: flex-start;
+    padding-inline: 15px;
+  }
 }
-
 </style>
 </head>
+
 <body>
+
 <header>
   <div class="container" style="padding:0 4px">
     <h1>⚽ Spor Toto Tahmin Merkezi</h1>
-    <div class="subtitle">AI tahminleri · Takım adına göre fikstür eşleştirme · Spor Toto 1 / X / 2</div>
+    <div class="subtitle">
+      AI tahminleri · Takım adına göre fikstür eşleştirme · Spor Toto 1 / X / 2
+    </div>
   </div>
 </header>
 
 <main class="container">
+
   <div class="toolbar">
     <select id="weekSelect" aria-label="Hafta seç"></select>
     <button id="refreshBtn" class="primary">Verileri yenile</button>
@@ -236,10 +765,22 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
   <div id="message" class="notice">Veriler yükleniyor...</div>
 
   <section class="stats">
-    <div class="stat"><div class="stat-label">Haftadaki maç</div><div id="statMatches" class="stat-value">—</div></div>
-    <div class="stat"><div class="stat-label">Tahmin üretilen</div><div id="statAnalyzed" class="stat-value">—</div></div>
-    <div class="stat"><div class="stat-label">Sonucu belli tahmin</div><div id="statSettled" class="stat-value">—</div></div>
-    <div class="stat"><div class="stat-label">Tahmin başarı oranı</div><div id="statAccuracy" class="stat-value">—</div></div>
+    <div class="stat">
+      <div class="stat-label">Haftadaki maç</div>
+      <div id="statMatches" class="stat-value">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Tahmin üretilen</div>
+      <div id="statAnalyzed" class="stat-value">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Sonucu belli tahmin</div>
+      <div id="statSettled" class="stat-value">—</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Tahmin başarı oranı</div>
+      <div id="statAccuracy" class="stat-value">—</div>
+    </div>
   </section>
 
   <section class="panel">
@@ -247,48 +788,99 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
       <h2>AI tahmin analizi</h2>
       <span id="weekBadge" class="badge">Hafta —</span>
     </div>
+
     <div class="small">
-      Her Spor Toto maçı AI sistemindeki fikstürle ev sahibi ve deplasman adları üzerinden eşleştirilir.
-      1 / X / 2 tahmini, AI kaynağındaki MS 1, MS X ve MS 2 olasılıklarından en yüksek olanıdır.
+      Her Spor Toto maçı AI sistemindeki fikstürle ev sahibi ve deplasman adları
+      üzerinden eşleştirilir. 1 / X / 2 tahmini, AI kaynağındaki MS 1, MS X ve
+      MS 2 olasılıklarından en yüksek olanıdır.
       <span id="benchmark">AI tahmin kaynağı yükleniyor...</span>
-      <br>AI sisteminde eşleşen tahmin yoksa maç açıkça işaretlenir.
+      <br>
+      AI sisteminde eşleşen tahmin yoksa maç açıkça işaretlenir.
     </div>
   </section>
 
   <section id="couponBuilder" class="panel coupon-builder">
+
     <div class="section-head coupon-heading">
       <div>
         <h2>Kupon oluşturucu</h2>
-        <div class="small">AI tahminleriyle tekli kupon hazırla veya seçimlerini garanti sistemine dönüştür.</div>
+        <div class="small">
+          AI tahminleriyle tekli kupon hazırla veya seçimlerini garanti sistemine dönüştür.
+        </div>
       </div>
       <span id="couponStatus" class="badge blue">Tahminler yükleniyor</span>
     </div>
+
     <div class="coupon-modes" role="group" aria-label="Kupon sistemi seç">
-      <button type="button" id="singleModeBtn" class="mode-button active" data-mode="single">Normal tekli sistem</button>
-      <button type="button" id="guaranteeModeBtn" class="mode-button" data-mode="guarantee">Garantili sistem</button>
+      <button type="button" id="singleModeBtn"
+        class="mode-button active" data-mode="single">
+        Normal tekli sistem
+      </button>
+      <button type="button" id="guaranteeModeBtn"
+        class="mode-button" data-mode="guarantee">
+        Garantili sistem
+      </button>
     </div>
+
     <div id="guaranteePicker" class="guarantee-picker" hidden>
       <span class="picker-label">Garanti seviyesi</span>
+
       <div class="guarantee-options">
-        <button type="button" class="guarantee-option" data-guarantee="12">12 garanti</button>
-        <button type="button" class="guarantee-option active" data-guarantee="13">13 garanti</button>
-        <button type="button" class="guarantee-option" data-guarantee="14">14 garanti</button>
+        <button type="button" class="guarantee-option" data-guarantee="12">
+          12 garanti
+        </button>
+        <button type="button" class="guarantee-option active" data-guarantee="13">
+          13 garanti
+        </button>
+        <button type="button" class="guarantee-option" data-guarantee="14">
+          14 garanti
+        </button>
       </div>
-    <span class="small">AI, garanti seviyesine göre en kararsız maçlarda çift işaret önerir; seçimleri maç kartlarından değiştirebilirsin.</span>
-      <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">AI önerisini uygula</button>
+
+      <span class="small">
+        AI, garanti seviyesine göre en kararsız maçlarda çift işaret önerir;
+        seçimleri maç kartlarından değiştirebilirsin.
+      </span>
+
+      <button type="button" id="autoOptionsBtn" class="copy-button auto-options-button">
+        AI önerisini uygula
+      </button>
     </div>
+
     <div class="coupon-totals">
-      <div><span class="total-label">Oluşan kolon</span><strong id="couponColumns">—</strong></div>
-      <div><span class="total-label">Kolon bedeli</span><strong id="columnPrice">10 TL</strong></div>
-      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="couponCost">—</strong></div>
-      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Kolonları kopyala</button>
+      <div>
+        <span class="total-label">Oluşan kolon</span>
+        <strong id="couponColumns">—</strong>
+      </div>
+      <div>
+        <span class="total-label">Kolon bedeli</span>
+        <strong id="columnPrice">10 TL</strong>
+      </div>
+      <div class="total-cost">
+        <span class="total-label">Tahmini tutar</span>
+        <strong id="couponCost">—</strong>
+      </div>
+      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>
+        Kolonları kopyala
+      </button>
     </div>
+
     <details class="coupon-preview">
       <summary>Oluşan kolonları incele</summary>
-      <textarea id="columnOutput" readonly aria-label="Oluşan Spor Toto kolonları" placeholder="Kupon kolonları burada listelenecek."></textarea>
+      <textarea id="columnOutput" readonly
+        aria-label="Oluşan Spor Toto kolonları"
+        placeholder="Kupon kolonları burada listelenecek."></textarea>
     </details>
-    <div id="couponMessage" class="coupon-message">AI tahminleri yüklendiğinde kupon hazırlanır.</div>
-    <div class="coupon-disclaimer">Garanti, işaretlediğin seçenekler içindeki sonuçlar için kolonların isabet kapsamını anlatır; ikramiye veya kazanç garantisi değildir.</div>
+
+    <div id="couponMessage" class="coupon-message">
+      AI tahminleri yüklendiğinde kupon hazırlanır.
+    </div>
+
+    <div class="coupon-disclaimer">
+      Garanti, işaretlediğin seçenekler içindeki sonuçlar için kolonların isabet
+      kapsamını anlatır; ikramiye veya kazanç garantisi değildir.
+    </div>
+
   </section>
 
   <section id="matchList" class="match-list">
@@ -298,462 +890,465 @@ footer { padding: 10px 20px 26px; color: #839188; text-align: center; font-size:
   <section class="panel">
     <h2>Veri kaynağı ve eşleştirme</h2>
     <div class="small">
-      Tahmin kaynağı: <strong>https://teador612.github.io/ai/predictions.json</strong>.
+      Tahmin kaynağı:
+      <strong>https://teador612.github.io/ai/predictions.json</strong>.
       Ana Spor Toto seçimi AI dosyasındaki MS 1, MS X ve MS 2 tahminlerinden alınır.
       <br><br>
-      Türkçe karakterler, noktalama, kısaltmalar ve sponsor adları normalize edilir; benzer isimler
-      puanlanarak eşleştirilir. Eşleşme güveni düşük veya birden fazla aday yakınsa tahmin bağlanmaz.
+      Türkçe karakterler, noktalama, kısaltmalar ve sponsor adları normalize edilir;
+      benzer isimler puanlanarak eşleştirilir. Eşleşme güveni düşük veya birden fazla
+      aday yakınsa tahmin bağlanmaz.
     </div>
   </section>
+
 </main>
 
-<footer>NEXUS Spor Toto · Tahmin kaynağı: teador612.github.io/ai/predictions.json</footer>
+<footer>
+  NEXUS Spor Toto · Tahmin kaynağı: teador612.github.io/ai/predictions.json
+</footer>
+
+<!-- Güncel Spor Toto verisi ayrı dosyadan yüklenir. -->
+<script src="./data/spor-toto-data.js"></script>
 
 <script>
-/* Otomatik oluşturulan Spor Toto verisi. */
-window.SPORT_TOTO_DATA = {
-  season: "2026-2027",
-  currentWeek: 14,
-  weeks: {
-    "1": [
-      {"number":1,"home":"Galatasaray","away":"Çorum FK","result":"X"},
-      {"number":2,"home":"Kasımpaşa","away":"Trabzonspor","result":"X"},
-      {"number":3,"home":"Konyaspor","away":"Çaykur Rizespor","result":"2"},
-      {"number":4,"home":"Gaziantep FK","away":"Corendon Alanyaspor","result":"X"},
-      {"number":5,"home":"Gençlerbirliği","away":"Fenerbahçe","result":"1"},
-      {"number":6,"home":"Rams Başakşehir","away":"Kocaelispor","result":"1"},
-      {"number":7,"home":"Amed Sportif Faaliyetler","away":"Erzurumspor FK","result":"1"},
-      {"number":8,"home":"Beşiktaş","away":"Eyüpspor","result":"1"},
-      {"number":9,"home":"Samsunspor","away":"Göztepe","result":"X"},
-      {"number":10,"home":"Arsenal","away":"Manchester City","result":"1"},
-      {"number":11,"home":"Lens","away":"Paris St Germain","result":"1"},
-      {"number":12,"home":"Sevilla","away":"Rayo Vallecano","result":"1"},
-      {"number":13,"home":"Racing Santander","away":"Villarreal","result":"X"},
-      {"number":14,"home":"Espanyol","away":"Levante","result":"1"},
-      {"number":15,"home":"Celta Vigo","away":"Osasuna","result":"1"},
-    ],
-    "2": [
-      {"number":1,"home":"Erzurumspor FK","away":"Galatasaray","result":"2"},
-      {"number":2,"home":"Çaykur Rizespor","away":"Samsunspor","result":"2"},
-      {"number":3,"home":"Arca Çorum FK","away":"Kasımpaşa","result":"2"},
-      {"number":4,"home":"Fenerbahçe","away":"Tümosan Konyaspor","result":"1"},
-      {"number":5,"home":"Eyüpspor","away":"Gaziantep FK","result":"2"},
-      {"number":6,"home":"Trabzonspor","away":"İstanbul Başakşehir","result":"1"},
-      {"number":7,"home":"Corendon Alanyaspor","away":"Beşiktaş","result":"1"},
-      {"number":8,"home":"Göztepe","away":"Gençlerbirliği","result":"2"},
-      {"number":9,"home":"Kocaelispor","away":"Amed Sportif Faaliyetler","result":"1"},
-      {"number":10,"home":"Borussia Dortmund","away":"Bayern Münih","result":"2"},
-      {"number":11,"home":"Marsilya","away":"Strasbourg","result":"1"},
-      {"number":12,"home":"Newcastle Utd.","away":"Liverpool","result":"X"},
-      {"number":13,"home":"Real Betis","away":"Real Sociedad","result":"1"},
-      {"number":14,"home":"Atletico Madrid","away":"Villarreal","result":"X"},
-      {"number":15,"home":"Torino","away":"Milan","result":"2"},
-    ],
-    "3": [
-      {"number":1,"home":"Gençlerbirliği","away":"Erzurumspor FK","result":"X"},
-      {"number":2,"home":"Tümosan Konyaspor","away":"Kocaelispor","result":"2"},
-      {"number":3,"home":"Galatasaray","away":"Göztepe","result":"1"},
-      {"number":4,"home":"Gaziantep FK","away":"Çaykur Rizespor","result":"2"},
-      {"number":5,"home":"Eyüpspor","away":"Corendon Alanyaspor","result":"1"},
-      {"number":6,"home":"İstanbul Başakşehir","away":"Kasımpaşa","result":"X"},
-      {"number":7,"home":"Samsunspor","away":"Fenerbahçe","result":"2"},
-      {"number":8,"home":"Amed Sportif Faaliyetler","away":"Trabzonspor","result":"1"},
-      {"number":9,"home":"Beşiktaş","away":"Arca Çorum FK","result":"1"},
-      {"number":10,"home":"Borussia Dortmund","away":"Hamburger SV","result":"1"},
-      {"number":11,"home":"Lille","away":"Paris St Germain","result":"X"},
-      {"number":12,"home":"Monaco","away":"Marsilya","result":"1"},
-      {"number":13,"home":"T. Hotspur","away":"Newcastle Utd.","result":"2"},
-      {"number":14,"home":"Sevilla","away":"Atletico Madrid","result":"2"},
-      {"number":15,"home":"Cagliari","away":"Inter","result":"2"},
-    ],
-    "4": [
-      {"number":1,"home":"Erzurumspor FK","away":"Tümosan Konyaspor","result":"1"},
-      {"number":2,"home":"Kasımpaşa","away":"Amed Sportif Faaliyetler","result":"X"},
-      {"number":3,"home":"Arca Çorum FK","away":"Eyüpspor","result":"1"},
-      {"number":4,"home":"Fenerbahçe","away":"Beşiktaş","result":"2"},
-      {"number":5,"home":"İstanbul Başakşehir","away":"Galatasaray","result":"2"},
-      {"number":6,"home":"Kocaelispor","away":"Samsunspor","result":"1"},
-      {"number":7,"home":"Trabzonspor","away":"Gençlerbirliği","result":"1"},
-      {"number":8,"home":"Çaykur Rizespor","away":"Corendon Alanyaspor","result":"2"},
-      {"number":9,"home":"Göztepe","away":"Gaziantep FK","result":"2"},
-      {"number":10,"home":"Everton","away":"Manchester Utd.","result":"X"},
-      {"number":11,"home":"Arsenal","away":"Chelsea","result":"1"},
-      {"number":12,"home":"Athletic Bilbao","away":"Atletico Madrid","result":"1"},
-      {"number":13,"home":"Inter","away":"Napoli","result":"1"},
-      {"number":14,"home":"Roma","away":"Atalanta","result":"1"},
-      {"number":15,"home":"Juventus","away":"Milan","result":"X"},
-    ],
-    "5": [
-      {"number":1,"home":"Beşiktaş","away":"Erzurumspor FK","result":"1"},
-      {"number":2,"home":"Eyüpspor","away":"Çaykur Rizespor","result":"2"},
-      {"number":3,"home":"Samsunspor","away":"Arca Çorum FK","result":"2"},
-      {"number":4,"home":"Corendon Alanyaspor","away":"Göztepe","result":"X"},
-      {"number":5,"home":"Tümosan Konyaspor","away":"Trabzonspor","result":"1"},
-      {"number":6,"home":"Gençlerbirliği","away":"Kasımpaşa","result":"2"},
-      {"number":7,"home":"Amed Sportif Faaliyetler","away":"İstanbul Başakşehir","result":"1"},
-      {"number":8,"home":"Galatasaray","away":"Kocaelispor","result":"1"},
-      {"number":9,"home":"Gaziantep FK","away":"Fenerbahçe","result":"X"},
-      {"number":10,"home":"Augsburg","away":"Bayer Leverkusen","result":"X"},
-      {"number":11,"home":"Rennes","away":"Marsilya","result":"1"},
-      {"number":12,"home":"Chelsea","away":"Hull City","result":"X"},
-      {"number":13,"home":"Manchester Utd.","away":"M. City","result":"2"},
-      {"number":14,"home":"Levante","away":"Barcelona","result":"2"},
-      {"number":15,"home":"Lazio","away":"Milan","result":"X"},
-    ],
-    "6": [
-      {"number":1,"home":"Kasımpaşa","away":"Tümosan Konyaspor","result":"X"},
-      {"number":2,"home":"Kocaelispor","away":"Gaziantep FK","result":"1"},
-      {"number":3,"home":"Arca Çorum FK","away":"Corendon Alanyaspor","result":"2"},
-      {"number":4,"home":"İstanbul Başakşehir","away":"Gençlerbirliği","result":"1"},
-      {"number":5,"home":"Trabzonspor","away":"Galatasaray","result":"1"},
-      {"number":6,"home":"Erzurumspor FK","away":"Samsunspor","result":"1"},
-      {"number":7,"home":"Fenerbahçe","away":"Eyüpspor","result":"1"},
-      {"number":8,"home":"Amed Sportif Faaliyetler","away":"Beşiktaş","result":"1"},
-      {"number":9,"home":"Göztepe","away":"Çaykur Rizespor","result":"X"},
-      {"number":10,"home":"Vfb Stuttgart","away":"Borussia Dortmund","result":"2"},
-      {"number":11,"home":"Bayer Leverkusen","away":"RB Leipzig","result":"1"},
-      {"number":12,"home":"Tottenham Hotspur","away":"Aston Villa","result":"2"},
-      {"number":13,"home":"Newcastle Utd.","away":"H. City","result":"1"},
-      {"number":14,"home":"Atletico Madrid","away":"Real Madrid","result":"1"},
-      {"number":15,"home":"Roma","away":"Inter","result":"X"},
-    ],
-    "7": [
-      {"number":1,"home":"Türkiye","away":"Fransa","result":"2"},
-      {"number":2,"home":"Türkiye","away":"İtalya","result":"2"},
-      {"number":3,"home":"İsveç","away":"Romanya","result":"1"},
-      {"number":4,"home":"İtalya","away":"Belçika","result":"2"},
-      {"number":5,"home":"Slovenya","away":"İskoçya","result":"X"},
-      {"number":6,"home":"Bulgaristan","away":"Lüksemburg","result":"2"},
-      {"number":7,"home":"Kuzey Makedonya Cumhuriyeti","away":"İsviçre","result":"2"},
-      {"number":8,"home":"Çekya","away":"Hırvatistan","result":"2"},
-      {"number":9,"home":"İngiltere","away":"İspanya","result":"2"},
-      {"number":10,"home":"Litvanya","away":"Azerbaycan","result":"X"},
-      {"number":11,"home":"Avusturya","away":"Kosova","result":"1"},
-      {"number":12,"home":"Danimarka","away":"Galler","result":"1"},
-      {"number":13,"home":"Sırbistan","away":"Hollanda","result":"2"},
-      {"number":14,"home":"Almanya","away":"Yunanistan","result":"2"},
-      {"number":15,"home":"Norveç","away":"Portekiz","result":"2"},
-    ],
-    "8": [
-      {"number":1,"home":"Belçika","away":"Türkiye","result":"1"},
-      {"number":2,"home":"İtalya","away":"Türkiye","result":"1"},
-      {"number":3,"home":"Bosna Hersek","away":"İsveç","result":"X"},
-      {"number":4,"home":"Fransa","away":"İtalya","result":"X"},
-      {"number":5,"home":"Macaristan","away":"Gürcistan","result":"1"},
-      {"number":6,"home":"Polonya","away":"Romanya","result":"1"},
-      {"number":7,"home":"Hırvatistan","away":"İngiltere","result":"2"},
-      {"number":8,"home":"Kuzey Makedonya Cumhuriyeti","away":"İskoçya","result":"2"},
-      {"number":9,"home":"İspanya","away":"Çekya","result":"1"},
-      {"number":10,"home":"İsviçre","away":"Slovenya","result":"1"},
-      {"number":11,"home":"Galler","away":"Danimarka","result":"2"},
-      {"number":12,"home":"Hollanda","away":"Sırbistan","result":"1"},
-      {"number":13,"home":"Portekiz","away":"Norveç","result":"1"},
-      {"number":14,"home":"Yunanistan","away":"Almanya","result":"X"},
-      {"number":15,"home":"Fransa","away":"Belçika","result":"1"},
-    ],
-    "9": [
-      {"number":1,"home":"Galatasaray","away":"Kasımpaşa","result":"1"},
-      {"number":2,"home":"Gençlerbirliği","away":"Amed Sportif Faaliyetler","result":"X"},
-      {"number":3,"home":"Corendon Alanyaspor","away":"Erzurumspor FK","result":"X"},
-      {"number":4,"home":"Samsunspor","away":"Trabzonspor","result":"2"},
-      {"number":5,"home":"Çaykur Rizespor","away":"Fenerbahçe","result":"2"},
-      {"number":6,"home":"Tümosan Konyaspor","away":"İstanbul Başakşehir","result":"X"},
-      {"number":7,"home":"Gaziantep FK","away":"Arca Çorum FK","result":"2"},
-      {"number":8,"home":"Beşiktaş","away":"Kocaelispor","result":"1"},
-      {"number":9,"home":"Eyüpspor","away":"Göztepe","result":"2"},
-      {"number":10,"home":"Augsburg","away":"Bayern Münih","result":"X"},
-      {"number":11,"home":"RB Leipzig","away":"Eintracht Frankfurt","result":"1"},
-      {"number":12,"home":"Manchester Utd.","away":"T. Hotspur","result":"X"},
-      {"number":13,"home":"Liverpool","away":"Manchester City","result":"2"},
-      {"number":14,"home":"Real Madrid","away":"Villarreal","result":"1"},
-      {"number":15,"home":"Como","away":"Roma","result":"X"},
-    ],
-    "10": [
-      {"number":1,"home":"Arca Çorum FK","away":"Çaykur Rizespor","result":"1"},
-      {"number":2,"home":"Erzurumspor FK","away":"Eyüpspor","result":"1"},
-      {"number":3,"home":"Amed Sportif Faaliyetler","away":"Tümosan Konyaspor","result":"1"},
-      {"number":4,"home":"Gençlerbirliği","away":"Galatasaray","result":"2"},
-      {"number":5,"home":"Fenerbahçe","away":"Corendon Alanyaspor","result":"1"},
-      {"number":6,"home":"Kasımpaşa","away":"Samsunspor","result":"1"},
-      {"number":7,"home":"Kocaelispor","away":"Göztepe","result":"2"},
-      {"number":8,"home":"İstanbul Başakşehir","away":"Gaziantep FK","result":"1"},
-      {"number":9,"home":"Trabzonspor","away":"Beşiktaş","result":null},
-      {"number":10,"home":"Everton","away":"Chelsea","result":"2"},
-      {"number":11,"home":"Brentford","away":"Liverpool","result":"2"},
-      {"number":12,"home":"Real Betis","away":"Barcelona","result":"2"},
-      {"number":13,"home":"Real Madrid","away":"Sevilla","result":"1"},
-      {"number":14,"home":"Milan","away":"Atalanta","result":"1"},
-      {"number":15,"home":"Juventus","away":"Lazio","result":"2"},
-    ],
-    "11": [
-      {"number":1,"home":"Corendon Alanyaspor","away":"Kocaelispor","result":"2"},
-      {"number":2,"home":"Eyüpspor","away":"Kasımpaşa","result":"2"},
-      {"number":3,"home":"Gaziantep FK","away":"Erzurumspor FK","result":"2"},
-      {"number":4,"home":"Samsunspor","away":"Amed Sportif Faaliyetler","result":"2"},
-      {"number":5,"home":"Tümosan Konyaspor","away":"Gençlerbirliği","result":"1"},
-      {"number":6,"home":"Göztepe","away":"Arca Çorum FK","result":"1"},
-      {"number":7,"home":"Beşiktaş","away":"İstanbul Başakşehir","result":"1"},
-      {"number":8,"home":"Çaykur Rizespor","away":"Trabzonspor","result":"2"},
-      {"number":9,"home":"Galatasaray","away":"Fenerbahçe","result":"1"},
-      {"number":10,"home":"Borussia Dortmund","away":"Eintracht Frankfurt","result":"1"},
-      {"number":11,"home":"Monaco","away":"Lille","result":"X"},
-      {"number":12,"home":"Paris St Germain","away":"Olympique Lyon","result":"1"},
-      {"number":13,"home":"Chelsea","away":"Tottenham Hotspur","result":"2"},
-      {"number":14,"home":"Barcelona","away":"Real Madrid","result":"2"},
-      {"number":15,"home":"Napoli","away":"Roma","result":"X"},
-    ],
-    "12": [
-      {"number":1,"home":"T. Konyaspor","away":"Galatasaray","result":"2"},
-      {"number":2,"home":"Erzurumspor FK","away":"A. Çorum FK","result":"2"},
-      {"number":3,"home":"Kocaelispor","away":"Ç. Rizespor","result":"X"},
-      {"number":4,"home":"Fenerbahçe","away":"Göztepe","result":"2"},
-      {"number":5,"home":"A.S. Faaliyetler","away":"Eyüpspor","result":"1"},
-      {"number":6,"home":"İ. Başakşehir","away":"Samsunspor","result":"1"},
-      {"number":7,"home":"Trabzonspor","away":"Gaziantep FK","result":"1"},
-      {"number":8,"home":"Kasımpaşa","away":"Beşiktaş","result":"X"},
-      {"number":9,"home":"Gençlerbirliği","away":"C. Alanyaspor","result":"1"},
-      {"number":10,"home":"B. Münih","away":"B. Dortmund","result":"X"},
-      {"number":11,"home":"Chelsea","away":"Manchester Utd.","result":"1"},
-      {"number":12,"home":"Liverpool","away":"Arsenal","result":"2"},
-      {"number":13,"home":"A. Bilbao","away":"R. Sociedad","result":"1"},
-      {"number":14,"home":"Milan","away":"Inter","result":"1"},
-      {"number":15,"home":"Juventus","away":"Napoli","result":"1"},
-    ],
-    "13": [
-      {"number":1,"home":"Galatasaray","away":"V. Stuttgart","result":"1"},
-      {"number":2,"home":"Shakhtar D.","away":"Sporting CP","result":"2"},
-      {"number":3,"home":"A. Madrid","away":"B. Münih","result":"2"},
-      {"number":4,"home":"Barcelona","away":"A. Villa","result":"1"},
-      {"number":5,"home":"Manchester Utd.","away":"Roma","result":"1"},
-      {"number":6,"home":"Villarreal","away":"P.S. Germain","result":"2"},
-      {"number":7,"home":"AEK","away":"R. Madrid","result":"2"},
-      {"number":8,"home":"Fenerbahçe","away":"Liverpool","result":"1"},
-      {"number":9,"home":"B. Dortmund","away":"R. Betis","result":"1"},
-      {"number":10,"home":"R. Leipzig","away":"M. City","result":"2"},
-      {"number":11,"home":"Porto","away":"Napoli","result":"1"},
-      {"number":12,"home":"Lens","away":"Como","result":"2"},
-      {"number":13,"home":"S. Prag","away":"Arsenal","result":"2"},
-      {"number":14,"home":"Celtic","away":"Beşiktaş","result":null},
-      {"number":15,"home":"Trabzonspor","away":"Freiburg","result":"2"},
-    ],
-    "14": [
-      {"number":1,"home":"Gaziantep FK","away":"Kasımpaşa","result":"2"},
-      {"number":2,"home":"Eyüpspor","away":"Kocaelispor","result":"2"},
-      {"number":3,"home":"Samsunspor","away":"Tümosan Konyaspor","result":"1"},
-      {"number":4,"home":"Galatasaray","away":"Amed Sportif Faaliyetler","result":"1"},
-      {"number":5,"home":"Göztepe","away":"İstanbul Başakşehir","result":"2"},
-      {"number":6,"home":"Çaykur Rizespor","away":"Erzurumspor FK","result":null},
-      {"number":7,"home":"Arca Çorum FK","away":"Fenerbahçe","result":null},
-      {"number":8,"home":"Corendon Alanyaspor","away":"Trabzonspor","result":null},
-      {"number":9,"home":"Beşiktaş","away":"Gençlerbirliği","result":null},
-      {"number":10,"home":"Vfb Stuttgart","away":"Werder Bremen","result":"1"},
-      {"number":11,"home":"Manchester Utd.","away":"A. Villa","result":null},
-      {"number":12,"home":"Valencia","away":"Real Madrid","result":"2"},
-      {"number":13,"home":"Atl Madrid","away":"Barcelona","result":null},
-      {"number":14,"home":"Napoli","away":"Lazio","result":null},
-      {"number":15,"home":"Inter","away":"Como","result":null},
-    ],
-  }
-};
+"use strict";
 
-window.SPORT_TOTO_META = {
-  season: "2026-2027",
-  currentWeek: 14,
-  matchesPerWeek: 15,
-  historyDays: 60,
-  exactOdds: true,
-  minimumSample: 5
-};
-
-</script>
-
-
-
-<script>
 const AI_URL = "https://teador612.github.io/ai/predictions.json";
+
 const OUTCOMES = ["1", "X", "2"];
+
 const TEAM_ALIASES = {
-  "man utd": "manchester united", "manchester utd": "manchester united", "man united": "manchester united",
-  "a villa": "aston villa", "atl madrid": "atletico madrid", "ath madrid": "atletico madrid",
-  "atletico de madrid": "atletico madrid", "atletico madrid": "atletico madrid",
-  "paris st germain": "paris saint germain", "paris sg": "paris saint germain", psg: "paris saint germain",
-  "rams basaksehir": "istanbul basaksehir", basaksehir: "istanbul basaksehir",
-  "inter milan": "inter", internazionale: "inter",
-  "atletico mineiro": "atletico mineiro", "atletico mg": "atletico mineiro",
-  "caykur rizespor": "caykur rizespor", "rize spor": "caykur rizespor",
+  "man utd": "manchester united",
+  "manchester utd": "manchester united",
+  "man united": "manchester united",
+
+  "a villa": "aston villa",
+  "atl madrid": "atletico madrid",
+  "ath madrid": "atletico madrid",
+  "atletico de madrid": "atletico madrid",
+  "atletico madrid": "atletico madrid",
+
+  "paris st germain": "paris saint germain",
+  "paris sg": "paris saint germain",
+  "p s germain": "paris saint germain",
+  "psg": "paris saint germain",
+
+  "rams basaksehir": "istanbul basaksehir",
+  "basaksehir": "istanbul basaksehir",
+
+  "inter milan": "inter",
+  "internazionale": "inter",
+
+  "atletico mineiro": "atletico mineiro",
+  "atletico mg": "atletico mineiro",
+
+  "caykur rizespor": "caykur rizespor",
+  "rize spor": "caykur rizespor",
+
   "como 1907": "como",
-  "tumoşan konyaspor": "konyaspor", "tumosan konyaspor": "konyaspor",
-  "arca corum fk": "corum", "corum fk": "corum"
+
+  "tumosan konyaspor": "konyaspor",
+  "t konyaspor": "konyaspor",
+
+  "arca corum fk": "corum",
+  "corum fk": "corum",
+  "a corum fk": "corum",
+
+  "m city": "manchester city",
+  "man city": "manchester city",
+
+  "b munih": "bayern munich",
+  "bayern munchen": "bayern munich",
+
+  "b dortmund": "borussia dortmund",
+  "r madrid": "real madrid",
+  "r betis": "real betis",
+  "r leipzig": "rb leipzig",
+
+  "a madrid": "atletico madrid",
+  "a bilbao": "athletic bilbao",
+
+  "v stuttgart": "vfb stuttgart",
+  "vfb stuttgart": "vfb stuttgart",
+
+  "s prag": "sparta prague",
+  "shakhtar d": "shakhtar donetsk",
+
+  "c alanyaspor": "alanyaspor",
+  "i basaksehir": "istanbul basaksehir",
+  "c rizespor": "caykur rizespor",
+  "a s faaliyetler": "amed sportiv faaliyetler"
 };
-const IGNORE = new Set(["fc", "cf", "sc", "afc", "club", "football", "futbol", "the"]);
+
+const IGNORE = new Set([
+  "fc", "cf", "sc", "afc", "club", "football", "futbol", "the"
+]);
+
 const $ = id => document.getElementById(id);
+
 let totoData = null;
 let aiData = null;
 let activeWeek = null;
+
 let couponMode = "single";
 let guaranteeTarget = 13;
 let autoSelections = true;
+
 let selectedOutcomes = new Map();
-const predictionCache = new Map();
+let predictionCache = new Map();
 let generatedColumns = [];
+
 const COLUMN_PRICE = 10;
 const MAX_SCENARIOS = 32768;
 const MAX_GENERATED_COLUMNS = 5000;
 
 function escapeHTML(value) {
   return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
   })[char]);
 }
 
 function normalizeTeam(value) {
   let name = String(value ?? "")
-    .toLocaleLowerCase("tr-TR").replace(/ı/g, "i")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/&/g, " and ").replace(/[^a-z0-9]+/g, " ")
-    .trim().replace(/\s+/g, " ");
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g, "i")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+
   name = TEAM_ALIASES[name] || name;
-  name = name.split(" ").filter(token => !IGNORE.has(token)).join(" ");
-  return name.replace(/\butd\b/g, "united").replace(/\s+/g, " ").trim();
+
+  name = name
+    .split(" ")
+    .filter(token => !IGNORE.has(token))
+    .join(" ");
+
+  return name
+    .replace(/\butd\b/g, "united")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function levenshtein(a, b) {
   if (a === b) return 0;
   if (!a.length) return b.length;
   if (!b.length) return a.length;
-  let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
+
+  let previous = Array.from(
+    { length: b.length + 1 },
+    (_, i) => i
+  );
+
   for (let i = 1; i <= a.length; i++) {
     const current = [i];
+
     for (let j = 1; j <= b.length; j++) {
-      current[j] = Math.min(current[j - 1] + 1, previous[j] + 1,
-        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      current[j] = Math.min(
+        current[j - 1] + 1,
+        previous[j] + 1,
+        previous[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
+      );
     }
+
     previous = current;
   }
+
   return previous[b.length];
 }
 
 function teamSimilarity(left, right) {
-  const a = normalizeTeam(left), b = normalizeTeam(right);
+  const a = normalizeTeam(left);
+  const b = normalizeTeam(right);
+
   if (!a || !b) return 0;
   if (a === b) return 1;
-  const compactA = a.replace(/ /g, ""), compactB = b.replace(/ /g, "");
-  if (Math.min(compactA.length, compactB.length) >= 6 &&
-      (compactA.includes(compactB) || compactB.includes(compactA))) return 0.94;
-  const tokenA = new Set(a.split(" ")), tokenB = new Set(b.split(" "));
-  const intersection = [...tokenA].filter(token => tokenB.has(token)).length;
+
+  const compactA = a.replace(/ /g, "");
+  const compactB = b.replace(/ /g, "");
+
+  if (
+    Math.min(compactA.length, compactB.length) >= 6 &&
+    (compactA.includes(compactB) || compactB.includes(compactA))
+  ) {
+    return 0.94;
+  }
+
+  const tokenA = new Set(a.split(" "));
+  const tokenB = new Set(b.split(" "));
+
+  const intersection = [...tokenA].filter(
+    token => tokenB.has(token)
+  ).length;
+
   const tokenScore = intersection / Math.max(tokenA.size, tokenB.size);
-  const editScore = 1 - levenshtein(compactA, compactB) / Math.max(compactA.length, compactB.length);
+
+  const editScore =
+    1 - levenshtein(compactA, compactB) /
+    Math.max(compactA.length, compactB.length);
+
   return Math.max(tokenScore * 0.9, editScore);
 }
 
 function pairSimilarity(home, away, prediction) {
   const homeScore = teamSimilarity(home, prediction.home);
   const awayScore = teamSimilarity(away, prediction.away);
-  return { homeScore, awayScore, score: (homeScore + awayScore) / 2, minimum: Math.min(homeScore, awayScore) };
+
+  return {
+    homeScore,
+    awayScore,
+    score: (homeScore + awayScore) / 2,
+    minimum: Math.min(homeScore, awayScore)
+  };
 }
 
 function dayDistance(date) {
   const value = Date.parse(String(date || "") + "T12:00:00");
-  if (!Number.isFinite(value)) return Number.MAX_SAFE_INTEGER;
+
+  if (!Number.isFinite(value)) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
   const today = new Date();
   today.setHours(12, 0, 0, 0);
+
   return Math.abs(value - today.getTime());
 }
 
 function findAIMatch(game) {
   const home = game.home ?? game.evSahibi ?? "";
   const away = game.away ?? game.deplasman ?? "";
-  const candidates = (aiData?.predictions || []).map(match => ({ match, ...pairSimilarity(home, away, match) }))
-    .filter(item => item.minimum >= 0.76 && item.score >= 0.84)
-    .sort((a, b) => b.score - a.score || dayDistance(a.match.date) - dayDistance(b.match.date));
-  if (!candidates.length) return { match: null, confidence: 0, ambiguous: false };
-  if (candidates[1] && candidates[0].score - candidates[1].score < 0.025 &&
-      dayDistance(candidates[0].match.date) === dayDistance(candidates[1].match.date)) {
-    return { match: null, confidence: candidates[0].score, ambiguous: true };
+
+  const candidates = (aiData?.predictions || [])
+    .map(match => ({
+      match,
+      ...pairSimilarity(home, away, match)
+    }))
+    .filter(item =>
+      item.minimum >= 0.76 &&
+      item.score >= 0.84
+    )
+    .sort((a, b) =>
+      b.score - a.score ||
+      dayDistance(a.match.date) - dayDistance(b.match.date)
+    );
+
+  if (!candidates.length) {
+    return {
+      match: null,
+      confidence: 0,
+      ambiguous: false
+    };
   }
-  return { match: candidates[0].match, confidence: candidates[0].score, ambiguous: false };
+
+  if (
+    candidates[1] &&
+    candidates[0].score - candidates[1].score < 0.025 &&
+    dayDistance(candidates[0].match.date) ===
+    dayDistance(candidates[1].match.date)
+  ) {
+    return {
+      match: null,
+      confidence: candidates[0].score,
+      ambiguous: true
+    };
+  }
+
+  return {
+    match: candidates[0].match,
+    confidence: candidates[0].score,
+    ambiguous: false
+  };
 }
 
 function getPrediction(game) {
-  const cacheKey = [activeWeek, normalizeTeam(game.home ?? game.evSahibi ?? ""), normalizeTeam(game.away ?? game.deplasman ?? "")].join("|");
-  if (predictionCache.has(cacheKey)) return predictionCache.get(cacheKey);
+  const cacheKey = [
+    activeWeek,
+    normalizeTeam(game.home ?? game.evSahibi ?? ""),
+    normalizeTeam(game.away ?? game.deplasman ?? "")
+  ].join("|");
+
+  if (predictionCache.has(cacheKey)) {
+    return predictionCache.get(cacheKey);
+  }
+
   const found = findAIMatch(game);
   const match = found.match;
+
   if (!match) {
-    const result = { ...found, probabilities: null, selection: "" };
+    const result = {
+      ...found,
+      probabilities: null,
+      selection: ""
+    };
+
     predictionCache.set(cacheKey, result);
     return result;
   }
+
   const probabilities = {};
-  const aiKeys = { "1": "MS 1", X: "MS X", "2": "MS 2" };
+
+  const aiKeys = {
+    "1": "MS 1",
+    X: "MS X",
+    "2": "MS 2"
+  };
+
   for (const key of OUTCOMES) {
-    const value = Number(match.joint_markets?.[aiKeys[key]]?.probability);
+    const value = Number(
+      match.joint_markets?.[aiKeys[key]]?.probability
+    );
+
     if (!Number.isFinite(value)) {
-      const result = { ...found, match: null, probabilities: null, selection: "" };
+      const result = {
+        ...found,
+        match: null,
+        probabilities: null,
+        selection: ""
+      };
+
       predictionCache.set(cacheKey, result);
       return result;
     }
+
     probabilities[key] = value * 100;
   }
-  const selection = OUTCOMES.reduce((best, key) => probabilities[key] > probabilities[best] ? key : best, "1");
-  const result = { ...found, probabilities, selection, primary: match.primary || null };
+
+  const selection = OUTCOMES.reduce(
+    (best, key) =>
+      probabilities[key] > probabilities[best] ? key : best,
+    "1"
+  );
+
+  const result = {
+    ...found,
+    probabilities,
+    selection,
+    primary: match.primary || null
+  };
+
   predictionCache.set(cacheKey, result);
   return result;
 }
 
 function probabilityLabel(value) {
-  return Number.isFinite(value) ? "%" + value.toFixed(1) : "—";
+  return Number.isFinite(value)
+    ? "%" + value.toFixed(1)
+    : "—";
 }
 
 function probabilityMarkup(probabilities) {
   const one = Math.max(0, Math.min(100, probabilities["1"]));
   const draw = Math.max(0, Math.min(100, probabilities.X));
   const two = Math.max(0, Math.min(100, probabilities["2"]));
-  return `<div class="probability-block" aria-label="1 X 2 olasılıkları">
-    <div class="probability-track" aria-hidden="true">
-      <span class="p-home" style="width:${one}%"></span><span class="p-draw" style="width:${draw}%"></span><span class="p-away" style="width:${two}%"></span>
+
+  return `
+    <div class="probability-block" aria-label="1 X 2 olasılıkları">
+      <div class="probability-track" aria-hidden="true">
+        <span class="p-home" style="width:${one}%"></span>
+        <span class="p-draw" style="width:${draw}%"></span>
+        <span class="p-away" style="width:${two}%"></span>
+      </div>
+
+      <div class="probability-values">
+        <div class="probability-value">
+          <span>1 · Ev</span>
+          <strong>${probabilityLabel(one)}</strong>
+        </div>
+        <div class="probability-value">
+          <span>X · Beraberlik</span>
+          <strong>${probabilityLabel(draw)}</strong>
+        </div>
+        <div class="probability-value">
+          <span>2 · Dep.</span>
+          <strong>${probabilityLabel(two)}</strong>
+        </div>
+      </div>
     </div>
-    <div class="probability-values">
-      <div class="probability-value"><span>1 · Ev</span><strong>${probabilityLabel(one)}</strong></div>
-      <div class="probability-value"><span>X · Beraberlik</span><strong>${probabilityLabel(draw)}</strong></div>
-      <div class="probability-value"><span>2 · Dep.</span><strong>${probabilityLabel(two)}</strong></div>
-    </div>
-  </div>`;
+  `;
 }
 
 function selectionKey(game, index) {
   const home = normalizeTeam(game.home ?? game.evSahibi ?? "");
   const away = normalizeTeam(game.away ?? game.deplasman ?? "");
-  return [activeWeek, game.number ?? index + 1, home, away].join("|");
+
+  return [
+    activeWeek,
+    game.number ?? index + 1,
+    home,
+    away
+  ].join("|");
 }
 
 function ensureSelections(game, index, analysis) {
   const key = selectionKey(game, index);
+
   if (!selectedOutcomes.has(key)) {
-    selectedOutcomes.set(key, analysis.probabilities ? [analysis.selection] : []);
+    selectedOutcomes.set(
+      key,
+      analysis.probabilities ? [analysis.selection] : []
+    );
   }
-  return { key, values: selectedOutcomes.get(key) };
+
+  return {
+    key,
+    values: selectedOutcomes.get(key)
+  };
 }
 
 function applyAISelectionsForGuarantee() {
   const games = getWeekGames(activeWeek);
   const candidates = [];
+
   games.forEach((game, index) => {
     const analysis = getPrediction(game);
     const key = selectionKey(game, index);
+
     if (!analysis.probabilities) {
       selectedOutcomes.set(key, []);
       return;
     }
-    const ranked = OUTCOMES.slice().sort((a, b) => analysis.probabilities[b] - analysis.probabilities[a]);
+
+    const ranked = OUTCOMES.slice().sort(
+      (a, b) =>
+        analysis.probabilities[b] - analysis.probabilities[a]
+    );
+
     selectedOutcomes.set(key, [ranked[0]]);
-    candidates.push({ key, pair: ranked.slice(0, 2), confidence: analysis.probabilities[ranked[0]], index });
+
+    candidates.push({
+      key,
+      pair: ranked.slice(0, 2),
+      confidence: analysis.probabilities[ranked[0]],
+      index
+    });
   });
-  const doublesByGuarantee = { 12: 8, 13: 6, 14: 4 };
+
+  const doublesByGuarantee = {
+    12: 8,
+    13: 6,
+    14: 4
+  };
+
   const doubles = doublesByGuarantee[guaranteeTarget] || 6;
-  candidates.sort((a, b) => a.confidence - b.confidence || a.index - b.index);
-  candidates.slice(0, doubles).forEach(candidate => selectedOutcomes.set(candidate.key, candidate.pair));
+
+  candidates.sort(
+    (a, b) =>
+      a.confidence - b.confidence ||
+      a.index - b.index
+  );
+
+  candidates
+    .slice(0, doubles)
+    .forEach(candidate => {
+      selectedOutcomes.set(candidate.key, candidate.pair);
+    });
+
   autoSelections = true;
 }
 
@@ -761,172 +1356,340 @@ function selectionMarkup(key, values, analysis) {
   const buttons = OUTCOMES.map(outcome => {
     const active = values.includes(outcome);
     const odds = analysis.probabilities?.[outcome];
-    return `<button type="button" class="outcome-select${active ? " selected" : ""}"
-      data-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
-      aria-pressed="${active}" title="${outcome} olasılığı ${probabilityLabel(odds)}">${outcome}</button>`;
+
+    return `
+      <button
+        type="button"
+        class="outcome-select${active ? " selected" : ""}"
+        data-match-key="${escapeHTML(key)}"
+        data-outcome="${outcome}"
+        aria-pressed="${active}"
+        title="${outcome} olasılığı ${probabilityLabel(odds)}">
+        ${outcome}
+      </button>
+    `;
   }).join("");
+
   const hint = analysis.probabilities
-    ? (couponMode === "guarantee"
-      ? `AI işaretleri: <strong>${escapeHTML(values.join(" "))}</strong>`
-      : `AI önerisi: <strong>${escapeHTML(analysis.selection)}</strong>`)
+    ? (
+      couponMode === "guarantee"
+        ? `AI işaretleri: <strong>${escapeHTML(values.join(" "))}</strong>`
+        : `AI önerisi: <strong>${escapeHTML(analysis.selection)}</strong>`
+    )
     : "Tahmin yok · seçimini kendin belirle";
-  return `<div class="pick-control">
-    <div class="pick-head"><span>${couponMode === "single" ? "Tekli kupon seçimi" : "Sistem işaretleri"}</span><small>${hint}</small></div>
-    <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">${buttons}</div>
-  </div>`;
+
+  return `
+    <div class="pick-control">
+      <div class="pick-head">
+        <span>
+          ${couponMode === "single" ? "Tekli kupon seçimi" : "Sistem işaretleri"}
+        </span>
+        <small>${hint}</small>
+      </div>
+
+      <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">
+        ${buttons}
+      </div>
+    </div>
+  `;
 }
 
 function decodeDigits(id, sizes, strides) {
-  return sizes.map((size, index) => Math.floor(id / strides[index]) % size);
+  return sizes.map(
+    (size, index) =>
+      Math.floor(id / strides[index]) % size
+  );
 }
 
 function visitWithinRadius(center, errors, sizes, strides, visit) {
   const digits = decodeDigits(center, sizes, strides);
+
   function walk(position, remaining, value) {
     if (position === sizes.length) {
       visit(value);
       return;
     }
+
     walk(position + 1, remaining, value);
+
     if (remaining > 0) {
       for (let choice = 0; choice < sizes[position]; choice++) {
         if (choice !== digits[position]) {
-          walk(position + 1, remaining - 1,
-            value + (choice - digits[position]) * strides[position]);
+          walk(
+            position + 1,
+            remaining - 1,
+            value + (choice - digits[position]) * strides[position]
+          );
         }
       }
     }
   }
+
   walk(0, errors, center);
 }
 
 function makeCoveredSystem(choices, guarantee) {
   const sizes = choices.map(list => list.length);
-  let total = sizes.reduce((value, size) => value * size, 1);
-  if (total > MAX_SCENARIOS) return { total, rows: null, reason: "large" };
+
+  const total = sizes.reduce(
+    (value, size) => value * size,
+    1
+  );
+
+  if (total > MAX_SCENARIOS) {
+    return {
+      total,
+      rows: null,
+      reason: "large"
+    };
+  }
+
   const errors = 15 - guarantee;
+
   const strides = Array(sizes.length);
   let stride = 1;
+
   for (let i = sizes.length - 1; i >= 0; i--) {
     strides[i] = stride;
     stride *= sizes[i];
   }
-  const neighborhood = [];
-  visitWithinRadius(0, errors, sizes, strides, id => neighborhood.push(id));
+
   const covered = new Uint8Array(total);
   const selected = new Uint8Array(total);
+
   let left = total;
   const centers = [];
 
-  while (left > 0 && centers.length < MAX_GENERATED_COLUMNS) {
-    let best = -1, bestScore = -1;
-    // Greedy search over a bounded, evenly spread sample keeps large systems responsive.
+  while (
+    left > 0 &&
+    centers.length < MAX_GENERATED_COLUMNS
+  ) {
+    let best = -1;
+    let bestScore = -1;
+
     const samples = Math.min(total, 12);
     const offset = (centers.length * 104729) % total;
     const step = Math.max(1, Math.floor(total / samples));
+
     for (let sample = 0; sample < samples; sample++) {
       const candidate = (offset + sample * step) % total;
+
       if (selected[candidate]) continue;
+
       let score = 0;
-      visitWithinRadius(candidate, errors, sizes, strides, scenario => {
-        if (!covered[scenario]) score++;
-      });
+
+      visitWithinRadius(
+        candidate,
+        errors,
+        sizes,
+        strides,
+        scenario => {
+          if (!covered[scenario]) score++;
+        }
+      );
+
       if (score > bestScore) {
         best = candidate;
         bestScore = score;
       }
     }
-    // If the sample missed all remaining pockets, selecting an uncovered scenario
-    // itself always makes progress and preserves the advertised coverage.
+
     if (best < 0 || bestScore === 0) {
       for (let candidate = 0; candidate < total; candidate++) {
-        if (!covered[candidate]) { best = candidate; break; }
+        if (!covered[candidate]) {
+          best = candidate;
+          break;
+        }
       }
     }
-    if (best < 0) return { total, rows: null, reason: "failed" };
+
+    if (best < 0) {
+      return {
+        total,
+        rows: null,
+        reason: "failed"
+      };
+    }
+
     selected[best] = 1;
-    visitWithinRadius(best, errors, sizes, strides, scenario => {
-      if (!covered[scenario]) {
-        covered[scenario] = 1;
-        left--;
+
+    visitWithinRadius(
+      best,
+      errors,
+      sizes,
+      strides,
+      scenario => {
+        if (!covered[scenario]) {
+          covered[scenario] = 1;
+          left--;
+        }
       }
-    });
+    );
+
     centers.push(best);
   }
 
-  if (left > 0) return { total, rows: null, reason: "column-limit" };
+  if (left > 0) {
+    return {
+      total,
+      rows: null,
+      reason: "column-limit"
+    };
+  }
 
-  const rows = centers.map(center => decodeDigits(center, sizes, strides)
-    .map((choice, index) => choices[index][choice]));
-  return { total, rows, reason: "" };
+  const rows = centers.map(center =>
+    decodeDigits(center, sizes, strides)
+      .map((choice, index) => choices[index][choice])
+  );
+
+  return {
+    total,
+    rows,
+    reason: ""
+  };
 }
 
 function readCurrentChoices(games) {
   return games.map((game, index) => {
     const analysis = getPrediction(game);
-    return ensureSelections(game, index, analysis).values;
+
+    return ensureSelections(
+      game,
+      index,
+      analysis
+    ).values;
   });
 }
 
 function updateCouponPanel(games = getWeekGames(activeWeek)) {
-  const singleButton = $("singleModeBtn"), guaranteeButton = $("guaranteeModeBtn");
-  singleButton.classList.toggle("active", couponMode === "single");
-  guaranteeButton.classList.toggle("active", couponMode === "guarantee");
-  singleButton.setAttribute("aria-pressed", couponMode === "single");
-  guaranteeButton.setAttribute("aria-pressed", couponMode === "guarantee");
-  $("guaranteePicker").hidden = couponMode !== "guarantee";
+  const singleButton = $("singleModeBtn");
+  const guaranteeButton = $("guaranteeModeBtn");
+
+  singleButton.classList.toggle(
+    "active",
+    couponMode === "single"
+  );
+
+  guaranteeButton.classList.toggle(
+    "active",
+    couponMode === "guarantee"
+  );
+
+  singleButton.setAttribute(
+    "aria-pressed",
+    couponMode === "single"
+  );
+
+  guaranteeButton.setAttribute(
+    "aria-pressed",
+    couponMode === "guarantee"
+  );
+
+  $("guaranteePicker").hidden =
+    couponMode !== "guarantee";
+
   document.querySelectorAll("[data-guarantee]").forEach(button => {
-    button.classList.toggle("active", Number(button.dataset.guarantee) === guaranteeTarget);
-    button.setAttribute("aria-pressed", Number(button.dataset.guarantee) === guaranteeTarget);
+    const active =
+      Number(button.dataset.guarantee) === guaranteeTarget;
+
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", active);
   });
+
   const choices = readCurrentChoices(games);
-  const incomplete = choices.some(list => !list.length || (couponMode === "single" && list.length !== 1));
+
+  const incomplete = choices.some(list =>
+    !list.length ||
+    (couponMode === "single" && list.length !== 1)
+  );
+
   generatedColumns = [];
+
   const message = $("couponMessage");
+
   if (!games.length || incomplete) {
     $("couponColumns").textContent = "—";
     $("couponCost").textContent = "—";
     $("columnOutput").value = "";
     $("copyColumnsBtn").disabled = true;
     $("couponStatus").textContent = "Seçimleri tamamla";
-    message.textContent = "Her maç için en az bir sonuç seç. Normal sistemde her maçta tek sonuç işaretlenir.";
+
+    message.textContent =
+      "Her maç için en az bir sonuç seç. Normal sistemde her maçta tek sonuç işaretlenir.";
+
     return;
   }
 
   let result;
+
   if (couponMode === "single") {
-    result = { rows: [choices.map(list => list[0])], total: 1, reason: "" };
+    result = {
+      rows: [choices.map(list => list[0])],
+      total: 1,
+      reason: ""
+    };
   } else {
-    result = makeCoveredSystem(choices, guaranteeTarget);
+    result = makeCoveredSystem(
+      choices,
+      guaranteeTarget
+    );
   }
 
   if (!result.rows) {
-    $("couponColumns").textContent = result.total.toLocaleString("tr-TR") + " olasılık";
+    $("couponColumns").textContent =
+      result.total.toLocaleString("tr-TR") + " olasılık";
+
     $("couponCost").textContent = "—";
     $("columnOutput").value = "";
     $("copyColumnsBtn").disabled = true;
     $("couponStatus").textContent = "Sistem çok büyük";
-    message.textContent = "Bu seçim kombinasyonu tarayıcıda güvenli biçimde indirgenemeyecek kadar geniş. Bazı maçlardaki çift/üçlü seçimleri azaltıp tekrar dene.";
+
+    message.textContent =
+      "Bu seçim kombinasyonu tarayıcıda güvenli biçimde indirgenemeyecek kadar geniş. Bazı maçlardaki çift/üçlü seçimleri azaltıp tekrar dene.";
+
     return;
   }
 
   generatedColumns = result.rows;
-  const totalCost = generatedColumns.length * COLUMN_PRICE;
-  $("couponColumns").textContent = generatedColumns.length.toLocaleString("tr-TR");
-  $("couponCost").textContent = totalCost.toLocaleString("tr-TR") + " TL";
-  $("columnOutput").value = generatedColumns.map((row, index) =>
-    String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
+
+  const totalCost =
+    generatedColumns.length * COLUMN_PRICE;
+
+  $("couponColumns").textContent =
+    generatedColumns.length.toLocaleString("tr-TR");
+
+  $("couponCost").textContent =
+    totalCost.toLocaleString("tr-TR") + " TL";
+
+  $("columnOutput").value = generatedColumns
+    .map((row, index) =>
+      String(index + 1).padStart(2, "0") +
+      "  " +
+      row.join(" · ")
+    )
+    .join("\n");
+
   $("copyColumnsBtn").disabled = false;
-  $("couponStatus").textContent = couponMode === "single" ? "Tekli kupon hazır" : guaranteeTarget + " sistemi hazır";
-  message.textContent = couponMode === "single"
-    ? "Normal tekli sistem: AI’nin en yüksek olasılıklı seçimi kullanılır. İstersen maç kartından tekli seçimi değiştirebilirsin."
-    : guaranteeTarget + " garanti: " + (autoSelections ? "AI olasılıklarına göre önerilen" : "elle düzenlenen") +
-      " işaretlerin tüm birleşimleri tarandı; her birleşimde en az " + guaranteeTarget +
-      " isabetli bir kolon bulunur. Kolon sayısı en aza indirme iddiası taşımaz.";
+
+  $("couponStatus").textContent =
+    couponMode === "single"
+      ? "Tekli kupon hazır"
+      : guaranteeTarget + " sistemi hazır";
+
+  message.textContent =
+    couponMode === "single"
+      ? "Normal tekli sistem: AI’nin en yüksek olasılıklı seçimi kullanılır. İstersen maç kartından tekli seçimi değiştirebilirsin."
+      : guaranteeTarget +
+        " garanti: " +
+        (autoSelections ? "AI olasılıklarına göre önerilen" : "elle düzenlenen") +
+        " işaretlerin tüm birleşimleri tarandı; her birleşimde en az " +
+        guaranteeTarget +
+        " isabetli bir kolon bulunur. Kolon sayısını en aza indirme iddiası taşımaz.";
 }
 
 function setCouponMode(mode) {
   couponMode = mode;
+
   if (mode === "guarantee") {
     applyAISelectionsForGuarantee();
   } else {
@@ -934,216 +1697,576 @@ function setCouponMode(mode) {
       const key = selectionKey(game, index);
       const analysis = getPrediction(game);
       const current = selectedOutcomes.get(key) || [];
-      const keep = analysis.probabilities && current.includes(analysis.selection)
-        ? analysis.selection : current[0];
+
+      const keep =
+        analysis.probabilities &&
+        current.includes(analysis.selection)
+          ? analysis.selection
+          : current[0];
+
       selectedOutcomes.set(key, keep ? [keep] : []);
     });
   }
+
   renderWeek();
 }
 
 function handleOutcomeClick(button) {
   const key = button.dataset.matchKey;
   const outcome = button.dataset.outcome;
+
   let values = selectedOutcomes.get(key) || [];
+
   if (couponMode === "single") {
     values = [outcome];
   } else if (values.includes(outcome)) {
     if (values.length === 1) return;
-    values = values.filter(value => value !== outcome);
+
+    values = values.filter(
+      value => value !== outcome
+    );
   } else {
     values = [...values, outcome];
   }
+
   selectedOutcomes.set(key, values);
   autoSelections = false;
+
   renderWeek();
 }
 
 async function copyColumns() {
   if (!generatedColumns.length) return;
+
+  const button = $("copyColumnsBtn");
+
   try {
-    await navigator.clipboard.writeText($("columnOutput").value);
-    $("copyColumnsBtn").textContent = "Kopyalandı";
-    setTimeout(() => { $("copyColumnsBtn").textContent = "Kolonları kopyala"; }, 1400);
+    await navigator.clipboard.writeText(
+      $("columnOutput").value
+    );
+
+    button.textContent = "Kopyalandı";
+
+    setTimeout(() => {
+      button.textContent = "Kolonları kopyala";
+    }, 1400);
+
   } catch {
     $("columnOutput").focus();
     $("columnOutput").select();
+
     document.execCommand("copy");
-    $("copyColumnsBtn").textContent = "Kopyalandı";
-    setTimeout(() => { $("copyColumnsBtn").textContent = "Kolonları kopyala"; }, 1400);
+
+    button.textContent = "Kopyalandı";
+
+    setTimeout(() => {
+      button.textContent = "Kolonları kopyala";
+    }, 1400);
   }
 }
 
 function normalizeResult(value) {
-  const result = String(value ?? "").trim().toLocaleUpperCase("tr-TR");
-  if (["1", "X", "2"].includes(result)) return result;
+  const result = String(value ?? "")
+    .trim()
+    .toLocaleUpperCase("tr-TR");
+
+  if (["1", "X", "2"].includes(result)) {
+    return result;
+  }
+
   if (result === "0") return "X";
+
   return "";
 }
 
 function setMessage(text, type = "") {
   const el = $("message");
+
   el.textContent = text;
   el.className = "notice" + (type ? " " + type : "");
 }
 
 function getWeeks() {
   const weeks = totoData?.weeks;
+
   return weeks && typeof weeks === "object"
-    ? Object.keys(weeks).filter(key => Array.isArray(weeks[key])).sort((a, b) => Number(a) - Number(b)) : [];
+    ? Object.keys(weeks)
+        .filter(key => Array.isArray(weeks[key]))
+        .sort((a, b) => Number(a) - Number(b))
+    : [];
 }
 
 function getWeekGames(week) {
   const games = totoData?.weeks?.[week];
+
   return Array.isArray(games) ? games : [];
 }
 
 function renderWeekOptions() {
-  const weeks = getWeeks(), select = $("weekSelect");
+  const weeks = getWeeks();
+  const select = $("weekSelect");
+
   select.innerHTML = "";
+
   if (!weeks.length) {
-    select.innerHTML = '<option value="">Hafta bulunamadı</option>';
+    select.innerHTML =
+      '<option value="">Hafta bulunamadı</option>';
+
     activeWeek = null;
     return;
   }
-  const preferred = String(totoData.currentWeek ?? weeks[weeks.length - 1]);
-  activeWeek = weeks.includes(preferred) ? preferred : weeks[weeks.length - 1];
+
+  const preferred = String(
+    totoData.currentWeek ?? weeks[weeks.length - 1]
+  );
+
+  activeWeek = weeks.includes(preferred)
+    ? preferred
+    : weeks[weeks.length - 1];
+
   for (const week of weeks) {
     const option = document.createElement("option");
+
     option.value = week;
     option.textContent = week + ". Hafta";
     option.selected = week === activeWeek;
+
     select.appendChild(option);
   }
 }
 
 function renderWeek() {
   const games = getWeekGames(activeWeek);
-  let analyzed = 0, settled = 0, won = 0;
+
+  let analyzed = 0;
+  let settled = 0;
+  let won = 0;
+
   $("statMatches").textContent = games.length;
+
   const cards = games.map((game, index) => {
-    const home = game.home ?? game.evSahibi ?? "Ev sahibi bilinmiyor";
-    const away = game.away ?? game.deplasman ?? "Deplasman bilinmiyor";
+    const home =
+      game.home ?? game.evSahibi ?? "Ev sahibi bilinmiyor";
+
+    const away =
+      game.away ?? game.deplasman ?? "Deplasman bilinmiyor";
+
     const analysis = getPrediction(game);
-    const pickState = ensureSelections(game, index, analysis);
-    const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
+
+    const pickState = ensureSelections(
+      game,
+      index,
+      analysis
+    );
+
+    const result = normalizeResult(
+      game.result ?? game.outcome ?? game.sonuc
+    );
+
     const available = Boolean(analysis.probabilities);
+
     const status = result
-      ? (available ? (analysis.selection === result
-        ? { label: "Başarılı", className: "green", icon: "✓" }
-        : { label: "Başarısız", className: "red", icon: "✕" })
-        : { label: "Sonuç belli", className: "blue", icon: "●" })
-      : (available ? { label: "Bekliyor", className: "yellow", icon: "●" }
-        : { label: analysis.ambiguous ? "Eşleşme doğrulanamadı" : "AI tahmini yok", className: "yellow", icon: "●" });
+      ? (
+        available
+          ? (
+            analysis.selection === result
+              ? {
+                  label: "Başarılı",
+                  className: "green",
+                  icon: "✓"
+                }
+              : {
+                  label: "Başarısız",
+                  className: "red",
+                  icon: "✕"
+                }
+          )
+          : {
+              label: "Sonuç belli",
+              className: "blue",
+              icon: "●"
+            }
+      )
+      : (
+        available
+          ? {
+              label: "Bekliyor",
+              className: "yellow",
+              icon: "●"
+            }
+          : {
+              label: analysis.ambiguous
+                ? "Eşleşme doğrulanamadı"
+                : "AI tahmini yok",
+              className: "yellow",
+              icon: "●"
+            }
+      );
+
     if (available) analyzed++;
+
     if (available && result) {
       settled++;
-      if (analysis.selection === result) won++;
+
+      if (analysis.selection === result) {
+        won++;
+      }
     }
-    const bestProbability = available ? analysis.probabilities[analysis.selection] : null;
-    const predictionClass = bestProbability >= 60 ? "high" : bestProbability >= 45 ? "medium" : "";
+
+    const bestProbability = available
+      ? analysis.probabilities[analysis.selection]
+      : null;
+
+    const predictionClass =
+      bestProbability >= 60
+        ? "high"
+        : bestProbability >= 45
+          ? "medium"
+          : "";
+
     const primaryText = analysis.primary?.label
-      ? escapeHTML(analysis.primary.label) + " · " + probabilityLabel(Number(analysis.primary.probability) * 100)
+      ? escapeHTML(analysis.primary.label) +
+        " · " +
+        probabilityLabel(
+          Number(analysis.primary.probability) * 100
+        )
       : "";
+
     return `
       <article class="match">
-        <div class="match-top"><div>
-          <div class="match-no">Maç ${escapeHTML(game.number ?? index + 1)}</div>
-          <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
-        </div><div class="prediction ${available ? predictionClass : ""}">
-          ${available ? escapeHTML(analysis.selection) : "—"}
-          <small>${available ? probabilityLabel(bestProbability) + " AI olasılığı" : "AI verisi bekleniyor"}</small>
-        </div></div>
-        ${available ? probabilityMarkup(analysis.probabilities) : ""}
-        ${selectionMarkup(pickState.key, pickState.values, analysis)}
-        <div class="match-info">
-          <span class="badge ${status.className}">${status.icon} ${status.label}</span>
-          ${available ? `<span class="tag">İsim eşleşmesi: <strong>%${(analysis.confidence * 100).toFixed(0)}</strong></span>
-            <span class="tag">AI maçı: <strong>${escapeHTML(analysis.match.date)} ${escapeHTML(analysis.match.time || "")}</strong></span>`
-            : `<span class="tag">${analysis.ambiguous ? "Birden fazla olası maç bulundu; güvenli eşleşme yapılamadı." : "AI tahmin dosyasında uygun maç bulunamadı."}</span>`}
-          ${result ? `<span class="tag">Gerçek sonuç: <strong>${escapeHTML(result)}</strong></span>` : ""}
+
+        <div class="match-top">
+          <div>
+            <div class="match-no">
+              Maç ${escapeHTML(game.number ?? index + 1)}
+            </div>
+
+            <div class="teams">
+              ${escapeHTML(home)} – ${escapeHTML(away)}
+            </div>
+          </div>
+
+          <div class="prediction ${available ? predictionClass : ""}">
+            ${available ? escapeHTML(analysis.selection) : "—"}
+
+            <small>
+              ${
+                available
+                  ? probabilityLabel(bestProbability) + " AI olasılığı"
+                  : "AI verisi bekleniyor"
+              }
+            </small>
+          </div>
         </div>
-        <details class="details"><summary>AI tahmin ayrıntıları</summary>
+
+        ${available
+          ? probabilityMarkup(analysis.probabilities)
+          : ""
+        }
+
+        ${selectionMarkup(
+          pickState.key,
+          pickState.values,
+          analysis
+        )}
+
+        <div class="match-info">
+
+          <span class="badge ${status.className}">
+            ${status.icon} ${status.label}
+          </span>
+
+          ${
+            available
+              ? `
+                <span class="tag">
+                  İsim eşleşmesi:
+                  <strong>%${(analysis.confidence * 100).toFixed(0)}</strong>
+                </span>
+
+                <span class="tag">
+                  AI maçı:
+                  <strong>
+                    ${escapeHTML(analysis.match.date)}
+                    ${escapeHTML(analysis.match.time || "")}
+                  </strong>
+                </span>
+              `
+              : `
+                <span class="tag">
+                  ${
+                    analysis.ambiguous
+                      ? "Birden fazla olası maç bulundu; güvenli eşleşme yapılamadı."
+                      : "AI tahmin dosyasında uygun maç bulunamadı."
+                  }
+                </span>
+              `
+          }
+
+          ${
+            result
+              ? `
+                <span class="tag">
+                  Gerçek sonuç:
+                  <strong>${escapeHTML(result)}</strong>
+                </span>
+              `
+              : ""
+          }
+
+        </div>
+
+        <details class="details">
+          <summary>AI tahmin ayrıntıları</summary>
+
           <div class="details-content">
-            ${available ? `<div class="notice" style="margin-top:12px;margin-bottom:0">
-                <strong>Spor Toto seçimi: ${escapeHTML(analysis.selection)}</strong>
-                <br>1: ${probabilityLabel(analysis.probabilities["1"])} · X: ${probabilityLabel(analysis.probabilities.X)} · 2: ${probabilityLabel(analysis.probabilities["2"])}
-                ${primaryText ? `<br>AI sisteminin ana tahmini: ${primaryText}` : ""}
-                <br>AI fikstürü: ${escapeHTML(analysis.match.home)} – ${escapeHTML(analysis.match.away)} · ${escapeHTML(analysis.match.league || "")}
-                <br>İsim eşleşme puanı: %${(analysis.confidence * 100).toFixed(1)}
-              </div>`
-              : `<div class="empty">${analysis.ambiguous ? "Benzer isimli birden fazla AI fikstürü bulundu. Yanlış maça tahmin bağlamamak için seçim yapılmadı." : "Bu fikstür için AI sisteminde tahmin bulunamadı."}</div>`}
+
+            ${
+              available
+                ? `
+                  <div class="notice" style="margin-top:12px;margin-bottom:0">
+
+                    <strong>
+                      Spor Toto seçimi:
+                      ${escapeHTML(analysis.selection)}
+                    </strong>
+
+                    <br>
+                    1: ${probabilityLabel(analysis.probabilities["1"])}
+                    · X: ${probabilityLabel(analysis.probabilities.X)}
+                    · 2: ${probabilityLabel(analysis.probabilities["2"])}
+
+                    ${primaryText
+                      ? `<br>AI sisteminin ana tahmini: ${primaryText}`
+                      : ""
+                    }
+
+                    <br>
+                    AI fikstürü:
+                    ${escapeHTML(analysis.match.home)}
+                    –
+                    ${escapeHTML(analysis.match.away)}
+                    ·
+                    ${escapeHTML(analysis.match.league || "")}
+
+                    <br>
+                    İsim eşleşme puanı:
+                    %${(analysis.confidence * 100).toFixed(1)}
+
+                  </div>
+                `
+                : `
+                  <div class="empty">
+                    ${
+                      analysis.ambiguous
+                        ? "Benzer isimli birden fazla AI fikstürü bulundu. Yanlış maça tahmin bağlamamak için seçim yapılmadı."
+                        : "Bu fikstür için AI sisteminde tahmin bulunamadı."
+                    }
+                  </div>
+                `
+            }
+
           </div>
         </details>
-      </article>`;
+
+      </article>
+    `;
   }).join("");
-  $("matchList").innerHTML = cards || '<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
-  $("statAnalyzed").textContent = analyzed + "/" + games.length;
+
+  $("matchList").innerHTML =
+    cards ||
+    '<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
+
+  $("statAnalyzed").textContent =
+    analyzed + "/" + games.length;
+
   $("statSettled").textContent = settled;
-  $("statAccuracy").textContent = settled ? "%" + (won / settled * 100).toFixed(1) : "—";
-  $("weekBadge").textContent = activeWeek ? activeWeek + ". Hafta · " + analyzed + "/" + games.length + " AI tahmini" : "Hafta —";
+
+  $("statAccuracy").textContent =
+    settled
+      ? "%" + (won / settled * 100).toFixed(1)
+      : "—";
+
+  $("weekBadge").textContent =
+    activeWeek
+      ? activeWeek + ". Hafta · " + analyzed + "/" + games.length + " AI tahmini"
+      : "Hafta —";
+
   updateCouponPanel(games);
-  return { games, analyzed };
+
+  return {
+    games,
+    analyzed
+  };
 }
 
 function updateMessage() {
   const { games, analyzed } = renderWeek();
-  const generated = aiData.generated_at ? new Date(aiData.generated_at).toLocaleString("tr-TR") : "tarih bilgisi yok";
-  $("benchmark").textContent = "AI veri zamanı: " + generated + " · " +
-    Number(aiData.prediction_count || aiData.predictions.length).toLocaleString("tr-TR") + " tahmin kaydı";
-  setMessage("AI verisi güncellendi: " + generated + " · " + games.length + " Spor Toto maçı, " + analyzed +
-    " AI eşleşmesi. Tahminler AI sisteminin MS 1, MS X ve MS 2 olasılıklarından alınır.", analyzed === games.length ? "good" : "");
+
+  const generated = aiData.generated_at
+    ? new Date(aiData.generated_at).toLocaleString("tr-TR")
+    : "tarih bilgisi yok";
+
+  $("benchmark").textContent =
+    "AI veri zamanı: " +
+    generated +
+    " · " +
+    Number(
+      aiData.prediction_count || aiData.predictions.length
+    ).toLocaleString("tr-TR") +
+    " tahmin kaydı";
+
+  setMessage(
+    "AI verisi güncellendi: " +
+    generated +
+    " · " +
+    games.length +
+    " Spor Toto maçı, " +
+    analyzed +
+    " AI eşleşmesi. Tahminler AI sisteminin MS 1, MS X ve MS 2 olasılıklarından alınır.",
+    analyzed === games.length ? "good" : ""
+  );
 }
 
 async function loadData() {
   $("refreshBtn").disabled = true;
-  setMessage("Spor Toto fikstürleri ve AI tahminleri yükleniyor...");
+
+  setMessage(
+    "Spor Toto fikstürleri ve AI tahminleri yükleniyor..."
+  );
+
   try {
-    if (!window.SPORT_TOTO_DATA?.weeks) throw new Error("Spor Toto haftalık fikstür verisi yüklenemedi.");
+    if (!window.SPORT_TOTO_DATA?.weeks) {
+      throw new Error(
+        "Spor Toto verisi yüklenemedi. data/spor-toto-data.js dosyasını kontrol et."
+      );
+    }
+
     totoData = window.SPORT_TOTO_DATA;
-    const response = await fetch(AI_URL + "?t=" + Date.now(), { cache: "no-store" });
-    if (!response.ok) throw new Error("AI tahmin dosyası alınamadı (HTTP " + response.status + ").");
+
+    const response = await fetch(
+      AI_URL + "?t=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        "AI tahmin dosyası alınamadı (HTTP " +
+        response.status +
+        ")."
+      );
+    }
+
     aiData = await response.json();
+
     predictionCache.clear();
-    if (!Array.isArray(aiData.predictions)) throw new Error("AI tahmin dosyasında maç listesi bulunamadı.");
+
+    if (!Array.isArray(aiData.predictions)) {
+      throw new Error(
+        "AI tahmin dosyasında maç listesi bulunamadı."
+      );
+    }
+
     renderWeekOptions();
-    if (!activeWeek) throw new Error("Spor Toto haftaları bulunamadı.");
+
+    if (!activeWeek) {
+      throw new Error(
+        "Spor Toto haftaları bulunamadı."
+      );
+    }
+
     updateMessage();
+
   } catch (error) {
     console.error(error);
-    setMessage("Veri yükleme hatası: " + error.message, "error");
-    $("matchList").innerHTML = '<div class="panel empty">Veriler yüklenemedi. Hata mesajı yukarıda gösteriliyor.</div>';
+
+    setMessage(
+      "Veri yükleme hatası: " + error.message,
+      "error"
+    );
+
+    $("matchList").innerHTML =
+      '<div class="panel empty">Veriler yüklenemedi. Hata mesajı yukarıda gösteriliyor.</div>';
+
   } finally {
     $("refreshBtn").disabled = false;
   }
 }
 
+/* Hafta seçimi */
 $("weekSelect").addEventListener("change", event => {
   activeWeek = event.target.value;
-  if (couponMode === "guarantee" && autoSelections) applyAISelectionsForGuarantee();
+
+  if (
+    couponMode === "guarantee" &&
+    autoSelections
+  ) {
+    applyAISelectionsForGuarantee();
+  }
+
   updateMessage();
 });
-$("refreshBtn").addEventListener("click", loadData);
-$("singleModeBtn").addEventListener("click", () => setCouponMode("single"));
-$("guaranteeModeBtn").addEventListener("click", () => setCouponMode("guarantee"));
+
+/* Verileri yenile */
+$("refreshBtn").addEventListener(
+  "click",
+  loadData
+);
+
+/* Kupon modları */
+$("singleModeBtn").addEventListener(
+  "click",
+  () => setCouponMode("single")
+);
+
+$("guaranteeModeBtn").addEventListener(
+  "click",
+  () => setCouponMode("guarantee")
+);
+
+/* Garanti seviyesi */
 document.querySelectorAll("[data-guarantee]").forEach(button => {
   button.addEventListener("click", () => {
-    guaranteeTarget = Number(button.dataset.guarantee);
-    if (couponMode === "guarantee" && autoSelections) applyAISelectionsForGuarantee();
+    guaranteeTarget = Number(
+      button.dataset.guarantee
+    );
+
+    if (
+      couponMode === "guarantee" &&
+      autoSelections
+    ) {
+      applyAISelectionsForGuarantee();
+    }
+
     renderWeek();
   });
 });
+
+/* AI önerisini uygula */
 $("autoOptionsBtn").addEventListener("click", () => {
   applyAISelectionsForGuarantee();
   renderWeek();
 });
+
+/* Maç seçimleri */
 $("matchList").addEventListener("click", event => {
   const button = event.target.closest(".outcome-select");
-  if (button) handleOutcomeClick(button);
+
+  if (button) {
+    handleOutcomeClick(button);
+  }
 });
-$("copyColumnsBtn").addEventListener("click", copyColumns);
+
+/* Kupon kopyalama */
+$("copyColumnsBtn").addEventListener(
+  "click",
+  copyColumns
+);
+
+/* İlk yükleme */
 loadData();
 
 </script>
+
 </body>
 </html>
