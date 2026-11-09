@@ -2,293 +2,6 @@
   "createdAt": "2026-11-02T09:12:14.150569+00:00",
   "pending": [
     {
-      "matchId": "401909945",
-      "date": "2026-11-08",
-      "utcDate": "2026-11-08T20:30Z",
-      "league": "NBA",
-      "homeTeam": "Chicago Bulls",
-      "awayTeam": "Philadelphia 76ers",
-      "models": {
-        "RandomForest": {
-          "homeScore": 112.7,
-          "awayScore": 117.5,
-          "totalScore": 230.2,
-          "winner": "AWAY"
-        },
-        "XGBoost": {
-          "homeScore": 112.2,
-          "awayScore": 111.2,
-          "totalScore": 223.4,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 114.2,
-          "awayScore": 115.6,
-          "totalScore": 229.8,
-          "winner": "AWAY"
-        },
-        "CatBoost": {
-          "homeScore": 115.4,
-          "awayScore": 118.0,
-          "totalScore": 233.4,
-          "winner": "AWAY"
-        }
-      },
-      "ensemble": {
-        "homeScore": 113.6,
-        "awayScore": 115.6,
-        "totalScore": 229.2,
-        "winner": "AWAY"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150939+00:00"
-    },
-    {
-      "matchId": "401909946",
-      "date": "2026-11-08",
-      "utcDate": "2026-11-08T23:00Z",
-      "league": "NBA",
-      "homeTeam": "Detroit Pistons",
-      "awayTeam": "Los Angeles Lakers",
-      "models": {
-        "RandomForest": {
-          "homeScore": 112.1,
-          "awayScore": 110.1,
-          "totalScore": 222.2,
-          "winner": "HOME"
-        },
-        "XGBoost": {
-          "homeScore": 112.0,
-          "awayScore": 109.8,
-          "totalScore": 221.8,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 113.6,
-          "awayScore": 106.9,
-          "totalScore": 220.5,
-          "winner": "HOME"
-        },
-        "CatBoost": {
-          "homeScore": 114.4,
-          "awayScore": 110.3,
-          "totalScore": 224.7,
-          "winner": "HOME"
-        }
-      },
-      "ensemble": {
-        "homeScore": 113.0,
-        "awayScore": 109.3,
-        "totalScore": 222.3,
-        "winner": "HOME"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150944+00:00"
-    },
-    {
-      "matchId": "401909947",
-      "date": "2026-11-09",
-      "utcDate": "2026-11-09T00:00Z",
-      "league": "NBA",
-      "homeTeam": "Minnesota Timberwolves",
-      "awayTeam": "Utah Jazz",
-      "models": {
-        "RandomForest": {
-          "homeScore": 116.5,
-          "awayScore": 110.6,
-          "totalScore": 227.1,
-          "winner": "HOME"
-        },
-        "XGBoost": {
-          "homeScore": 120.4,
-          "awayScore": 108.3,
-          "totalScore": 228.7,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 116.5,
-          "awayScore": 108.3,
-          "totalScore": 224.8,
-          "winner": "HOME"
-        },
-        "CatBoost": {
-          "homeScore": 118.4,
-          "awayScore": 109.6,
-          "totalScore": 228.0,
-          "winner": "HOME"
-        }
-      },
-      "ensemble": {
-        "homeScore": 118.0,
-        "awayScore": 109.2,
-        "totalScore": 227.2,
-        "winner": "HOME"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150950+00:00"
-    },
-    {
-      "matchId": "401909948",
-      "date": "2026-11-09",
-      "utcDate": "2026-11-09T00:30Z",
-      "league": "NBA",
-      "homeTeam": "Dallas Mavericks",
-      "awayTeam": "Brooklyn Nets",
-      "models": {
-        "RandomForest": {
-          "homeScore": 116.6,
-          "awayScore": 110.1,
-          "totalScore": 226.7,
-          "winner": "HOME"
-        },
-        "XGBoost": {
-          "homeScore": 116.9,
-          "awayScore": 109.1,
-          "totalScore": 226.0,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 113.5,
-          "awayScore": 108.8,
-          "totalScore": 222.3,
-          "winner": "HOME"
-        },
-        "CatBoost": {
-          "homeScore": 115.8,
-          "awayScore": 112.0,
-          "totalScore": 227.8,
-          "winner": "HOME"
-        }
-      },
-      "ensemble": {
-        "homeScore": 115.7,
-        "awayScore": 110.0,
-        "totalScore": 225.7,
-        "winner": "HOME"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150956+00:00"
-    },
-    {
-      "matchId": "401909949",
-      "date": "2026-11-09",
-      "utcDate": "2026-11-09T01:00Z",
-      "league": "NBA",
-      "homeTeam": "Milwaukee Bucks",
-      "awayTeam": "Boston Celtics",
-      "models": {
-        "RandomForest": {
-          "homeScore": 113.6,
-          "awayScore": 122.7,
-          "totalScore": 236.3,
-          "winner": "AWAY"
-        },
-        "XGBoost": {
-          "homeScore": 117.1,
-          "awayScore": 116.6,
-          "totalScore": 233.7,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 114.7,
-          "awayScore": 123.6,
-          "totalScore": 238.3,
-          "winner": "AWAY"
-        },
-        "CatBoost": {
-          "homeScore": 117.2,
-          "awayScore": 119.6,
-          "totalScore": 236.8,
-          "winner": "AWAY"
-        }
-      },
-      "ensemble": {
-        "homeScore": 115.7,
-        "awayScore": 120.6,
-        "totalScore": 236.3,
-        "winner": "AWAY"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150964+00:00"
-    },
-    {
-      "matchId": "401909950",
-      "date": "2026-11-09",
-      "utcDate": "2026-11-09T02:00Z",
-      "league": "NBA",
-      "homeTeam": "LA Clippers",
-      "awayTeam": "New Orleans Pelicans",
-      "models": {
-        "RandomForest": {
-          "homeScore": 113.0,
-          "awayScore": 115.3,
-          "totalScore": 228.3,
-          "winner": "AWAY"
-        },
-        "XGBoost": {
-          "homeScore": 107.3,
-          "awayScore": 114.5,
-          "totalScore": 221.8,
-          "winner": "AWAY"
-        },
-        "LightGBM": {
-          "homeScore": 108.2,
-          "awayScore": 112.1,
-          "totalScore": 220.3,
-          "winner": "AWAY"
-        },
-        "CatBoost": {
-          "homeScore": 111.6,
-          "awayScore": 113.5,
-          "totalScore": 225.1,
-          "winner": "AWAY"
-        }
-      },
-      "ensemble": {
-        "homeScore": 110.0,
-        "awayScore": 113.8,
-        "totalScore": 223.8,
-        "winner": "AWAY"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150970+00:00"
-    },
-    {
-      "matchId": "401909951",
-      "date": "2026-11-09",
-      "utcDate": "2026-11-09T02:00Z",
-      "league": "NBA",
-      "homeTeam": "Sacramento Kings",
-      "awayTeam": "Miami Heat",
-      "models": {
-        "RandomForest": {
-          "homeScore": 110.2,
-          "awayScore": 120.0,
-          "totalScore": 230.2,
-          "winner": "AWAY"
-        },
-        "XGBoost": {
-          "homeScore": 109.7,
-          "awayScore": 113.2,
-          "totalScore": 222.9,
-          "winner": "AWAY"
-        },
-        "LightGBM": {
-          "homeScore": 105.6,
-          "awayScore": 120.6,
-          "totalScore": 226.2,
-          "winner": "AWAY"
-        },
-        "CatBoost": {
-          "homeScore": 109.3,
-          "awayScore": 114.3,
-          "totalScore": 223.6,
-          "winner": "AWAY"
-        }
-      },
-      "ensemble": {
-        "homeScore": 108.7,
-        "awayScore": 117.0,
-        "totalScore": 225.7,
-        "winner": "AWAY"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.150978+00:00"
-    },
-    {
       "matchId": "401909952",
       "date": "2026-11-10",
       "utcDate": "2026-11-10T00:00Z",
@@ -7644,12 +7357,12 @@
     }
   ],
   "history": [],
-  "updatedAt": "2026-11-08T21:51:22.256187+00:00",
+  "updatedAt": "2026-11-09T04:46:27.429466+00:00",
   "source": "basketball.json + ml-predictions.json",
   "league": "NBA",
   "summary": {
     "totalEvaluatedMatches": 0,
-    "pendingMatches": 186,
+    "pendingMatches": 179,
     "newlyEvaluatedMatches": 0,
     "newPredictionsAdded": 0,
     "missingSourceMatches": 0,
@@ -29073,106 +28786,736 @@
           "winnerCorrect": true
         }
       }
+    },
+    {
+      "matchId": "401909945",
+      "date": "2026-11-08",
+      "utcDate": "2026-11-08T20:30Z",
+      "homeTeam": "Chicago Bulls",
+      "awayTeam": "Philadelphia 76ers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 280,
+      "trainingCutoff": "2026-11-08T20:30:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428425+00:00",
+      "actual": {
+        "homeScore": 121.0,
+        "awayScore": 127.0,
+        "totalScore": 248.0,
+        "winner": "AWAY"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 110.8,
+          "predictedAway": 111.5,
+          "predictedTotal": 222.3,
+          "actualHome": 121.0,
+          "actualAway": 127.0,
+          "actualTotal": 248.0,
+          "homeError": 10.2,
+          "awayError": 15.5,
+          "totalError": 25.7,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 110.6,
+          "predictedAway": 115.0,
+          "predictedTotal": 225.6,
+          "actualHome": 121.0,
+          "actualAway": 127.0,
+          "actualTotal": 248.0,
+          "homeError": 10.4,
+          "awayError": 12.0,
+          "totalError": 22.4,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 112.3,
+          "predictedAway": 115.9,
+          "predictedTotal": 228.2,
+          "actualHome": 121.0,
+          "actualAway": 127.0,
+          "actualTotal": 248.0,
+          "homeError": 8.7,
+          "awayError": 11.1,
+          "totalError": 19.8,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 112.7,
+          "predictedAway": 112.1,
+          "predictedTotal": 224.8,
+          "actualHome": 121.0,
+          "actualAway": 127.0,
+          "actualTotal": 248.0,
+          "homeError": 8.3,
+          "awayError": 14.9,
+          "totalError": 23.2,
+          "predictedWinner": "HOME",
+          "actualWinner": "AWAY",
+          "winnerCorrect": false
+        },
+        "Ensemble": {
+          "predictedHome": 111.6,
+          "predictedAway": 113.6,
+          "predictedTotal": 225.2,
+          "actualHome": 121.0,
+          "actualAway": 127.0,
+          "actualTotal": 248.0,
+          "homeError": 9.4,
+          "awayError": 13.4,
+          "totalError": 22.8,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909946",
+      "date": "2026-11-08",
+      "utcDate": "2026-11-08T23:00Z",
+      "homeTeam": "Detroit Pistons",
+      "awayTeam": "Los Angeles Lakers",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 281,
+      "trainingCutoff": "2026-11-08T23:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428455+00:00",
+      "actual": {
+        "homeScore": 116.0,
+        "awayScore": 121.0,
+        "totalScore": 237.0,
+        "winner": "AWAY"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 107.1,
+          "predictedAway": 110.5,
+          "predictedTotal": 217.6,
+          "actualHome": 116.0,
+          "actualAway": 121.0,
+          "actualTotal": 237.0,
+          "homeError": 8.9,
+          "awayError": 10.5,
+          "totalError": 19.4,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 105.1,
+          "predictedAway": 107.4,
+          "predictedTotal": 212.5,
+          "actualHome": 116.0,
+          "actualAway": 121.0,
+          "actualTotal": 237.0,
+          "homeError": 10.9,
+          "awayError": 13.6,
+          "totalError": 24.5,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 103.6,
+          "predictedAway": 107.2,
+          "predictedTotal": 210.8,
+          "actualHome": 116.0,
+          "actualAway": 121.0,
+          "actualTotal": 237.0,
+          "homeError": 12.4,
+          "awayError": 13.8,
+          "totalError": 26.2,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 107.1,
+          "predictedAway": 109.4,
+          "predictedTotal": 216.5,
+          "actualHome": 116.0,
+          "actualAway": 121.0,
+          "actualTotal": 237.0,
+          "homeError": 8.9,
+          "awayError": 11.6,
+          "totalError": 20.5,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 105.7,
+          "predictedAway": 108.6,
+          "predictedTotal": 214.3,
+          "actualHome": 116.0,
+          "actualAway": 121.0,
+          "actualTotal": 237.0,
+          "homeError": 10.3,
+          "awayError": 12.4,
+          "totalError": 22.7,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909947",
+      "date": "2026-11-09",
+      "utcDate": "2026-11-09T00:00Z",
+      "homeTeam": "Minnesota Timberwolves",
+      "awayTeam": "Utah Jazz",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 282,
+      "trainingCutoff": "2026-11-09T00:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428481+00:00",
+      "actual": {
+        "homeScore": 115.0,
+        "awayScore": 100.0,
+        "totalScore": 215.0,
+        "winner": "HOME"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 119.6,
+          "predictedAway": 108.3,
+          "predictedTotal": 227.9,
+          "actualHome": 115.0,
+          "actualAway": 100.0,
+          "actualTotal": 215.0,
+          "homeError": 4.6,
+          "awayError": 8.3,
+          "totalError": 12.9,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 121.7,
+          "predictedAway": 104.8,
+          "predictedTotal": 226.5,
+          "actualHome": 115.0,
+          "actualAway": 100.0,
+          "actualTotal": 215.0,
+          "homeError": 6.7,
+          "awayError": 4.8,
+          "totalError": 11.5,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 120.2,
+          "predictedAway": 105.8,
+          "predictedTotal": 226.0,
+          "actualHome": 115.0,
+          "actualAway": 100.0,
+          "actualTotal": 215.0,
+          "homeError": 5.2,
+          "awayError": 5.8,
+          "totalError": 11.0,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 119.3,
+          "predictedAway": 107.3,
+          "predictedTotal": 226.6,
+          "actualHome": 115.0,
+          "actualAway": 100.0,
+          "actualTotal": 215.0,
+          "homeError": 4.3,
+          "awayError": 7.3,
+          "totalError": 11.6,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 120.2,
+          "predictedAway": 106.5,
+          "predictedTotal": 226.7,
+          "actualHome": 115.0,
+          "actualAway": 100.0,
+          "actualTotal": 215.0,
+          "homeError": 5.2,
+          "awayError": 6.5,
+          "totalError": 11.7,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909948",
+      "date": "2026-11-09",
+      "utcDate": "2026-11-09T00:30Z",
+      "homeTeam": "Dallas Mavericks",
+      "awayTeam": "Brooklyn Nets",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 283,
+      "trainingCutoff": "2026-11-09T00:30:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428505+00:00",
+      "actual": {
+        "homeScore": 130.0,
+        "awayScore": 93.0,
+        "totalScore": 223.0,
+        "winner": "HOME"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 118.4,
+          "predictedAway": 111.5,
+          "predictedTotal": 229.9,
+          "actualHome": 130.0,
+          "actualAway": 93.0,
+          "actualTotal": 223.0,
+          "homeError": 11.6,
+          "awayError": 18.5,
+          "totalError": 6.9,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 113.6,
+          "predictedAway": 113.8,
+          "predictedTotal": 227.4,
+          "actualHome": 130.0,
+          "actualAway": 93.0,
+          "actualTotal": 223.0,
+          "homeError": 16.4,
+          "awayError": 20.8,
+          "totalError": 4.4,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        },
+        "LightGBM": {
+          "predictedHome": 118.0,
+          "predictedAway": 114.8,
+          "predictedTotal": 232.8,
+          "actualHome": 130.0,
+          "actualAway": 93.0,
+          "actualTotal": 223.0,
+          "homeError": 12.0,
+          "awayError": 21.8,
+          "totalError": 9.8,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 116.5,
+          "predictedAway": 115.2,
+          "predictedTotal": 231.7,
+          "actualHome": 130.0,
+          "actualAway": 93.0,
+          "actualTotal": 223.0,
+          "homeError": 13.5,
+          "awayError": 22.2,
+          "totalError": 8.7,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 116.6,
+          "predictedAway": 113.8,
+          "predictedTotal": 230.4,
+          "actualHome": 130.0,
+          "actualAway": 93.0,
+          "actualTotal": 223.0,
+          "homeError": 13.4,
+          "awayError": 20.8,
+          "totalError": 7.4,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909949",
+      "date": "2026-11-09",
+      "utcDate": "2026-11-09T01:00Z",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Boston Celtics",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 284,
+      "trainingCutoff": "2026-11-09T01:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428528+00:00",
+      "actual": {
+        "homeScore": 97.0,
+        "awayScore": 117.0,
+        "totalScore": 214.0,
+        "winner": "AWAY"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 109.1,
+          "predictedAway": 110.1,
+          "predictedTotal": 219.2,
+          "actualHome": 97.0,
+          "actualAway": 117.0,
+          "actualTotal": 214.0,
+          "homeError": 12.1,
+          "awayError": 6.9,
+          "totalError": 5.2,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 106.4,
+          "predictedAway": 112.6,
+          "predictedTotal": 219.0,
+          "actualHome": 97.0,
+          "actualAway": 117.0,
+          "actualTotal": 214.0,
+          "homeError": 9.4,
+          "awayError": 4.4,
+          "totalError": 5.0,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 108.6,
+          "predictedAway": 105.6,
+          "predictedTotal": 214.2,
+          "actualHome": 97.0,
+          "actualAway": 117.0,
+          "actualTotal": 214.0,
+          "homeError": 11.6,
+          "awayError": 11.4,
+          "totalError": 0.2,
+          "predictedWinner": "HOME",
+          "actualWinner": "AWAY",
+          "winnerCorrect": false
+        },
+        "CatBoost": {
+          "predictedHome": 107.7,
+          "predictedAway": 111.9,
+          "predictedTotal": 219.6,
+          "actualHome": 97.0,
+          "actualAway": 117.0,
+          "actualTotal": 214.0,
+          "homeError": 10.7,
+          "awayError": 5.1,
+          "totalError": 5.6,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 108.0,
+          "predictedAway": 110.0,
+          "predictedTotal": 218.0,
+          "actualHome": 97.0,
+          "actualAway": 117.0,
+          "actualTotal": 214.0,
+          "homeError": 11.0,
+          "awayError": 7.0,
+          "totalError": 4.0,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909950",
+      "date": "2026-11-09",
+      "utcDate": "2026-11-09T02:00Z",
+      "homeTeam": "LA Clippers",
+      "awayTeam": "New Orleans Pelicans",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 285,
+      "trainingCutoff": "2026-11-09T02:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428551+00:00",
+      "actual": {
+        "homeScore": 139.0,
+        "awayScore": 123.0,
+        "totalScore": 262.0,
+        "winner": "HOME"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 119.1,
+          "predictedAway": 115.7,
+          "predictedTotal": 234.8,
+          "actualHome": 139.0,
+          "actualAway": 123.0,
+          "actualTotal": 262.0,
+          "homeError": 19.9,
+          "awayError": 7.3,
+          "totalError": 27.2,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 119.5,
+          "predictedAway": 113.8,
+          "predictedTotal": 233.3,
+          "actualHome": 139.0,
+          "actualAway": 123.0,
+          "actualTotal": 262.0,
+          "homeError": 19.5,
+          "awayError": 9.2,
+          "totalError": 28.7,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 120.1,
+          "predictedAway": 115.6,
+          "predictedTotal": 235.7,
+          "actualHome": 139.0,
+          "actualAway": 123.0,
+          "actualTotal": 262.0,
+          "homeError": 18.9,
+          "awayError": 7.4,
+          "totalError": 26.3,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 115.9,
+          "predictedAway": 114.6,
+          "predictedTotal": 230.5,
+          "actualHome": 139.0,
+          "actualAway": 123.0,
+          "actualTotal": 262.0,
+          "homeError": 23.1,
+          "awayError": 8.4,
+          "totalError": 31.5,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 118.7,
+          "predictedAway": 114.9,
+          "predictedTotal": 233.6,
+          "actualHome": 139.0,
+          "actualAway": 123.0,
+          "actualTotal": 262.0,
+          "homeError": 20.3,
+          "awayError": 8.1,
+          "totalError": 28.4,
+          "predictedWinner": "HOME",
+          "actualWinner": "HOME",
+          "winnerCorrect": true
+        }
+      }
+    },
+    {
+      "matchId": "401909951",
+      "date": "2026-11-09",
+      "utcDate": "2026-11-09T02:00Z",
+      "homeTeam": "Sacramento Kings",
+      "awayTeam": "Miami Heat",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 285,
+      "trainingCutoff": "2026-11-09T02:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-09T04:46:27.428572+00:00",
+      "actual": {
+        "homeScore": 108.0,
+        "awayScore": 114.0,
+        "totalScore": 222.0,
+        "winner": "AWAY"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 114.3,
+          "predictedAway": 116.7,
+          "predictedTotal": 231.0,
+          "actualHome": 108.0,
+          "actualAway": 114.0,
+          "actualTotal": 222.0,
+          "homeError": 6.3,
+          "awayError": 2.7,
+          "totalError": 9.0,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "XGBoost": {
+          "predictedHome": 112.6,
+          "predictedAway": 116.7,
+          "predictedTotal": 229.3,
+          "actualHome": 108.0,
+          "actualAway": 114.0,
+          "actualTotal": 222.0,
+          "homeError": 4.6,
+          "awayError": 2.7,
+          "totalError": 7.3,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "LightGBM": {
+          "predictedHome": 113.3,
+          "predictedAway": 116.7,
+          "predictedTotal": 230.0,
+          "actualHome": 108.0,
+          "actualAway": 114.0,
+          "actualTotal": 222.0,
+          "homeError": 5.3,
+          "awayError": 2.7,
+          "totalError": 8.0,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "CatBoost": {
+          "predictedHome": 114.7,
+          "predictedAway": 117.3,
+          "predictedTotal": 232.0,
+          "actualHome": 108.0,
+          "actualAway": 114.0,
+          "actualTotal": 222.0,
+          "homeError": 6.7,
+          "awayError": 3.3,
+          "totalError": 10.0,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        },
+        "Ensemble": {
+          "predictedHome": 113.7,
+          "predictedAway": 116.8,
+          "predictedTotal": 230.5,
+          "actualHome": 108.0,
+          "actualAway": 114.0,
+          "actualTotal": 222.0,
+          "homeError": 5.7,
+          "awayError": 2.8,
+          "totalError": 8.5,
+          "predictedWinner": "AWAY",
+          "actualWinner": "AWAY",
+          "winnerCorrect": true
+        }
+      }
     }
   ],
   "backtestSummary": {
-    "totalHistoricalCandidates": 240,
-    "totalEvaluatedMatches": 240,
-    "newlyEvaluatedMatches": 2,
-    "alreadyEvaluatedMatches": 238,
+    "totalHistoricalCandidates": 247,
+    "totalEvaluatedMatches": 247,
+    "newlyEvaluatedMatches": 7,
+    "alreadyEvaluatedMatches": 240,
     "missingSourceMatches": 0,
     "unfinishedMatches": 0,
     "invalidPredictions": 0,
     "migratedLegacyRecords": 0,
-    "removedHistoricalPending": 2,
+    "removedHistoricalPending": 7,
     "modelCount": 5
   },
   "backtestMetrics": {
     "RandomForest": {
-      "matches": 240,
+      "matches": 247,
       "homeMAE": 10.508,
-      "awayMAE": 10.113,
-      "totalMAE": 15.829,
-      "winnerCorrect": 133,
-      "winnerAccuracy": 55.42,
-      "totalWithin5": 20.83,
-      "totalWithin10": 38.75
+      "awayMAE": 10.109,
+      "totalMAE": 15.811,
+      "winnerCorrect": 140,
+      "winnerAccuracy": 56.68,
+      "totalWithin5": 20.24,
+      "totalWithin10": 38.87
     },
     "XGBoost": {
-      "matches": 240,
-      "homeMAE": 10.95,
-      "awayMAE": 10.265,
-      "totalMAE": 16.473,
-      "winnerCorrect": 141,
-      "winnerAccuracy": 58.75,
-      "totalWithin5": 21.25,
-      "totalWithin10": 38.33
+      "matches": 247,
+      "homeMAE": 10.955,
+      "awayMAE": 10.247,
+      "totalMAE": 16.426,
+      "winnerCorrect": 147,
+      "winnerAccuracy": 59.51,
+      "totalWithin5": 21.46,
+      "totalWithin10": 38.46
     },
     "LightGBM": {
-      "matches": 240,
-      "homeMAE": 10.923,
-      "awayMAE": 10.607,
-      "totalMAE": 16.825,
-      "winnerCorrect": 135,
-      "winnerAccuracy": 56.25,
-      "totalWithin5": 17.08,
-      "totalWithin10": 35.42
+      "matches": 247,
+      "homeMAE": 10.914,
+      "awayMAE": 10.606,
+      "totalMAE": 16.758,
+      "winnerCorrect": 141,
+      "winnerAccuracy": 57.09,
+      "totalWithin5": 17.0,
+      "totalWithin10": 35.63
     },
     "CatBoost": {
-      "matches": 240,
-      "homeMAE": 10.548,
-      "awayMAE": 10.081,
-      "totalMAE": 15.589,
-      "winnerCorrect": 138,
-      "winnerAccuracy": 57.5,
-      "totalWithin5": 22.92,
-      "totalWithin10": 41.25
+      "matches": 247,
+      "homeMAE": 10.555,
+      "awayMAE": 10.09,
+      "totalMAE": 15.597,
+      "winnerCorrect": 144,
+      "winnerAccuracy": 58.3,
+      "totalWithin5": 22.27,
+      "totalWithin10": 41.3
     },
     "Ensemble": {
-      "matches": 240,
-      "homeMAE": 10.625,
-      "awayMAE": 10.115,
-      "totalMAE": 16.025,
-      "winnerCorrect": 136,
-      "winnerAccuracy": 56.67,
-      "totalWithin5": 20.83,
-      "totalWithin10": 38.75
+      "matches": 247,
+      "homeMAE": 10.629,
+      "awayMAE": 10.116,
+      "totalMAE": 15.998,
+      "winnerCorrect": 143,
+      "winnerAccuracy": 57.89,
+      "totalWithin5": 20.65,
+      "totalWithin10": 38.87
     }
   },
   "backtestRankings": [
     {
       "model": "CatBoost",
-      "matches": 240,
-      "totalMAE": 15.589,
-      "winnerAccuracy": 57.5,
+      "matches": 247,
+      "totalMAE": 15.597,
+      "winnerAccuracy": 58.3,
       "rank": 1
     },
     {
       "model": "RandomForest",
-      "matches": 240,
-      "totalMAE": 15.829,
-      "winnerAccuracy": 55.42,
+      "matches": 247,
+      "totalMAE": 15.811,
+      "winnerAccuracy": 56.68,
       "rank": 2
     },
     {
       "model": "Ensemble",
-      "matches": 240,
-      "totalMAE": 16.025,
-      "winnerAccuracy": 56.67,
+      "matches": 247,
+      "totalMAE": 15.998,
+      "winnerAccuracy": 57.89,
       "rank": 3
     },
     {
       "model": "XGBoost",
-      "matches": 240,
-      "totalMAE": 16.473,
-      "winnerAccuracy": 58.75,
+      "matches": 247,
+      "totalMAE": 16.426,
+      "winnerAccuracy": 59.51,
       "rank": 4
     },
     {
       "model": "LightGBM",
-      "matches": 240,
-      "totalMAE": 16.825,
-      "winnerAccuracy": 56.25,
+      "matches": 247,
+      "totalMAE": 16.758,
+      "winnerAccuracy": 57.09,
       "rank": 5
     }
   ]
