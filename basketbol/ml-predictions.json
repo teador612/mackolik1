@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-09T18:03:48.361712+00:00",
+  "updatedAt": "2026-11-10T01:11:47.932623+00:00",
   "source": "basketball.json",
   "league": "NBA",
   "predictionMethod": "walk_forward",
@@ -63,15 +63,15 @@
     "removedDuplicates": 0,
     "nbaMatches": 524,
     "finishedMatches": 340,
-    "upcomingMatches": 184,
+    "upcomingMatches": 179,
     "historicalCandidates": 340,
     "historicalPredicted": 247,
-    "upcomingPredicted": 179,
+    "upcomingPredicted": 174,
     "skippedInsufficientHistory": 58,
     "skippedInsufficientTraining": 40,
     "skippedInsufficientLineHistory": 0,
-    "todayUTC": "2026-11-09",
-    "upcomingCandidates": 184
+    "todayUTC": "2026-11-10",
+    "upcomingCandidates": 179
   },
   "predictions": [
     {
@@ -19094,341 +19094,6 @@
       }
     },
     {
-      "matchId": "401909952",
-      "sourceMatchId": "401909952",
-      "date": "2026-11-10",
-      "utcDate": "2026-11-10T00:00Z",
-      "league": "NBA",
-      "homeTeam": "Atlanta Hawks",
-      "awayTeam": "Los Angeles Lakers",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 287,
-      "trainingCutoff": "2026-11-10T00:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 226.5,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 226.42
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 110.1,
-            "awayScore": 111.1,
-            "totalScore": 221.2,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          },
-          "XGBoost": {
-            "homeScore": 110.4,
-            "awayScore": 111.5,
-            "totalScore": 221.9,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          },
-          "LightGBM": {
-            "homeScore": 110.1,
-            "awayScore": 110.7,
-            "totalScore": 220.8,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          },
-          "CatBoost": {
-            "homeScore": 108.4,
-            "awayScore": 113.3,
-            "totalScore": 221.7,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          }
-        },
-        "ensemble": {
-          "homeScore": 109.8,
-          "awayScore": 111.7,
-          "totalScore": 221.5,
-          "totalLine": 226.5,
-          "totalDirection": "UNDER",
-          "winner": "AWAY"
-        }
-      }
-    },
-    {
-      "matchId": "401909953",
-      "sourceMatchId": "401909953",
-      "date": "2026-11-10",
-      "utcDate": "2026-11-10T00:00Z",
-      "league": "NBA",
-      "homeTeam": "Charlotte Hornets",
-      "awayTeam": "Cleveland Cavaliers",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 287,
-      "trainingCutoff": "2026-11-10T00:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 226.5,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 226.42
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 106.9,
-            "awayScore": 116.5,
-            "totalScore": 223.4,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          },
-          "XGBoost": {
-            "homeScore": 108.1,
-            "awayScore": 117.7,
-            "totalScore": 225.8,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          },
-          "LightGBM": {
-            "homeScore": 112.9,
-            "awayScore": 120.6,
-            "totalScore": 233.5,
-            "totalLine": 226.5,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          },
-          "CatBoost": {
-            "homeScore": 103.7,
-            "awayScore": 117.8,
-            "totalScore": 221.5,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "AWAY"
-          }
-        },
-        "ensemble": {
-          "homeScore": 107.9,
-          "awayScore": 118.2,
-          "totalScore": 226.1,
-          "totalLine": 226.5,
-          "totalDirection": "UNDER",
-          "winner": "AWAY"
-        }
-      }
-    },
-    {
-      "matchId": "401909954",
-      "sourceMatchId": "401909954",
-      "date": "2026-11-10",
-      "utcDate": "2026-11-10T00:00Z",
-      "league": "NBA",
-      "homeTeam": "Detroit Pistons",
-      "awayTeam": "Washington Wizards",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 287,
-      "trainingCutoff": "2026-11-10T00:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 226.5,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 226.42
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 116.3,
-            "awayScore": 106.1,
-            "totalScore": 222.4,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "XGBoost": {
-            "homeScore": 114.1,
-            "awayScore": 104.6,
-            "totalScore": 218.7,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "LightGBM": {
-            "homeScore": 111.3,
-            "awayScore": 107.5,
-            "totalScore": 218.8,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "CatBoost": {
-            "homeScore": 117.7,
-            "awayScore": 109.8,
-            "totalScore": 227.5,
-            "totalLine": 226.5,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          }
-        },
-        "ensemble": {
-          "homeScore": 114.8,
-          "awayScore": 107.0,
-          "totalScore": 221.8,
-          "totalLine": 226.5,
-          "totalDirection": "UNDER",
-          "winner": "HOME"
-        }
-      }
-    },
-    {
-      "matchId": "401909955",
-      "sourceMatchId": "401909955",
-      "date": "2026-11-10",
-      "utcDate": "2026-11-10T00:30Z",
-      "league": "NBA",
-      "homeTeam": "Toronto Raptors",
-      "awayTeam": "Memphis Grizzlies",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 287,
-      "trainingCutoff": "2026-11-10T00:30:00+00:00",
-      "modelCount": 4,
-      "totalLine": 226.5,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 226.42
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 113.9,
-            "awayScore": 109.9,
-            "totalScore": 223.8,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "XGBoost": {
-            "homeScore": 115.9,
-            "awayScore": 109.0,
-            "totalScore": 224.9,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "LightGBM": {
-            "homeScore": 115.8,
-            "awayScore": 106.1,
-            "totalScore": 221.9,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "CatBoost": {
-            "homeScore": 116.7,
-            "awayScore": 111.0,
-            "totalScore": 227.7,
-            "totalLine": 226.5,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          }
-        },
-        "ensemble": {
-          "homeScore": 115.6,
-          "awayScore": 109.0,
-          "totalScore": 224.6,
-          "totalLine": 226.5,
-          "totalDirection": "UNDER",
-          "winner": "HOME"
-        }
-      }
-    },
-    {
-      "matchId": "401909956",
-      "sourceMatchId": "401909956",
-      "date": "2026-11-10",
-      "utcDate": "2026-11-10T01:00Z",
-      "league": "NBA",
-      "homeTeam": "Dallas Mavericks",
-      "awayTeam": "Indiana Pacers",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 287,
-      "trainingCutoff": "2026-11-10T01:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 226.5,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 226.42
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 116.7,
-            "awayScore": 106.2,
-            "totalScore": 222.9,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "XGBoost": {
-            "homeScore": 115.2,
-            "awayScore": 104.8,
-            "totalScore": 220.0,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "LightGBM": {
-            "homeScore": 114.5,
-            "awayScore": 109.1,
-            "totalScore": 223.6,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          },
-          "CatBoost": {
-            "homeScore": 114.9,
-            "awayScore": 105.8,
-            "totalScore": 220.7,
-            "totalLine": 226.5,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          }
-        },
-        "ensemble": {
-          "homeScore": 115.3,
-          "awayScore": 106.5,
-          "totalScore": 221.8,
-          "totalLine": 226.5,
-          "totalDirection": "UNDER",
-          "winner": "HOME"
-        }
-      }
-    },
-    {
       "matchId": "401909957",
       "sourceMatchId": "401909957",
       "date": "2026-11-10",
@@ -31090,9 +30755,9 @@
   "summary": {
     "historicalMatches": 340,
     "historicalPredictedMatches": 247,
-    "upcomingMatches": 184,
-    "predictedUpcomingMatches": 179,
-    "predictedMatches": 426,
+    "upcomingMatches": 179,
+    "predictedUpcomingMatches": 174,
+    "predictedMatches": 421,
     "modelCount": 4
   }
 }
