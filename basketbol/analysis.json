@@ -1,18 +1,18 @@
 {
-  "updatedAt": "2026-11-11T04:53:20.394870+00:00",
+  "updatedAt": "2026-11-11T13:40:13.008389+00:00",
   "totalMatches": 523,
-  "playedMatches": 352,
-  "upcomingMatches": 171,
+  "playedMatches": 354,
+  "upcomingMatches": 169,
   "invalidMatches": 21,
-  "completedMatches": 331,
+  "completedMatches": 333,
   "overall": {
-    "total": 331,
-    "successful": 171,
-    "failed": 160,
+    "total": 333,
+    "successful": 172,
+    "failed": 161,
     "push": 0,
-    "successRate": 51.66,
-    "averageError": 16.16,
-    "totalError": 5349.45
+    "successRate": 51.65,
+    "averageError": 15.61,
+    "totalError": 5197.72
   },
   "predictionTypes": {
     "ALT": {
@@ -25,13 +25,13 @@
       "totalError": 1264.18
     },
     "ÜST": {
-      "total": 255,
-      "successful": 129,
-      "failed": 126,
+      "total": 257,
+      "successful": 130,
+      "failed": 127,
       "push": 0,
-      "successRate": 50.59,
-      "averageError": 16.02,
-      "totalError": 4085.27
+      "successRate": 50.58,
+      "averageError": 15.31,
+      "totalError": 3933.54
     }
   },
   "lineRanges": {
@@ -54,13 +54,13 @@
       "totalError": 1468.16
     },
     "220-229": {
-      "total": 129,
-      "successful": 56,
-      "failed": 73,
+      "total": 131,
+      "successful": 57,
+      "failed": 74,
       "push": 0,
-      "successRate": 43.41,
-      "averageError": 16.54,
-      "totalError": 2133.14
+      "successRate": 43.51,
+      "averageError": 15.13,
+      "totalError": 1981.41
     },
     "200-209": {
       "total": 13,
@@ -110,13 +110,13 @@
       "totalError": 235.05
     },
     "50-59": {
-      "total": 281,
-      "successful": 144,
-      "failed": 137,
+      "total": 283,
+      "successful": 145,
+      "failed": 138,
       "push": 0,
-      "successRate": 51.25,
-      "averageError": 15.87,
-      "totalError": 4458.81
+      "successRate": 51.24,
+      "averageError": 15.22,
+      "totalError": 4307.08
     },
     "70-79": {
       "total": 3,
@@ -148,39 +148,27 @@
       "totalError": 782.95
     },
     "8-10": {
-      "total": 200,
-      "successful": 109,
-      "failed": 91,
+      "total": 202,
+      "successful": 110,
+      "failed": 92,
       "push": 0,
-      "successRate": 54.5,
-      "averageError": 15.83,
-      "totalError": 3166.89
+      "successRate": 54.46,
+      "averageError": 14.93,
+      "totalError": 3015.16
     }
   },
   "leagues": {
     "NBA": {
-      "total": 331,
-      "successful": 171,
-      "failed": 160,
+      "total": 333,
+      "successful": 172,
+      "failed": 161,
       "push": 0,
-      "successRate": 51.66,
-      "averageError": 16.16,
-      "totalError": 5349.45
+      "successRate": 51.65,
+      "averageError": 15.61,
+      "totalError": 5197.72
     }
   },
   "biggestErrors": [
-    {
-      "homeTeam": "Portland Trail Blazers",
-      "awayTeam": "Oklahoma City Thunder",
-      "league": "NBA",
-      "line": 225.44,
-      "prediction": "ÜST",
-      "actualTotal": 53.0,
-      "homeScore": 26.0,
-      "awayScore": 27.0,
-      "error": 172.44,
-      "difference": -172.44
-    },
     {
       "homeTeam": "Dallas Mavericks",
       "awayTeam": "New Orleans Pelicans",
@@ -288,6 +276,18 @@
       "awayScore": 89.0,
       "error": 47.54,
       "difference": -47.54
+    },
+    {
+      "homeTeam": "Washington Wizards",
+      "awayTeam": "Charlotte Hornets",
+      "league": "NBA",
+      "line": 218.66,
+      "prediction": "ÜST",
+      "actualTotal": 174.0,
+      "homeScore": 95.0,
+      "awayScore": 79.0,
+      "error": 44.66,
+      "difference": -44.66
     }
   ],
   "closestPredictions": [
@@ -376,6 +376,18 @@
       "difference": -0.53
     },
     {
+      "homeTeam": "Portland Trail Blazers",
+      "awayTeam": "Oklahoma City Thunder",
+      "league": "NBA",
+      "line": 225.44,
+      "prediction": "ÜST",
+      "actualTotal": 226.0,
+      "homeScore": 123.0,
+      "awayScore": 103.0,
+      "error": 0.56,
+      "difference": 0.56
+    },
+    {
       "homeTeam": "Cleveland Cavaliers",
       "awayTeam": "Orlando Magic",
       "league": "NBA",
@@ -398,18 +410,6 @@
       "awayScore": 122.0,
       "error": 0.63,
       "difference": 0.63
-    },
-    {
-      "homeTeam": "Oklahoma City Thunder",
-      "awayTeam": "Indiana Pacers",
-      "league": "NBA",
-      "line": 226.76,
-      "prediction": "ÜST",
-      "actualTotal": 226.0,
-      "homeScore": 114.0,
-      "awayScore": 112.0,
-      "error": 0.76,
-      "difference": -0.76
     }
   ]
 }
