@@ -597,6 +597,11 @@ summary:focus-visible {
 }
 
 .coupon-preview { margin-top: 11px; }
+.guarantee-progress { display:block; width:100%; height:7px; margin-top:11px; accent-color:var(--green); }
+.guarantee-picks { padding: 0 18px 14px; border-top: 1px dashed #e6ece7; background: #fbfdfb; }
+.guarantee-picks .pick-head { padding-top: 11px; }
+.guarantee-picks .outcome-select.selected { border-color: #5d76a2; color: #354f78; background: #edf2fa; }
+.guarantee-picks .pick-head span { color: #51698e; }
 
 .coupon-preview summary {
   padding: 7px 0;
@@ -826,6 +831,40 @@ footer {
     <div class="coupon-disclaimer">Çift işaret, o maç için iki kolon seçeneği oluşturur; ikramiye veya kazanç garantisi vermez. Seçili olmayan sonuçlar kupon kapsamına girmez.</div>
   </section>
 
+  <section id="guaranteeBuilder" class="panel coupon-builder">
+    <div class="section-head coupon-heading">
+      <div>
+        <h2>AI destekli garanti sistemi</h2>
+        <div class="small">Maç seçimleri AI olasılıklarından önerilir. Optimizasyon, seçtiğin sonuç havuzunu garanti seviyesine göre kapsayan kolonları arar.</div>
+      </div>
+      <span id="guaranteeStatus" class="badge blue">AI tahminleri bekleniyor</span>
+    </div>
+    <div class="coupon-assist">
+      <span>AI olasılığına göre banko/çifte/kapalı başlangıç seçimi önerir; istersen maç kartlarından değiştirirsin.</span>
+      <button type="button" id="applyGuaranteeAI" class="copy-button auto-options-button">AI seçimlerini uygula</button>
+    </div>
+    <div class="guarantee-picker">
+      <span class="picker-label">Garanti seviyesi</span>
+      <div class="guarantee-options" role="group" aria-label="Garanti seviyesi">
+        <button type="button" class="guarantee-option" data-level="12">12</button>
+        <button type="button" class="guarantee-option" data-level="13">13</button>
+        <button type="button" class="guarantee-option active" data-level="14">14</button>
+        <button type="button" class="guarantee-option" data-level="15">15</button>
+      </div>
+      <button type="button" id="analyzeGuarantee" class="primary">Sistemi analiz et</button>
+    </div>
+    <div class="coupon-totals">
+      <div><span class="total-label">Havuz kolonu</span><strong id="guaranteePoolCount">—</strong></div>
+      <div><span class="total-label">Seçilen kolon</span><strong id="guaranteeColumnCount">—</strong></div>
+      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="guaranteeCost">—</strong></div>
+      <button type="button" id="copyGuaranteeBtn" class="copy-button" disabled>Kolonları kopyala</button>
+    </div>
+    <progress id="guaranteeProgress" class="guarantee-progress" max="100" value="0" hidden></progress>
+    <div id="guaranteeMessage" class="coupon-message">Her maçta AI tahmini eşleştiğinde seçimleri düzenleyip analiz başlat.</div>
+    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele</summary><textarea id="guaranteeOutput" readonly aria-label="Garanti sistemi kolonları" placeholder="Analiz sonucu burada listelenir."></textarea></details>
+    <div class="coupon-disclaimer">Garanti, gerçek sonuç her maçta seçtiğin 1/X/2 havuzunun içindeyse geçerlidir. Bu bir kazanç veya ikramiye garantisi değildir. Hesaplama, tüm olası senaryoları kontrol eder; büyük havuzlar tarayıcıyı yormamak için sınırlandırılır.</div>
+  </section>
+
   <section id="matchList" class="match-list">
     <div class="panel empty">Veriler bekleniyor...</div>
   </section>
@@ -921,6 +960,9 @@ let autoSelections = true;
 let selectedOutcomes = new Map();
 let predictionCache = new Map();
 let generatedColumns = [];
+let guaranteedColumns = [];
+let guaranteeLevel = 14;
+let guaranteeSelections = new Map();
 
 const COLUMN_PRICE = 10;
 
@@ -1240,6 +1282,132 @@ function applyAISuggestions() {
   autoSelections = true;
 }
 
+function applyGuaranteeSuggestions() {
+  const games = getWeekGames(activeWeek);
+  games.forEach((game, index) => {
+    const analysis = getPrediction(game);
+    const key = selectionKey(game, index);
+    if (!analysis.probabilities) {
+      guaranteeSelections.set(key, []);
+      return;
+    }
+    const ranked = OUTCOMES.slice().sort((a, b) => analysis.probabilities[b] - analysis.probabilities[a]);
+    const gap = analysis.probabilities[ranked[0]] - analysis.probabilities[ranked[1]];
+    const top = analysis.probabilities[ranked[0]];
+    const proposal = top <= 35 ? ranked : gap <= 8 ? ranked.slice(0, 2) : [ranked[0]];
+    guaranteeSelections.set(key, proposal);
+  });
+  guaranteedColumns = [];
+  updateGuaranteeSummary(games);
+  renderWeek();
+}
+
+function guaranteeChoices(games) {
+  return games.map((game, index) => {
+    const analysis = getPrediction(game);
+    const key = selectionKey(game, index);
+    if (!guaranteeSelections.has(key)) {
+      const standard = ensureSelections(game, index, analysis).values;
+      guaranteeSelections.set(key, standard.slice());
+    }
+    return guaranteeSelections.get(key);
+  });
+}
+
+function updateGuaranteeSummary(games = getWeekGames(activeWeek)) {
+  const choices = guaranteeChoices(games);
+  const poolSize = choices.reduce((total, options) => total * options.length, 1);
+  const incomplete = !games.length || choices.some(options => !options.length);
+  $("guaranteePoolCount").textContent = incomplete ? "—" : poolSize.toLocaleString("tr-TR");
+  $("guaranteeColumnCount").textContent = guaranteedColumns.length ? guaranteedColumns.length.toLocaleString("tr-TR") : "—";
+  $("guaranteeCost").textContent = guaranteedColumns.length ? (guaranteedColumns.length * COLUMN_PRICE).toLocaleString("tr-TR") + " TL" : "—";
+  $("guaranteeOutput").value = guaranteedColumns.map((row, index) => String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
+  $("copyGuaranteeBtn").disabled = !guaranteedColumns.length;
+  if (incomplete) {
+    $("guaranteeStatus").textContent = "AI tahmini olmayan seçim var";
+    $("guaranteeMessage").textContent = "Garanti analizi için her maçta en az bir sonuç seç. AI tahmini olmayan maçlarda seçimlerini elle yap.";
+  } else if (guaranteeLevel > games.length) {
+    $("guaranteeStatus").textContent = "Maç sayısı yetersiz";
+    $("guaranteeMessage").textContent = guaranteeLevel + " garanti için en az " + guaranteeLevel + " maç gerekir; bu haftada " + games.length + " maç var.";
+  } else {
+    $("guaranteeStatus").textContent = guaranteedColumns.length ? "Garanti kapsamı doğrulandı" : "Analiz bekliyor";
+    $("guaranteeMessage").textContent = guaranteedColumns.length
+      ? guaranteeLevel + " garanti seviyesi, seçili havuzdaki tüm senaryolarda doğrulandı. Greedy kapsama yöntemi " + guaranteedColumns.length.toLocaleString("tr-TR") + " kolon seçti; bu sayı matematiksel minimum olma iddiası taşımaz."
+      : "Havuz hazır: " + poolSize.toLocaleString("tr-TR") + " olası kolon. " + guaranteeLevel + " garanti için Sistemi analiz et düğmesine bas.";
+  }
+}
+
+function expandOutcomePool(choices) {
+  return choices.reduce((rows, options) => rows.flatMap(row => options.map(option => [...row, option])), [[]]);
+}
+
+async function optimizeGuarantee() {
+  const games = getWeekGames(activeWeek);
+  const choices = guaranteeChoices(games);
+  if (!games.length || choices.some(options => !options.length)) {
+    updateGuaranteeSummary(games);
+    return;
+  }
+  if (guaranteeLevel > games.length) {
+    guaranteedColumns = [];
+    updateGuaranteeSummary(games);
+    return;
+  }
+  const poolSize = choices.reduce((total, options) => total * options.length, 1);
+  const MAX_POOL = 1000;
+  if (poolSize > MAX_POOL) {
+    guaranteedColumns = [];
+    $("guaranteeColumnCount").textContent = "—";
+    $("guaranteeCost").textContent = "—";
+    $("guaranteeOutput").value = "";
+    $("copyGuaranteeBtn").disabled = true;
+    $("guaranteeStatus").textContent = "Havuz çok büyük";
+    $("guaranteeMessage").textContent = "Bu havuz " + poolSize.toLocaleString("tr-TR") + " kolon. Tarayıcının yavaşlamaması için analiz 1.000 havuz kolonu ile sınırlandırıldı. Banko/çifte/kapalı seçimlerini azaltıp yeniden dene.";
+    return;
+  }
+  const pool = expandOutcomePool(choices);
+  const radius = games.length - guaranteeLevel;
+  if (radius <= 0) {
+    guaranteedColumns = pool;
+  } else {
+    const cover = pool.map(() => []);
+    for (let i = 0; i < pool.length; i++) {
+      for (let j = 0; j < pool.length; j++) {
+        let distance = 0;
+        for (let k = 0; k < games.length && distance <= radius; k++) if (pool[i][k] !== pool[j][k]) distance++;
+        if (distance <= radius) cover[i].push(j);
+      }
+      if (i % 20 === 19 || i === pool.length - 1) {
+        $("guaranteeProgress").hidden = false;
+        $("guaranteeProgress").value = Math.round((i + 1) / pool.length * 65);
+        $("guaranteeStatus").textContent = "Olasılıklar taranıyor";
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+    const uncovered = new Uint8Array(pool.length).fill(1);
+    let remaining = pool.length;
+    guaranteedColumns = [];
+    while (remaining) {
+      let best = -1;
+      let bestGain = -1;
+      for (let i = 0; i < cover.length; i++) {
+        let gain = 0;
+        for (const j of cover[i]) gain += uncovered[j];
+        if (gain > bestGain) { best = i; bestGain = gain; }
+      }
+      if (best < 0 || bestGain <= 0) break;
+      guaranteedColumns.push(pool[best]);
+      for (const j of cover[best]) if (uncovered[j]) { uncovered[j] = 0; remaining--; }
+      $("guaranteeProgress").value = 65 + Math.round((pool.length - remaining) / pool.length * 35);
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+    if (remaining) guaranteedColumns = [];
+  }
+  $("guaranteeProgress").hidden = true;
+  $("guaranteeProgress").value = 0;
+  updateGuaranteeSummary(games);
+}
+
 function selectionMarkup(key, values, analysis) {
   const buttons = OUTCOMES.map(outcome => {
     const active = values.includes(outcome);
@@ -1255,6 +1423,14 @@ function selectionMarkup(key, values, analysis) {
     <div class="pick-head"><span>Kupon seçimi · en fazla 2 işaret</span><small>${hint}</small></div>
     <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">${buttons}</div>
   </div>`;
+}
+
+function guaranteeSelectionMarkup(key, values, analysis) {
+  const buttons = OUTCOMES.map(outcome => `<button type="button" class="outcome-select${values.includes(outcome) ? " selected" : ""}"
+    data-guarantee-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
+    aria-pressed="${values.includes(outcome)}" title="Garanti havuzuna ${outcome} ekle/çıkar">${outcome}</button>`).join("");
+  const kind = values.length === 1 ? "Banko" : values.length === 2 ? "Çifte" : values.length === 3 ? "Kapalı" : "Seçim gerekli";
+  return `<div class="guarantee-picks"><div class="pick-head"><span>Garanti havuzu · 1–3 sonuç</span><small>${analysis.probabilities ? "AI önerisi" : "Manuel seçim"} · ${kind}</small></div><div class="outcome-buttons" role="group" aria-label="Garanti sonucu seçimi">${buttons}</div></div>`;
 }
 
 function readCurrentChoices(games) {
@@ -1314,6 +1490,17 @@ function handleOutcomeClick(button) {
   }
   selectedOutcomes.set(key, values);
   autoSelections = false;
+  renderWeek();
+}
+
+function handleGuaranteeOutcomeClick(button) {
+  const key = button.dataset.guaranteeMatchKey;
+  const outcome = button.dataset.outcome;
+  const values = guaranteeSelections.get(key) || [];
+  const next = values.includes(outcome) ? values.filter(value => value !== outcome) : [...values, outcome];
+  if (next.length > 3) return;
+  guaranteeSelections.set(key, next);
+  guaranteedColumns = [];
   renderWeek();
 }
 
@@ -1436,6 +1623,7 @@ function renderWeek() {
       index,
       analysis
     );
+    const guaranteedPicks = guaranteeChoices(games)[index];
 
     const result = normalizeResult(
       game.result ?? game.outcome ?? game.sonuc
@@ -1549,6 +1737,8 @@ function renderWeek() {
           pickState.values,
           analysis
         )}
+
+        ${guaranteeSelectionMarkup(pickState.key, guaranteedPicks, analysis)}
 
         <div class="match-info">
 
@@ -1673,6 +1863,7 @@ function renderWeek() {
       : "Hafta —";
 
   updateCouponPanel(games);
+  updateGuaranteeSummary(games);
 
   return {
     games,
@@ -1777,6 +1968,7 @@ async function loadData() {
 /* Hafta seçimi */
 $("weekSelect").addEventListener("change", event => {
   activeWeek = event.target.value;
+  guaranteedColumns = [];
   if (autoSelections) applyAISuggestions();
   updateMessage();
 });
@@ -1786,6 +1978,11 @@ $("autoOptionsBtn").addEventListener("click", () => {
   renderWeek();
 });
 $("matchList").addEventListener("click", event => {
+  const guaranteeButton = event.target.closest("[data-guarantee-match-key]");
+  if (guaranteeButton) {
+    handleGuaranteeOutcomeClick(guaranteeButton);
+    return;
+  }
   const button = event.target.closest(".outcome-select");
 
   if (button) {
@@ -1798,6 +1995,37 @@ $("copyColumnsBtn").addEventListener(
   "click",
   copyColumns
 );
+$("copyGuaranteeBtn").addEventListener("click", async () => {
+  if (!guaranteedColumns.length) return;
+  try {
+    await navigator.clipboard.writeText($("guaranteeOutput").value);
+  } catch {
+    $("guaranteeOutput").focus();
+    $("guaranteeOutput").select();
+    document.execCommand("copy");
+  }
+  const button = $("copyGuaranteeBtn");
+  button.textContent = "Kopyalandı";
+  setTimeout(() => { button.textContent = "Kolonları kopyala"; }, 1400);
+});
+$("applyGuaranteeAI").addEventListener("click", applyGuaranteeSuggestions);
+$("analyzeGuarantee").addEventListener("click", () => {
+  const button = $("analyzeGuarantee");
+  button.disabled = true;
+  button.textContent = "Hesaplanıyor...";
+  $("guaranteeProgress").hidden = false;
+  $("guaranteeProgress").value = 0;
+  setTimeout(async () => {
+    try { await optimizeGuarantee(); }
+    finally { $("guaranteeProgress").hidden = true; button.disabled = false; button.textContent = "Sistemi analiz et"; }
+  }, 25);
+});
+document.querySelectorAll(".guarantee-option").forEach(button => button.addEventListener("click", () => {
+  guaranteeLevel = Number(button.dataset.level);
+  document.querySelectorAll(".guarantee-option").forEach(option => option.classList.toggle("active", option === button));
+  guaranteedColumns = [];
+  updateGuaranteeSummary();
+}));
 
 /* İlk yükleme */
 loadData();
