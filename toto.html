@@ -597,6 +597,19 @@ summary:focus-visible {
 }
 
 .coupon-preview { margin-top: 11px; }
+.ticket-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; max-height:720px; margin-top:9px; padding:2px; overflow:auto; }
+.ticket-card { overflow:hidden; border:1px solid #d8e2da; border-radius:10px; background:#fff; box-shadow:0 2px 8px rgba(20,50,32,.045); }
+.ticket-head { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; color:#fff; background:#174b37; font-size:10px; font-weight:750; letter-spacing:.04em; }
+.ticket-head small { color:#c6ded0; font-size:9px; font-weight:600; }
+.ticket-row { display:grid; grid-template-columns:22px minmax(0,1fr) 72px; align-items:center; gap:6px; min-height:31px; padding:4px 8px; border-bottom:1px solid #edf1ed; }
+.ticket-row:last-child { border-bottom:0; }
+.ticket-no { color:#7c8a80; font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; }
+.ticket-teams { overflow:hidden; color:#36483c; font-size:9px; font-weight:620; text-overflow:ellipsis; white-space:nowrap; }
+.ticket-marks { display:flex; justify-content:flex-end; gap:3px; }
+.ticket-mark { display:grid; width:19px; height:19px; place-items:center; border:1px solid #dfe7e1; border-radius:5px; color:#9aa49c; background:#fafcfa; font-size:8px; font-weight:700; }
+.ticket-mark.active { border-color:#14734e; color:#fff; background:#14734e; }
+.ticket-more { grid-column:1/-1; padding:8px; border:1px dashed #dce5de; border-radius:9px; color:#627166; background:#f8faf8; font-size:10px; text-align:center; }
+.copy-source { position:absolute; left:-10000px; width:1px; height:1px; opacity:0; }
 .guarantee-progress { display:block; width:100%; height:7px; margin-top:11px; accent-color:var(--green); }
 .guarantee-picks { padding: 0 18px 14px; border-top: 1px dashed #e6ece7; background: #fbfdfb; }
 .guarantee-picks .pick-head { padding-top: 11px; }
@@ -742,6 +755,7 @@ footer {
   .details { padding: 0 15px; }
   .coupon-totals { grid-template-columns: 1fr 1fr; gap: 12px 8px; }
   .coupon-totals .copy-button { grid-column: 1 / -1; }
+  .ticket-grid { grid-template-columns:1fr; max-height:620px; }
   .pick-control {
     align-items: flex-start;
     padding-inline: 15px;
@@ -825,7 +839,8 @@ footer {
     </div>
     <details class="coupon-preview">
       <summary>Oluşan kolonları incele</summary>
-      <textarea id="columnOutput" readonly aria-label="Oluşan Spor Toto kolonları" placeholder="Kupon kolonları burada listelenecek."></textarea>
+      <div id="columnTickets" class="ticket-grid" aria-label="Spor Toto kupon kolonları"></div>
+      <textarea id="columnOutput" class="copy-source" readonly aria-label="Kolonları kopyalama metni"></textarea>
     </details>
     <div id="couponMessage" class="coupon-message">AI tahminleri yüklendiğinde kupon hazırlanır.</div>
     <div class="coupon-disclaimer">Çift işaret, o maç için iki kolon seçeneği oluşturur; ikramiye veya kazanç garantisi vermez. Seçili olmayan sonuçlar kupon kapsamına girmez.</div>
@@ -861,7 +876,7 @@ footer {
     </div>
     <progress id="guaranteeProgress" class="guarantee-progress" max="100" value="0" hidden></progress>
     <div id="guaranteeMessage" class="coupon-message">Her maçta AI tahmini eşleştiğinde seçimleri düzenleyip analiz başlat.</div>
-    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele</summary><textarea id="guaranteeOutput" readonly aria-label="Garanti sistemi kolonları" placeholder="Analiz sonucu burada listelenir."></textarea></details>
+    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele</summary><div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div><textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea></details>
     <div class="coupon-disclaimer">Garanti, gerçek sonuç her maçta seçtiğin 1/X/2 havuzunun içindeyse geçerlidir. Bu bir kazanç veya ikramiye garantisi değildir. Hesaplama, tüm olası senaryoları kontrol eder; büyük havuzlar tarayıcıyı yormamak için sınırlandırılır.</div>
   </section>
 
@@ -1322,6 +1337,7 @@ function updateGuaranteeSummary(games = getWeekGames(activeWeek)) {
   $("guaranteeColumnCount").textContent = guaranteedColumns.length ? guaranteedColumns.length.toLocaleString("tr-TR") : "—";
   $("guaranteeCost").textContent = guaranteedColumns.length ? (guaranteedColumns.length * COLUMN_PRICE).toLocaleString("tr-TR") + " TL" : "—";
   $("guaranteeOutput").value = guaranteedColumns.map((row, index) => String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
+  renderTicketCards("guaranteeTickets", guaranteedColumns, games);
   $("copyGuaranteeBtn").disabled = !guaranteedColumns.length;
   if (incomplete) {
     $("guaranteeStatus").textContent = "AI tahmini olmayan seçim var";
@@ -1339,6 +1355,27 @@ function updateGuaranteeSummary(games = getWeekGames(activeWeek)) {
 
 function expandOutcomePool(choices) {
   return choices.reduce((rows, options) => rows.flatMap(row => options.map(option => [...row, option])), [[]]);
+}
+
+function renderTicketCards(containerId, columns, games) {
+  const container = $(containerId);
+  if (!columns.length) {
+    container.innerHTML = '<div class="ticket-more">Kolonlar oluşturulduğunda kupon görünümü burada yer alacak.</div>';
+    return;
+  }
+  const visible = columns.slice(0, 80);
+  container.innerHTML = visible.map((column, columnIndex) => `
+    <article class="ticket-card">
+      <div class="ticket-head"><span>SPOR TOTO KUPONU</span><small>Kolon ${String(columnIndex + 1).padStart(2, "0")}</small></div>
+      ${games.map((game, matchIndex) => {
+        const home = game.home ?? game.evSahibi ?? "Ev sahibi";
+        const away = game.away ?? game.deplasman ?? "Deplasman";
+        const marked = column[matchIndex];
+        return `<div class="ticket-row"><span class="ticket-no">${String(game.number ?? matchIndex + 1).padStart(2, "0")}</span><span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span><span class="ticket-marks">${OUTCOMES.map(outcome => `<span class="ticket-mark${marked === outcome ? " active" : ""}">${outcome}</span>`).join("")}</span></div>`;
+      }).join("")}
+    </article>`).join("") + (columns.length > visible.length
+      ? `<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi “Kolonları kopyala” düğmesiyle alınabilir.</div>`
+      : "");
 }
 
 async function optimizeGuarantee() {
@@ -1456,6 +1493,7 @@ function updateCouponPanel(games = getWeekGames(activeWeek)) {
     $("couponColumns").textContent = "—";
     $("couponCost").textContent = "—";
     $("columnOutput").value = "";
+    renderTicketCards("columnTickets", [], games);
     $("copyColumnsBtn").disabled = true;
     $("couponStatus").textContent = "Seçimleri tamamla";
     message.textContent = "Her maçta en az bir sonuç seç. Bir maçta en fazla iki sonuç işaretleyebilirsin.";
@@ -1469,6 +1507,7 @@ function updateCouponPanel(games = getWeekGames(activeWeek)) {
   $("couponCost").textContent = totalCost.toLocaleString("tr-TR") + " TL";
   $("columnOutput").value = generatedColumns.map((row, index) =>
     String(index + 1).padStart(2, "0") + "  " + row.join(" · ")).join("\n");
+  renderTicketCards("columnTickets", generatedColumns, games);
   $("copyColumnsBtn").disabled = false;
   $("couponStatus").textContent = doubleCount ? doubleCount + " çift seçim · kupon hazır" : "Tekli kupon hazır";
   message.textContent = (autoSelections
