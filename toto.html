@@ -917,35 +917,26 @@ const AI_URL = "https://teador612.github.io/ai/predictions.json";
 
 const OUTCOMES = ["1", "X", "2"];
 
+
 const TEAM_ALIASES = {
+  // İngiltere kulüpleri
   "man utd": "manchester united",
   "manchester utd": "manchester united",
   "man united": "manchester united",
   "a villa": "aston villa",
+  "m city": "manchester city",
+  "man city": "manchester city",
+
+  // Avrupa kulüpleri
   "atl madrid": "atletico madrid",
   "ath madrid": "atletico madrid",
   "atletico de madrid": "atletico madrid",
-  "atletico madrid": "atletico madrid",
   "paris st germain": "paris saint germain",
   "paris sg": "paris saint germain",
   "p s germain": "paris saint germain",
   "psg": "paris saint germain",
-  "rams basaksehir": "istanbul basaksehir",
-  "basaksehir": "istanbul basaksehir",
   "inter milan": "inter",
   "internazionale": "inter",
-  "atletico mineiro": "atletico mineiro",
-  "atletico mg": "atletico mineiro",
-  "caykur rizespor": "caykur rizespor",
-  "rize spor": "caykur rizespor",
-  "como 1907": "como",
-  "tumosan konyaspor": "konyaspor",
-  "t konyaspor": "konyaspor",
-  "arca corum fk": "corum",
-  "corum fk": "corum",
-  "a corum fk": "corum",
-  "m city": "manchester city",
-  "man city": "manchester city",
   "b munih": "bayern munich",
   "bayern munchen": "bayern munich",
   "b dortmund": "borussia dortmund",
@@ -955,14 +946,120 @@ const TEAM_ALIASES = {
   "a madrid": "atletico madrid",
   "a bilbao": "athletic bilbao",
   "v stuttgart": "vfb stuttgart",
-  "vfb stuttgart": "vfb stuttgart",
   "s prag": "sparta prague",
   "shakhtar d": "shakhtar donetsk",
+
+  // Türkiye kulüpleri
+  "rams basaksehir": "istanbul basaksehir",
+  "basaksehir": "istanbul basaksehir",
+  "caykur rizespor": "caykur rizespor",
+  "rize spor": "caykur rizespor",
+  "como 1907": "como",
+  "tumosan konyaspor": "konyaspor",
+  "t konyaspor": "konyaspor",
+  "arca corum fk": "corum",
+  "corum fk": "corum",
+  "a corum fk": "corum",
   "c alanyaspor": "alanyaspor",
   "i basaksehir": "istanbul basaksehir",
   "c rizespor": "caykur rizespor",
-  "a s faaliyetler": "amed sportiv faaliyetler"
+  "a s faaliyetler": "amed sportiv faaliyetler",
+
+  // Millî takım eşleştirmeleri
+  "fransa": "france",
+  "france": "france",
+
+  "turkiye": "turkey",
+  "turkey": "turkey",
+
+  "bulgaristan": "bulgaria",
+  "bulgaria": "bulgaria",
+
+  "izlanda": "iceland",
+  "iceland": "iceland",
+
+  "lihtenstayn": "liechtenstein",
+  "liechtenstein": "liechtenstein",
+
+  "azerbaycan": "azerbaijan",
+  "azerbaijan": "azerbaijan",
+
+  "luksemburg": "luxembourg",
+  "luxembourg": "luxembourg",
+
+  "estonya": "estonia",
+  "estonia": "estonia",
+
+  "slovakya": "slovakia",
+  "slovakia": "slovakia",
+
+  "faroe adalari": "faroe islands",
+  "faroe islands": "faroe islands",
+  "faroe": "faroe islands",
+
+  "gurcistan": "georgia",
+  "georgia": "georgia",
+
+  "macaristan": "hungary",
+  "hungary": "hungary",
+
+  "norvec": "norway",
+  "norway": "norway",
+
+  "galler": "wales",
+  "wales": "wales",
+
+  "portekiz": "portugal",
+  "portugal": "portugal",
+
+  "danimarka": "denmark",
+  "denmark": "denmark",
+
+  "belcika": "belgium",
+  "belgium": "belgium",
+
+  "italya": "italy",
+  "italy": "italy",
+
+  "hirvatistan": "croatia",
+  "croatia": "croatia",
+
+  "cekya": "czechia",
+  "czechia": "czechia",
+  "czech republic": "czechia",
+
+  "ispanya": "spain",
+  "spain": "spain",
+
+  "ingiltere": "england",
+  "england": "england",
+
+  "almanya": "germany",
+  "germany": "germany",
+
+  "hollanda": "netherlands",
+  "netherlands": "netherlands",
+
+  "kuzey makedonya cumhuriyeti": "north macedonia",
+  "kuzey makedonya": "north macedonia",
+  "north macedonia": "north macedonia",
+
+  "slovenya": "slovenia",
+  "slovenia": "slovenia",
+
+  "yunanistan": "greece",
+  "greece": "greece",
+
+  "sirbistan": "serbia",
+  "serbia": "serbia",
+
+  "isvicre": "switzerland",
+  "switzerland": "switzerland",
+
+  "iskocya": "scotland",
+  "scotland": "scotland"
 };
+
 
 const IGNORE = new Set([
   "fc", "cf", "sc", "afc", "club", "football", "futbol", "the"
