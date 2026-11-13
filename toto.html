@@ -602,16 +602,12 @@ summary:focus-visible {
 .ticket-head { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; color:#fff; background:#174b37; font-size:10px; font-weight:750; letter-spacing:.04em; }
 .ticket-head small { color:#c6ded0; font-size:9px; font-weight:600; }
 .ticket-row { display:grid; grid-template-columns:22px minmax(0,1fr) 72px; align-items:center; gap:6px; min-height:31px; padding:4px 8px; border-bottom:1px solid #edf1ed; }
-.ticket-row.hit { background:#edf7ef; }
-.ticket-row.miss { background:#fff0ee; }
 .ticket-row:last-child { border-bottom:0; }
 .ticket-no { color:#7c8a80; font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; }
 .ticket-teams { overflow:hidden; color:#36483c; font-size:9px; font-weight:620; text-overflow:ellipsis; white-space:nowrap; }
 .ticket-marks { display:flex; justify-content:flex-end; gap:3px; }
 .ticket-mark { display:grid; width:19px; height:19px; place-items:center; border:1px solid #dfe7e1; border-radius:5px; color:#9aa49c; background:#fafcfa; font-size:8px; font-weight:700; }
 .ticket-mark.active { border-color:#14734e; color:#fff; background:#14734e; }
-.ticket-row.miss .ticket-mark.active { border-color:#bd4842; color:#fff; background:#bd4842; }
-.ticket-mark.actual { outline:2px solid #426b9a; outline-offset:1px; }
 .ticket-more { grid-column:1/-1; padding:8px; border:1px dashed #dce5de; border-radius:9px; color:#627166; background:#f8faf8; font-size:10px; text-align:center; }
 .copy-source { position:absolute; left:-10000px; width:1px; height:1px; opacity:0; }
 .guarantee-progress { display:block; width:100%; height:7px; margin-top:11px; accent-color:var(--green); }
@@ -842,7 +838,7 @@ footer {
       <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Kolonları kopyala</button>
     </div>
     <details class="coupon-preview">
-      <summary>Oluşan kolonları incele · yeşil doğru, kırmızı yanlış</summary>
+      <summary>Oluşan kolonları incele</summary>
       <div id="columnTickets" class="ticket-grid" aria-label="Spor Toto kupon kolonları"></div>
       <textarea id="columnOutput" class="copy-source" readonly aria-label="Kolonları kopyalama metni"></textarea>
     </details>
@@ -880,7 +876,7 @@ footer {
     </div>
     <progress id="guaranteeProgress" class="guarantee-progress" max="100" value="0" hidden></progress>
     <div id="guaranteeMessage" class="coupon-message">Her maçta AI tahmini eşleştiğinde seçimleri düzenleyip analiz başlat.</div>
-    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele · yeşil doğru, kırmızı yanlış</summary><div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div><textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea></details>
+    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele</summary><div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div><textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea></details>
     <div class="coupon-disclaimer">Garanti, gerçek sonuç her maçta seçtiğin 1/X/2 havuzunun içindeyse geçerlidir. Bu bir kazanç veya ikramiye garantisi değildir. Hesaplama, tüm olası senaryoları kontrol eder; büyük havuzlar tarayıcıyı yormamak için sınırlandırılır.</div>
   </section>
 
@@ -917,26 +913,35 @@ const AI_URL = "https://teador612.github.io/ai/predictions.json";
 
 const OUTCOMES = ["1", "X", "2"];
 
-
 const TEAM_ALIASES = {
-  // İngiltere kulüpleri
   "man utd": "manchester united",
   "manchester utd": "manchester united",
   "man united": "manchester united",
   "a villa": "aston villa",
-  "m city": "manchester city",
-  "man city": "manchester city",
-
-  // Avrupa kulüpleri
   "atl madrid": "atletico madrid",
   "ath madrid": "atletico madrid",
   "atletico de madrid": "atletico madrid",
+  "atletico madrid": "atletico madrid",
   "paris st germain": "paris saint germain",
   "paris sg": "paris saint germain",
   "p s germain": "paris saint germain",
   "psg": "paris saint germain",
+  "rams basaksehir": "istanbul basaksehir",
+  "basaksehir": "istanbul basaksehir",
   "inter milan": "inter",
   "internazionale": "inter",
+  "atletico mineiro": "atletico mineiro",
+  "atletico mg": "atletico mineiro",
+  "caykur rizespor": "caykur rizespor",
+  "rize spor": "caykur rizespor",
+  "como 1907": "como",
+  "tumosan konyaspor": "konyaspor",
+  "t konyaspor": "konyaspor",
+  "arca corum fk": "corum",
+  "corum fk": "corum",
+  "a corum fk": "corum",
+  "m city": "manchester city",
+  "man city": "manchester city",
   "b munih": "bayern munich",
   "bayern munchen": "bayern munich",
   "b dortmund": "borussia dortmund",
@@ -946,120 +951,14 @@ const TEAM_ALIASES = {
   "a madrid": "atletico madrid",
   "a bilbao": "athletic bilbao",
   "v stuttgart": "vfb stuttgart",
+  "vfb stuttgart": "vfb stuttgart",
   "s prag": "sparta prague",
   "shakhtar d": "shakhtar donetsk",
-
-  // Türkiye kulüpleri
-  "rams basaksehir": "istanbul basaksehir",
-  "basaksehir": "istanbul basaksehir",
-  "caykur rizespor": "caykur rizespor",
-  "rize spor": "caykur rizespor",
-  "como 1907": "como",
-  "tumosan konyaspor": "konyaspor",
-  "t konyaspor": "konyaspor",
-  "arca corum fk": "corum",
-  "corum fk": "corum",
-  "a corum fk": "corum",
   "c alanyaspor": "alanyaspor",
   "i basaksehir": "istanbul basaksehir",
   "c rizespor": "caykur rizespor",
-  "a s faaliyetler": "amed sportiv faaliyetler",
-
-  // Millî takım eşleştirmeleri
-  "fransa": "france",
-  "france": "france",
-
-  "turkiye": "turkey",
-  "turkey": "turkey",
-
-  "bulgaristan": "bulgaria",
-  "bulgaria": "bulgaria",
-
-  "izlanda": "iceland",
-  "iceland": "iceland",
-
-  "lihtenstayn": "liechtenstein",
-  "liechtenstein": "liechtenstein",
-
-  "azerbaycan": "azerbaijan",
-  "azerbaijan": "azerbaijan",
-
-  "luksemburg": "luxembourg",
-  "luxembourg": "luxembourg",
-
-  "estonya": "estonia",
-  "estonia": "estonia",
-
-  "slovakya": "slovakia",
-  "slovakia": "slovakia",
-
-  "faroe adalari": "faroe islands",
-  "faroe islands": "faroe islands",
-  "faroe": "faroe islands",
-
-  "gurcistan": "georgia",
-  "georgia": "georgia",
-
-  "macaristan": "hungary",
-  "hungary": "hungary",
-
-  "norvec": "norway",
-  "norway": "norway",
-
-  "galler": "wales",
-  "wales": "wales",
-
-  "portekiz": "portugal",
-  "portugal": "portugal",
-
-  "danimarka": "denmark",
-  "denmark": "denmark",
-
-  "belcika": "belgium",
-  "belgium": "belgium",
-
-  "italya": "italy",
-  "italy": "italy",
-
-  "hirvatistan": "croatia",
-  "croatia": "croatia",
-
-  "cekya": "czechia",
-  "czechia": "czechia",
-  "czech republic": "czechia",
-
-  "ispanya": "spain",
-  "spain": "spain",
-
-  "ingiltere": "england",
-  "england": "england",
-
-  "almanya": "germany",
-  "germany": "germany",
-
-  "hollanda": "netherlands",
-  "netherlands": "netherlands",
-
-  "kuzey makedonya cumhuriyeti": "north macedonia",
-  "kuzey makedonya": "north macedonia",
-  "north macedonia": "north macedonia",
-
-  "slovenya": "slovenia",
-  "slovenia": "slovenia",
-
-  "yunanistan": "greece",
-  "greece": "greece",
-
-  "sirbistan": "serbia",
-  "serbia": "serbia",
-
-  "isvicre": "switzerland",
-  "switzerland": "switzerland",
-
-  "iskocya": "scotland",
-  "scotland": "scotland"
+  "a s faaliyetler": "amed sportiv faaliyetler"
 };
-
 
 const IGNORE = new Set([
   "fc", "cf", "sc", "afc", "club", "football", "futbol", "the"
@@ -1465,32 +1364,18 @@ function renderTicketCards(containerId, columns, games) {
     return;
   }
   const visible = columns.slice(0, 80);
-  container.innerHTML = visible.map((column, columnIndex) => {
-    const settled = games.reduce((count, game) => count + Boolean(normalizeResult(game.result ?? game.outcome ?? game.sonuc)), 0);
-    const hits = games.reduce((count, game, matchIndex) => {
-      const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
-      return count + Boolean(result && column[matchIndex] === result);
-    }, 0);
-    const score = !settled
-      ? "Sonuç bekleniyor"
-      : settled === games.length
-        ? `${hits}/${games.length} doğru`
-        : `${hits} doğru · ${settled}/${games.length} sonuç`;
-    return `
+  container.innerHTML = visible.map((column, columnIndex) => `
     <article class="ticket-card">
-      <div class="ticket-head"><span>SPOR TOTO KUPONU<br><small>Kolon ${String(columnIndex + 1).padStart(2, "0")}</small></span><small class="ticket-score">${score}</small></div>
+      <div class="ticket-head"><span>SPOR TOTO KUPONU</span><small>Kolon ${String(columnIndex + 1).padStart(2, "0")}</small></div>
       ${games.map((game, matchIndex) => {
         const home = game.home ?? game.evSahibi ?? "Ev sahibi";
         const away = game.away ?? game.deplasman ?? "Deplasman";
         const marked = column[matchIndex];
-        const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
-        const rowState = result ? (marked === result ? " hit" : " miss") : "";
-        return `<div class="ticket-row${rowState}"><span class="ticket-no">${String(game.number ?? matchIndex + 1).padStart(2, "0")}</span><span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span><span class="ticket-marks">${OUTCOMES.map(outcome => `<span class="ticket-mark${marked === outcome ? " active" : ""}${result === outcome ? " actual" : ""}" title="${result === outcome ? "Gerçek sonuç" : outcome}">${outcome}</span>`).join("")}</span></div>`;
+        return `<div class="ticket-row"><span class="ticket-no">${String(game.number ?? matchIndex + 1).padStart(2, "0")}</span><span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span><span class="ticket-marks">${OUTCOMES.map(outcome => `<span class="ticket-mark${marked === outcome ? " active" : ""}">${outcome}</span>`).join("")}</span></div>`;
       }).join("")}
-    </article>`;
-  }).join("") + (columns.length > visible.length
-    ? `<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi “Kolonları kopyala” düğmesiyle alınabilir.</div>`
-    : "");
+    </article>`).join("") + (columns.length > visible.length
+      ? `<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi “Kolonları kopyala” düğmesiyle alınabilir.</div>`
+      : "");
 }
 
 async function optimizeGuarantee() {
