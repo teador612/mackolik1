@@ -602,12 +602,16 @@ summary:focus-visible {
 .ticket-head { display:flex; justify-content:space-between; align-items:center; padding:8px 10px; color:#fff; background:#174b37; font-size:10px; font-weight:750; letter-spacing:.04em; }
 .ticket-head small { color:#c6ded0; font-size:9px; font-weight:600; }
 .ticket-row { display:grid; grid-template-columns:22px minmax(0,1fr) 72px; align-items:center; gap:6px; min-height:31px; padding:4px 8px; border-bottom:1px solid #edf1ed; }
+.ticket-row.hit { background:#edf7ef; }
+.ticket-row.miss { background:#fff0ee; }
 .ticket-row:last-child { border-bottom:0; }
 .ticket-no { color:#7c8a80; font-size:9px; font-weight:750; font-variant-numeric:tabular-nums; }
 .ticket-teams { overflow:hidden; color:#36483c; font-size:9px; font-weight:620; text-overflow:ellipsis; white-space:nowrap; }
 .ticket-marks { display:flex; justify-content:flex-end; gap:3px; }
 .ticket-mark { display:grid; width:19px; height:19px; place-items:center; border:1px solid #dfe7e1; border-radius:5px; color:#9aa49c; background:#fafcfa; font-size:8px; font-weight:700; }
 .ticket-mark.active { border-color:#14734e; color:#fff; background:#14734e; }
+.ticket-row.miss .ticket-mark.active { border-color:#bd4842; color:#fff; background:#bd4842; }
+.ticket-mark.actual { outline:2px solid #426b9a; outline-offset:1px; }
 .ticket-more { grid-column:1/-1; padding:8px; border:1px dashed #dce5de; border-radius:9px; color:#627166; background:#f8faf8; font-size:10px; text-align:center; }
 .copy-source { position:absolute; left:-10000px; width:1px; height:1px; opacity:0; }
 .guarantee-progress { display:block; width:100%; height:7px; margin-top:11px; accent-color:var(--green); }
@@ -835,10 +839,11 @@ footer {
       <div><span class="total-label">Oluşan kolon</span><strong id="couponColumns">—</strong></div>
       <div><span class="total-label">Kolon bedeli</span><strong id="columnPrice">10 TL</strong></div>
       <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="couponCost">—</strong></div>
-      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Kolonları kopyala</button>
+      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Nesine’ye aktar</button>
     </div>
+    <div class="coupon-message">Düğme kolonları kopyalar ve Nesine Spor Toto’yu açar. Nesine’de kupon işaretlerini kontrol edip onaylaman gerekir.</div>
     <details class="coupon-preview">
-      <summary>Oluşan kolonları incele</summary>
+      <summary>Oluşan kolonları incele · yeşil doğru, kırmızı yanlış</summary>
       <div id="columnTickets" class="ticket-grid" aria-label="Spor Toto kupon kolonları"></div>
       <textarea id="columnOutput" class="copy-source" readonly aria-label="Kolonları kopyalama metni"></textarea>
     </details>
@@ -872,11 +877,12 @@ footer {
       <div><span class="total-label">Havuz kolonu</span><strong id="guaranteePoolCount">—</strong></div>
       <div><span class="total-label">Seçilen kolon</span><strong id="guaranteeColumnCount">—</strong></div>
       <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="guaranteeCost">—</strong></div>
-      <button type="button" id="copyGuaranteeBtn" class="copy-button" disabled>Kolonları kopyala</button>
+      <button type="button" id="copyGuaranteeBtn" class="copy-button" disabled>Nesine’ye aktar</button>
     </div>
+    <div class="coupon-message">Optimize kolonlar panoya kopyalanır ve Nesine Spor Toto açılır. Kolonları Nesine’de kontrol edip onayla.</div>
     <progress id="guaranteeProgress" class="guarantee-progress" max="100" value="0" hidden></progress>
     <div id="guaranteeMessage" class="coupon-message">Her maçta AI tahmini eşleştiğinde seçimleri düzenleyip analiz başlat.</div>
-    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele</summary><div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div><textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea></details>
+    <details class="coupon-preview"><summary>Optimize edilmiş kolonları incele · yeşil doğru, kırmızı yanlış</summary><div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div><textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea></details>
     <div class="coupon-disclaimer">Garanti, gerçek sonuç her maçta seçtiğin 1/X/2 havuzunun içindeyse geçerlidir. Bu bir kazanç veya ikramiye garantisi değildir. Hesaplama, tüm olası senaryoları kontrol eder; büyük havuzlar tarayıcıyı yormamak için sınırlandırılır.</div>
   </section>
 
@@ -910,6 +916,7 @@ footer {
 "use strict";
 
 const AI_URL = "https://teador612.github.io/ai/predictions.json";
+const NESINE_URL = "https://www.nesine.com/sportoto";
 
 const OUTCOMES = ["1", "X", "2"];
 
@@ -1364,18 +1371,32 @@ function renderTicketCards(containerId, columns, games) {
     return;
   }
   const visible = columns.slice(0, 80);
-  container.innerHTML = visible.map((column, columnIndex) => `
+  container.innerHTML = visible.map((column, columnIndex) => {
+    const settled = games.reduce((count, game) => count + Boolean(normalizeResult(game.result ?? game.outcome ?? game.sonuc)), 0);
+    const hits = games.reduce((count, game, matchIndex) => {
+      const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
+      return count + Boolean(result && column[matchIndex] === result);
+    }, 0);
+    const score = !settled
+      ? "Sonuç bekleniyor"
+      : settled === games.length
+        ? `${hits}/${games.length} doğru`
+        : `${hits} doğru · ${settled}/${games.length} sonuç`;
+    return `
     <article class="ticket-card">
-      <div class="ticket-head"><span>SPOR TOTO KUPONU</span><small>Kolon ${String(columnIndex + 1).padStart(2, "0")}</small></div>
+      <div class="ticket-head"><span>SPOR TOTO KUPONU<br><small>Kolon ${String(columnIndex + 1).padStart(2, "0")}</small></span><small class="ticket-score">${score}</small></div>
       ${games.map((game, matchIndex) => {
         const home = game.home ?? game.evSahibi ?? "Ev sahibi";
         const away = game.away ?? game.deplasman ?? "Deplasman";
         const marked = column[matchIndex];
-        return `<div class="ticket-row"><span class="ticket-no">${String(game.number ?? matchIndex + 1).padStart(2, "0")}</span><span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span><span class="ticket-marks">${OUTCOMES.map(outcome => `<span class="ticket-mark${marked === outcome ? " active" : ""}">${outcome}</span>`).join("")}</span></div>`;
+        const result = normalizeResult(game.result ?? game.outcome ?? game.sonuc);
+        const rowState = result ? (marked === result ? " hit" : " miss") : "";
+        return `<div class="ticket-row${rowState}"><span class="ticket-no">${String(game.number ?? matchIndex + 1).padStart(2, "0")}</span><span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span><span class="ticket-marks">${OUTCOMES.map(outcome => `<span class="ticket-mark${marked === outcome ? " active" : ""}${result === outcome ? " actual" : ""}" title="${result === outcome ? "Gerçek sonuç" : outcome}">${outcome}</span>`).join("")}</span></div>`;
       }).join("")}
-    </article>`).join("") + (columns.length > visible.length
-      ? `<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi “Kolonları kopyala” düğmesiyle alınabilir.</div>`
-      : "");
+    </article>`;
+  }).join("") + (columns.length > visible.length
+    ? `<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi “Kolonları kopyala” düğmesiyle alınabilir.</div>`
+    : "");
 }
 
 async function optimizeGuarantee() {
@@ -1543,34 +1564,34 @@ function handleGuaranteeOutcomeClick(button) {
   renderWeek();
 }
 
-async function copyColumns() {
-  if (!generatedColumns.length) return;
+async function copyForNesine(columns, outputId, button, messageId) {
+  if (!columns.length) return;
+  const text = columns.map(column => column.join("")).join("\n");
+  const source = $(outputId);
+  source.value = text;
 
-  const button = $("copyColumnsBtn");
+  // Open directly from the click gesture so Chrome does not block the new tab.
+  window.open(NESINE_URL, "_blank", "noopener,noreferrer");
 
+  let copied = false;
   try {
-    await navigator.clipboard.writeText(
-      $("columnOutput").value
-    );
-
-    button.textContent = "Kopyalandı";
-
-    setTimeout(() => {
-      button.textContent = "Kolonları kopyala";
-    }, 1400);
-
+    await navigator.clipboard.writeText(text);
+    copied = true;
   } catch {
-    $("columnOutput").focus();
-    $("columnOutput").select();
-
-    document.execCommand("copy");
-
-    button.textContent = "Kopyalandı";
-
-    setTimeout(() => {
-      button.textContent = "Kolonları kopyala";
-    }, 1400);
+    source.focus();
+    source.select();
+    copied = document.execCommand("copy");
   }
+
+  button.textContent = copied ? "Kolonlar kopyalandı" : "Kopyalama başarısız";
+  $(messageId).textContent = copied
+    ? columns.length.toLocaleString("tr-TR") + " kolon panoya kopyalandı. Nesine Spor Toto sekmesinde seçimleri kontrol edip kuponu kendin onayla."
+    : "Panoya kopyalanamadı. Tarayıcı izinlerini kontrol edip yeniden dene.";
+  setTimeout(() => { button.textContent = "Nesine’ye aktar"; }, 1800);
+}
+
+function copyColumns() {
+  return copyForNesine(generatedColumns, "columnOutput", $("copyColumnsBtn"), "couponMessage");
 }
 
 function normalizeResult(value) {
@@ -2034,19 +2055,9 @@ $("copyColumnsBtn").addEventListener(
   "click",
   copyColumns
 );
-$("copyGuaranteeBtn").addEventListener("click", async () => {
-  if (!guaranteedColumns.length) return;
-  try {
-    await navigator.clipboard.writeText($("guaranteeOutput").value);
-  } catch {
-    $("guaranteeOutput").focus();
-    $("guaranteeOutput").select();
-    document.execCommand("copy");
-  }
-  const button = $("copyGuaranteeBtn");
-  button.textContent = "Kopyalandı";
-  setTimeout(() => { button.textContent = "Kolonları kopyala"; }, 1400);
-});
+$("copyGuaranteeBtn").addEventListener("click", () =>
+  copyForNesine(guaranteedColumns, "guaranteeOutput", $("copyGuaranteeBtn"), "guaranteeMessage")
+);
 $("applyGuaranteeAI").addEventListener("click", applyGuaranteeSuggestions);
 $("analyzeGuarantee").addEventListener("click", () => {
   const button = $("analyzeGuarantee");
