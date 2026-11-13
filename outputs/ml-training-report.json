@@ -1,7 +1,7 @@
 {
-  "createdAt": "2026-11-12T15:37:01.039803+03:00",
-  "dataUpdatedAt": "2026-11-12T12:36:56.759133Z",
-  "today": "2026-11-12",
+  "createdAt": "2026-11-13T19:29:47.869886+03:00",
+  "dataUpdatedAt": "2026-11-13T16:29:44.285982Z",
+  "today": "2026-11-13",
   "featureCount": 39,
   "features": [
     "ms1",
@@ -46,26 +46,26 @@
   ],
   "split": {
     "train": {
-      "matches": 10271,
-      "startDate": "2026-07-12",
-      "endDate": "2026-10-05"
+      "matches": 10316,
+      "startDate": "2026-07-13",
+      "endDate": "2026-10-06"
     },
     "validation": {
-      "matches": 2925,
-      "startDate": "2026-10-06",
-      "endDate": "2026-10-23"
+      "matches": 3272,
+      "startDate": "2026-10-07",
+      "endDate": "2026-10-24"
     },
     "test": {
-      "matches": 3259,
-      "startDate": "2026-10-24",
-      "endDate": "2026-11-11"
+      "matches": 2836,
+      "startDate": "2026-10-25",
+      "endDate": "2026-11-12"
     }
   },
   "classification": {
     "MS 1-X-2": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "1",
         "2",
@@ -74,74 +74,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.48,
-            "macroF1": 0.43157420224685755,
-            "logLoss": 1.0406594228039494,
-            "brierScore": 0.6225996792455895,
-            "evaluatedSamples": 2925
+            "accuracy": 0.47096577017114916,
+            "macroF1": 0.42676410429953027,
+            "logLoss": 1.04491293020004,
+            "brierScore": 0.625012070915884,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.4743786437557533,
-            "macroF1": 0.41527452839092627,
-            "logLoss": 1.0451831212433915,
-            "brierScore": 0.6243108473719143,
-            "evaluatedSamples": 3259
+            "accuracy": 0.48166431593794073,
+            "macroF1": 0.41368563625330174,
+            "logLoss": 1.0360959858834617,
+            "brierScore": 0.6185219583854324,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.5227350427350428,
-            "macroF1": 0.41646174849297074,
-            "logLoss": 0.9870520927764295,
-            "brierScore": 0.5883931318043232,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5155867970660146,
+            "macroF1": 0.41049421873048203,
+            "logLoss": 0.9969986359050683,
+            "brierScore": 0.5952531042006639,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5142681804234428,
-            "macroF1": 0.39441605707082417,
-            "logLoss": 0.9977189338085739,
-            "brierScore": 0.5953280349130378,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5246826516220028,
+            "macroF1": 0.40336373798876984,
+            "logLoss": 0.9893092392491432,
+            "brierScore": 0.5895710289319659,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.5165811965811966,
-            "macroF1": 0.41710772427425286,
-            "logLoss": 0.9956590269909044,
-            "brierScore": 0.5933766514562603,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5055012224938875,
+            "macroF1": 0.40498068135043597,
+            "logLoss": 1.004551096020469,
+            "brierScore": 0.6003186068338395,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5072108008591593,
-            "macroF1": 0.39976796839215295,
-            "logLoss": 1.011511839866169,
-            "brierScore": 0.6039351392257579,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5204513399153737,
+            "macroF1": 0.4074200471431586,
+            "logLoss": 1.0045389267188878,
+            "brierScore": 0.5983546270165169,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.5319658119658119,
-            "macroF1": 0.4120193224482602,
-            "logLoss": 0.9789900329334771,
-            "brierScore": 0.5830390578977902,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5210880195599022,
+            "macroF1": 0.4018393408490924,
+            "logLoss": 0.988599969655146,
+            "brierScore": 0.589755371949905,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5240871432954894,
-            "macroF1": 0.3924921450887031,
-            "logLoss": 0.9883292123838536,
-            "brierScore": 0.5896141707870293,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5380818053596615,
+            "macroF1": 0.4027587518314309,
+            "logLoss": 0.9785492584250354,
+            "brierScore": 0.5825675341722026,
+            "evaluatedSamples": 2836
           }
         }
       }
     },
     "KG Var-Yok": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "Var",
         "Yok"
@@ -149,74 +149,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.5333333333333333,
-            "macroF1": 0.517118271418566,
-            "logLoss": 0.7284143195045054,
-            "brierScore": 0.5268098243173045,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5311735941320294,
+            "macroF1": 0.5151959577898433,
+            "logLoss": 0.7248813345399542,
+            "brierScore": 0.5241458881230162,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5394292727830623,
-            "macroF1": 0.5203490564030427,
-            "logLoss": 0.7149110179831087,
-            "brierScore": 0.5167189674309371,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5334978843441467,
+            "macroF1": 0.5162837253249494,
+            "logLoss": 0.7145107953984013,
+            "brierScore": 0.5172566697618385,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.5565811965811965,
-            "macroF1": 0.4997348824654388,
-            "logLoss": 0.6929788788260465,
-            "brierScore": 0.49826383113125927,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5608190709046454,
+            "macroF1": 0.5026494572618929,
+            "logLoss": 0.6918529206680514,
+            "brierScore": 0.4973572787411051,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.555998772629641,
-            "macroF1": 0.498442875200816,
-            "logLoss": 0.688271443211329,
-            "brierScore": 0.4938265049389144,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5557122708039492,
+            "macroF1": 0.5032040320253053,
+            "logLoss": 0.6879189273230127,
+            "brierScore": 0.49374561568227643,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.5555555555555556,
-            "macroF1": 0.5030206931596827,
-            "logLoss": 0.6948506510281892,
-            "brierScore": 0.49978778119188577,
-            "evaluatedSamples": 2925
+            "accuracy": 0.559596577017115,
+            "macroF1": 0.5010285900300159,
+            "logLoss": 0.692750901350393,
+            "brierScore": 0.497961345669664,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5572261429886468,
-            "macroF1": 0.5007638644502868,
-            "logLoss": 0.6910875576483723,
-            "brierScore": 0.4962934284477356,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5532440056417489,
+            "macroF1": 0.4990228524399131,
+            "logLoss": 0.6932376010244464,
+            "brierScore": 0.4978733798772378,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.561025641025641,
-            "macroF1": 0.4915842072032949,
-            "logLoss": 0.6866003726044869,
-            "brierScore": 0.4928222912342581,
-            "evaluatedSamples": 2925
+            "accuracy": 0.57059902200489,
+            "macroF1": 0.4968068542219084,
+            "logLoss": 0.6851595490833309,
+            "brierScore": 0.4913655660929417,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5648972077324332,
-            "macroF1": 0.48597541008405454,
-            "logLoss": 0.6803859516613854,
-            "brierScore": 0.487037355537951,
-            "evaluatedSamples": 3259
+            "accuracy": 0.56311706629055,
+            "macroF1": 0.48558616656138215,
+            "logLoss": 0.6824280926071125,
+            "brierScore": 0.4888899269956305,
+            "evaluatedSamples": 2836
           }
         }
       }
     },
     "İY 0.5 Alt-Üst": {
-      "trainSamples": 10233,
-      "validationSamples": 2914,
-      "testSamples": 3243,
+      "trainSamples": 10278,
+      "validationSamples": 3261,
+      "testSamples": 2818,
       "classes": [
         "Alt",
         "Üst"
@@ -224,74 +224,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.6787920384351407,
-            "macroF1": 0.49564078951748014,
-            "logLoss": 0.6417088066404659,
-            "brierScore": 0.4411122022570339,
-            "evaluatedSamples": 2914
+            "accuracy": 0.6792394970867832,
+            "macroF1": 0.4963740769089028,
+            "logLoss": 0.6396855307923783,
+            "brierScore": 0.4406397518359558,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.6857847671908727,
-            "macroF1": 0.48070048345238275,
-            "logLoss": 0.6174451376288164,
-            "brierScore": 0.42288580011666366,
-            "evaluatedSamples": 3243
+            "accuracy": 0.6827537260468417,
+            "macroF1": 0.4843454873690545,
+            "logLoss": 0.6160777647627287,
+            "brierScore": 0.42305118372800504,
+            "evaluatedSamples": 2818
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.7141386410432395,
-            "macroF1": 0.4388529988683951,
-            "logLoss": 0.6018212721765904,
-            "brierScore": 0.4095406000682845,
-            "evaluatedSamples": 2914
+            "accuracy": 0.7172646427476235,
+            "macroF1": 0.4369078119381517,
+            "logLoss": 0.6005626074082541,
+            "brierScore": 0.40797077714283564,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.7227875423990132,
-            "macroF1": 0.43626772988791895,
-            "logLoss": 0.5916458143686121,
-            "brierScore": 0.3996439101953229,
-            "evaluatedSamples": 3243
+            "accuracy": 0.7228530872959545,
+            "macroF1": 0.43871399319425497,
+            "logLoss": 0.587733291558961,
+            "brierScore": 0.39732642400126833,
+            "evaluatedSamples": 2818
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.7151681537405628,
-            "macroF1": 0.44349646809783483,
-            "logLoss": 0.6083566225285804,
-            "brierScore": 0.4134446206021609,
-            "evaluatedSamples": 2914
+            "accuracy": 0.7148114075436982,
+            "macroF1": 0.4453262057593178,
+            "logLoss": 0.6071825293797953,
+            "brierScore": 0.4117392382776389,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.723404255319149,
-            "macroF1": 0.44150970129782613,
-            "logLoss": 0.5963905797842459,
-            "brierScore": 0.40203078144104,
-            "evaluatedSamples": 3243
+            "accuracy": 0.7214336408800568,
+            "macroF1": 0.4404083868038243,
+            "logLoss": 0.5941543933590928,
+            "brierScore": 0.4003836296828954,
+            "evaluatedSamples": 2818
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.7189430336307481,
-            "macroF1": 0.42295313609587637,
-            "logLoss": 0.5917646796431035,
-            "brierScore": 0.40221229182727297,
-            "evaluatedSamples": 2914
+            "accuracy": 0.7206378411530205,
+            "macroF1": 0.42200481148530533,
+            "logLoss": 0.5908844016686622,
+            "brierScore": 0.40072861430193607,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.7292630280604379,
-            "macroF1": 0.4239306714834399,
-            "logLoss": 0.581670955426641,
-            "brierScore": 0.3919832306855634,
-            "evaluatedSamples": 3243
+            "accuracy": 0.727111426543648,
+            "macroF1": 0.4235209022161959,
+            "logLoss": 0.5806583343646008,
+            "brierScore": 0.3914775790065798,
+            "evaluatedSamples": 2818
           }
         }
       }
     },
     "İY 1.5 Alt-Üst": {
-      "trainSamples": 10233,
-      "validationSamples": 2914,
-      "testSamples": 3243,
+      "trainSamples": 10278,
+      "validationSamples": 3261,
+      "testSamples": 2818,
       "classes": [
         "Alt",
         "Üst"
@@ -299,74 +299,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.5710363761153054,
-            "macroF1": 0.5153189806542748,
-            "logLoss": 0.6914102282356642,
-            "brierScore": 0.49411976854977185,
-            "evaluatedSamples": 2914
+            "accuracy": 0.5740570377184913,
+            "macroF1": 0.5147550688460607,
+            "logLoss": 0.6858153375286559,
+            "brierScore": 0.49002086626808883,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.5673758865248227,
-            "macroF1": 0.5131852359082313,
-            "logLoss": 0.6989392583374662,
-            "brierScore": 0.5025345442579231,
-            "evaluatedSamples": 3243
+            "accuracy": 0.5681334279630944,
+            "macroF1": 0.5123635078768903,
+            "logLoss": 0.7033112215486008,
+            "brierScore": 0.5063382877487118,
+            "evaluatedSamples": 2818
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.6331503088538092,
-            "macroF1": 0.4710928213280739,
-            "logLoss": 0.655181382828175,
-            "brierScore": 0.46161233521077827,
-            "evaluatedSamples": 2914
+            "accuracy": 0.6372278442195646,
+            "macroF1": 0.47826617930650583,
+            "logLoss": 0.6525104943697163,
+            "brierScore": 0.4596871722735158,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.6179463459759482,
-            "macroF1": 0.4649906468362819,
-            "logLoss": 0.6659601395292976,
-            "brierScore": 0.472270330904573,
-            "evaluatedSamples": 3243
+            "accuracy": 0.6103619588360539,
+            "macroF1": 0.4668617153254487,
+            "logLoss": 0.6709760446259002,
+            "brierScore": 0.477111737672546,
+            "evaluatedSamples": 2818
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.6290322580645161,
-            "macroF1": 0.4781175389216567,
-            "logLoss": 0.6618157853636992,
-            "brierScore": 0.46656204419820896,
-            "evaluatedSamples": 2914
+            "accuracy": 0.6341613002146581,
+            "macroF1": 0.48234410437816394,
+            "logLoss": 0.6550186133219301,
+            "brierScore": 0.4616593990917736,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.6136293555349984,
-            "macroF1": 0.47328599299033164,
-            "logLoss": 0.6709001249457509,
-            "brierScore": 0.47662201575785706,
-            "evaluatedSamples": 3243
+            "accuracy": 0.6082327892122072,
+            "macroF1": 0.4793638043216322,
+            "logLoss": 0.6750780808766159,
+            "brierScore": 0.4802316289146256,
+            "evaluatedSamples": 2818
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.6396705559368565,
-            "macroF1": 0.45769730587382035,
-            "logLoss": 0.6502763019395182,
-            "brierScore": 0.4572614238466218,
-            "evaluatedSamples": 2914
+            "accuracy": 0.6406010426249616,
+            "macroF1": 0.45559575631880034,
+            "logLoss": 0.6456897643991989,
+            "brierScore": 0.45355569044423116,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.6231884057971014,
-            "macroF1": 0.44911033512563736,
-            "logLoss": 0.6546621856980185,
-            "brierScore": 0.462455660200004,
-            "evaluatedSamples": 3243
+            "accuracy": 0.6174591909155429,
+            "macroF1": 0.44842655247621255,
+            "logLoss": 0.6574958040455516,
+            "brierScore": 0.46514045845393526,
+            "evaluatedSamples": 2818
           }
         }
       }
     },
     "MS 1.5 Alt-Üst": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "Alt",
         "Üst"
@@ -374,74 +374,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.7452991452991453,
-            "macroF1": 0.5031477285759854,
-            "logLoss": 0.5713531657473296,
-            "brierScore": 0.376645011129189,
-            "evaluatedSamples": 2925
+            "accuracy": 0.7527506112469438,
+            "macroF1": 0.5014651611074543,
+            "logLoss": 0.5670229539511327,
+            "brierScore": 0.37289655398082644,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.7655722614298864,
-            "macroF1": 0.5000706762593626,
-            "logLoss": 0.5471123110275048,
-            "brierScore": 0.35763956284835335,
-            "evaluatedSamples": 3259
+            "accuracy": 0.7690409026798307,
+            "macroF1": 0.4996195117089379,
+            "logLoss": 0.5426401231981921,
+            "brierScore": 0.3543943225946989,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.7825641025641026,
-            "macroF1": 0.4466330971888735,
-            "logLoss": 0.52525678600488,
-            "brierScore": 0.3398998159962209,
-            "evaluatedSamples": 2925
+            "accuracy": 0.7854523227383863,
+            "macroF1": 0.4481975294405927,
+            "logLoss": 0.5218828435484584,
+            "brierScore": 0.33769150052651664,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.7904265111997545,
-            "macroF1": 0.4485883977729471,
-            "logLoss": 0.5144054243693518,
-            "brierScore": 0.3309378376344328,
-            "evaluatedSamples": 3259
+            "accuracy": 0.7894922425952046,
+            "macroF1": 0.45404681527953833,
+            "logLoss": 0.5104247098991554,
+            "brierScore": 0.32846727944844967,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.7822222222222223,
-            "macroF1": 0.4509657916084819,
-            "logLoss": 0.5303440068629386,
-            "brierScore": 0.34296938857124604,
-            "evaluatedSamples": 2925
+            "accuracy": 0.7820904645476773,
+            "macroF1": 0.45229339942617175,
+            "logLoss": 0.5283767960179776,
+            "brierScore": 0.34209236637704854,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.7879717704817428,
-            "macroF1": 0.4545675390073138,
-            "logLoss": 0.5175569796557433,
-            "brierScore": 0.3330013215295722,
-            "evaluatedSamples": 3259
+            "accuracy": 0.7901974612129761,
+            "macroF1": 0.46203474958004837,
+            "logLoss": 0.5149741424120027,
+            "brierScore": 0.33100044865180084,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.7842735042735043,
-            "macroF1": 0.44110440984495636,
-            "logLoss": 0.517529507255861,
-            "brierScore": 0.3356588087792292,
-            "evaluatedSamples": 2925
+            "accuracy": 0.785757946210269,
+            "macroF1": 0.4400136915967825,
+            "logLoss": 0.5142718378622427,
+            "brierScore": 0.33306836733879713,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.7928812519177661,
-            "macroF1": 0.44801589840677186,
-            "logLoss": 0.5028087132659005,
-            "brierScore": 0.3236092966399196,
-            "evaluatedSamples": 3259
+            "accuracy": 0.7916078984485191,
+            "macroF1": 0.4451576809569603,
+            "logLoss": 0.5014274315780687,
+            "brierScore": 0.32284394972620034,
+            "evaluatedSamples": 2836
           }
         }
       }
     },
     "MS 2.5 Alt-Üst": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "Alt",
         "Üst"
@@ -449,74 +449,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.5517948717948717,
-            "macroF1": 0.537513376765332,
-            "logLoss": 0.7158803251652572,
-            "brierScore": 0.5153052882099054,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5498166259168704,
+            "macroF1": 0.5349509767643188,
+            "logLoss": 0.7133671662192788,
+            "brierScore": 0.5136022645389469,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.545872967167843,
-            "macroF1": 0.5279518521302317,
-            "logLoss": 0.7107267687017472,
-            "brierScore": 0.5127705109844031,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5384344146685472,
+            "macroF1": 0.521003739896248,
+            "logLoss": 0.7104292936428028,
+            "brierScore": 0.5124392833957915,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.5876923076923077,
-            "macroF1": 0.5501492042440318,
-            "logLoss": 0.6776248883614598,
-            "brierScore": 0.48361221186930886,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5819070904645477,
+            "macroF1": 0.5430628505814901,
+            "logLoss": 0.6774455867353734,
+            "brierScore": 0.483413933315822,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5771709113224915,
-            "macroF1": 0.5390690366691875,
-            "logLoss": 0.6798564952216681,
-            "brierScore": 0.48527201968045697,
-            "evaluatedSamples": 3259
+            "accuracy": 0.578984485190409,
+            "macroF1": 0.5413882099022259,
+            "logLoss": 0.6822339268325691,
+            "brierScore": 0.487057829859162,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.5835897435897436,
-            "macroF1": 0.5432771691530145,
-            "logLoss": 0.6799546326989051,
-            "brierScore": 0.4852177084172136,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5871026894865525,
+            "macroF1": 0.5435218362754616,
+            "logLoss": 0.6802778898107862,
+            "brierScore": 0.4855303382225135,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5765572261429887,
-            "macroF1": 0.5345557735774074,
-            "logLoss": 0.683915275588713,
-            "brierScore": 0.48818234190918286,
-            "evaluatedSamples": 3259
+            "accuracy": 0.5832157968970381,
+            "macroF1": 0.5439665924421604,
+            "logLoss": 0.6871356175330986,
+            "brierScore": 0.49017233522388415,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.5873504273504273,
-            "macroF1": 0.5462828796237097,
-            "logLoss": 0.6698420838938657,
-            "brierScore": 0.4771618355526593,
-            "evaluatedSamples": 2925
+            "accuracy": 0.5855745721271394,
+            "macroF1": 0.5430647642940563,
+            "logLoss": 0.6701884264938738,
+            "brierScore": 0.4774394627931312,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.5943540963485732,
-            "macroF1": 0.5476686720829425,
-            "logLoss": 0.6703496190166294,
-            "brierScore": 0.4769078133377236,
-            "evaluatedSamples": 3259
+            "accuracy": 0.596262341325811,
+            "macroF1": 0.5504875433129967,
+            "logLoss": 0.6719424200506989,
+            "brierScore": 0.4781353607492031,
+            "evaluatedSamples": 2836
           }
         }
       }
     },
     "MS 3.5 Alt-Üst": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "Alt",
         "Üst"
@@ -524,74 +524,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.5996581196581197,
-            "macroF1": 0.5221535724136122,
-            "logLoss": 0.6812500393145151,
-            "brierScore": 0.48316404471627683,
-            "evaluatedSamples": 2925
+            "accuracy": 0.6112469437652812,
+            "macroF1": 0.5320599739067903,
+            "logLoss": 0.6754785115738767,
+            "brierScore": 0.47742704342615616,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.6173672905799324,
-            "macroF1": 0.5280134145425097,
-            "logLoss": 0.6628627433317087,
-            "brierScore": 0.4672654582980214,
-            "evaluatedSamples": 3259
+            "accuracy": 0.6297602256699577,
+            "macroF1": 0.5419003213989686,
+            "logLoss": 0.6599819705701018,
+            "brierScore": 0.46464661809610214,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.6444444444444445,
-            "macroF1": 0.4752190210160808,
-            "logLoss": 0.6423360092517939,
-            "brierScore": 0.44988889121845343,
-            "evaluatedSamples": 2925
+            "accuracy": 0.6540342298288508,
+            "macroF1": 0.47802813535092525,
+            "logLoss": 0.6355748924714911,
+            "brierScore": 0.4439817664959312,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.664621049401657,
-            "macroF1": 0.49466639220619263,
-            "logLoss": 0.6294654430893829,
-            "brierScore": 0.4377337665795404,
-            "evaluatedSamples": 3259
+            "accuracy": 0.6618476727785614,
+            "macroF1": 0.49716377133642475,
+            "logLoss": 0.6308570197732951,
+            "brierScore": 0.4391647768664267,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.6505982905982906,
-            "macroF1": 0.4837096566941667,
-            "logLoss": 0.6416381233623831,
-            "brierScore": 0.44930763330068035,
-            "evaluatedSamples": 2925
+            "accuracy": 0.6537286063569682,
+            "macroF1": 0.490238608432596,
+            "logLoss": 0.6384112544539619,
+            "brierScore": 0.44647454838106054,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.6621663086836453,
-            "macroF1": 0.49205608369661463,
-            "logLoss": 0.6336791444819475,
-            "brierScore": 0.4412388081189875,
-            "evaluatedSamples": 3259
+            "accuracy": 0.6572637517630465,
+            "macroF1": 0.49898910589851797,
+            "logLoss": 0.6354691294143864,
+            "brierScore": 0.4433879392931506,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.6505982905982906,
-            "macroF1": 0.4694978335188424,
-            "logLoss": 0.6354348284522987,
-            "brierScore": 0.4440735332971387,
-            "evaluatedSamples": 2925
+            "accuracy": 0.6577017114914425,
+            "macroF1": 0.46735255335427894,
+            "logLoss": 0.6305383457011356,
+            "brierScore": 0.4398730687101788,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.667996317888923,
-            "macroF1": 0.48195911425982446,
-            "logLoss": 0.6215193755583762,
-            "brierScore": 0.43136123889201966,
-            "evaluatedSamples": 3259
+            "accuracy": 0.6611424541607899,
+            "macroF1": 0.4769322242964897,
+            "logLoss": 0.6241774642710718,
+            "brierScore": 0.4340721086623987,
+            "evaluatedSamples": 2836
           }
         }
       }
     },
     "İY 1-X-2": {
-      "trainSamples": 10233,
-      "validationSamples": 2914,
-      "testSamples": 3243,
+      "trainSamples": 10278,
+      "validationSamples": 3261,
+      "testSamples": 2818,
       "classes": [
         "1",
         "2",
@@ -600,74 +600,74 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.4070006863417982,
-            "macroF1": 0.39974885193832416,
-            "logLoss": 1.1168104968753794,
-            "brierScore": 0.6752650493555726,
-            "evaluatedSamples": 2914
+            "accuracy": 0.40018399264029436,
+            "macroF1": 0.39208056512827155,
+            "logLoss": 1.1198252795368868,
+            "brierScore": 0.6773619455055263,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.39623805118717237,
-            "macroF1": 0.3880522407686504,
-            "logLoss": 1.1203592450645212,
-            "brierScore": 0.679246587530819,
-            "evaluatedSamples": 3243
+            "accuracy": 0.40525195173882184,
+            "macroF1": 0.39733792865965567,
+            "logLoss": 1.1163446353919035,
+            "brierScore": 0.676122383196294,
+            "evaluatedSamples": 2818
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.438229238160604,
-            "macroF1": 0.4129786469352641,
-            "logLoss": 1.0561464150873603,
-            "brierScore": 0.6391345008281668,
-            "evaluatedSamples": 2914
+            "accuracy": 0.4348359398957375,
+            "macroF1": 0.40631205965573525,
+            "logLoss": 1.061007032900887,
+            "brierScore": 0.6426252060224055,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.41936478569226027,
-            "macroF1": 0.39443544180044915,
-            "logLoss": 1.069546650152795,
-            "brierScore": 0.6493166038162195,
-            "evaluatedSamples": 3243
+            "accuracy": 0.4283179559971611,
+            "macroF1": 0.403185135314309,
+            "logLoss": 1.0640965348205405,
+            "brierScore": 0.6456588354283669,
+            "evaluatedSamples": 2818
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.4282772820864791,
-            "macroF1": 0.4028118865246351,
-            "logLoss": 1.0701973642270348,
-            "brierScore": 0.6468444534394338,
-            "evaluatedSamples": 2914
+            "accuracy": 0.42226310947562096,
+            "macroF1": 0.39322990294048976,
+            "logLoss": 1.075667942619006,
+            "brierScore": 0.6509546875163823,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.414122725871107,
-            "macroF1": 0.38896588944561034,
-            "logLoss": 1.0837771249294341,
-            "brierScore": 0.6573446208175613,
-            "evaluatedSamples": 3243
+            "accuracy": 0.42299503193754434,
+            "macroF1": 0.3995606126238663,
+            "logLoss": 1.0785449503246303,
+            "brierScore": 0.6531808303481729,
+            "evaluatedSamples": 2818
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.44680851063829785,
-            "macroF1": 0.41007234257175434,
-            "logLoss": 1.0402206562282788,
-            "brierScore": 0.6294018476041111,
-            "evaluatedSamples": 2914
+            "accuracy": 0.44434222631094755,
+            "macroF1": 0.4058710400103476,
+            "logLoss": 1.0434894638192496,
+            "brierScore": 0.6315603341421925,
+            "evaluatedSamples": 3261
           },
           "test": {
-            "accuracy": 0.43293246993524515,
-            "macroF1": 0.39561255255728844,
-            "logLoss": 1.0541835754873232,
-            "brierScore": 0.6389131454717071,
-            "evaluatedSamples": 3243
+            "accuracy": 0.4382540809084457,
+            "macroF1": 0.4040347722416826,
+            "logLoss": 1.0516376447537443,
+            "brierScore": 0.6372945943041994,
+            "evaluatedSamples": 2818
           }
         }
       }
     },
     "Gol aralığı": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "classes": [
         "0-1",
         "2-3",
@@ -677,66 +677,66 @@
       "models": {
         "Random Forest": {
           "validation": {
-            "accuracy": 0.3541880341880342,
-            "macroF1": 0.2802671764111635,
-            "logLoss": 1.3529927303460612,
-            "brierScore": 0.7369914318619024,
-            "evaluatedSamples": 2925
+            "accuracy": 0.3517726161369193,
+            "macroF1": 0.2709977506306519,
+            "logLoss": 1.347831714740854,
+            "brierScore": 0.734200102185518,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.36637005216324026,
-            "macroF1": 0.2692762661793785,
-            "logLoss": 1.3121651194361421,
-            "brierScore": 0.7195459927354112,
-            "evaluatedSamples": 3259
+            "accuracy": 0.37623413258110017,
+            "macroF1": 0.2798614548047579,
+            "logLoss": 1.3135714706606183,
+            "brierScore": 0.7151023751931136,
+            "evaluatedSamples": 2836
           }
         },
         "XGBoost": {
           "validation": {
-            "accuracy": 0.4229059829059829,
-            "macroF1": 0.20691820522726698,
-            "logLoss": 1.2610022750288563,
-            "brierScore": 0.6931862086572802,
-            "evaluatedSamples": 2925
+            "accuracy": 0.4245110024449878,
+            "macroF1": 0.19263711437682485,
+            "logLoss": 1.2575293930195648,
+            "brierScore": 0.6905359935604939,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.4482970236268794,
-            "macroF1": 0.2252446483940008,
-            "logLoss": 1.2374649520156387,
-            "brierScore": 0.6817658792171594,
-            "evaluatedSamples": 3259
+            "accuracy": 0.44111424541607896,
+            "macroF1": 0.21832630977549514,
+            "logLoss": 1.2329999784170604,
+            "brierScore": 0.6800583546169722,
+            "evaluatedSamples": 2836
           }
         },
         "LightGBM": {
           "validation": {
-            "accuracy": 0.41025641025641024,
-            "macroF1": 0.22077306899825133,
-            "logLoss": 1.2875821794634936,
-            "brierScore": 0.7046563492627111,
-            "evaluatedSamples": 2925
+            "accuracy": 0.4132029339853301,
+            "macroF1": 0.21137750695280974,
+            "logLoss": 1.2832638680441895,
+            "brierScore": 0.70297800856233,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.4295796256520405,
-            "macroF1": 0.23209791873975166,
-            "logLoss": 1.262259484797149,
-            "brierScore": 0.6932029471782698,
-            "evaluatedSamples": 3259
+            "accuracy": 0.42595204513399154,
+            "macroF1": 0.22900669819286618,
+            "logLoss": 1.2592640369271328,
+            "brierScore": 0.6924151550626373,
+            "evaluatedSamples": 2836
           }
         },
         "CatBoost": {
           "validation": {
-            "accuracy": 0.4338461538461538,
-            "macroF1": 0.1837740935571156,
-            "logLoss": 1.2434153122530207,
-            "brierScore": 0.6844496014151442,
-            "evaluatedSamples": 2925
+            "accuracy": 0.4382640586797066,
+            "macroF1": 0.18344063228485333,
+            "logLoss": 1.2381333765147498,
+            "brierScore": 0.6814548675258948,
+            "evaluatedSamples": 3272
           },
           "test": {
-            "accuracy": 0.4556612457809144,
-            "macroF1": 0.19467538041017735,
-            "logLoss": 1.214883667348917,
-            "brierScore": 0.6713407053036337,
-            "evaluatedSamples": 3259
+            "accuracy": 0.44992947813822287,
+            "macroF1": 0.19182608183051958,
+            "logLoss": 1.2139734284898862,
+            "brierScore": 0.6716692884742705,
+            "evaluatedSamples": 2836
           }
         }
       }
@@ -744,189 +744,189 @@
   },
   "regression": {
     "MS ev sahibi gol": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "models": {
         "Random Forest": {
           "validation": {
-            "mae": 1.0434568894543255,
-            "rmse": 1.315777399423406
+            "mae": 1.0457598013714304,
+            "rmse": 1.3177919594892487
           },
           "test": {
-            "mae": 1.0394485879604014,
-            "rmse": 1.3229159958319519
+            "mae": 1.03722820682491,
+            "rmse": 1.3202050306299147
           }
         },
         "XGBoost": {
           "validation": {
-            "mae": 1.0100297528148716,
-            "rmse": 1.2700213660232842
+            "mae": 1.0099577122074177,
+            "rmse": 1.2718320636931466
           },
           "test": {
-            "mae": 1.0056094510532771,
-            "rmse": 1.280363382889309
+            "mae": 1.0006105160103895,
+            "rmse": 1.275288548011647
           }
         },
         "LightGBM": {
           "validation": {
-            "mae": 1.0097036889671371,
-            "rmse": 1.2705461145490422
+            "mae": 1.013807002142372,
+            "rmse": 1.2745668709672304
           },
           "test": {
-            "mae": 1.0111570202446518,
-            "rmse": 1.2892370640672695
+            "mae": 1.0064492063211747,
+            "rmse": 1.2855404045697076
           }
         },
         "CatBoost": {
           "validation": {
-            "mae": 0.9974072829697628,
-            "rmse": 1.2523467217105957
+            "mae": 1.000675211107086,
+            "rmse": 1.2569989700593802
           },
           "test": {
-            "mae": 0.9959887714121388,
-            "rmse": 1.266814032954543
+            "mae": 0.9913129559282382,
+            "rmse": 1.2609530683914525
           }
         }
       }
     },
     "MS deplasman gol": {
-      "trainSamples": 10271,
-      "validationSamples": 2925,
-      "testSamples": 3259,
+      "trainSamples": 10316,
+      "validationSamples": 3272,
+      "testSamples": 2836,
       "models": {
         "Random Forest": {
           "validation": {
-            "mae": 0.9391690788582525,
-            "rmse": 1.1958426915668312
+            "mae": 0.9372621736916,
+            "rmse": 1.1922631981121279
           },
           "test": {
-            "mae": 0.9399849774816534,
-            "rmse": 1.2018713772413834
+            "mae": 0.9401518422776357,
+            "rmse": 1.2056925319029508
           }
         },
         "XGBoost": {
           "validation": {
-            "mae": 0.9155728400772454,
-            "rmse": 1.1692065292134493
+            "mae": 0.9119373994553803,
+            "rmse": 1.1619680288489784
           },
           "test": {
-            "mae": 0.9162118554060428,
-            "rmse": 1.1760364264061516
+            "mae": 0.9097850924549553,
+            "rmse": 1.1702034187502326
           }
         },
         "LightGBM": {
           "validation": {
-            "mae": 0.9180421903132415,
-            "rmse": 1.1722554310841276
+            "mae": 0.9130349557927749,
+            "rmse": 1.1651858997839677
           },
           "test": {
-            "mae": 0.9165807065370976,
-            "rmse": 1.1767478211260465
+            "mae": 0.9133083269857928,
+            "rmse": 1.1748160338959341
           }
         },
         "CatBoost": {
           "validation": {
-            "mae": 0.9080996010027901,
-            "rmse": 1.1595853611216453
+            "mae": 0.9067371628025903,
+            "rmse": 1.1570762827146688
           },
           "test": {
-            "mae": 0.9041421071548835,
-            "rmse": 1.1587178930913498
+            "mae": 0.9023000477560497,
+            "rmse": 1.1564420606393953
           }
         }
       }
     },
     "İY ev sahibi gol": {
-      "trainSamples": 10233,
-      "validationSamples": 2914,
-      "testSamples": 3243,
+      "trainSamples": 10278,
+      "validationSamples": 3261,
+      "testSamples": 2818,
       "models": {
         "Random Forest": {
           "validation": {
-            "mae": 0.7018918997203429,
-            "rmse": 0.8693170794254739
+            "mae": 0.6975832302793612,
+            "rmse": 0.8651055460722643
           },
           "test": {
-            "mae": 0.7123497923333467,
-            "rmse": 0.8877933384424918
+            "mae": 0.7177531646947013,
+            "rmse": 0.8919376359235276
           }
         },
         "XGBoost": {
           "validation": {
-            "mae": 0.68440279897172,
-            "rmse": 0.8434805518315177
+            "mae": 0.682529235287829,
+            "rmse": 0.8423396477866927
           },
           "test": {
-            "mae": 0.6977090709108998,
-            "rmse": 0.8664627726981647
+            "mae": 0.7014582325605909,
+            "rmse": 0.8656436119419707
           }
         },
         "LightGBM": {
           "validation": {
-            "mae": 0.6864572903492531,
-            "rmse": 0.846677824381377
+            "mae": 0.6828023839063956,
+            "rmse": 0.843801072663866
           },
           "test": {
-            "mae": 0.6961458225203638,
-            "rmse": 0.8628031084583907
+            "mae": 0.7016702618166526,
+            "rmse": 0.867402699621146
           }
         },
         "CatBoost": {
           "validation": {
-            "mae": 0.6828478935907326,
-            "rmse": 0.8398177564322215
+            "mae": 0.6794451807055909,
+            "rmse": 0.8377776552608396
           },
           "test": {
-            "mae": 0.6876257031671458,
-            "rmse": 0.8495236795270227
+            "mae": 0.6912829803494956,
+            "rmse": 0.8514603562480038
           }
         }
       }
     },
     "İY deplasman gol": {
-      "trainSamples": 10233,
-      "validationSamples": 2914,
-      "testSamples": 3243,
+      "trainSamples": 10278,
+      "validationSamples": 3261,
+      "testSamples": 2818,
       "models": {
         "Random Forest": {
           "validation": {
-            "mae": 0.6325083158239186,
-            "rmse": 0.7847962302274734
+            "mae": 0.6347067679274058,
+            "rmse": 0.7845242957894847
           },
           "test": {
-            "mae": 0.6513091521405584,
-            "rmse": 0.80375836664273
+            "mae": 0.6467120031842352,
+            "rmse": 0.798365159943904
           }
         },
         "XGBoost": {
           "validation": {
-            "mae": 0.6276341819203751,
-            "rmse": 0.7653473881961507
+            "mae": 0.6274510038292909,
+            "rmse": 0.7650189869607424
           },
           "test": {
-            "mae": 0.640857509204976,
-            "rmse": 0.784984359963652
+            "mae": 0.6400594482524883,
+            "rmse": 0.7848719203565206
           }
         },
         "LightGBM": {
           "validation": {
-            "mae": 0.6276058380730737,
-            "rmse": 0.7685121111981799
+            "mae": 0.6297184940835638,
+            "rmse": 0.7688857867387254
           },
           "test": {
-            "mae": 0.6428762885551285,
-            "rmse": 0.7868714456751781
+            "mae": 0.640304751972739,
+            "rmse": 0.7848542960830925
           }
         },
         "CatBoost": {
           "validation": {
-            "mae": 0.6230815976621094,
-            "rmse": 0.7559196846783472
+            "mae": 0.6241513868516417,
+            "rmse": 0.7573428566618043
           },
           "test": {
-            "mae": 0.6353699590005027,
-            "rmse": 0.7727682068782679
+            "mae": 0.6337045681139687,
+            "rmse": 0.770277910864625
           }
         }
       }
