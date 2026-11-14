@@ -47,7 +47,7 @@ jobs:
 
       - name: Kütüphaneleri kontrol et
         run: |
-          python -c "import numpy, pandas, sklearn, xgboost, lightgbm, catboost; print('AI V2 kütüphaneleri hazır.')"
+          python -c "import numpy, pandas, openpyxl, sklearn, xgboost, lightgbm, catboost; print('AI V2 kütüphaneleri hazır.')"
 
       - name: Excel verisini hazırla
         run: python scripts/update_v2.py
@@ -64,12 +64,8 @@ jobs:
           test -s data/v2-data.json
           test -s data/ai-v2-report.json
           test -s data/ai-v2-predictions.json
-
           echo "AI V2 dosyaları hazır."
-
-          ls -lh \
-            data/ai-v2-report.json \
-            data/ai-v2-predictions.json
+          ls -lh data/ai-v2-report.json data/ai-v2-predictions.json
 
       - name: V2 sonuçlarını GitHub'a kaydet
         run: |
@@ -81,7 +77,10 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "Yeni V2 değişikliği yok."
-          else
-            git commit -m "AI V2 tahminleri ve eğitim raporu güncellendi"
-            git push
+            exit 0
           fi
+
+          git commit -m "AI V2 tahminleri ve eğitim raporu güncellendi"
+
+          git pull --rebase origin main
+          git push
