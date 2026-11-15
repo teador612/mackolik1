@@ -1,0 +1,319 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-15T09:13:54.778846+00:00",
+  "source": "data/v2-data.json",
+  "features": 39,
+  "markets": {
+    "MS": {
+      "label": "Maç Sonucu 1-X-2",
+      "split": {
+        "train": 86,
+        "validation": 18,
+        "test": 19,
+        "total": 123
+      },
+      "models": {
+        "RandomForest": {
+          "validation": {
+            "accuracy": 0.473411,
+            "logLoss": 1.21536,
+            "f1Weighted": 0.462069,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.471439,
+            "logLoss": 1.227239,
+            "f1Weighted": 0.460563,
+            "samples": 2836
+          }
+        },
+        "XGBoost": {
+          "validation": {
+            "accuracy": 0.515281,
+            "logLoss": 1.211932,
+            "f1Weighted": 0.455011,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.530324,
+            "logLoss": 1.223356,
+            "f1Weighted": 0.469967,
+            "samples": 2836
+          }
+        },
+        "LightGBM": {
+          "validation": {
+            "accuracy": 0.491748,
+            "logLoss": 1.147165,
+            "f1Weighted": 0.486075,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.472144,
+            "logLoss": 1.142825,
+            "f1Weighted": 0.471617,
+            "samples": 2836
+          }
+        },
+        "CatBoost": {
+          "validation": {
+            "accuracy": 0.520477,
+            "logLoss": 1.198005,
+            "f1Weighted": 0.452295,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.539492,
+            "logLoss": 1.213988,
+            "f1Weighted": 0.471889,
+            "samples": 2836
+          }
+        }
+      },
+      "samples": {
+        "total": 16424,
+        "train": 10316,
+        "validation": 3272,
+        "test": 2836
+      }
+    },
+    "OVER_25": {
+      "label": "2.5 Üst",
+      "split": {
+        "train": 86,
+        "validation": 18,
+        "test": 19,
+        "total": 123
+      },
+      "models": {
+        "RandomForest": {
+          "validation": {
+            "accuracy": 0.549511,
+            "logLoss": 0.707239,
+            "f1Weighted": 0.545515,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.558886,
+            "logLoss": 0.704452,
+            "f1Weighted": 0.552771,
+            "samples": 2836
+          }
+        },
+        "XGBoost": {
+          "validation": {
+            "accuracy": 0.577934,
+            "logLoss": 0.675224,
+            "f1Weighted": 0.551075,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.583568,
+            "logLoss": 0.676598,
+            "f1Weighted": 0.558546,
+            "samples": 2836
+          }
+        },
+        "LightGBM": {
+          "validation": {
+            "accuracy": 0.578545,
+            "logLoss": 0.681037,
+            "f1Weighted": 0.577975,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.557828,
+            "logLoss": 0.684071,
+            "f1Weighted": 0.558359,
+            "samples": 2836
+          }
+        },
+        "CatBoost": {
+          "validation": {
+            "accuracy": 0.588936,
+            "logLoss": 0.670656,
+            "f1Weighted": 0.564524,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.600141,
+            "logLoss": 0.671449,
+            "f1Weighted": 0.572327,
+            "samples": 2836
+          }
+        }
+      },
+      "samples": {
+        "total": 16424,
+        "train": 10316,
+        "validation": 3272,
+        "test": 2836
+      }
+    },
+    "HT_OVER_15": {
+      "label": "İY 1.5 Üst",
+      "split": {
+        "train": 86,
+        "validation": 18,
+        "test": 19,
+        "total": 123
+      },
+      "models": {
+        "RandomForest": {
+          "validation": {
+            "accuracy": 0.576204,
+            "logLoss": 0.682707,
+            "f1Weighted": 0.566814,
+            "samples": 3261
+          },
+          "test": {
+            "accuracy": 0.569198,
+            "logLoss": 0.700208,
+            "f1Weighted": 0.556326,
+            "samples": 2818
+          }
+        },
+        "XGBoost": {
+          "validation": {
+            "accuracy": 0.642748,
+            "logLoss": 0.648387,
+            "f1Weighted": 0.554492,
+            "samples": 3261
+          },
+          "test": {
+            "accuracy": 0.614975,
+            "logLoss": 0.66314,
+            "f1Weighted": 0.531343,
+            "samples": 2818
+          }
+        },
+        "LightGBM": {
+          "validation": {
+            "accuracy": 0.535419,
+            "logLoss": 0.688322,
+            "f1Weighted": 0.543951,
+            "samples": 3261
+          },
+          "test": {
+            "accuracy": 0.538325,
+            "logLoss": 0.696367,
+            "f1Weighted": 0.544548,
+            "samples": 2818
+          }
+        },
+        "CatBoost": {
+          "validation": {
+            "accuracy": 0.640601,
+            "logLoss": 0.645846,
+            "f1Weighted": 0.540286,
+            "samples": 3261
+          },
+          "test": {
+            "accuracy": 0.615685,
+            "logLoss": 0.65651,
+            "f1Weighted": 0.513149,
+            "samples": 2818
+          }
+        }
+      },
+      "samples": {
+        "total": 16357,
+        "train": 10278,
+        "validation": 3261,
+        "test": 2818
+      }
+    },
+    "BTTS": {
+      "label": "KG Var",
+      "split": {
+        "train": 86,
+        "validation": 18,
+        "test": 19,
+        "total": 123
+      },
+      "models": {
+        "RandomForest": {
+          "validation": {
+            "accuracy": 0.529951,
+            "logLoss": 0.722666,
+            "f1Weighted": 0.524917,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.539492,
+            "logLoss": 0.707485,
+            "f1Weighted": 0.533866,
+            "samples": 2836
+          }
+        },
+        "XGBoost": {
+          "validation": {
+            "accuracy": 0.560513,
+            "logLoss": 0.689434,
+            "f1Weighted": 0.520459,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.564528,
+            "logLoss": 0.683037,
+            "f1Weighted": 0.523622,
+            "samples": 2836
+          }
+        },
+        "LightGBM": {
+          "validation": {
+            "accuracy": 0.533007,
+            "logLoss": 0.696376,
+            "f1Weighted": 0.529613,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.55536,
+            "logLoss": 0.688941,
+            "f1Weighted": 0.551547,
+            "samples": 2836
+          }
+        },
+        "CatBoost": {
+          "validation": {
+            "accuracy": 0.565403,
+            "logLoss": 0.683927,
+            "f1Weighted": 0.514815,
+            "samples": 3272
+          },
+          "test": {
+            "accuracy": 0.568406,
+            "logLoss": 0.680579,
+            "f1Weighted": 0.512697,
+            "samples": 2836
+          }
+        }
+      },
+      "samples": {
+        "total": 16424,
+        "train": 10316,
+        "validation": 3272,
+        "test": 2836
+      }
+    }
+  },
+  "runtimeSeconds": 190.97,
+  "runtimeMinutes": 3.18,
+  "dataset": {
+    "totalRows": 17682,
+    "firstDate": "2026-07-13",
+    "lastDate": "2026-11-17",
+    "markets": [
+      "MS",
+      "OVER_25",
+      "HT_OVER_15",
+      "BTTS"
+    ],
+    "algorithms": [
+      "RandomForest",
+      "XGBoost",
+      "LightGBM",
+      "CatBoost"
+    ]
+  }
+}
