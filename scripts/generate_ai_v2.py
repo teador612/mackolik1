@@ -1,5 +1,5 @@
 
-"""Independent AI V2 - MS 1-X-2 prediction engine.
+"""Independent AI V2 - Dynamic five-source MS 1-X-2 prediction engine.
 
 Input:
     data/v2-data.json
@@ -12,21 +12,23 @@ Prediction target:
     MS 1-X-2 only.
 
 Features:
-    All 39 opening odds, including HT, BTTS, goals,
-    over/under and other market odds.
+    All 39 opening odds.
 
-Models:
+Sources:
     RandomForest
     XGBoost
     LightGBM
     CatBoost
-    Equal-weight probability Ensemble
+    Odds historical matching
+
+Ensemble:
+    Dynamic Brier Score weighting.
+    Equal weights until 30 prior observations.
+    Optional league-specific weights after 30 observations.
 
 Evaluation:
     Chronological 70/15/15 split.
-
-Existing ML, DNA, RNA and prediction archives
-are not modified.
+    Same-day results never influence same-day weights.
 """
 
 from __future__ import annotations
@@ -38,6 +40,8 @@ import warnings
 
 from pathlib import Path
 from datetime import datetime, timezone
+from bisect import bisect_left
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -81,10 +85,9 @@ MIN_TRAIN_ROWS = 100
 TRAIN_RATIO = 0.70
 VALIDATION_RATIO = 0.15
 
-# MS class order:
-# 1 = Home win
-# 0 = Draw
-# 2 = Away win
+MIN_WEIGHT_SAMPLES = 30
+BRIER_TEMPERATURE = 0.12
+MIN_ODDS_MATCHES = 5
 
 MS_CLASSES = [1, 0, 2]
 
@@ -93,6 +96,21 @@ CLASS_LABELS = {
     "0": "MSX",
     "2": "MS2",
 }
+
+CLASS_DESCRIPTIONS = {
+    "1": "Ev sahibi kazanır",
+    "0": "Beraberlik",
+    "2": "Deplasman kazanır",
+}
+
+MODEL_NAMES = [
+    "RandomForest",
+    "XGBoost",
+    "LightGBM",
+    "CatBoost",
+]
+
+SOURCE_NAMES = MODEL_NAMES + ["Odds"]
 
 
 # =========================================================
@@ -252,6 +270,15 @@ def make_features(match):
     ]
 
 
+def normalize_league(value):
+    if value is None:
+        return "UNKNOWN"
+
+    result = str(value).strip().lower()
+
+    return result if result else "UNKNOWN"
+
+
 # =========================================================
 # ONLY TARGET: MS 1-X-2
 # =========================================================
@@ -314,6 +341,9 @@ def load_dataset():
             "index": index,
             "features": features,
             "target": target,
+            "league": normalize_league(
+                match.get("league")
+            ),
             "match": match,
         })
 
@@ -331,6 +361,7 @@ def make_dataset(rows):
     X = []
     y = []
     dates = []
+    leagues = []
 
     for row in rows:
         if row["target"] is None:
@@ -339,14 +370,16 @@ def make_dataset(rows):
         X.append(row["features"])
         y.append(row["target"])
         dates.append(row["date"])
+        leagues.append(row["league"])
 
     if not X:
-        return None, None, None
+        return None, None, None, None
 
     return (
         np.asarray(X, dtype=float),
         np.asarray(y, dtype=int),
         np.asarray(dates),
+        np.asarray(leagues, dtype=object),
     )
 
 
@@ -491,6 +524,7 @@ def wrap_model(model):
             "imputer",
             SimpleImputer(
                 strategy="median",
+                keep_empty_features=True,
             ),
         ),
         (
@@ -504,20 +538,14 @@ def wrap_model(model):
 # PROBABILITY HELPERS
 # =========================================================
 
-def normalize_probabilities(
-    model,
-    X,
+def normalize_probability_array(
+    raw,
+    model_classes,
     expected_classes=MS_CLASSES,
 ):
-    raw = model.predict_proba(X)
-
-    model_classes = (
-        model.named_steps["model"].classes_
-    )
-
     result = np.zeros(
         (
-            len(X),
+            len(raw),
             len(expected_classes),
         ),
         dtype=float,
@@ -549,37 +577,511 @@ def normalize_probabilities(
     return result
 
 
-def ensemble_probabilities(probability_list):
-    if not probability_list:
-        raise ValueError(
-            "Ensemble için kullanılabilir model yok."
+def normalize_probabilities(
+    model,
+    X,
+    expected_classes=MS_CLASSES,
+):
+    raw = model.predict_proba(X)
+
+    model_classes = (
+        model.named_steps["model"].classes_
+    )
+
+    return normalize_probability_array(
+        raw,
+        model_classes,
+        expected_classes,
+    )
+
+
+# =========================================================
+# ODDS SOURCE
+# =========================================================
+
+def make_odds_key(features):
+    """
+    Historical odds matching uses the three MS opening odds,
+    rounded to two decimal places.
+    """
+
+    values = features[:3]
+
+    if len(values) != 3:
+        return None
+
+    if not all(
+        np.isfinite(value) and value > 1.0
+        for value in values
+    ):
+        return None
+
+    return tuple(
+        round(float(value), 2)
+        for value in values
+    )
+
+
+def build_odds_history(rows):
+    history = defaultdict(list)
+
+    for row in rows:
+        if row["target"] is None:
+            continue
+
+        key = make_odds_key(
+            row["features"]
         )
 
-    stacked = np.stack(
-        probability_list,
-        axis=0,
+        if key is None:
+            continue
+
+        history[key].append({
+            "date": row["date"],
+            "target": row["target"],
+        })
+
+    for key in history:
+        history[key].sort(
+            key=lambda item: item["date"]
+        )
+
+    return history
+
+
+def get_odds_probability(
+    features,
+    match_date,
+    odds_history,
+):
+    """
+    Uses only exact matching MS opening odds from earlier dates.
+
+    Same-day matches are excluded to prevent leakage.
+
+    Laplace-style smoothing:
+        (class_count + 0.5) / (sample_count + 1)
+
+    The three class probabilities are normalized afterward.
+    """
+
+    key = make_odds_key(features)
+
+    if key is None:
+        return None, 0
+
+    candidates = odds_history.get(
+        key,
+        [],
     )
 
-    # Equal-weight probability averaging.
-    result = np.mean(
-        stacked,
-        axis=0,
+    if not candidates:
+        return None, 0
+
+    candidate_dates = [
+        item["date"]
+        for item in candidates
+    ]
+
+    # Exclude same-day and future matches.
+    cutoff = bisect_left(
+        candidate_dates,
+        match_date,
     )
 
-    sums = result.sum(
-        axis=1,
-        keepdims=True,
+    previous = candidates[:cutoff]
+
+    if len(previous) < MIN_ODDS_MATCHES:
+        return None, len(previous)
+
+    counts = {
+        1: 0,
+        0: 0,
+        2: 0,
+    }
+
+    for item in previous:
+        counts[item["target"]] += 1
+
+    probabilities = np.asarray([
+        (counts[class_value] + 0.5)
+        / (len(previous) + 1.0)
+        for class_value in MS_CLASSES
+    ], dtype=float)
+
+    total = probabilities.sum()
+
+    if total <= 0:
+        return None, len(previous)
+
+    probabilities /= total
+
+    return probabilities, len(previous)
+
+
+def make_odds_probabilities(rows, odds_history):
+    results = []
+
+    for row in rows:
+        probabilities, sample_count = (
+            get_odds_probability(
+                row["features"],
+                row["date"],
+                odds_history,
+            )
+        )
+
+        results.append({
+            "probabilities": probabilities,
+            "sampleCount": sample_count,
+        })
+
+    return results
+
+
+# =========================================================
+# PERFORMANCE LEDGER
+# =========================================================
+
+class PerformanceLedger:
+    """
+    Chronological source performance tracking.
+
+    Brier score:
+        Mean squared error across the three MS classes.
+
+    Dynamic weight:
+        exp(-average_brier / BRIER_TEMPERATURE)
+
+    Until MIN_WEIGHT_SAMPLES observations:
+        Equal weights.
+
+    League weights:
+        Used only after enough observations exist for
+        every currently available source in that league.
+    """
+
+    def __init__(self):
+        self.global_scores = {
+            name: {
+                "sum": 0.0,
+                "count": 0,
+            }
+            for name in SOURCE_NAMES
+        }
+
+        self.league_scores = defaultdict(
+            lambda: {
+                name: {
+                    "sum": 0.0,
+                    "count": 0,
+                }
+                for name in SOURCE_NAMES
+            }
+        )
+
+    @staticmethod
+    def probability_brier(
+        actual,
+        probabilities,
+    ):
+        actual_vector = np.asarray([
+            1.0 if class_value == actual else 0.0
+            for class_value in MS_CLASSES
+        ])
+
+        return float(
+            np.mean(
+                (probabilities - actual_vector) ** 2
+            )
+        )
+
+    def update(
+        self,
+        actual,
+        source_probabilities,
+        league,
+    ):
+        """
+        Update only after all predictions for a date
+        have been generated.
+        """
+
+        for source_name, probabilities in (
+            source_probabilities.items()
+        ):
+            if probabilities is None:
+                continue
+
+            score = self.probability_brier(
+                actual,
+                probabilities,
+            )
+
+            global_item = self.global_scores[
+                source_name
+            ]
+
+            global_item["sum"] += score
+            global_item["count"] += 1
+
+            league_item = self.league_scores[
+                league
+            ][source_name]
+
+            league_item["sum"] += score
+            league_item["count"] += 1
+
+    @staticmethod
+    def _calculate_weights(score_data, available_sources):
+        if not available_sources:
+            return {}
+
+        counts = [
+            score_data[name]["count"]
+            for name in available_sources
+        ]
+
+        # Equal weights until every available source
+        # has enough prior observations.
+        if min(counts) < MIN_WEIGHT_SAMPLES:
+            equal_weight = 1.0 / len(
+                available_sources
+            )
+
+            return {
+                name: equal_weight
+                for name in available_sources
+            }
+
+        raw_weights = {}
+
+        for name in available_sources:
+            item = score_data[name]
+
+            average_brier = (
+                item["sum"] / item["count"]
+            )
+
+            raw_weights[name] = float(
+                np.exp(
+                    -average_brier / BRIER_TEMPERATURE
+                )
+            )
+
+        total = sum(
+            raw_weights.values()
+        )
+
+        if total <= 0:
+            equal_weight = 1.0 / len(
+                available_sources
+            )
+
+            return {
+                name: equal_weight
+                for name in available_sources
+            }
+
+        return {
+            name: value / total
+            for name, value in raw_weights.items()
+        }
+
+    def get_weights(
+        self,
+        league,
+        available_sources,
+    ):
+        if not available_sources:
+            return {}
+
+        league_data = self.league_scores.get(
+            league
+        )
+
+        if league_data is not None:
+            league_counts = [
+                league_data[name]["count"]
+                for name in available_sources
+            ]
+
+            if (
+                league_counts
+                and min(league_counts) >= MIN_WEIGHT_SAMPLES
+            ):
+                return self._calculate_weights(
+                    league_data,
+                    available_sources,
+                )
+
+        return self._calculate_weights(
+            self.global_scores,
+            available_sources,
+        )
+
+    def snapshot(self):
+        return {
+            "minimumSamples": MIN_WEIGHT_SAMPLES,
+            "brierTemperature": BRIER_TEMPERATURE,
+            "global": self._snapshot_group(
+                self.global_scores
+            ),
+            "leagues": {
+                league: self._snapshot_group(data)
+                for league, data in self.league_scores.items()
+            },
+        }
+
+    @staticmethod
+    def _snapshot_group(data):
+        result = {}
+
+        for name, item in data.items():
+            count = item["count"]
+
+            result[name] = {
+                "samples": int(count),
+                "averageBrier": (
+                    round(
+                        item["sum"] / count,
+                        8,
+                    )
+                    if count
+                    else None
+                ),
+            }
+
+        return result
+
+
+# =========================================================
+# DYNAMIC ENSEMBLE
+# =========================================================
+
+def combine_source_probabilities(
+    source_probabilities,
+    league,
+    ledger,
+):
+    available = {
+        name: probabilities
+        for name, probabilities in (
+            source_probabilities.items()
+        )
+        if probabilities is not None
+    }
+
+    if not available:
+        raise ValueError(
+            "Ensemble için kullanılabilir kaynak yok."
+        )
+
+    weights = ledger.get_weights(
+        league,
+        list(available.keys()),
     )
 
-    return np.divide(
-        result,
-        sums,
-        out=np.full_like(
-            result,
+    combined = np.zeros(
+        len(MS_CLASSES),
+        dtype=float,
+    )
+
+    for name, probabilities in available.items():
+        combined += (
+            weights[name] * probabilities
+        )
+
+    total = combined.sum()
+
+    if total <= 0:
+        combined = np.full(
+            len(MS_CLASSES),
             1 / len(MS_CLASSES),
+        )
+    else:
+        combined /= total
+
+    return combined, weights
+
+
+def process_chronological_ensemble(
+    source_probability_rows,
+    y,
+    dates,
+    leagues,
+    ledger,
+):
+    """
+    Generate ensemble predictions date by date.
+
+    1. Get weights using only previous dates.
+    2. Generate all predictions for the current date.
+    3. After the entire date is finished, update the ledger.
+
+    This prevents same-day result leakage.
+    """
+
+    combined_results = np.zeros(
+        (
+            len(y),
+            len(MS_CLASSES),
         ),
-        where=sums > 0,
+        dtype=float,
     )
+
+    weight_history = []
+
+    unique_dates = sorted(
+        set(dates.tolist())
+    )
+
+    for date in unique_dates:
+        indices = np.where(
+            dates == date
+        )[0]
+
+        pending_updates = []
+
+        for index in indices:
+            source_probabilities = (
+                source_probability_rows[index]
+            )
+
+            combined, weights = (
+                combine_source_probabilities(
+                    source_probabilities,
+                    leagues[index],
+                    ledger,
+                )
+            )
+
+            combined_results[index] = combined
+
+            pending_updates.append((
+                int(y[index]),
+                source_probabilities,
+                leagues[index],
+            ))
+
+            weight_history.append({
+                "date": date,
+                "league": leagues[index],
+                "weights": weights,
+            })
+
+        # Update only after every match on this date
+        # has received its prediction.
+        for actual, source_probabilities, league in (
+            pending_updates
+        ):
+            ledger.update(
+                actual,
+                source_probabilities,
+                league,
+            )
+
+    return combined_results, weight_history
 
 
 # =========================================================
@@ -625,6 +1127,20 @@ def calculate_metrics(y_true, probabilities):
         labels=MS_CLASSES,
     )
 
+    actual_matrix = np.asarray([
+        [
+            1.0 if class_value == actual else 0.0
+            for class_value in MS_CLASSES
+        ]
+        for actual in y_true
+    ])
+
+    brier = float(
+        np.mean(
+            (probabilities - actual_matrix) ** 2
+        )
+    )
+
     return {
         "accuracy": round(
             float(accuracy),
@@ -638,6 +1154,10 @@ def calculate_metrics(y_true, probabilities):
         "f1Weighted": round(
             float(f1),
             6,
+        ),
+        "brierScore": round(
+            brier,
+            8,
         ),
         "samples": int(len(y_true)),
         "confusionMatrix": matrix.tolist(),
@@ -660,7 +1180,13 @@ def train_one(template, X, y):
     return model
 
 
-def evaluate_market(X, y, dates):
+def evaluate_market(
+    X,
+    y,
+    dates,
+    leagues,
+    odds_probability_rows,
+):
     (
         train_idx,
         val_idx,
@@ -685,13 +1211,23 @@ def evaluate_market(X, y, dates):
     X_test = X[test_idx]
     y_test = y[test_idx]
 
+    dates_val = dates[val_idx]
+    dates_test = dates[test_idx]
+
+    leagues_val = leagues[val_idx]
+    leagues_test = leagues[test_idx]
+
     model_results = {}
 
-    validation_probabilities = []
-    test_probabilities = []
+    validation_source_rows = [
+        {}
+        for _ in range(len(y_val))
+    ]
 
-    validation_model_count = 0
-    test_model_count = 0
+    test_source_rows = [
+        {}
+        for _ in range(len(y_test))
+    ]
 
     templates = create_models()
 
@@ -727,11 +1263,10 @@ def evaluate_market(X, y, dates):
             val_prob,
         )
 
-        validation_probabilities.append(
-            val_prob
-        )
-
-        validation_model_count += 1
+        for index, probabilities in enumerate(val_prob):
+            validation_source_rows[index][
+                model_name
+            ] = probabilities
 
         del validation_model
 
@@ -763,11 +1298,10 @@ def evaluate_market(X, y, dates):
                 test_prob,
             )
 
-            test_probabilities.append(
-                test_prob
-            )
-
-            test_model_count += 1
+            for index, probabilities in enumerate(test_prob):
+                test_source_rows[index][
+                    model_name
+                ] = probabilities
 
             del test_model
 
@@ -777,63 +1311,143 @@ def evaluate_market(X, y, dates):
         }
 
     # -----------------------------------------------------
-    # VALIDATION ENSEMBLE
+    # ADD ODDS SOURCE
     # -----------------------------------------------------
 
-    ensemble_validation = None
+    odds_val_metrics = None
+    odds_test_metrics = None
 
-    if validation_probabilities:
-        combined_validation = (
-            ensemble_probabilities(
-                validation_probabilities
-            )
-        )
-
-        ensemble_validation = calculate_metrics(
-            y_val,
-            combined_validation,
-        )
-
-    # -----------------------------------------------------
-    # TEST ENSEMBLE
-    # -----------------------------------------------------
-
-    ensemble_test = None
-
-    if (
-        test_probabilities
-        and len(test_probabilities) == test_model_count
+    for local_index, global_index in enumerate(
+        np.where(val_idx)[0]
     ):
-        combined_test = ensemble_probabilities(
-            test_probabilities
+        odds_data = odds_probability_rows[
+            global_index
+        ]
+
+        validation_source_rows[local_index][
+            "Odds"
+        ] = odds_data["probabilities"]
+
+    for local_index, global_index in enumerate(
+        np.where(test_idx)[0]
+    ):
+        odds_data = odds_probability_rows[
+            global_index
+        ]
+
+        test_source_rows[local_index][
+            "Odds"
+        ] = odds_data["probabilities"]
+
+    val_odds_indices = [
+        index
+        for index, item in enumerate(
+            odds_probability_rows
+        )
+        if val_idx[index]
+        and item["probabilities"] is not None
+    ]
+
+    if val_odds_indices:
+        odds_val_metrics = calculate_metrics(
+            y[val_odds_indices],
+            np.asarray([
+                odds_probability_rows[index]["probabilities"]
+                for index in val_odds_indices
+            ]),
         )
 
-        ensemble_test = calculate_metrics(
+    test_odds_indices = [
+        index
+        for index, item in enumerate(
+            odds_probability_rows
+        )
+        if test_idx[index]
+        and item["probabilities"] is not None
+    ]
+
+    if test_odds_indices:
+        odds_test_metrics = calculate_metrics(
+            y[test_odds_indices],
+            np.asarray([
+                odds_probability_rows[index]["probabilities"]
+                for index in test_odds_indices
+            ]),
+        )
+
+    model_results["Odds"] = {
+        "validation": odds_val_metrics,
+        "test": odds_test_metrics,
+        "minimumHistoricalMatches": MIN_ODDS_MATCHES,
+        "matchingMethod": "Exact MS1/MSX/MS2 opening odds rounded to 2 decimals",
+    }
+
+    # -----------------------------------------------------
+    # CHRONOLOGICAL DYNAMIC ENSEMBLE
+    # -----------------------------------------------------
+
+    ledger = PerformanceLedger()
+
+    combined_validation, validation_weights = (
+        process_chronological_ensemble(
+            validation_source_rows,
+            y_val,
+            dates_val,
+            leagues_val,
+            ledger,
+        )
+    )
+
+    ensemble_validation = calculate_metrics(
+        y_val,
+        combined_validation,
+    )
+
+    combined_test, test_weights = (
+        process_chronological_ensemble(
+            test_source_rows,
+            y_test,
+            dates_test,
+            leagues_test,
+            ledger,
+        )
+    ) if len(y_test) else (
+        np.empty((0, len(MS_CLASSES))),
+        [],
+    )
+
+    ensemble_test = (
+        calculate_metrics(
             y_test,
             combined_test,
         )
+        if len(y_test)
+        else None
+    )
 
     return {
         "label": "Maç Sonucu 1-X-2",
-        "classes": {
-            "1": "Ev sahibi kazanır",
-            "0": "Beraberlik",
-            "2": "Deplasman kazanır",
-        },
+        "classes": CLASS_DESCRIPTIONS,
         "split": split_info,
         "models": model_results,
         "ensemble": {
-            "method": "Equal-weight probability averaging",
+            "method": "Dynamic Brier Score weighted probability averaging",
+            "sources": SOURCE_NAMES,
+            "minimumSamples": MIN_WEIGHT_SAMPLES,
+            "brierTemperature": BRIER_TEMPERATURE,
             "validation": ensemble_validation,
             "test": ensemble_test,
+            "validationWeightRecords": len(validation_weights),
+            "testWeightRecords": len(test_weights),
+            "performanceLedger": ledger.snapshot(),
         },
         "samples": {
             "total": int(len(y)),
             "train": int(train_idx.sum()),
-            "validation": int(validation_idx.sum()),
+            "validation": int(val_idx.sum()),
             "test": int(test_idx.sum()),
         },
-    }
+    }, ledger
 
 
 # =========================================================
@@ -872,15 +1486,18 @@ def train_final_models(X, y):
 # FUTURE PREDICTIONS
 # =========================================================
 
-def predict_future(rows, final_models):
+def predict_future(
+    rows,
+    final_models,
+    odds_history,
+    ledger,
+):
     future = []
 
     for row in rows:
-        # Only matches without a full-time result.
         if row["target"] is not None:
             continue
 
-        # At least one opening odds value must exist.
         if not any(
             np.isfinite(value)
             for value in row["features"]
@@ -916,8 +1533,8 @@ def predict_future(rows, final_models):
             "predictions": {},
         }
 
+        source_probabilities = {}
         model_results = {}
-        all_probabilities = []
 
         for model_name, model in final_models.items():
             probabilities = normalize_probabilities(
@@ -925,9 +1542,9 @@ def predict_future(rows, final_models):
                 X_one,
             )[0]
 
-            all_probabilities.append(
-                probabilities
-            )
+            source_probabilities[
+                model_name
+            ] = probabilities
 
             predicted_index = int(
                 np.argmax(probabilities)
@@ -954,15 +1571,62 @@ def predict_future(rows, final_models):
             }
 
         # -------------------------------------------------
-        # ENSEMBLE
+        # ODDS SOURCE
         # -------------------------------------------------
 
-        combined = ensemble_probabilities(
-            [
-                probability.reshape(1, -1)
-                for probability in all_probabilities
+        odds_probabilities, odds_sample_count = (
+            get_odds_probability(
+                row["features"],
+                row["date"],
+                odds_history,
+            )
+        )
+
+        source_probabilities["Odds"] = (
+            odds_probabilities
+        )
+
+        odds_result = None
+
+        if odds_probabilities is not None:
+            odds_index = int(
+                np.argmax(odds_probabilities)
+            )
+
+            odds_class = MS_CLASSES[
+                odds_index
             ]
-        )[0]
+
+            odds_result = {
+                "prediction": int(odds_class),
+                "predictionLabel": CLASS_LABELS[
+                    str(odds_class)
+                ],
+                "probabilities": {
+                    str(class_value): round(
+                        float(odds_probabilities[index]),
+                        6,
+                    )
+                    for index, class_value in enumerate(
+                        MS_CLASSES
+                    )
+                },
+                "historicalMatches": int(
+                    odds_sample_count
+                ),
+            }
+
+        # -------------------------------------------------
+        # DYNAMIC ENSEMBLE
+        # -------------------------------------------------
+
+        combined, weights = (
+            combine_source_probabilities(
+                source_probabilities,
+                row["league"],
+                ledger,
+            )
+        )
 
         ensemble_index = int(
             np.argmax(combined)
@@ -990,16 +1654,33 @@ def predict_future(rows, final_models):
                 float(np.max(combined)),
                 6,
             ),
+            "sourceWeights": {
+                name: round(
+                    float(weight),
+                    6,
+                )
+                for name, weight in weights.items()
+            },
+            "weightMethod": (
+                "League-specific Brier Score"
+                if (
+                    row["league"] in ledger.league_scores
+                    and min(
+                        ledger.league_scores[
+                            row["league"]
+                        ][name]["count"]
+                        for name in weights
+                    ) >= MIN_WEIGHT_SAMPLES
+                )
+                else "Global Brier Score or equal-weight fallback"
+            ),
         }
 
         item["predictions"]["MS"] = {
             "label": "Maç Sonucu 1-X-2",
-            "classes": {
-                "1": "Ev sahibi kazanır",
-                "0": "Beraberlik",
-                "2": "Deplasman kazanır",
-            },
+            "classes": CLASS_DESCRIPTIONS,
             "models": model_results,
+            "odds": odds_result,
             "ensemble": ensemble_result,
         }
 
@@ -1016,7 +1697,7 @@ def main():
     started = time.perf_counter()
 
     print("=" * 60)
-    print("AI V2 - SADECE MS 1-X-2")
+    print("AI V2 - DYNAMIC FIVE-SOURCE MS 1-X-2")
     print("=" * 60)
 
     rows = load_dataset()
@@ -1031,7 +1712,7 @@ def main():
             "İşlenebilir maç kaydı bulunamadı."
         )
 
-    X, y, dates = make_dataset(rows)
+    X, y, dates, leagues = make_dataset(rows)
 
     if X is None:
         raise RuntimeError(
@@ -1056,6 +1737,33 @@ def main():
         flush=True,
     )
 
+    print(
+        "\nOdds geçmiş eşleşmeleri hazırlanıyor...",
+        flush=True,
+    )
+
+    odds_history = build_odds_history(rows)
+
+    odds_probability_rows = make_odds_probabilities(
+        [
+            row
+            for row in rows
+            if row["target"] is not None
+        ],
+        odds_history,
+    )
+
+    odds_available = sum(
+        item["probabilities"] is not None
+        for item in odds_probability_rows
+    )
+
+    print(
+        f"Odds geçmiş eşleşmesi bulunan etiketli maç: "
+        f"{odds_available}",
+        flush=True,
+    )
+
     report = {
         "version": 2,
         "generatedAt": now_iso(),
@@ -1065,6 +1773,24 @@ def main():
         "features": len(MARKET_KEYS),
         "featureNames": MARKET_KEYS,
         "markets": {},
+        "ensembleSettings": {
+            "sources": SOURCE_NAMES,
+            "method": "Dynamic Brier Score weighted probability averaging",
+            "minimumWeightSamples": MIN_WEIGHT_SAMPLES,
+            "brierTemperature": BRIER_TEMPERATURE,
+            "oddsMatching": {
+                "markets": [
+                    "ms1",
+                    "msX",
+                    "ms2",
+                ],
+                "rounding": 2,
+                "minimumHistoricalMatches": MIN_ODDS_MATCHES,
+                "sameDayMatchesExcluded": True,
+            },
+            "chronologicalUpdates": True,
+            "leagueSpecificWeights": True,
+        },
     }
 
     # -----------------------------------------------------
@@ -1076,11 +1802,15 @@ def main():
         flush=True,
     )
 
-    report["markets"]["MS"] = evaluate_market(
+    market_result, performance_ledger = evaluate_market(
         X,
         y,
         dates,
+        leagues,
+        odds_probability_rows,
     )
+
+    report["markets"]["MS"] = market_result
 
     # -----------------------------------------------------
     # 2. FINAL TRAINING
@@ -1108,6 +1838,8 @@ def main():
     predictions = predict_future(
         rows,
         final_models,
+        odds_history,
+        performance_ledger,
     )
 
     elapsed = time.perf_counter() - started
@@ -1132,13 +1864,10 @@ def main():
             row["date"] for row in rows
         ),
         "target": "MS",
-        "algorithms": [
-            "RandomForest",
-            "XGBoost",
-            "LightGBM",
-            "CatBoost",
-            "Ensemble",
-        ],
+        "algorithms": SOURCE_NAMES + ["Ensemble"],
+        "oddsSourceAvailableMatches": int(
+            odds_available
+        ),
     }
 
     prediction_output = {
@@ -1196,6 +1925,10 @@ def main():
     )
 
     print(
+        f"Odds geçmiş eşleşmesi: {odds_available}"
+    )
+
+    print(
         f"Rapor: {REPORT_FILE}"
     )
 
@@ -1205,28 +1938,40 @@ def main():
 
     print("\nTEST SONUÇLARI")
 
-    market_result = report["markets"]["MS"]
-
-    for model_name, metrics in market_result["models"].items():
+    for source_name, metrics in (
+        market_result["models"].items()
+    ):
         test = metrics.get("test")
 
         if test:
             print(
-                f"  {model_name}: "
+                f"  {source_name}: "
                 f"Doğruluk %{test['accuracy'] * 100:.2f} | "
                 f"Log Loss {test['logLoss']} | "
-                f"F1 {test['f1Weighted']}"
+                f"Brier {test['brierScore']}"
             )
 
-    ensemble_test = market_result["ensemble"].get("test")
+    ensemble_test = (
+        market_result["ensemble"].get("test")
+    )
 
     if ensemble_test:
         print(
             f"  ENSEMBLE: "
             f"Doğruluk %{ensemble_test['accuracy'] * 100:.2f} | "
             f"Log Loss {ensemble_test['logLoss']} | "
-            f"F1 {ensemble_test['f1Weighted']}"
+            f"Brier {ensemble_test['brierScore']}"
         )
+
+    print("\nSON PERFORMANS KAYDI")
+
+    print(
+        json.dumps(
+            performance_ledger.snapshot()["global"],
+            ensure_ascii=False,
+            indent=2,
+        )
+    )
 
 
 if __name__ == "__main__":
