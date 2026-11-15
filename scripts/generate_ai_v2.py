@@ -21,9 +21,15 @@ Sources:
     CatBoost
     Odds historical matching
 
+Odds matching:
+    MS1, MSX and MS2 odds are matched independently.
+    Exact odds rounded to two decimals.
+    Minimum five previous matches for each outcome.
+    Same-day and future matches are excluded.
+
 Ensemble:
     Dynamic Brier Score weighting.
-    Equal weights until 30 prior observations.
+    Equal weights until every active source has 30 prior observations.
     Optional league-specific weights after 30 observations.
 
 Evaluation:
@@ -596,57 +602,94 @@ def normalize_probabilities(
 
 
 # =========================================================
-# ODDS SOURCE
+# ODDS SOURCE - INDEPENDENT OUTCOME MATCHING
 # =========================================================
 
-def make_odds_key(features):
+def make_individual_odds_key(outcome, value):
     """
-    Historical odds matching uses the three MS opening odds,
-    rounded to two decimal places.
+    Creates an independent historical matching key.
+
+    MS1, MSX and MS2 are never matched as one combined
+    three-odds tuple.
+
+    Each outcome has its own exact odds bucket.
     """
 
-    values = features[:3]
-
-    if len(values) != 3:
+    if outcome not in MS_CLASSES:
         return None
 
-    if not all(
-        np.isfinite(value) and value > 1.0
-        for value in values
-    ):
+    value = safe_float(value)
+
+    if not np.isfinite(value) or value <= 1.0:
         return None
 
-    return tuple(
-        round(float(value), 2)
-        for value in values
+    return (
+        int(outcome),
+        round(float(value), 2),
     )
 
 
 def build_odds_history(rows):
+    """
+    Index historical results independently for each outcome.
+
+    Example:
+        (1, 1.85) -> historical MS1 odds observations
+        (0, 3.20) -> historical MSX odds observations
+        (2, 4.10) -> historical MS2 odds observations
+
+    Each observation stores whether that particular
+    outcome actually occurred.
+    """
+
     history = defaultdict(list)
 
     for row in rows:
-        if row["target"] is None:
+        target = row["target"]
+
+        if target is None:
             continue
 
-        key = make_odds_key(
-            row["features"]
-        )
+        features = row["features"]
 
-        if key is None:
+        if len(features) < 3:
             continue
 
-        history[key].append({
-            "date": row["date"],
-            "target": row["target"],
-        })
+        for feature_index, outcome in enumerate(MS_CLASSES):
+            key = make_individual_odds_key(
+                outcome,
+                features[feature_index],
+            )
+
+            if key is None:
+                continue
+
+            history[key].append({
+                "date": row["date"],
+                "hit": int(target == outcome),
+            })
 
     for key in history:
         history[key].sort(
             key=lambda item: item["date"]
         )
 
-    return history
+    # Precompute date arrays for faster historical lookup.
+    indexed_history = {}
+
+    for key, observations in history.items():
+        indexed_history[key] = {
+            "dates": [
+                item["date"]
+                for item in observations
+            ],
+            "hits": [
+                item["hit"]
+                for item in observations
+            ],
+        }
+
+    return indexed_history
 
 
 def get_odds_probability(
@@ -655,68 +698,91 @@ def get_odds_probability(
     odds_history,
 ):
     """
-    Uses only exact matching MS opening odds from earlier dates.
+    Calculates historical probabilities independently
+    for MS1, MSX and MS2.
 
-    Same-day matches are excluded to prevent leakage.
+    For each outcome:
+        1. Find the exact two-decimal odds bucket.
+        2. Exclude same-day and future observations.
+        3. Require at least MIN_ODDS_MATCHES observations.
+        4. Calculate the smoothed historical hit rate.
 
-    Laplace-style smoothing:
-        (class_count + 0.5) / (sample_count + 1)
+    Final probabilities are normalized to sum to 1.
 
-    The three class probabilities are normalized afterward.
+    Returns:
+        probabilities, minimum_sample_count
+
+    The minimum count represents the least-supported
+    of the three independently matched outcomes.
     """
 
-    key = make_odds_key(features)
-
-    if key is None:
+    if len(features) < 3:
         return None, 0
 
-    candidates = odds_history.get(
-        key,
-        [],
+    raw_probabilities = []
+    sample_counts = []
+
+    for feature_index, outcome in enumerate(MS_CLASSES):
+        key = make_individual_odds_key(
+            outcome,
+            features[feature_index],
+        )
+
+        if key is None:
+            return None, 0
+
+        bucket = odds_history.get(key)
+
+        if bucket is None:
+            return None, 0
+
+        candidate_dates = bucket["dates"]
+
+        # Exclude same-day and future matches.
+        cutoff = bisect_left(
+            candidate_dates,
+            match_date,
+        )
+
+        if cutoff < MIN_ODDS_MATCHES:
+            return None, cutoff
+
+        previous_hits = bucket["hits"][:cutoff]
+
+        sample_count = len(previous_hits)
+        wins = sum(previous_hits)
+
+        # Smoothed P(outcome | exact individual odds).
+        probability = (
+            wins + 0.5
+        ) / (
+            sample_count + 1.0
+        )
+
+        raw_probabilities.append(
+            float(probability)
+        )
+
+        sample_counts.append(
+            int(sample_count)
+        )
+
+    probabilities = np.asarray(
+        raw_probabilities,
+        dtype=float,
     )
-
-    if not candidates:
-        return None, 0
-
-    candidate_dates = [
-        item["date"]
-        for item in candidates
-    ]
-
-    # Exclude same-day and future matches.
-    cutoff = bisect_left(
-        candidate_dates,
-        match_date,
-    )
-
-    previous = candidates[:cutoff]
-
-    if len(previous) < MIN_ODDS_MATCHES:
-        return None, len(previous)
-
-    counts = {
-        1: 0,
-        0: 0,
-        2: 0,
-    }
-
-    for item in previous:
-        counts[item["target"]] += 1
-
-    probabilities = np.asarray([
-        (counts[class_value] + 0.5)
-        / (len(previous) + 1.0)
-        for class_value in MS_CLASSES
-    ], dtype=float)
 
     total = probabilities.sum()
 
-    if total <= 0:
-        return None, len(previous)
+    if (
+        not np.isfinite(total)
+        or total <= 0
+    ):
+        return None, 0
 
     probabilities /= total
 
-    return probabilities, len(previous)
+    return probabilities, min(sample_counts)
 
 
 def make_odds_probabilities(rows, odds_history):
@@ -753,12 +819,12 @@ class PerformanceLedger:
     Dynamic weight:
         exp(-average_brier / BRIER_TEMPERATURE)
 
-    Until MIN_WEIGHT_SAMPLES observations:
+    Until every active source has MIN_WEIGHT_SAMPLES:
         Equal weights.
 
     League weights:
-        Used only after enough observations exist for
-        every currently available source in that league.
+        Used only after every active source has enough
+        prior observations in that league.
     """
 
     def __init__(self):
@@ -833,7 +899,10 @@ class PerformanceLedger:
             league_item["count"] += 1
 
     @staticmethod
-    def _calculate_weights(score_data, available_sources):
+    def _calculate_weights(
+        score_data,
+        available_sources,
+    ):
         if not available_sources:
             return {}
 
@@ -842,8 +911,8 @@ class PerformanceLedger:
             for name in available_sources
         ]
 
-        # Equal weights until every available source
-        # has enough prior observations.
+        # Equal weights until EVERY active source
+        # has enough historical observations.
         if min(counts) < MIN_WEIGHT_SAMPLES:
             equal_weight = 1.0 / len(
                 available_sources
@@ -1379,7 +1448,10 @@ def evaluate_market(
         "validation": odds_val_metrics,
         "test": odds_test_metrics,
         "minimumHistoricalMatches": MIN_ODDS_MATCHES,
-        "matchingMethod": "Exact MS1/MSX/MS2 opening odds rounded to 2 decimals",
+        "matchingMethod": (
+            "Independent exact MS1/MSX/MS2 opening odds "
+            "rounded to 2 decimals"
+        ),
     }
 
     # -----------------------------------------------------
@@ -1614,6 +1686,7 @@ def predict_future(
                 "historicalMatches": int(
                     odds_sample_count
                 ),
+                "matchingMethod": "Independent MS1/MSX/MS2 odds matching",
             }
 
         # -------------------------------------------------
@@ -1635,6 +1708,23 @@ def predict_future(
         ensemble_class = MS_CLASSES[
             ensemble_index
         ]
+
+        league_data = ledger.league_scores.get(
+            row["league"]
+        )
+
+        use_league_weights = False
+
+        if league_data is not None and weights:
+            league_counts = [
+                league_data[name]["count"]
+                for name in weights
+            ]
+
+            use_league_weights = (
+                bool(league_counts)
+                and min(league_counts) >= MIN_WEIGHT_SAMPLES
+            )
 
         ensemble_result = {
             "prediction": int(ensemble_class),
@@ -1663,15 +1753,7 @@ def predict_future(
             },
             "weightMethod": (
                 "League-specific Brier Score"
-                if (
-                    row["league"] in ledger.league_scores
-                    and min(
-                        ledger.league_scores[
-                            row["league"]
-                        ][name]["count"]
-                        for name in weights
-                    ) >= MIN_WEIGHT_SAMPLES
-                )
+                if use_league_weights
                 else "Global Brier Score or equal-weight fallback"
             ),
         }
@@ -1759,7 +1841,7 @@ def main():
     )
 
     print(
-        f"Odds geçmiş eşleşmesi bulunan etiketli maç: "
+        f"Bağımsız Odds geçmiş eşleşmesi bulunan etiketli maç: "
         f"{odds_available}",
         flush=True,
     )
@@ -1779,14 +1861,17 @@ def main():
             "minimumWeightSamples": MIN_WEIGHT_SAMPLES,
             "brierTemperature": BRIER_TEMPERATURE,
             "oddsMatching": {
+                "method": "Independent exact odds matching per MS outcome",
                 "markets": [
                     "ms1",
                     "msX",
                     "ms2",
                 ],
                 "rounding": 2,
-                "minimumHistoricalMatches": MIN_ODDS_MATCHES,
+                "minimumHistoricalMatchesPerOutcome": MIN_ODDS_MATCHES,
                 "sameDayMatchesExcluded": True,
+                "requiresAllThreeOutcomes": True,
+                "probabilityNormalization": True,
             },
             "chronologicalUpdates": True,
             "leagueSpecificWeights": True,
@@ -1925,7 +2010,7 @@ def main():
     )
 
     print(
-        f"Odds geçmiş eşleşmesi: {odds_available}"
+        f"Bağımsız Odds geçmiş eşleşmesi: {odds_available}"
     )
 
     print(
