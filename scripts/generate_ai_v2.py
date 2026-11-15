@@ -1,5 +1,5 @@
 
-"""Independent AI V2 training and prediction engine.
+"""Independent AI V2 - MS 1-X-2 prediction engine.
 
 Input:
     data/v2-data.json
@@ -8,20 +8,25 @@ Outputs:
     data/ai-v2-report.json
     data/ai-v2-predictions.json
 
-Markets:
-    MS 1-X-2
-    2.5 Üst
-    İY 1.5 Üst
-    KG Var
+Prediction target:
+    MS 1-X-2 only.
+
+Features:
+    All 39 opening odds, including HT, BTTS, goals,
+    over/under and other market odds.
 
 Models:
     RandomForest
     XGBoost
     LightGBM
     CatBoost
+    Equal-weight probability Ensemble
 
-Chronological 70/15/15 evaluation.
-No changes to existing ML, DNA, RNA or prediction archives.
+Evaluation:
+    Chronological 70/15/15 split.
+
+Existing ML, DNA, RNA and prediction archives
+are not modified.
 """
 
 from __future__ import annotations
@@ -30,9 +35,9 @@ import json
 import re
 import time
 import warnings
+
 from pathlib import Path
 from datetime import datetime, timezone
-from collections import Counter
 
 import numpy as np
 import pandas as pd
@@ -40,7 +45,12 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import accuracy_score, log_loss, f1_score
+from sklearn.metrics import (
+    accuracy_score,
+    log_loss,
+    f1_score,
+    confusion_matrix,
+)
 
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
@@ -48,9 +58,10 @@ from catboost import CatBoostClassifier
 
 warnings.filterwarnings("ignore")
 
-# ---------------------------------------------------------
+
+# =========================================================
 # PATHS
-# ---------------------------------------------------------
+# =========================================================
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,18 +69,35 @@ INPUT_FILE = ROOT / "data" / "v2-data.json"
 REPORT_FILE = ROOT / "data" / "ai-v2-report.json"
 PREDICTIONS_FILE = ROOT / "data" / "ai-v2-predictions.json"
 
-# ---------------------------------------------------------
+
+# =========================================================
 # SETTINGS
-# ---------------------------------------------------------
+# =========================================================
 
 RANDOM_STATE = 42
 
 MIN_TRAIN_ROWS = 100
-MIN_CLASS_ROWS = 5
 
 TRAIN_RATIO = 0.70
 VALIDATION_RATIO = 0.15
-TEST_RATIO = 0.15
+
+# MS class order:
+# 1 = Home win
+# 0 = Draw
+# 2 = Away win
+
+MS_CLASSES = [1, 0, 2]
+
+CLASS_LABELS = {
+    "1": "MS1",
+    "0": "MSX",
+    "2": "MS2",
+}
+
+
+# =========================================================
+# ALL 39 OPENING ODDS
+# =========================================================
 
 MARKET_KEYS = [
     "ms1", "msX", "ms2",
@@ -88,32 +116,10 @@ MARKET_KEYS = [
     "iyms21", "iyms20", "iyms22",
 ]
 
-MARKETS = {
-    "MS": {
-        "label": "Maç Sonucu 1-X-2",
-        "type": "multiclass",
-        "classes": [1, 0, 2],
-    },
-    "OVER_25": {
-        "label": "2.5 Üst",
-        "type": "binary",
-        "classes": [0, 1],
-    },
-    "HT_OVER_15": {
-        "label": "İY 1.5 Üst",
-        "type": "binary",
-        "classes": [0, 1],
-    },
-    "BTTS": {
-        "label": "KG Var",
-        "type": "binary",
-        "classes": [0, 1],
-    },
-}
 
-# ---------------------------------------------------------
+# =========================================================
 # GENERAL HELPERS
-# ---------------------------------------------------------
+# =========================================================
 
 def now_iso():
     return datetime.now(timezone.utc).isoformat()
@@ -167,8 +173,15 @@ def parse_score(value):
         return None
 
     if isinstance(value, dict):
-        home = value.get("home", value.get("homeScore"))
-        away = value.get("away", value.get("awayScore"))
+        home = value.get(
+            "home",
+            value.get("homeScore"),
+        )
+
+        away = value.get(
+            "away",
+            value.get("awayScore"),
+        )
 
         if home is not None and away is not None:
             try:
@@ -181,13 +194,20 @@ def parse_score(value):
     if not text:
         return None
 
-    match = re.search(r"(\d+)\s*[-:]\s*(\d+)", text)
+    match = re.search(
+        r"(\d+)\s*[-:]\s*(\d+)",
+        text,
+    )
 
     if not match:
         return None
 
     try:
-        return int(match.group(1)), int(match.group(2))
+        return (
+            int(match.group(1)),
+            int(match.group(2)),
+        )
+
     except ValueError:
         return None
 
@@ -197,7 +217,12 @@ def extract_matches(raw):
         return raw
 
     if isinstance(raw, dict):
-        for key in ("matches", "data", "results", "fixtures"):
+        for key in (
+            "matches",
+            "data",
+            "results",
+            "fixtures",
+        ):
             value = raw.get(key)
 
             if isinstance(value, list):
@@ -227,52 +252,34 @@ def make_features(match):
     ]
 
 
-# ---------------------------------------------------------
-# TARGET GENERATION
-# ---------------------------------------------------------
+# =========================================================
+# ONLY TARGET: MS 1-X-2
+# =========================================================
 
-def get_targets(match):
+def get_ms_target(match):
     full = parse_score(
         match.get("score")
         or match.get("fullTimeScore")
         or match.get("result")
     )
 
-    half = parse_score(
-        match.get("halfTimeScore")
-        or match.get("htScore")
-        or match.get("half_score")
-    )
-
     if full is None:
         return None
 
     home, away = full
-    total = home + away
 
     if home > away:
-        ms = 1
-    elif home == away:
-        ms = 0
-    else:
-        ms = 2
+        return 1
 
-    targets = {
-        "MS": ms,
-        "OVER_25": int(total >= 3),
-        "BTTS": int(home > 0 and away > 0),
-    }
+    if home == away:
+        return 0
 
-    if half is not None:
-        ht_total = half[0] + half[1]
-        targets["HT_OVER_15"] = int(ht_total >= 2)
-
-    return targets
+    return 2
 
 
-# ---------------------------------------------------------
+# =========================================================
 # DATASET
-# ---------------------------------------------------------
+# =========================================================
 
 def load_dataset():
     if not INPUT_FILE.exists():
@@ -280,7 +287,10 @@ def load_dataset():
             f"Girdi dosyası bulunamadı: {INPUT_FILE}"
         )
 
-    with INPUT_FILE.open("r", encoding="utf-8") as file:
+    with INPUT_FILE.open(
+        "r",
+        encoding="utf-8",
+    ) as file:
         raw = json.load(file)
 
     matches = extract_matches(raw)
@@ -297,36 +307,37 @@ def load_dataset():
             continue
 
         features = make_features(match)
-        targets = get_targets(match)
+        target = get_ms_target(match)
 
-        row = {
+        rows.append({
             "date": date,
             "index": index,
             "features": features,
-            "targets": targets,
+            "target": target,
             "match": match,
-        }
+        })
 
-        rows.append(row)
-
-    rows.sort(key=lambda x: (x["date"], x["index"]))
+    rows.sort(
+        key=lambda row: (
+            row["date"],
+            row["index"],
+        )
+    )
 
     return rows
 
 
-def make_market_dataset(rows, market):
+def make_dataset(rows):
     X = []
     y = []
     dates = []
 
     for row in rows:
-        targets = row["targets"]
-
-        if targets is None or market not in targets:
+        if row["target"] is None:
             continue
 
         X.append(row["features"])
-        y.append(targets[market])
+        y.append(row["target"])
         dates.append(row["date"])
 
     if not X:
@@ -339,49 +350,67 @@ def make_market_dataset(rows, market):
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # CHRONOLOGICAL SPLIT
-# ---------------------------------------------------------
+# =========================================================
 
 def chronological_split(dates):
-    unique_dates = sorted(set(dates.tolist()))
+    unique_dates = sorted(
+        set(dates.tolist())
+    )
 
     if len(unique_dates) < 5:
         raise ValueError(
-            "Eğitim için yeterli sayıda farklı maç tarihi yok."
+            "Eğitim için yeterli farklı maç tarihi yok."
         )
 
     count = len(unique_dates)
 
     train_end = max(
         1,
-        int(count * TRAIN_RATIO)
+        int(count * TRAIN_RATIO),
     )
 
     validation_end = max(
         train_end + 1,
-        int(count * (TRAIN_RATIO + VALIDATION_RATIO))
+        int(
+            count * (
+                TRAIN_RATIO + VALIDATION_RATIO
+            )
+        ),
     )
 
-    validation_end = min(validation_end, count - 1)
+    validation_end = min(
+        validation_end,
+        count - 1,
+    )
 
-    train_dates = set(unique_dates[:train_end])
+    train_dates = set(
+        unique_dates[:train_end]
+    )
+
     validation_dates = set(
         unique_dates[train_end:validation_end]
     )
-    test_dates = set(unique_dates[validation_end:])
 
-    train_idx = np.array([
-        d in train_dates for d in dates
-    ])
+    test_dates = set(
+        unique_dates[validation_end:]
+    )
 
-    validation_idx = np.array([
-        d in validation_dates for d in dates
-    ])
+    train_idx = np.isin(
+        dates,
+        list(train_dates),
+    )
 
-    test_idx = np.array([
-        d in test_dates for d in dates
-    ])
+    validation_idx = np.isin(
+        dates,
+        list(validation_dates),
+    )
+
+    test_idx = np.isin(
+        dates,
+        list(test_dates),
+    )
 
     return (
         train_idx,
@@ -396,13 +425,11 @@ def chronological_split(dates):
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # MODELS
-# ---------------------------------------------------------
+# =========================================================
 
-def create_models(market):
-    multiclass = market == "MS"
-
+def create_models():
     models = {}
 
     models["RandomForest"] = RandomForestClassifier(
@@ -414,32 +441,21 @@ def create_models(market):
         n_jobs=-1,
     )
 
-    xgb_params = {
-        "n_estimators": 180,
-        "max_depth": 5,
-        "learning_rate": 0.045,
-        "subsample": 0.85,
-        "colsample_bytree": 0.85,
-        "reg_lambda": 2,
-        "random_state": RANDOM_STATE,
-        "n_jobs": 2,
-        "tree_method": "hist",
-        "verbosity": 0,
-    }
-
-    if multiclass:
-        xgb_params.update({
-            "objective": "multi:softprob",
-            "num_class": 3,
-            "eval_metric": "mlogloss",
-        })
-    else:
-        xgb_params.update({
-            "objective": "binary:logistic",
-            "eval_metric": "logloss",
-        })
-
-    models["XGBoost"] = XGBClassifier(**xgb_params)
+    models["XGBoost"] = XGBClassifier(
+        n_estimators=180,
+        max_depth=5,
+        learning_rate=0.045,
+        subsample=0.85,
+        colsample_bytree=0.85,
+        reg_lambda=2,
+        random_state=RANDOM_STATE,
+        n_jobs=2,
+        tree_method="hist",
+        objective="multi:softprob",
+        num_class=3,
+        eval_metric="mlogloss",
+        verbosity=0,
+    )
 
     models["LightGBM"] = LGBMClassifier(
         n_estimators=180,
@@ -459,7 +475,7 @@ def create_models(market):
         iterations=180,
         depth=6,
         learning_rate=0.045,
-        loss_function="MultiClass" if multiclass else "Logloss",
+        loss_function="MultiClass",
         verbose=False,
         random_seed=RANDOM_STATE,
         thread_count=2,
@@ -471,96 +487,186 @@ def create_models(market):
 
 def wrap_model(model):
     return Pipeline([
-        ("imputer", SimpleImputer(strategy="median")),
-        ("model", model),
+        (
+            "imputer",
+            SimpleImputer(
+                strategy="median",
+            ),
+        ),
+        (
+            "model",
+            model,
+        ),
     ])
 
 
-# ---------------------------------------------------------
+# =========================================================
 # PROBABILITY HELPERS
-# ---------------------------------------------------------
+# =========================================================
 
-def normalize_probabilities(model, X, expected_classes):
+def normalize_probabilities(
+    model,
+    X,
+    expected_classes=MS_CLASSES,
+):
     raw = model.predict_proba(X)
 
-    model_classes = model.named_steps["model"].classes_
+    model_classes = (
+        model.named_steps["model"].classes_
+    )
 
     result = np.zeros(
-        (len(X), len(expected_classes)),
+        (
+            len(X),
+            len(expected_classes),
+        ),
         dtype=float,
     )
 
     for index, class_value in enumerate(model_classes):
         if class_value in expected_classes:
-            target_index = expected_classes.index(class_value)
+            target_index = expected_classes.index(
+                class_value
+            )
+
             result[:, target_index] = raw[:, index]
 
-    sums = result.sum(axis=1, keepdims=True)
+    sums = result.sum(
+        axis=1,
+        keepdims=True,
+    )
 
     result = np.divide(
         result,
         sums,
-        out=np.full_like(result, 1 / len(expected_classes)),
+        out=np.full_like(
+            result,
+            1 / len(expected_classes),
+        ),
         where=sums > 0,
     )
 
     return result
 
 
-def calculate_metrics(y_true, probabilities, classes):
-    predicted_indices = np.argmax(probabilities, axis=1)
+def ensemble_probabilities(probability_list):
+    if not probability_list:
+        raise ValueError(
+            "Ensemble için kullanılabilir model yok."
+        )
+
+    stacked = np.stack(
+        probability_list,
+        axis=0,
+    )
+
+    # Equal-weight probability averaging.
+    result = np.mean(
+        stacked,
+        axis=0,
+    )
+
+    sums = result.sum(
+        axis=1,
+        keepdims=True,
+    )
+
+    return np.divide(
+        result,
+        sums,
+        out=np.full_like(
+            result,
+            1 / len(MS_CLASSES),
+        ),
+        where=sums > 0,
+    )
+
+
+# =========================================================
+# METRICS
+# =========================================================
+
+def calculate_metrics(y_true, probabilities):
+    predicted_indices = np.argmax(
+        probabilities,
+        axis=1,
+    )
 
     predictions = np.asarray([
-        classes[index] for index in predicted_indices
+        MS_CLASSES[index]
+        for index in predicted_indices
     ])
 
-    accuracy = accuracy_score(y_true, predictions)
+    accuracy = accuracy_score(
+        y_true,
+        predictions,
+    )
 
     try:
         loss = log_loss(
             y_true,
             probabilities,
-            labels=classes,
+            labels=MS_CLASSES,
         )
     except Exception:
         loss = None
 
-    try:
-        f1 = f1_score(
-            y_true,
-            predictions,
-            average="weighted",
-            zero_division=0,
-        )
-    except Exception:
-        f1 = None
+    f1 = f1_score(
+        y_true,
+        predictions,
+        labels=MS_CLASSES,
+        average="weighted",
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(
+        y_true,
+        predictions,
+        labels=MS_CLASSES,
+    )
 
     return {
-        "accuracy": round(float(accuracy), 6),
-        "logLoss": round(float(loss), 6) if loss is not None else None,
-        "f1Weighted": round(float(f1), 6) if f1 is not None else None,
+        "accuracy": round(
+            float(accuracy),
+            6,
+        ),
+        "logLoss": (
+            round(float(loss), 6)
+            if loss is not None
+            else None
+        ),
+        "f1Weighted": round(
+            float(f1),
+            6,
+        ),
         "samples": int(len(y_true)),
+        "confusionMatrix": matrix.tolist(),
+        "classOrder": MS_CLASSES,
     }
 
 
-# ---------------------------------------------------------
+# =========================================================
 # TRAINING
-# ---------------------------------------------------------
+# =========================================================
 
-def train_one(model_name, model_template, X, y):
-    model = wrap_model(model_template)
+def train_one(template, X, y):
+    model = wrap_model(template)
 
-    model.fit(X, y)
+    model.fit(
+        X,
+        y,
+    )
 
     return model
 
 
-def evaluate_market(market, X, y, dates):
-    classes = MARKETS[market]["classes"]
-
-    train_idx, val_idx, test_idx, split_info = (
-        chronological_split(dates)
-    )
+def evaluate_market(X, y, dates):
+    (
+        train_idx,
+        val_idx,
+        test_idx,
+        split_info,
+    ) = chronological_split(dates)
 
     X_train = X[train_idx]
     y_train = y[train_idx]
@@ -568,17 +674,30 @@ def evaluate_market(market, X, y, dates):
     X_val = X[val_idx]
     y_val = y[val_idx]
 
-    X_train_val = X[train_idx | val_idx]
-    y_train_val = y[train_idx | val_idx]
+    X_train_val = X[
+        train_idx | val_idx
+    ]
+
+    y_train_val = y[
+        train_idx | val_idx
+    ]
 
     X_test = X[test_idx]
     y_test = y[test_idx]
 
-    results = {}
+    model_results = {}
 
-    for model_name, template in create_models(market).items():
+    validation_probabilities = []
+    test_probabilities = []
+
+    validation_model_count = 0
+    test_model_count = 0
+
+    templates = create_models()
+
+    for model_name, template in templates.items():
         print(
-            f"  {market} / {model_name}: validation eğitimi",
+            f"  MS / {model_name}: validation eğitimi",
             flush=True,
         )
 
@@ -586,32 +705,38 @@ def evaluate_market(market, X, y, dates):
             len(y_train) < MIN_TRAIN_ROWS
             or len(np.unique(y_train)) < 2
         ):
-            print("    Eğitim verisi yetersiz, atlandı.")
+            print(
+                "    Eğitim verisi yetersiz, atlandı.",
+                flush=True,
+            )
             continue
 
         validation_model = train_one(
-            model_name,
             template,
             X_train,
             y_train,
         )
 
-        validation_probabilities = normalize_probabilities(
+        val_prob = normalize_probabilities(
             validation_model,
             X_val,
-            classes,
         )
 
-        validation_metrics = calculate_metrics(
+        val_metrics = calculate_metrics(
             y_val,
-            validation_probabilities,
-            classes,
+            val_prob,
         )
+
+        validation_probabilities.append(
+            val_prob
+        )
+
+        validation_model_count += 1
 
         del validation_model
 
         print(
-            f"  {market} / {model_name}: test eğitimi",
+            f"  MS / {model_name}: test eğitimi",
             flush=True,
         )
 
@@ -623,67 +748,116 @@ def evaluate_market(market, X, y, dates):
             and len(y_test) > 0
         ):
             test_model = train_one(
-                model_name,
                 template,
                 X_train_val,
                 y_train_val,
             )
 
-            test_probabilities = normalize_probabilities(
+            test_prob = normalize_probabilities(
                 test_model,
                 X_test,
-                classes,
             )
 
             test_metrics = calculate_metrics(
                 y_test,
-                test_probabilities,
-                classes,
+                test_prob,
             )
+
+            test_probabilities.append(
+                test_prob
+            )
+
+            test_model_count += 1
 
             del test_model
 
-        results[model_name] = {
-            "validation": validation_metrics,
+        model_results[model_name] = {
+            "validation": val_metrics,
             "test": test_metrics,
         }
 
+    # -----------------------------------------------------
+    # VALIDATION ENSEMBLE
+    # -----------------------------------------------------
+
+    ensemble_validation = None
+
+    if validation_probabilities:
+        combined_validation = (
+            ensemble_probabilities(
+                validation_probabilities
+            )
+        )
+
+        ensemble_validation = calculate_metrics(
+            y_val,
+            combined_validation,
+        )
+
+    # -----------------------------------------------------
+    # TEST ENSEMBLE
+    # -----------------------------------------------------
+
+    ensemble_test = None
+
+    if (
+        test_probabilities
+        and len(test_probabilities) == test_model_count
+    ):
+        combined_test = ensemble_probabilities(
+            test_probabilities
+        )
+
+        ensemble_test = calculate_metrics(
+            y_test,
+            combined_test,
+        )
+
     return {
-        "label": MARKETS[market]["label"],
+        "label": "Maç Sonucu 1-X-2",
+        "classes": {
+            "1": "Ev sahibi kazanır",
+            "0": "Beraberlik",
+            "2": "Deplasman kazanır",
+        },
         "split": split_info,
-        "models": results,
+        "models": model_results,
+        "ensemble": {
+            "method": "Equal-weight probability averaging",
+            "validation": ensemble_validation,
+            "test": ensemble_test,
+        },
         "samples": {
             "total": int(len(y)),
             "train": int(train_idx.sum()),
-            "validation": int(val_idx.sum()),
+            "validation": int(validation_idx.sum()),
             "test": int(test_idx.sum()),
         },
     }
 
 
-# ---------------------------------------------------------
-# FINAL MODELS AND FUTURE PREDICTIONS
-# ---------------------------------------------------------
+# =========================================================
+# FINAL MODELS
+# =========================================================
 
-def train_final_models(market, X, y):
-    classes = MARKETS[market]["classes"]
-
+def train_final_models(X, y):
     if (
         len(y) < MIN_TRAIN_ROWS
         or len(np.unique(y)) < 2
     ):
-        return {}
+        raise RuntimeError(
+            "MS final modelleri için yeterli eğitim verisi yok."
+        )
 
     final_models = {}
 
-    for model_name, template in create_models(market).items():
+    for model_name, template in create_models().items():
         print(
-            f"  {market} / {model_name}: final model",
+            f"  MS / {model_name}: final model",
             flush=True,
         )
 
         model = train_one(
-            model_name,
             template,
             X,
             y,
@@ -694,18 +868,19 @@ def train_final_models(market, X, y):
     return final_models
 
 
+# =========================================================
+# FUTURE PREDICTIONS
+# =========================================================
+
 def predict_future(rows, final_models):
     future = []
 
     for row in rows:
-        if row["targets"] is not None:
+        # Only matches without a full-time result.
+        if row["target"] is not None:
             continue
 
-        odds = get_odds(row["match"])
-
-        if not odds:
-            continue
-
+        # At least one opening odds value must exist.
         if not any(
             np.isfinite(value)
             for value in row["features"]
@@ -741,123 +916,194 @@ def predict_future(rows, final_models):
             "predictions": {},
         }
 
-        for market, models in final_models.items():
-            classes = MARKETS[market]["classes"]
+        model_results = {}
+        all_probabilities = []
 
-            market_result = {
-                "label": MARKETS[market]["label"],
-                "models": {},
+        for model_name, model in final_models.items():
+            probabilities = normalize_probabilities(
+                model,
+                X_one,
+            )[0]
+
+            all_probabilities.append(
+                probabilities
+            )
+
+            predicted_index = int(
+                np.argmax(probabilities)
+            )
+
+            predicted_class = MS_CLASSES[
+                predicted_index
+            ]
+
+            model_results[model_name] = {
+                "prediction": int(predicted_class),
+                "predictionLabel": CLASS_LABELS[
+                    str(predicted_class)
+                ],
+                "probabilities": {
+                    str(class_value): round(
+                        float(probabilities[index]),
+                        6,
+                    )
+                    for index, class_value in enumerate(
+                        MS_CLASSES
+                    )
+                },
             }
 
-            for model_name, model in models.items():
-                probabilities = normalize_probabilities(
-                    model,
-                    X_one,
-                    classes,
-                )[0]
+        # -------------------------------------------------
+        # ENSEMBLE
+        # -------------------------------------------------
 
-                predicted_index = int(
-                    np.argmax(probabilities)
+        combined = ensemble_probabilities(
+            [
+                probability.reshape(1, -1)
+                for probability in all_probabilities
+            ]
+        )[0]
+
+        ensemble_index = int(
+            np.argmax(combined)
+        )
+
+        ensemble_class = MS_CLASSES[
+            ensemble_index
+        ]
+
+        ensemble_result = {
+            "prediction": int(ensemble_class),
+            "predictionLabel": CLASS_LABELS[
+                str(ensemble_class)
+            ],
+            "probabilities": {
+                str(class_value): round(
+                    float(combined[index]),
+                    6,
                 )
+                for index, class_value in enumerate(
+                    MS_CLASSES
+                )
+            },
+            "confidence": round(
+                float(np.max(combined)),
+                6,
+            ),
+        }
 
-                predicted_class = classes[predicted_index]
-
-                market_result["models"][model_name] = {
-                    "prediction": int(predicted_class),
-                    "probabilities": {
-                        str(class_value): round(
-                            float(probabilities[index]),
-                            6,
-                        )
-                        for index, class_value in enumerate(classes)
-                    },
-                }
-
-            item["predictions"][market] = market_result
+        item["predictions"]["MS"] = {
+            "label": "Maç Sonucu 1-X-2",
+            "classes": {
+                "1": "Ev sahibi kazanır",
+                "0": "Beraberlik",
+                "2": "Deplasman kazanır",
+            },
+            "models": model_results,
+            "ensemble": ensemble_result,
+        }
 
         predictions.append(item)
 
     return predictions
 
 
-# ---------------------------------------------------------
+# =========================================================
 # MAIN
-# ---------------------------------------------------------
+# =========================================================
 
 def main():
     started = time.perf_counter()
 
     print("=" * 60)
-    print("AI V2 - BAĞIMSIZ MAKİNE ÖĞRENMESİ")
+    print("AI V2 - SADECE MS 1-X-2")
     print("=" * 60)
 
     rows = load_dataset()
 
-    print(f"Toplam maç kaydı: {len(rows)}")
+    print(
+        f"Toplam maç kaydı: {len(rows)}",
+        flush=True,
+    )
 
     if not rows:
-        raise RuntimeError("İşlenebilir maç kaydı bulunamadı.")
+        raise RuntimeError(
+            "İşlenebilir maç kaydı bulunamadı."
+        )
+
+    X, y, dates = make_dataset(rows)
+
+    if X is None:
+        raise RuntimeError(
+            "MS için etiketli veri bulunamadı."
+        )
+
+    print(
+        f"MS etiketli maç: {len(y)}",
+        flush=True,
+    )
+
+    print(
+        f"Kullanılan oran sayısı: {len(MARKET_KEYS)}",
+        flush=True,
+    )
+
+    print(
+        f"MS sınıf dağılımı: "
+        f"1={int(np.sum(y == 1))}, "
+        f"X={int(np.sum(y == 0))}, "
+        f"2={int(np.sum(y == 2))}",
+        flush=True,
+    )
 
     report = {
-        "version": 1,
+        "version": 2,
         "generatedAt": now_iso(),
         "source": "data/v2-data.json",
+        "target": "MS",
+        "targetLabel": "Maç Sonucu 1-X-2",
         "features": len(MARKET_KEYS),
+        "featureNames": MARKET_KEYS,
         "markets": {},
-        "runtimeSeconds": None,
     }
 
-    datasets = {}
-    final_models = {}
-
     # -----------------------------------------------------
-    # EVALUATION
+    # 1. EVALUATION
     # -----------------------------------------------------
 
-    print("\n1/3 - Kronolojik model değerlendirmesi")
+    print(
+        "\n1/3 - Kronolojik MS model değerlendirmesi",
+        flush=True,
+    )
 
-    for market in MARKETS:
-        X, y, dates = make_market_dataset(rows, market)
-
-        if X is None:
-            report["markets"][market] = {
-                "error": "Bu piyasa için etiketli veri bulunamadı."
-            }
-            continue
-
-        datasets[market] = (X, y, dates)
-
-        print(
-            f"\n{MARKETS[market]['label']} "
-            f"- {len(y)} örnek",
-            flush=True,
-        )
-
-        report["markets"][market] = evaluate_market(
-            market,
-            X,
-            y,
-            dates,
-        )
+    report["markets"]["MS"] = evaluate_market(
+        X,
+        y,
+        dates,
+    )
 
     # -----------------------------------------------------
-    # FINAL TRAINING
+    # 2. FINAL TRAINING
     # -----------------------------------------------------
 
-    print("\n2/3 - Gelecek maç modelleri eğitiliyor")
+    print(
+        "\n2/3 - MS gelecek maç modelleri eğitiliyor",
+        flush=True,
+    )
 
-    for market, (X, y, dates) in datasets.items():
-        final_models[market] = train_final_models(
-            market,
-            X,
-            y,
-        )
+    final_models = train_final_models(
+        X,
+        y,
+    )
 
     # -----------------------------------------------------
-    # PREDICTIONS
+    # 3. PREDICTIONS
     # -----------------------------------------------------
 
-    print("\n3/3 - Gelecek maç tahminleri üretiliyor")
+    print(
+        "\n3/3 - MS gelecek maç tahminleri üretiliyor",
+        flush=True,
+    )
 
     predictions = predict_future(
         rows,
@@ -866,26 +1112,42 @@ def main():
 
     elapsed = time.perf_counter() - started
 
-    report["runtimeSeconds"] = round(elapsed, 2)
-    report["runtimeMinutes"] = round(elapsed / 60, 2)
+    report["runtimeSeconds"] = round(
+        elapsed,
+        2,
+    )
+
+    report["runtimeMinutes"] = round(
+        elapsed / 60,
+        2,
+    )
 
     report["dataset"] = {
         "totalRows": len(rows),
-        "firstDate": min(row["date"] for row in rows),
-        "lastDate": max(row["date"] for row in rows),
-        "markets": list(MARKETS.keys()),
+        "labeledMatches": len(y),
+        "firstDate": min(
+            row["date"] for row in rows
+        ),
+        "lastDate": max(
+            row["date"] for row in rows
+        ),
+        "target": "MS",
         "algorithms": [
             "RandomForest",
             "XGBoost",
             "LightGBM",
             "CatBoost",
+            "Ensemble",
         ],
     }
 
     prediction_output = {
-        "version": 1,
+        "version": 2,
         "generatedAt": now_iso(),
         "source": "data/v2-data.json",
+        "target": "MS",
+        "targetLabel": "Maç Sonucu 1-X-2",
+        "features": len(MARKET_KEYS),
         "count": len(predictions),
         "predictions": predictions,
     }
@@ -895,7 +1157,10 @@ def main():
         exist_ok=True,
     )
 
-    with REPORT_FILE.open("w", encoding="utf-8") as file:
+    with REPORT_FILE.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
         json.dump(
             report,
             file,
@@ -903,7 +1168,10 @@ def main():
             indent=2,
         )
 
-    with PREDICTIONS_FILE.open("w", encoding="utf-8") as file:
+    with PREDICTIONS_FILE.open(
+        "w",
+        encoding="utf-8",
+    ) as file:
         json.dump(
             prediction_output,
             file,
@@ -911,29 +1179,54 @@ def main():
             indent=2,
         )
 
+    # -----------------------------------------------------
+    # SUMMARY
+    # -----------------------------------------------------
+
     print("\n" + "=" * 60)
-    print("AI V2 TAMAMLANDI")
+    print("AI V2 MS TAMAMLANDI")
     print("=" * 60)
 
-    print(f"Toplam süre: {elapsed:.2f} saniye")
-    print(f"Gelecek maç: {len(predictions)}")
-    print(f"Rapor: {REPORT_FILE}")
-    print(f"Tahmin: {PREDICTIONS_FILE}")
+    print(
+        f"Toplam süre: {elapsed:.2f} saniye"
+    )
 
-    for market, result in report["markets"].items():
-        if "models" not in result:
-            continue
+    print(
+        f"Gelecek maç: {len(predictions)}"
+    )
 
-        print(f"\n{market}")
+    print(
+        f"Rapor: {REPORT_FILE}"
+    )
 
-        for model_name, metrics in result["models"].items():
-            test = metrics.get("test")
+    print(
+        f"Tahmin: {PREDICTIONS_FILE}"
+    )
 
-            if test:
-                print(
-                    f"  {model_name}: "
-                    f"Test doğruluk %{test['accuracy'] * 100:.2f}"
-                )
+    print("\nTEST SONUÇLARI")
+
+    market_result = report["markets"]["MS"]
+
+    for model_name, metrics in market_result["models"].items():
+        test = metrics.get("test")
+
+        if test:
+            print(
+                f"  {model_name}: "
+                f"Doğruluk %{test['accuracy'] * 100:.2f} | "
+                f"Log Loss {test['logLoss']} | "
+                f"F1 {test['f1Weighted']}"
+            )
+
+    ensemble_test = market_result["ensemble"].get("test")
+
+    if ensemble_test:
+        print(
+            f"  ENSEMBLE: "
+            f"Doğruluk %{ensemble_test['accuracy'] * 100:.2f} | "
+            f"Log Loss {ensemble_test['logLoss']} | "
+            f"F1 {ensemble_test['f1Weighted']}"
+        )
 
 
 if __name__ == "__main__":
