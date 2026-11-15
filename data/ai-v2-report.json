@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "generatedAt": "2026-11-15T10:01:39.684911+00:00",
+  "generatedAt": "2026-11-15T10:28:38.105386+00:00",
   "source": "data/v2-data.json",
   "target": "MS",
   "targetLabel": "Maç Sonucu 1-X-2",
@@ -302,10 +302,66 @@
           }
         },
         "Odds": {
-          "validation": null,
-          "test": null,
+          "validation": {
+            "accuracy": 0.468332,
+            "logLoss": 1.195416,
+            "f1Weighted": 0.40307,
+            "brierScore": 0.21213878,
+            "samples": 2763,
+            "confusionMatrix": [
+              [
+                885,
+                26,
+                235
+              ],
+              [
+                476,
+                21,
+                225
+              ],
+              [
+                491,
+                16,
+                388
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
+          },
+          "test": {
+            "accuracy": 0.502059,
+            "logLoss": 1.205047,
+            "f1Weighted": 0.435805,
+            "brierScore": 0.20552317,
+            "samples": 2428,
+            "confusionMatrix": [
+              [
+                866,
+                15,
+                220
+              ],
+              [
+                387,
+                11,
+                179
+              ],
+              [
+                396,
+                12,
+                342
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
+          },
           "minimumHistoricalMatches": 5,
-          "matchingMethod": "Exact MS1/MSX/MS2 opening odds rounded to 2 decimals"
+          "matchingMethod": "Independent exact MS1/MSX/MS2 opening odds rounded to 2 decimals"
         }
       },
       "ensemble": {
@@ -320,26 +376,26 @@
         "minimumSamples": 30,
         "brierTemperature": 0.12,
         "validation": {
-          "accuracy": 0.51467,
-          "logLoss": 1.176896,
-          "f1Weighted": 0.472529,
-          "brierScore": 0.19802156,
+          "accuracy": 0.513753,
+          "logLoss": 1.178136,
+          "f1Weighted": 0.464004,
+          "brierScore": 0.19769321,
           "samples": 3272,
           "confusionMatrix": [
             [
-              1027,
-              62,
-              319
+              1049,
+              43,
+              316
             ],
             [
-              460,
-              73,
-              272
+              474,
+              53,
+              278
             ],
             [
-              407,
-              68,
-              584
+              429,
+              51,
+              579
             ]
           ],
           "classOrder": [
@@ -349,26 +405,26 @@
           ]
         },
         "test": {
-          "accuracy": 0.518336,
-          "logLoss": 1.186159,
-          "f1Weighted": 0.473258,
-          "brierScore": 0.1970941,
+          "accuracy": 0.525035,
+          "logLoss": 1.189622,
+          "f1Weighted": 0.471893,
+          "brierScore": 0.196089,
           "samples": 2836,
           "confusionMatrix": [
             [
-              955,
-              66,
-              290
-            ],
-            [
-              363,
-              37,
-              248
-            ],
-            [
-              356,
+              979,
               43,
-              478
+              289
+            ],
+            [
+              379,
+              24,
+              245
+            ],
+            [
+              361,
+              30,
+              486
             ]
           ],
           "classOrder": [
@@ -400,8 +456,8 @@
               "averageBrier": 0.19530241
             },
             "Odds": {
-              "samples": 0,
-              "averageBrier": null
+              "samples": 5191,
+              "averageBrier": 0.20904444
             }
           },
           "leagues": {
@@ -423,8 +479,8 @@
                 "averageBrier": 0.08853008
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.07484882
               }
             },
             "parin": {
@@ -445,8 +501,8 @@
                 "averageBrier": 0.19000604
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.29019258
               }
             },
             "bresb": {
@@ -467,8 +523,8 @@
                 "averageBrier": 0.20316493
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 53,
+                "averageBrier": 0.2098879
               }
             },
             "haz": {
@@ -489,8 +545,8 @@
                 "averageBrier": 0.14526515
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.21774299
               }
             },
             "abd": {
@@ -511,8 +567,8 @@
                 "averageBrier": 0.1961605
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 98,
+                "averageBrier": 0.2145535
               }
             },
             "çi̇n2l": {
@@ -533,8 +589,8 @@
                 "averageBrier": 0.1413212
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.1660299
               }
             },
             "çi̇n1": {
@@ -555,8 +611,8 @@
                 "averageBrier": 0.22470585
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.20215778
               }
             },
             "kanpl": {
@@ -577,8 +633,8 @@
                 "averageBrier": 0.18271619
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 15,
+                "averageBrier": 0.19054697
               }
             },
             "fi̇n": {
@@ -599,8 +655,8 @@
                 "averageBrier": 0.21192332
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.17054355
               }
             },
             "fi̇n2": {
@@ -621,8 +677,8 @@
                 "averageBrier": 0.18451793
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 10,
+                "averageBrier": 0.18304665
               }
             },
             "i̇nkuz": {
@@ -643,8 +699,8 @@
                 "averageBrier": 0.20097698
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 62,
+                "averageBrier": 0.21002187
               }
             },
             "i̇ngün": {
@@ -665,8 +721,8 @@
                 "averageBrier": 0.19933631
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 136,
+                "averageBrier": 0.19845104
               }
             },
             "şi̇lk": {
@@ -687,8 +743,8 @@
                 "averageBrier": 0.17335594
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.18558903
               }
             },
             "bresa": {
@@ -709,8 +765,8 @@
                 "averageBrier": 0.16264339
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 49,
+                "averageBrier": 0.19237667
               }
             },
             "ni̇kap": {
@@ -731,8 +787,8 @@
                 "averageBrier": 0.2260671
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.16389371
               }
             },
             "rom2": {
@@ -753,8 +809,8 @@
                 "averageBrier": 0.1920891
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 47,
+                "averageBrier": 0.19350821
               }
             },
             "i̇sve2": {
@@ -775,8 +831,8 @@
                 "averageBrier": 0.18863771
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 67,
+                "averageBrier": 0.20284559
               }
             },
             "peruka": {
@@ -797,8 +853,8 @@
                 "averageBrier": 0.17739671
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 28,
+                "averageBrier": 0.20461683
               }
             },
             "i̇rlp": {
@@ -819,8 +875,8 @@
                 "averageBrier": 0.21000689
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 15,
+                "averageBrier": 0.23608607
               }
             },
             "mekem": {
@@ -841,8 +897,8 @@
                 "averageBrier": 0.21672178
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.22588106
               }
             },
             "kolka": {
@@ -863,8 +919,8 @@
                 "averageBrier": 0.19621471
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 42,
+                "averageBrier": 0.2153167
               }
             },
             "kore1": {
@@ -885,8 +941,8 @@
                 "averageBrier": 0.21173725
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.21660404
               }
             },
             "kore2": {
@@ -907,8 +963,8 @@
                 "averageBrier": 0.18534062
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 36,
+                "averageBrier": 0.20187894
               }
             },
             "kore3": {
@@ -929,8 +985,8 @@
                 "averageBrier": 0.17431498
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.17341385
               }
             },
             "endo": {
@@ -951,8 +1007,8 @@
                 "averageBrier": 0.20129229
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 36,
+                "averageBrier": 0.22025767
               }
             },
             "myaul": {
@@ -973,8 +1029,8 @@
                 "averageBrier": 0.26969252
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.3119871
               }
             },
             "malezk": {
@@ -1017,8 +1073,8 @@
                 "averageBrier": 0.20268007
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 27,
+                "averageBrier": 0.21372234
               }
             },
             "por23": {
@@ -1039,8 +1095,8 @@
                 "averageBrier": 0.20678804
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 22,
+                "averageBrier": 0.21166781
               }
             },
             "japon": {
@@ -1061,8 +1117,8 @@
                 "averageBrier": 0.19679351
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 53,
+                "averageBrier": 0.21523682
               }
             },
             "i̇samfe": {
@@ -1083,8 +1139,8 @@
                 "averageBrier": 0.22205093
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 18,
+                "averageBrier": 0.2535327
               }
             },
             "tanza": {
@@ -1105,8 +1161,8 @@
                 "averageBrier": 0.2139618
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.27281622
               }
             },
             "tay1": {
@@ -1127,8 +1183,8 @@
                 "averageBrier": 0.19140686
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 9,
+                "averageBrier": 0.22864267
               }
             },
             "çi̇nsl": {
@@ -1149,8 +1205,8 @@
                 "averageBrier": 0.15651657
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 18,
+                "averageBrier": 0.19957593
               }
             },
             "azerpl": {
@@ -1171,8 +1227,8 @@
                 "averageBrier": 0.23977693
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.25799027
               }
             },
             "i̇nggl": {
@@ -1193,8 +1249,8 @@
                 "averageBrier": 0.20078539
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.20640274
               }
             },
             "honko": {
@@ -1215,8 +1271,8 @@
                 "averageBrier": 0.09292063
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.03639687
               }
             },
             "ethop": {
@@ -1237,8 +1293,8 @@
                 "averageBrier": 0.23863861
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.28579262
               }
             },
             "kosov": {
@@ -1259,8 +1315,8 @@
                 "averageBrier": 0.24330853
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.26798085
               }
             },
             "misir2": {
@@ -1281,8 +1337,8 @@
                 "averageBrier": 0.22085572
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.2252438
               }
             },
             "ukray": {
@@ -1303,8 +1359,8 @@
                 "averageBrier": 0.1783613
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 13,
+                "averageBrier": 0.20930028
               }
             },
             "mozmoç": {
@@ -1325,8 +1381,8 @@
                 "averageBrier": 0.08150671
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.16480409
               }
             },
             "hrv2l": {
@@ -1347,8 +1403,8 @@
                 "averageBrier": 0.22869657
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 37,
+                "averageBrier": 0.23486147
               }
             },
             "baepk": {
@@ -1369,8 +1425,8 @@
                 "averageBrier": 0.17458455
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.19175054
               }
             },
             "bae1": {
@@ -1391,8 +1447,8 @@
                 "averageBrier": 0.21879111
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 10,
+                "averageBrier": 0.20253931
               }
             },
             "i̇ran": {
@@ -1413,8 +1469,8 @@
                 "averageBrier": 0.24064273
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 6,
+                "averageBrier": 0.23668505
               }
             },
             "özbek": {
@@ -1435,8 +1491,8 @@
                 "averageBrier": 0.16056692
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 6,
+                "averageBrier": 0.21982007
               }
             },
             "hrvli̇": {
@@ -1457,8 +1513,8 @@
                 "averageBrier": 0.20450575
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.21312279
               }
             },
             "pol2": {
@@ -1479,8 +1535,8 @@
                 "averageBrier": 0.21331231
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 43,
+                "averageBrier": 0.2099944
               }
             },
             "suud": {
@@ -1501,8 +1557,8 @@
                 "averageBrier": 0.15449211
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 23,
+                "averageBrier": 0.20479727
               }
             },
             "ürdpl": {
@@ -1523,8 +1579,8 @@
                 "averageBrier": 0.21481227
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 14,
+                "averageBrier": 0.23629453
               }
             },
             "ceza2": {
@@ -1545,8 +1601,8 @@
                 "averageBrier": 0.18449186
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.23376181
               }
             },
             "t1l": {
@@ -1567,8 +1623,8 @@
                 "averageBrier": 0.20416024
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 55,
+                "averageBrier": 0.22613588
               }
             },
             "rusy1": {
@@ -1589,8 +1645,8 @@
                 "averageBrier": 0.19883467
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 31,
+                "averageBrier": 0.21315139
               }
             },
             "li̇tv1": {
@@ -1611,8 +1667,8 @@
                 "averageBrier": 0.21045397
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 28,
+                "averageBrier": 0.24019168
               }
             },
             "katar": {
@@ -1633,8 +1689,8 @@
                 "averageBrier": 0.16358142
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 19,
+                "averageBrier": 0.18650499
               }
             },
             "roman": {
@@ -1655,8 +1711,8 @@
                 "averageBrier": 0.18903499
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.20586297
               }
             },
             "norv3": {
@@ -1677,8 +1733,8 @@
                 "averageBrier": 0.22188781
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.22303608
               }
             },
             "fi̇np": {
@@ -1699,8 +1755,8 @@
                 "averageBrier": 0.2193358
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.22317833
               }
             },
             "çek2": {
@@ -1721,8 +1777,8 @@
                 "averageBrier": 0.23063874
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 39,
+                "averageBrier": 0.23616358
               }
             },
             "irak": {
@@ -1743,8 +1799,8 @@
                 "averageBrier": 0.22986584
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 25,
+                "averageBrier": 0.24087176
               }
             },
             "kdkav": {
@@ -1765,8 +1821,8 @@
                 "averageBrier": 0.07788699
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.14992579
               }
             },
             "slove2": {
@@ -1787,8 +1843,8 @@
                 "averageBrier": 0.16989715
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 13,
+                "averageBrier": 0.1953232
               }
             },
             "çek": {
@@ -1809,8 +1865,8 @@
                 "averageBrier": 0.2130919
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 34,
+                "averageBrier": 0.23894154
               }
             },
             "bela": {
@@ -1831,8 +1887,8 @@
                 "averageBrier": 0.15518935
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.17793985
               }
             },
             "hirv": {
@@ -1853,8 +1909,8 @@
                 "averageBrier": 0.23618873
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.26294059
               }
             },
             "dan1": {
@@ -1875,8 +1931,8 @@
                 "averageBrier": 0.21893632
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 25,
+                "averageBrier": 0.22965344
               }
             },
             "bhpl": {
@@ -1897,8 +1953,8 @@
                 "averageBrier": 0.19035837
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 15,
+                "averageBrier": 0.26444744
               }
             },
             "polek": {
@@ -1919,8 +1975,8 @@
                 "averageBrier": 0.20068335
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 46,
+                "averageBrier": 0.19988012
               }
             },
             "al2b": {
@@ -1941,8 +1997,8 @@
                 "averageBrier": 0.19933681
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 45,
+                "averageBrier": 0.20408015
               }
             },
             "rusya": {
@@ -1963,8 +2019,8 @@
                 "averageBrier": 0.19463639
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 32,
+                "averageBrier": 0.2056434
               }
             },
             "avu2": {
@@ -1985,8 +2041,8 @@
                 "averageBrier": 0.20539137
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 34,
+                "averageBrier": 0.21957245
               }
             },
             "ni̇jer": {
@@ -2007,8 +2063,8 @@
                 "averageBrier": 0.15442939
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.19588249
               }
             },
             "estes": {
@@ -2029,8 +2085,8 @@
                 "averageBrier": 0.16582328
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.20132838
               }
             },
             "ceza": {
@@ -2051,8 +2107,8 @@
                 "averageBrier": 0.18020767
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 10,
+                "averageBrier": 0.2139544
               }
             },
             "norv": {
@@ -2073,8 +2129,8 @@
                 "averageBrier": 0.18651139
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 29,
+                "averageBrier": 0.22034261
               }
             },
             "botpl": {
@@ -2095,8 +2151,8 @@
                 "averageBrier": 0.15627255
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.15439424
               }
             },
             "süpl": {
@@ -2117,8 +2173,8 @@
                 "averageBrier": 0.1522178
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 32,
+                "averageBrier": 0.17558448
               }
             },
             "i̇sveç": {
@@ -2139,8 +2195,8 @@
                 "averageBrier": 0.18783584
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 33,
+                "averageBrier": 0.20930749
               }
             },
             "dani̇": {
@@ -2161,8 +2217,8 @@
                 "averageBrier": 0.20063014
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 27,
+                "averageBrier": 0.20537275
               }
             },
             "por2": {
@@ -2183,8 +2239,8 @@
                 "averageBrier": 0.22114563
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 35,
+                "averageBrier": 0.21202559
               }
             },
             "al3": {
@@ -2205,8 +2261,8 @@
                 "averageBrier": 0.20752131
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 60,
+                "averageBrier": 0.2068318
               }
             },
             "dani̇3": {
@@ -2227,8 +2283,8 @@
                 "averageBrier": 0.18397199
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.19526243
               }
             },
             "ugan": {
@@ -2249,8 +2305,8 @@
                 "averageBrier": 0.17246008
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.1740456
               }
             },
             "kuvpl": {
@@ -2271,8 +2327,8 @@
                 "averageBrier": 0.17240327
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.21449617
               }
             },
             "arjsl": {
@@ -2293,8 +2349,8 @@
                 "averageBrier": 0.2075549
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 62,
+                "averageBrier": 0.2121692
               }
             },
             "i̇svch": {
@@ -2315,8 +2371,8 @@
                 "averageBrier": 0.22994669
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.24368934
               }
             },
             "porp": {
@@ -2337,8 +2393,8 @@
                 "averageBrier": 0.16748356
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 24,
+                "averageBrier": 0.18980062
               }
             },
             "holl1": {
@@ -2359,8 +2415,8 @@
                 "averageBrier": 0.19224918
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 40,
+                "averageBrier": 0.19758631
               }
             },
             "fr2": {
@@ -2381,8 +2437,8 @@
                 "averageBrier": 0.20055134
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 42,
+                "averageBrier": 0.20317965
               }
             },
             "i̇n21lk": {
@@ -2403,8 +2459,8 @@
                 "averageBrier": 0.19040967
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.20312395
               }
             },
             "belç2": {
@@ -2425,8 +2481,8 @@
                 "averageBrier": 0.18429366
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 24,
+                "averageBrier": 0.19435896
               }
             },
             "ekpro": {
@@ -2447,8 +2503,8 @@
                 "averageBrier": 0.22980557
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 39,
+                "averageBrier": 0.23774534
               }
             },
             "malta": {
@@ -2469,8 +2525,8 @@
                 "averageBrier": 0.25212239
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 18,
+                "averageBrier": 0.2371328
               }
             },
             "holl": {
@@ -2491,8 +2547,8 @@
                 "averageBrier": 0.22153805
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 35,
+                "averageBrier": 0.20910911
               }
             },
             "gallch": {
@@ -2513,8 +2569,8 @@
                 "averageBrier": 0.21772846
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 51,
+                "averageBrier": 0.22985319
               }
             },
             "i̇tsb": {
@@ -2535,8 +2591,8 @@
                 "averageBrier": 0.21567661
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 58,
+                "averageBrier": 0.219979
               }
             },
             "albu": {
@@ -2557,8 +2613,8 @@
                 "averageBrier": 0.19214722
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 33,
+                "averageBrier": 0.19238427
               }
             },
             "pol1": {
@@ -2579,8 +2635,8 @@
                 "averageBrier": 0.20096664
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 46,
+                "averageBrier": 0.1962329
               }
             },
             "i̇tsc": {
@@ -2601,8 +2657,8 @@
                 "averageBrier": 0.20282988
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 142,
+                "averageBrier": 0.21489431
               }
             },
             "i̇rl1": {
@@ -2623,8 +2679,8 @@
                 "averageBrier": 0.27578843
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.26759732
               }
             },
             "i̇rlk": {
@@ -2645,8 +2701,8 @@
                 "averageBrier": 0.22576852
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.19777707
               }
             },
             "gall": {
@@ -2667,8 +2723,8 @@
                 "averageBrier": 0.17052843
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 15,
+                "averageBrier": 0.17363353
               }
             },
             "ki̇rlc": {
@@ -2689,8 +2745,8 @@
                 "averageBrier": 0.20120154
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 11,
+                "averageBrier": 0.20568864
               }
             },
             "ki̇rlp": {
@@ -2711,8 +2767,8 @@
                 "averageBrier": 0.21346943
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 21,
+                "averageBrier": 0.25819262
               }
             },
             "fr1": {
@@ -2733,8 +2789,8 @@
                 "averageBrier": 0.17230119
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 40,
+                "averageBrier": 0.1931094
               }
             },
             "belç": {
@@ -2755,8 +2811,8 @@
                 "averageBrier": 0.18520595
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 29,
+                "averageBrier": 0.21249048
               }
             },
             "i̇nul": {
@@ -2777,8 +2833,8 @@
                 "averageBrier": 0.17953257
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 44,
+                "averageBrier": 0.18528802
               }
             },
             "i̇spl1": {
@@ -2799,8 +2855,8 @@
                 "averageBrier": 0.16563668
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 37,
+                "averageBrier": 0.19719093
               }
             },
             "fas": {
@@ -2821,8 +2877,8 @@
                 "averageBrier": 0.19934943
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.21465262
               }
             },
             "kolb": {
@@ -2843,8 +2899,8 @@
                 "averageBrier": 0.24677657
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.20761341
               }
             },
             "uruka": {
@@ -2865,8 +2921,8 @@
                 "averageBrier": 0.20375398
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 30,
+                "averageBrier": 0.20498574
               }
             },
             "por3": {
@@ -2887,8 +2943,8 @@
                 "averageBrier": 0.18396901
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.17731208
               }
             },
             "hondu": {
@@ -2909,8 +2965,8 @@
                 "averageBrier": 0.17191348
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.1505953
               }
             },
             "arjpb": {
@@ -2931,8 +2987,8 @@
                 "averageBrier": 0.18802357
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.21289075
               }
             },
             "abdch": {
@@ -2953,8 +3009,8 @@
                 "averageBrier": 0.18655545
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 50,
+                "averageBrier": 0.18794108
               }
             },
             "mekpa": {
@@ -2975,8 +3031,8 @@
                 "averageBrier": 0.22008169
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 52,
+                "averageBrier": 0.21717398
               }
             },
             "kosta": {
@@ -2997,8 +3053,8 @@
                 "averageBrier": 0.20452589
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 27,
+                "averageBrier": 0.20714918
               }
             },
             "japo2": {
@@ -3019,8 +3075,8 @@
                 "averageBrier": 0.20645379
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 61,
+                "averageBrier": 0.20590914
               }
             },
             "avkup": {
@@ -3041,8 +3097,8 @@
                 "averageBrier": 0.30700178
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.31862582
               }
             },
             "leton1": {
@@ -3063,8 +3119,8 @@
                 "averageBrier": 0.05523359
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.04188392
               }
             },
             "i̇sps": {
@@ -3085,8 +3141,8 @@
                 "averageBrier": 0.21165635
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 194,
+                "averageBrier": 0.21800178
               }
             },
             "leton": {
@@ -3107,8 +3163,8 @@
                 "averageBrier": 0.1369483
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.17330772
               }
             },
             "maca2": {
@@ -3129,8 +3185,8 @@
                 "averageBrier": 0.19086495
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 34,
+                "averageBrier": 0.21135239
               }
             },
             "i̇sves": {
@@ -3151,8 +3207,8 @@
                 "averageBrier": 0.18444584
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 37,
+                "averageBrier": 0.20570054
               }
             },
             "kazak": {
@@ -3173,8 +3229,8 @@
                 "averageBrier": 0.22616518
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 14,
+                "averageBrier": 0.23516391
               }
             },
             "li̇tva": {
@@ -3195,8 +3251,8 @@
                 "averageBrier": 0.18989373
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 13,
+                "averageBrier": 0.23822657
               }
             },
             "i̇np": {
@@ -3217,8 +3273,8 @@
                 "averageBrier": 0.18909053
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 41,
+                "averageBrier": 0.20094278
               }
             },
             "i̇nch": {
@@ -3239,8 +3295,8 @@
                 "averageBrier": 0.21146579
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 71,
+                "averageBrier": 0.20935997
               }
             },
             "estp": {
@@ -3261,8 +3317,8 @@
                 "averageBrier": 0.16303208
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 24,
+                "averageBrier": 0.1752417
               }
             },
             "i̇n1": {
@@ -3283,8 +3339,8 @@
                 "averageBrier": 0.18738269
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 65,
+                "averageBrier": 0.19373978
               }
             },
             "i̇n2": {
@@ -3305,8 +3361,8 @@
                 "averageBrier": 0.22325297
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 61,
+                "averageBrier": 0.22493059
               }
             },
             "bulga": {
@@ -3327,8 +3383,8 @@
                 "averageBrier": 0.20945688
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 22,
+                "averageBrier": 0.23094004
               }
             },
             "dan2": {
@@ -3349,8 +3405,8 @@
                 "averageBrier": 0.21055989
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.21018557
               }
             },
             "macar": {
@@ -3371,8 +3427,8 @@
                 "averageBrier": 0.21305156
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 28,
+                "averageBrier": 0.18660759
               }
             },
             "sirbi̇": {
@@ -3393,8 +3449,8 @@
                 "averageBrier": 0.18077698
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 25,
+                "averageBrier": 0.17735092
               }
             },
             "slov2": {
@@ -3415,8 +3471,8 @@
                 "averageBrier": 0.21680928
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 34,
+                "averageBrier": 0.22581814
               }
             },
             "i̇tsa": {
@@ -3437,8 +3493,8 @@
                 "averageBrier": 0.17364979
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 44,
+                "averageBrier": 0.18904894
               }
             },
             "bulg2": {
@@ -3459,8 +3515,8 @@
                 "averageBrier": 0.21143518
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.18430049
               }
             },
             "slove": {
@@ -3481,8 +3537,8 @@
                 "averageBrier": 0.21643323
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 25,
+                "averageBrier": 0.22551033
               }
             },
             "slova": {
@@ -3503,8 +3559,8 @@
                 "averageBrier": 0.20915747
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.22722955
               }
             },
             "i̇kon": {
@@ -3525,8 +3581,8 @@
                 "averageBrier": 0.19225925
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 123,
+                "averageBrier": 0.2011793
               }
             },
             "i̇sko1": {
@@ -3547,8 +3603,8 @@
                 "averageBrier": 0.19100759
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.23997635
               }
             },
             "i̇sko2": {
@@ -3569,8 +3625,8 @@
                 "averageBrier": 0.18412887
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.1864441
               }
             },
             "i̇skch": {
@@ -3591,8 +3647,8 @@
                 "averageBrier": 0.19378872
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 23,
+                "averageBrier": 0.1765648
               }
             },
             "i̇ni̇st": {
@@ -3613,8 +3669,8 @@
                 "averageBrier": 0.19724244
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 61,
+                "averageBrier": 0.19066423
               }
             },
             "i̇skop": {
@@ -3635,8 +3691,8 @@
                 "averageBrier": 0.20438415
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 23,
+                "averageBrier": 0.2379833
               }
             },
             "hi̇ntsl": {
@@ -3657,8 +3713,8 @@
                 "averageBrier": 0.18735322
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.20205564
               }
             },
             "izla": {
@@ -3679,8 +3735,8 @@
                 "averageBrier": 0.21443456
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.20517494
               }
             },
             "i̇spl2": {
@@ -3701,8 +3757,8 @@
                 "averageBrier": 0.1899816
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 47,
+                "averageBrier": 0.20215652
               }
             },
             "i̇spp": {
@@ -3723,8 +3779,8 @@
                 "averageBrier": 0.21374097
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 92,
+                "averageBrier": 0.22315256
               }
             },
             "i̇svi̇ç1": {
@@ -3745,8 +3801,8 @@
                 "averageBrier": 0.24421888
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.25497388
               }
             },
             "avu": {
@@ -3767,8 +3823,8 @@
                 "averageBrier": 0.157616
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.20625409
               }
             },
             "gürel": {
@@ -3789,8 +3845,8 @@
                 "averageBrier": 0.1724819
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 9,
+                "averageBrier": 0.18627658
               }
             },
             "i̇svi̇ç": {
@@ -3811,8 +3867,8 @@
                 "averageBrier": 0.19818089
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 22,
+                "averageBrier": 0.18513954
               }
             },
             "gafmt": {
@@ -3833,8 +3889,8 @@
                 "averageBrier": 0.18354523
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.26846432
               }
             },
             "yun": {
@@ -3855,8 +3911,8 @@
                 "averageBrier": 0.15741791
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 21,
+                "averageBrier": 0.19614816
               }
             },
             "faroe": {
@@ -3877,8 +3933,8 @@
                 "averageBrier": 0.1827042
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.20067884
               }
             },
             "şi̇li̇": {
@@ -3899,8 +3955,8 @@
                 "averageBrier": 0.1950013
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 29,
+                "averageBrier": 0.21378295
               }
             },
             "arjpn": {
@@ -3921,8 +3977,8 @@
                 "averageBrier": 0.21823665
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 53,
+                "averageBrier": 0.22577482
               }
             },
             "bolp": {
@@ -3943,8 +3999,8 @@
                 "averageBrier": 0.19923311
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 19,
+                "averageBrier": 0.21597634
               }
             },
             "guate": {
@@ -3965,8 +4021,8 @@
                 "averageBrier": 0.16974008
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.17489703
               }
             },
             "venka": {
@@ -3987,8 +4043,8 @@
                 "averageBrier": 0.16934018
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.16901329
               }
             },
             "elspa": {
@@ -4009,8 +4065,8 @@
                 "averageBrier": 0.15222731
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.19809229
               }
             },
             "misir": {
@@ -4031,8 +4087,8 @@
                 "averageBrier": 0.18309296
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.20848785
               }
             },
             "norv1": {
@@ -4053,8 +4109,8 @@
                 "averageBrier": 0.18546808
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 36,
+                "averageBrier": 0.19678988
               }
             },
             "asşmp": {
@@ -4075,8 +4131,8 @@
                 "averageBrier": 0.17372903
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.19225035
               }
             },
             "arjpc": {
@@ -4097,8 +4153,8 @@
                 "averageBrier": 0.14950244
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.1934521
               }
             },
             "lübna": {
@@ -4119,8 +4175,8 @@
                 "averageBrier": 0.25744277
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.148123
               }
             },
             "suud1": {
@@ -4141,8 +4197,8 @@
                 "averageBrier": 0.17233829
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.16677289
               }
             },
             "rusku": {
@@ -4163,8 +4219,8 @@
                 "averageBrier": 0.1772182
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 12,
+                "averageBrier": 0.18618129
               }
             },
             "kenya": {
@@ -4185,8 +4241,8 @@
                 "averageBrier": 0.17237113
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.26521962
               }
             },
             "şmpl": {
@@ -4207,8 +4263,8 @@
                 "averageBrier": 0.16005909
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 35,
+                "averageBrier": 0.17377226
               }
             },
             "gafri̇": {
@@ -4229,8 +4285,8 @@
                 "averageBrier": 0.15308281
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.2020575
               }
             },
             "inulk": {
@@ -4251,8 +4307,8 @@
                 "averageBrier": 0.16336357
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.1894947
               }
             },
             "i̇efk": {
@@ -4273,8 +4329,8 @@
                 "averageBrier": 0.21129717
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 29,
+                "averageBrier": 0.22802798
               }
             },
             "i̇skck": {
@@ -4295,8 +4351,8 @@
                 "averageBrier": 0.16069582
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.19618508
               }
             },
             "khaz": {
@@ -4317,8 +4373,8 @@
                 "averageBrier": 0.29941159
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.24558658
               }
             },
             "suda": {
@@ -4339,8 +4395,8 @@
                 "averageBrier": 0.21212739
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.27840207
               }
             },
             "li̇bk": {
@@ -4361,8 +4417,8 @@
                 "averageBrier": 0.27699837
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.21889315
               }
             },
             "favşm": {
@@ -4383,8 +4439,8 @@
                 "averageBrier": 0.24234781
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 20,
+                "averageBrier": 0.22275437
               }
             },
             "avrl": {
@@ -4405,8 +4461,8 @@
                 "averageBrier": 0.18796761
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 35,
+                "averageBrier": 0.22059143
               }
             },
             "avkl": {
@@ -4427,8 +4483,8 @@
                 "averageBrier": 0.17578671
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 30,
+                "averageBrier": 0.20584729
               }
             },
             "frul": {
@@ -4449,8 +4505,8 @@
                 "averageBrier": 0.20437228
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 26,
+                "averageBrier": 0.21326864
               }
             },
             "avusa": {
@@ -4471,8 +4527,8 @@
                 "averageBrier": 0.21879121
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 22,
+                "averageBrier": 0.2158556
               }
             },
             "si̇ng": {
@@ -4493,8 +4549,8 @@
                 "averageBrier": 0.3914183
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.3728318
               }
             },
             "bae": {
@@ -4515,8 +4571,8 @@
                 "averageBrier": 0.17356369
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 11,
+                "averageBrier": 0.1990831
               }
             },
             "gach": {
@@ -4537,8 +4593,8 @@
                 "averageBrier": 0.24296367
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.22711149
               }
             },
             "ruand": {
@@ -4559,8 +4615,8 @@
                 "averageBrier": 0.20678303
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.1812621
               }
             },
             "ürdli̇": {
@@ -4581,8 +4637,8 @@
                 "averageBrier": 0.17433534
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.22544957
               }
             },
             "bahre": {
@@ -4603,8 +4659,8 @@
                 "averageBrier": 0.19360833
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 10,
+                "averageBrier": 0.19591387
               }
             },
             "afşmp": {
@@ -4625,8 +4681,8 @@
                 "averageBrier": 0.12262388
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.08104683
               }
             },
             "norka": {
@@ -4669,8 +4725,8 @@
                 "averageBrier": 0.15964368
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.15159018
               }
             },
             "bunka": {
@@ -4691,8 +4747,8 @@
                 "averageBrier": 0.13675999
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 11,
+                "averageBrier": 0.17641381
               }
             },
             "afkon": {
@@ -4713,8 +4769,8 @@
                 "averageBrier": 0.149934
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.11930569
               }
             },
             "u21bep": {
@@ -4735,8 +4791,8 @@
                 "averageBrier": 0.22316246
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 9,
+                "averageBrier": 0.21270311
               }
             },
             "ekvsb": {
@@ -4757,8 +4813,8 @@
                 "averageBrier": 0.21707522
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.25175867
               }
             },
             "belk": {
@@ -4779,8 +4835,8 @@
                 "averageBrier": 0.0785349
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.08283086
               }
             },
             "pork": {
@@ -4823,8 +4879,8 @@
                 "averageBrier": 0.23860714
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.29459408
               }
             },
             "yzela": {
@@ -4845,8 +4901,8 @@
                 "averageBrier": 0.1087221
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.16250706
               }
             },
             "avuska": {
@@ -4867,8 +4923,8 @@
                 "averageBrier": 0.2275761
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 16,
+                "averageBrier": 0.24015003
               }
             },
             "i̇fak": {
@@ -4889,8 +4945,8 @@
                 "averageBrier": 0.20596034
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 54,
+                "averageBrier": 0.21354382
               }
             },
             "i̇nkdn": {
@@ -4911,8 +4967,8 @@
                 "averageBrier": 0.16560461
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 14,
+                "averageBrier": 0.1822527
               }
             },
             "i̇svdak": {
@@ -4933,8 +4989,8 @@
                 "averageBrier": 0.16143676
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 17,
+                "averageBrier": 0.20356348
               }
             },
             "mekka": {
@@ -4955,8 +5011,8 @@
                 "averageBrier": 0.0779095
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.13225148
               }
             },
             "i̇ranaz": {
@@ -4977,8 +5033,8 @@
                 "averageBrier": 0.19952171
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.22217281
               }
             },
             "abdk": {
@@ -4999,8 +5055,8 @@
                 "averageBrier": 0.30966012
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.28019
               }
             },
             "vi̇et": {
@@ -5021,8 +5077,8 @@
                 "averageBrier": 0.22657411
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.23626559
               }
             },
             "i̇ngp2": {
@@ -5043,8 +5099,8 @@
                 "averageBrier": 0.21656573
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.20399656
               }
             },
             "kmakd": {
@@ -5087,8 +5143,8 @@
                 "averageBrier": 0.11397904
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.12059642
               }
             },
             "karad": {
@@ -5109,8 +5165,8 @@
                 "averageBrier": 0.22327542
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.27321184
               }
             },
             "tunus": {
@@ -5131,8 +5187,8 @@
                 "averageBrier": 0.18946081
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.20839765
               }
             },
             "i̇spkdn": {
@@ -5153,8 +5209,8 @@
                 "averageBrier": 0.23137919
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.30938633
               }
             },
             "i̇zlka": {
@@ -5175,8 +5231,8 @@
                 "averageBrier": 0.13905373
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.12752566
               }
             },
             "frkdn": {
@@ -5197,8 +5253,8 @@
                 "averageBrier": 0.1246919
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.20874756
               }
             },
             "japkdn": {
@@ -5219,8 +5275,8 @@
                 "averageBrier": 0.13263786
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.18177765
               }
             },
             "japfl": {
@@ -5241,8 +5297,8 @@
                 "averageBrier": 0.19936074
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.22628554
               }
             },
             "i̇fat": {
@@ -5263,8 +5319,8 @@
                 "averageBrier": 0.20116006
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 23,
+                "averageBrier": 0.20568519
               }
             },
             "i̇rlpp": {
@@ -5285,8 +5341,8 @@
                 "averageBrier": 0.17268322
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.1671706
               }
             },
             "bresc": {
@@ -5307,8 +5363,8 @@
                 "averageBrier": 0.32560657
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.36186161
               }
             },
             "venez": {
@@ -5329,8 +5385,8 @@
                 "averageBrier": 0.1911374
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.18468691
               }
             },
             "romk": {
@@ -5351,8 +5407,8 @@
                 "averageBrier": 0.2495097
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.26346247
               }
             },
             "yunk": {
@@ -5373,8 +5429,8 @@
                 "averageBrier": 0.18466683
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 5,
+                "averageBrier": 0.20435764
               }
             },
             "çekku": {
@@ -5395,8 +5451,8 @@
                 "averageBrier": 0.18485384
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.12942634
               }
             },
             "avuk": {
@@ -5417,8 +5473,8 @@
                 "averageBrier": 0.21677938
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.26074971
               }
             },
             "alkup": {
@@ -5439,8 +5495,8 @@
                 "averageBrier": 0.14099743
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.18001903
               }
             },
             "gafl": {
@@ -5461,8 +5517,8 @@
                 "averageBrier": 0.09579418
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.17245313
               }
             },
             "dank": {
@@ -5483,8 +5539,8 @@
                 "averageBrier": 0.11428311
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.09775611
               }
             },
             "i̇eflk": {
@@ -5505,8 +5561,8 @@
                 "averageBrier": 0.26087661
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 7,
+                "averageBrier": 0.24175531
               }
             },
             "porlk": {
@@ -5527,8 +5583,8 @@
                 "averageBrier": 0.04997065
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.04941063
               }
             },
             "urukup": {
@@ -5549,8 +5605,8 @@
                 "averageBrier": 0.18193356
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.22914094
               }
             },
             "hirvk": {
@@ -5571,8 +5627,8 @@
                 "averageBrier": 0.28316458
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.28948164
               }
             },
             "norvk": {
@@ -5593,8 +5649,8 @@
                 "averageBrier": 0.19437797
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.10485988
               }
             },
             "kşmpl": {
@@ -5615,8 +5671,8 @@
                 "averageBrier": 0.17281099
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 8,
+                "averageBrier": 0.22355935
               }
             },
             "ekvak": {
@@ -5637,8 +5693,8 @@
                 "averageBrier": 0.08743959
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.14707458
               }
             },
             "arjk": {
@@ -5659,8 +5715,8 @@
                 "averageBrier": 0.17828235
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.25367247
               }
             },
             "polka": {
@@ -5681,8 +5737,8 @@
                 "averageBrier": 0.11288665
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.28548134
               }
             },
             "ummak": {
@@ -5725,8 +5781,8 @@
                 "averageBrier": 0.09868695
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.20382244
               }
             },
             "i̇sklk": {
@@ -5747,8 +5803,8 @@
                 "averageBrier": 0.17942952
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 2,
+                "averageBrier": 0.15390451
               }
             },
             "brek": {
@@ -5769,8 +5825,8 @@
                 "averageBrier": 0.22292841
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.2163803
               }
             },
             "bolk": {
@@ -5791,8 +5847,8 @@
                 "averageBrier": 0.0891067
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.07767494
               }
             },
             "suud2": {
@@ -5813,8 +5869,8 @@
                 "averageBrier": 0.13543486
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.15694217
               }
             },
             "misik": {
@@ -5857,8 +5913,8 @@
                 "averageBrier": 0.27882178
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.26134396
               }
             },
             "belka": {
@@ -5901,8 +5957,8 @@
                 "averageBrier": 0.25933386
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.19599405
               }
             },
             "i̇spk": {
@@ -5923,8 +5979,8 @@
                 "averageBrier": 0.19477157
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.14112945
               }
             },
             "kolk": {
@@ -5945,8 +6001,8 @@
                 "averageBrier": 0.1790219
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 1,
+                "averageBrier": 0.17088917
               }
             },
             "afre": {
@@ -5967,8 +6023,8 @@
                 "averageBrier": 0.06502184
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 3,
+                "averageBrier": 0.1539028
               }
             },
             "ulus": {
@@ -5989,8 +6045,8 @@
                 "averageBrier": 0.12424613
               },
               "Odds": {
-                "samples": 0,
-                "averageBrier": null
+                "samples": 4,
+                "averageBrier": 0.20821375
               }
             }
           }
@@ -6016,20 +6072,23 @@
     "minimumWeightSamples": 30,
     "brierTemperature": 0.12,
     "oddsMatching": {
+      "method": "Independent exact odds matching per MS outcome",
       "markets": [
         "ms1",
         "msX",
         "ms2"
       ],
       "rounding": 2,
-      "minimumHistoricalMatches": 5,
-      "sameDayMatchesExcluded": true
+      "minimumHistoricalMatchesPerOutcome": 5,
+      "sameDayMatchesExcluded": true,
+      "requiresAllThreeOutcomes": true,
+      "probabilityNormalization": true
     },
     "chronologicalUpdates": true,
     "leagueSpecificWeights": true
   },
-  "runtimeSeconds": 70.12,
-  "runtimeMinutes": 1.17,
+  "runtimeSeconds": 55.2,
+  "runtimeMinutes": 0.92,
   "dataset": {
     "totalRows": 17682,
     "labeledMatches": 16424,
@@ -6044,6 +6103,6 @@
       "Odds",
       "Ensemble"
     ],
-    "oddsSourceAvailableMatches": 0
+    "oddsSourceAvailableMatches": 11022
   }
 }
