@@ -1,11 +1,59 @@
 {
-  "version": 1,
-  "generatedAt": "2026-11-15T09:13:54.778846+00:00",
+  "version": 2,
+  "generatedAt": "2026-11-15T10:01:39.684911+00:00",
   "source": "data/v2-data.json",
+  "target": "MS",
+  "targetLabel": "Maç Sonucu 1-X-2",
   "features": 39,
+  "featureNames": [
+    "ms1",
+    "msX",
+    "ms2",
+    "h12",
+    "h0",
+    "h23",
+    "i14",
+    "olmaz",
+    "i25",
+    "ms1Alt",
+    "msXAlt",
+    "ms2Alt",
+    "ms1Ust",
+    "msXUst",
+    "ms2Ust",
+    "au25Alt",
+    "au25Ust",
+    "au35Alt",
+    "au35Ust",
+    "kgVar",
+    "kgYok",
+    "gol01",
+    "gol23",
+    "gol45",
+    "gol6plus",
+    "iy1",
+    "iyX",
+    "iy2",
+    "iy15Alt",
+    "iy15Ust",
+    "iyms11",
+    "iyms10",
+    "iyms12",
+    "iyms01",
+    "iyms00",
+    "iyms02",
+    "iyms21",
+    "iyms20",
+    "iyms22"
+  ],
   "markets": {
     "MS": {
       "label": "Maç Sonucu 1-X-2",
+      "classes": {
+        "1": "Ev sahibi kazanır",
+        "0": "Beraberlik",
+        "2": "Deplasman kazanır"
+      },
       "split": {
         "train": 86,
         "validation": 18,
@@ -18,13 +66,59 @@
             "accuracy": 0.473411,
             "logLoss": 1.21536,
             "f1Weighted": 0.462069,
-            "samples": 3272
+            "brierScore": 0.20613975,
+            "samples": 3272,
+            "confusionMatrix": [
+              [
+                850,
+                217,
+                341
+              ],
+              [
+                377,
+                158,
+                270
+              ],
+              [
+                327,
+                191,
+                541
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           },
           "test": {
             "accuracy": 0.471439,
             "logLoss": 1.227239,
             "f1Weighted": 0.460563,
-            "samples": 2836
+            "brierScore": 0.20555491,
+            "samples": 2836,
+            "confusionMatrix": [
+              [
+                808,
+                212,
+                291
+              ],
+              [
+                315,
+                108,
+                225
+              ],
+              [
+                302,
+                154,
+                421
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           }
         },
         "XGBoost": {
@@ -32,13 +126,59 @@
             "accuracy": 0.515281,
             "logLoss": 1.211932,
             "f1Weighted": 0.455011,
-            "samples": 3272
+            "brierScore": 0.19746763,
+            "samples": 3272,
+            "confusionMatrix": [
+              [
+                1085,
+                25,
+                298
+              ],
+              [
+                512,
+                31,
+                262
+              ],
+              [
+                463,
+                26,
+                570
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           },
           "test": {
             "accuracy": 0.530324,
             "logLoss": 1.223356,
             "f1Weighted": 0.469967,
-            "samples": 2836
+            "brierScore": 0.19558904,
+            "samples": 2836,
+            "confusionMatrix": [
+              [
+                1016,
+                24,
+                271
+              ],
+              [
+                403,
+                17,
+                228
+              ],
+              [
+                388,
+                18,
+                471
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           }
         },
         "LightGBM": {
@@ -46,13 +186,59 @@
             "accuracy": 0.491748,
             "logLoss": 1.147165,
             "f1Weighted": 0.486075,
-            "samples": 3272
+            "brierScore": 0.20328427,
+            "samples": 3272,
+            "confusionMatrix": [
+              [
+                830,
+                244,
+                334
+              ],
+              [
+                347,
+                207,
+                251
+              ],
+              [
+                279,
+                208,
+                572
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           },
           "test": {
             "accuracy": 0.472144,
             "logLoss": 1.142825,
             "f1Weighted": 0.471617,
-            "samples": 2836
+            "brierScore": 0.20423212,
+            "samples": 2836,
+            "confusionMatrix": [
+              [
+                727,
+                265,
+                319
+              ],
+              [
+                249,
+                155,
+                244
+              ],
+              [
+                242,
+                178,
+                457
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           }
         },
         "CatBoost": {
@@ -60,232 +246,5753 @@
             "accuracy": 0.520477,
             "logLoss": 1.198005,
             "f1Weighted": 0.452295,
-            "samples": 3272
+            "brierScore": 0.19648869,
+            "samples": 3272,
+            "confusionMatrix": [
+              [
+                1120,
+                13,
+                275
+              ],
+              [
+                522,
+                18,
+                265
+              ],
+              [
+                483,
+                11,
+                565
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           },
           "test": {
             "accuracy": 0.539492,
             "logLoss": 1.213988,
             "f1Weighted": 0.471889,
-            "samples": 2836
+            "brierScore": 0.19393376,
+            "samples": 2836,
+            "confusionMatrix": [
+              [
+                1048,
+                11,
+                252
+              ],
+              [
+                406,
+                8,
+                234
+              ],
+              [
+                392,
+                11,
+                474
+              ]
+            ],
+            "classOrder": [
+              1,
+              0,
+              2
+            ]
           }
+        },
+        "Odds": {
+          "validation": null,
+          "test": null,
+          "minimumHistoricalMatches": 5,
+          "matchingMethod": "Exact MS1/MSX/MS2 opening odds rounded to 2 decimals"
         }
       },
-      "samples": {
-        "total": 16424,
-        "train": 10316,
-        "validation": 3272,
-        "test": 2836
-      }
-    },
-    "OVER_25": {
-      "label": "2.5 Üst",
-      "split": {
-        "train": 86,
-        "validation": 18,
-        "test": 19,
-        "total": 123
-      },
-      "models": {
-        "RandomForest": {
-          "validation": {
-            "accuracy": 0.549511,
-            "logLoss": 0.707239,
-            "f1Weighted": 0.545515,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.558886,
-            "logLoss": 0.704452,
-            "f1Weighted": 0.552771,
-            "samples": 2836
-          }
+      "ensemble": {
+        "method": "Dynamic Brier Score weighted probability averaging",
+        "sources": [
+          "RandomForest",
+          "XGBoost",
+          "LightGBM",
+          "CatBoost",
+          "Odds"
+        ],
+        "minimumSamples": 30,
+        "brierTemperature": 0.12,
+        "validation": {
+          "accuracy": 0.51467,
+          "logLoss": 1.176896,
+          "f1Weighted": 0.472529,
+          "brierScore": 0.19802156,
+          "samples": 3272,
+          "confusionMatrix": [
+            [
+              1027,
+              62,
+              319
+            ],
+            [
+              460,
+              73,
+              272
+            ],
+            [
+              407,
+              68,
+              584
+            ]
+          ],
+          "classOrder": [
+            1,
+            0,
+            2
+          ]
         },
-        "XGBoost": {
-          "validation": {
-            "accuracy": 0.577934,
-            "logLoss": 0.675224,
-            "f1Weighted": 0.551075,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.583568,
-            "logLoss": 0.676598,
-            "f1Weighted": 0.558546,
-            "samples": 2836
-          }
+        "test": {
+          "accuracy": 0.518336,
+          "logLoss": 1.186159,
+          "f1Weighted": 0.473258,
+          "brierScore": 0.1970941,
+          "samples": 2836,
+          "confusionMatrix": [
+            [
+              955,
+              66,
+              290
+            ],
+            [
+              363,
+              37,
+              248
+            ],
+            [
+              356,
+              43,
+              478
+            ]
+          ],
+          "classOrder": [
+            1,
+            0,
+            2
+          ]
         },
-        "LightGBM": {
-          "validation": {
-            "accuracy": 0.578545,
-            "logLoss": 0.681037,
-            "f1Weighted": 0.577975,
-            "samples": 3272
+        "validationWeightRecords": 3272,
+        "testWeightRecords": 2836,
+        "performanceLedger": {
+          "minimumSamples": 30,
+          "brierTemperature": 0.12,
+          "global": {
+            "RandomForest": {
+              "samples": 6108,
+              "averageBrier": 0.2058682
+            },
+            "XGBoost": {
+              "samples": 6108,
+              "averageBrier": 0.19659539
+            },
+            "LightGBM": {
+              "samples": 6108,
+              "averageBrier": 0.20372437
+            },
+            "CatBoost": {
+              "samples": 6108,
+              "averageBrier": 0.19530241
+            },
+            "Odds": {
+              "samples": 0,
+              "averageBrier": null
+            }
           },
-          "test": {
-            "accuracy": 0.557828,
-            "logLoss": 0.684071,
-            "f1Weighted": 0.558359,
-            "samples": 2836
-          }
-        },
-        "CatBoost": {
-          "validation": {
-            "accuracy": 0.588936,
-            "logLoss": 0.670656,
-            "f1Weighted": 0.564524,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.600141,
-            "logLoss": 0.671449,
-            "f1Weighted": 0.572327,
-            "samples": 2836
-          }
-        }
-      },
-      "samples": {
-        "total": 16424,
-        "train": 10316,
-        "validation": 3272,
-        "test": 2836
-      }
-    },
-    "HT_OVER_15": {
-      "label": "İY 1.5 Üst",
-      "split": {
-        "train": 86,
-        "validation": 18,
-        "test": 19,
-        "total": 123
-      },
-      "models": {
-        "RandomForest": {
-          "validation": {
-            "accuracy": 0.576204,
-            "logLoss": 0.682707,
-            "f1Weighted": 0.566814,
-            "samples": 3261
-          },
-          "test": {
-            "accuracy": 0.569198,
-            "logLoss": 0.700208,
-            "f1Weighted": 0.556326,
-            "samples": 2818
-          }
-        },
-        "XGBoost": {
-          "validation": {
-            "accuracy": 0.642748,
-            "logLoss": 0.648387,
-            "f1Weighted": 0.554492,
-            "samples": 3261
-          },
-          "test": {
-            "accuracy": 0.614975,
-            "logLoss": 0.66314,
-            "f1Weighted": 0.531343,
-            "samples": 2818
-          }
-        },
-        "LightGBM": {
-          "validation": {
-            "accuracy": 0.535419,
-            "logLoss": 0.688322,
-            "f1Weighted": 0.543951,
-            "samples": 3261
-          },
-          "test": {
-            "accuracy": 0.538325,
-            "logLoss": 0.696367,
-            "f1Weighted": 0.544548,
-            "samples": 2818
-          }
-        },
-        "CatBoost": {
-          "validation": {
-            "accuracy": 0.640601,
-            "logLoss": 0.645846,
-            "f1Weighted": 0.540286,
-            "samples": 3261
-          },
-          "test": {
-            "accuracy": 0.615685,
-            "logLoss": 0.65651,
-            "f1Weighted": 0.513149,
-            "samples": 2818
-          }
-        }
-      },
-      "samples": {
-        "total": 16357,
-        "train": 10278,
-        "validation": 3261,
-        "test": 2818
-      }
-    },
-    "BTTS": {
-      "label": "KG Var",
-      "split": {
-        "train": 86,
-        "validation": 18,
-        "test": 19,
-        "total": 123
-      },
-      "models": {
-        "RandomForest": {
-          "validation": {
-            "accuracy": 0.529951,
-            "logLoss": 0.722666,
-            "f1Weighted": 0.524917,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.539492,
-            "logLoss": 0.707485,
-            "f1Weighted": 0.533866,
-            "samples": 2836
-          }
-        },
-        "XGBoost": {
-          "validation": {
-            "accuracy": 0.560513,
-            "logLoss": 0.689434,
-            "f1Weighted": 0.520459,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.564528,
-            "logLoss": 0.683037,
-            "f1Weighted": 0.523622,
-            "samples": 2836
-          }
-        },
-        "LightGBM": {
-          "validation": {
-            "accuracy": 0.533007,
-            "logLoss": 0.696376,
-            "f1Weighted": 0.529613,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.55536,
-            "logLoss": 0.688941,
-            "f1Weighted": 0.551547,
-            "samples": 2836
-          }
-        },
-        "CatBoost": {
-          "validation": {
-            "accuracy": 0.565403,
-            "logLoss": 0.683927,
-            "f1Weighted": 0.514815,
-            "samples": 3272
-          },
-          "test": {
-            "accuracy": 0.568406,
-            "logLoss": 0.680579,
-            "f1Weighted": 0.512697,
-            "samples": 2836
+          "leagues": {
+            "conul": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.15554282
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.1015554
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.18006572
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.08853008
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "parin": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.23780567
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.19554595
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.26368517
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.19000604
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bresb": {
+              "RandomForest": {
+                "samples": 60,
+                "averageBrier": 0.19361846
+              },
+              "XGBoost": {
+                "samples": 60,
+                "averageBrier": 0.20368882
+              },
+              "LightGBM": {
+                "samples": 60,
+                "averageBrier": 0.2050091
+              },
+              "CatBoost": {
+                "samples": 60,
+                "averageBrier": 0.20316493
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "haz": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.17290384
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.14931788
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.1740735
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.14526515
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "abd": {
+              "RandomForest": {
+                "samples": 106,
+                "averageBrier": 0.1913925
+              },
+              "XGBoost": {
+                "samples": 106,
+                "averageBrier": 0.19227719
+              },
+              "LightGBM": {
+                "samples": 106,
+                "averageBrier": 0.19186363
+              },
+              "CatBoost": {
+                "samples": 106,
+                "averageBrier": 0.1961605
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çi̇n2l": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.12567476
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.147761
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.16971338
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.1413212
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çi̇n1": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.22851496
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.22591569
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.24710436
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.22470585
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kanpl": {
+              "RandomForest": {
+                "samples": 18,
+                "averageBrier": 0.2005396
+              },
+              "XGBoost": {
+                "samples": 18,
+                "averageBrier": 0.18276692
+              },
+              "LightGBM": {
+                "samples": 18,
+                "averageBrier": 0.19858913
+              },
+              "CatBoost": {
+                "samples": 18,
+                "averageBrier": 0.18271619
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fi̇n": {
+              "RandomForest": {
+                "samples": 21,
+                "averageBrier": 0.22069569
+              },
+              "XGBoost": {
+                "samples": 21,
+                "averageBrier": 0.21529353
+              },
+              "LightGBM": {
+                "samples": 21,
+                "averageBrier": 0.20784891
+              },
+              "CatBoost": {
+                "samples": 21,
+                "averageBrier": 0.21192332
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fi̇n2": {
+              "RandomForest": {
+                "samples": 11,
+                "averageBrier": 0.20608692
+              },
+              "XGBoost": {
+                "samples": 11,
+                "averageBrier": 0.19225221
+              },
+              "LightGBM": {
+                "samples": 11,
+                "averageBrier": 0.22682099
+              },
+              "CatBoost": {
+                "samples": 11,
+                "averageBrier": 0.18451793
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇nkuz": {
+              "RandomForest": {
+                "samples": 67,
+                "averageBrier": 0.20779794
+              },
+              "XGBoost": {
+                "samples": 67,
+                "averageBrier": 0.20194732
+              },
+              "LightGBM": {
+                "samples": 67,
+                "averageBrier": 0.21009443
+              },
+              "CatBoost": {
+                "samples": 67,
+                "averageBrier": 0.20097698
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇ngün": {
+              "RandomForest": {
+                "samples": 141,
+                "averageBrier": 0.21378087
+              },
+              "XGBoost": {
+                "samples": 141,
+                "averageBrier": 0.19968308
+              },
+              "LightGBM": {
+                "samples": 141,
+                "averageBrier": 0.20651676
+              },
+              "CatBoost": {
+                "samples": 141,
+                "averageBrier": 0.19933631
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "şi̇lk": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.23111532
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.18399602
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.21547062
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.17335594
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bresa": {
+              "RandomForest": {
+                "samples": 60,
+                "averageBrier": 0.17761048
+              },
+              "XGBoost": {
+                "samples": 60,
+                "averageBrier": 0.16285752
+              },
+              "LightGBM": {
+                "samples": 60,
+                "averageBrier": 0.18096871
+              },
+              "CatBoost": {
+                "samples": 60,
+                "averageBrier": 0.16264339
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ni̇kap": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.23492306
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.23852702
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.20890517
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.2260671
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "rom2": {
+              "RandomForest": {
+                "samples": 53,
+                "averageBrier": 0.20880816
+              },
+              "XGBoost": {
+                "samples": 53,
+                "averageBrier": 0.19248074
+              },
+              "LightGBM": {
+                "samples": 53,
+                "averageBrier": 0.20335775
+              },
+              "CatBoost": {
+                "samples": 53,
+                "averageBrier": 0.1920891
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sve2": {
+              "RandomForest": {
+                "samples": 76,
+                "averageBrier": 0.20097183
+              },
+              "XGBoost": {
+                "samples": 76,
+                "averageBrier": 0.18736156
+              },
+              "LightGBM": {
+                "samples": 76,
+                "averageBrier": 0.19852392
+              },
+              "CatBoost": {
+                "samples": 76,
+                "averageBrier": 0.18863771
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "peruka": {
+              "RandomForest": {
+                "samples": 38,
+                "averageBrier": 0.18417021
+              },
+              "XGBoost": {
+                "samples": 38,
+                "averageBrier": 0.17706227
+              },
+              "LightGBM": {
+                "samples": 38,
+                "averageBrier": 0.18601312
+              },
+              "CatBoost": {
+                "samples": 38,
+                "averageBrier": 0.17739671
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇rlp": {
+              "RandomForest": {
+                "samples": 20,
+                "averageBrier": 0.19970065
+              },
+              "XGBoost": {
+                "samples": 20,
+                "averageBrier": 0.2048159
+              },
+              "LightGBM": {
+                "samples": 20,
+                "averageBrier": 0.20940575
+              },
+              "CatBoost": {
+                "samples": 20,
+                "averageBrier": 0.21000689
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "mekem": {
+              "RandomForest": {
+                "samples": 29,
+                "averageBrier": 0.22752155
+              },
+              "XGBoost": {
+                "samples": 29,
+                "averageBrier": 0.21567147
+              },
+              "LightGBM": {
+                "samples": 29,
+                "averageBrier": 0.21171085
+              },
+              "CatBoost": {
+                "samples": 29,
+                "averageBrier": 0.21672178
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kolka": {
+              "RandomForest": {
+                "samples": 54,
+                "averageBrier": 0.1980365
+              },
+              "XGBoost": {
+                "samples": 54,
+                "averageBrier": 0.19264623
+              },
+              "LightGBM": {
+                "samples": 54,
+                "averageBrier": 0.19887382
+              },
+              "CatBoost": {
+                "samples": 54,
+                "averageBrier": 0.19621471
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kore1": {
+              "RandomForest": {
+                "samples": 28,
+                "averageBrier": 0.20400973
+              },
+              "XGBoost": {
+                "samples": 28,
+                "averageBrier": 0.20781137
+              },
+              "LightGBM": {
+                "samples": 28,
+                "averageBrier": 0.20754928
+              },
+              "CatBoost": {
+                "samples": 28,
+                "averageBrier": 0.21173725
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kore2": {
+              "RandomForest": {
+                "samples": 40,
+                "averageBrier": 0.2070914
+              },
+              "XGBoost": {
+                "samples": 40,
+                "averageBrier": 0.18914247
+              },
+              "LightGBM": {
+                "samples": 40,
+                "averageBrier": 0.20406593
+              },
+              "CatBoost": {
+                "samples": 40,
+                "averageBrier": 0.18534062
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kore3": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.19506087
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.17184223
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.19222966
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.17431498
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "endo": {
+              "RandomForest": {
+                "samples": 45,
+                "averageBrier": 0.20621067
+              },
+              "XGBoost": {
+                "samples": 45,
+                "averageBrier": 0.19915644
+              },
+              "LightGBM": {
+                "samples": 45,
+                "averageBrier": 0.21072495
+              },
+              "CatBoost": {
+                "samples": 45,
+                "averageBrier": 0.20129229
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "myaul": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.24565432
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.26761214
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.24678902
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.26969252
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "malezk": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.01915527
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.01053837
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.01925893
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.02916408
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "japo3": {
+              "RandomForest": {
+                "samples": 27,
+                "averageBrier": 0.21572727
+              },
+              "XGBoost": {
+                "samples": 27,
+                "averageBrier": 0.20455751
+              },
+              "LightGBM": {
+                "samples": 27,
+                "averageBrier": 0.22034291
+              },
+              "CatBoost": {
+                "samples": 27,
+                "averageBrier": 0.20268007
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "por23": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.22850675
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.21029267
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.22700729
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.20678804
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "japon": {
+              "RandomForest": {
+                "samples": 60,
+                "averageBrier": 0.21404823
+              },
+              "XGBoost": {
+                "samples": 60,
+                "averageBrier": 0.19578724
+              },
+              "LightGBM": {
+                "samples": 60,
+                "averageBrier": 0.20374538
+              },
+              "CatBoost": {
+                "samples": 60,
+                "averageBrier": 0.19679351
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇samfe": {
+              "RandomForest": {
+                "samples": 20,
+                "averageBrier": 0.22799005
+              },
+              "XGBoost": {
+                "samples": 20,
+                "averageBrier": 0.22149608
+              },
+              "LightGBM": {
+                "samples": 20,
+                "averageBrier": 0.22820814
+              },
+              "CatBoost": {
+                "samples": 20,
+                "averageBrier": 0.22205093
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "tanza": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.21486208
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.21922039
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.19175974
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.2139618
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "tay1": {
+              "RandomForest": {
+                "samples": 11,
+                "averageBrier": 0.19508279
+              },
+              "XGBoost": {
+                "samples": 11,
+                "averageBrier": 0.19263741
+              },
+              "LightGBM": {
+                "samples": 11,
+                "averageBrier": 0.18441684
+              },
+              "CatBoost": {
+                "samples": 11,
+                "averageBrier": 0.19140686
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çi̇nsl": {
+              "RandomForest": {
+                "samples": 26,
+                "averageBrier": 0.18470397
+              },
+              "XGBoost": {
+                "samples": 26,
+                "averageBrier": 0.16563518
+              },
+              "LightGBM": {
+                "samples": 26,
+                "averageBrier": 0.16900311
+              },
+              "CatBoost": {
+                "samples": 26,
+                "averageBrier": 0.15651657
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "azerpl": {
+              "RandomForest": {
+                "samples": 21,
+                "averageBrier": 0.25620986
+              },
+              "XGBoost": {
+                "samples": 21,
+                "averageBrier": 0.24135828
+              },
+              "LightGBM": {
+                "samples": 21,
+                "averageBrier": 0.24153645
+              },
+              "CatBoost": {
+                "samples": 21,
+                "averageBrier": 0.23977693
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇nggl": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.21359329
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.21172413
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.1910386
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.20078539
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "honko": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.13608394
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.10176456
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.10039803
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.09292063
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ethop": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.15641241
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.23503417
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.17711688
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.23863861
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kosov": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.23304083
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.24317317
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.23165863
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.24330853
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "misir2": {
+              "RandomForest": {
+                "samples": 18,
+                "averageBrier": 0.24689738
+              },
+              "XGBoost": {
+                "samples": 18,
+                "averageBrier": 0.22729427
+              },
+              "LightGBM": {
+                "samples": 18,
+                "averageBrier": 0.24344949
+              },
+              "CatBoost": {
+                "samples": 18,
+                "averageBrier": 0.22085572
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ukray": {
+              "RandomForest": {
+                "samples": 24,
+                "averageBrier": 0.17434463
+              },
+              "XGBoost": {
+                "samples": 24,
+                "averageBrier": 0.17784119
+              },
+              "LightGBM": {
+                "samples": 24,
+                "averageBrier": 0.18659986
+              },
+              "CatBoost": {
+                "samples": 24,
+                "averageBrier": 0.1783613
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "mozmoç": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.08001753
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.05528524
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.11429109
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.08150671
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hrv2l": {
+              "RandomForest": {
+                "samples": 37,
+                "averageBrier": 0.23591106
+              },
+              "XGBoost": {
+                "samples": 37,
+                "averageBrier": 0.23107354
+              },
+              "LightGBM": {
+                "samples": 37,
+                "averageBrier": 0.23464788
+              },
+              "CatBoost": {
+                "samples": 37,
+                "averageBrier": 0.22869657
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "baepk": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.24267854
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.17557212
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.2185838
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.17458455
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bae1": {
+              "RandomForest": {
+                "samples": 12,
+                "averageBrier": 0.20412306
+              },
+              "XGBoost": {
+                "samples": 12,
+                "averageBrier": 0.21979667
+              },
+              "LightGBM": {
+                "samples": 12,
+                "averageBrier": 0.20595891
+              },
+              "CatBoost": {
+                "samples": 12,
+                "averageBrier": 0.21879111
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇ran": {
+              "RandomForest": {
+                "samples": 7,
+                "averageBrier": 0.18020639
+              },
+              "XGBoost": {
+                "samples": 7,
+                "averageBrier": 0.23835347
+              },
+              "LightGBM": {
+                "samples": 7,
+                "averageBrier": 0.23544573
+              },
+              "CatBoost": {
+                "samples": 7,
+                "averageBrier": 0.24064273
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "özbek": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.15390059
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.15540005
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.14963563
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.16056692
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hrvli̇": {
+              "RandomForest": {
+                "samples": 7,
+                "averageBrier": 0.20948653
+              },
+              "XGBoost": {
+                "samples": 7,
+                "averageBrier": 0.20820817
+              },
+              "LightGBM": {
+                "samples": 7,
+                "averageBrier": 0.22214997
+              },
+              "CatBoost": {
+                "samples": 7,
+                "averageBrier": 0.20450575
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "pol2": {
+              "RandomForest": {
+                "samples": 44,
+                "averageBrier": 0.20583455
+              },
+              "XGBoost": {
+                "samples": 44,
+                "averageBrier": 0.21126612
+              },
+              "LightGBM": {
+                "samples": 44,
+                "averageBrier": 0.21993282
+              },
+              "CatBoost": {
+                "samples": 44,
+                "averageBrier": 0.21331231
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "suud": {
+              "RandomForest": {
+                "samples": 34,
+                "averageBrier": 0.17250723
+              },
+              "XGBoost": {
+                "samples": 34,
+                "averageBrier": 0.16020813
+              },
+              "LightGBM": {
+                "samples": 34,
+                "averageBrier": 0.17653998
+              },
+              "CatBoost": {
+                "samples": 34,
+                "averageBrier": 0.15449211
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ürdpl": {
+              "RandomForest": {
+                "samples": 21,
+                "averageBrier": 0.20381686
+              },
+              "XGBoost": {
+                "samples": 21,
+                "averageBrier": 0.21258638
+              },
+              "LightGBM": {
+                "samples": 21,
+                "averageBrier": 0.18556235
+              },
+              "CatBoost": {
+                "samples": 21,
+                "averageBrier": 0.21481227
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ceza2": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.21153267
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.19051489
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.20636819
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.18449186
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "t1l": {
+              "RandomForest": {
+                "samples": 59,
+                "averageBrier": 0.22249001
+              },
+              "XGBoost": {
+                "samples": 59,
+                "averageBrier": 0.20525414
+              },
+              "LightGBM": {
+                "samples": 59,
+                "averageBrier": 0.21099209
+              },
+              "CatBoost": {
+                "samples": 59,
+                "averageBrier": 0.20416024
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "rusy1": {
+              "RandomForest": {
+                "samples": 34,
+                "averageBrier": 0.2039989
+              },
+              "XGBoost": {
+                "samples": 34,
+                "averageBrier": 0.20366109
+              },
+              "LightGBM": {
+                "samples": 34,
+                "averageBrier": 0.20052867
+              },
+              "CatBoost": {
+                "samples": 34,
+                "averageBrier": 0.19883467
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "li̇tv1": {
+              "RandomForest": {
+                "samples": 35,
+                "averageBrier": 0.20751007
+              },
+              "XGBoost": {
+                "samples": 35,
+                "averageBrier": 0.2109926
+              },
+              "LightGBM": {
+                "samples": 35,
+                "averageBrier": 0.20058995
+              },
+              "CatBoost": {
+                "samples": 35,
+                "averageBrier": 0.21045397
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "katar": {
+              "RandomForest": {
+                "samples": 22,
+                "averageBrier": 0.18731661
+              },
+              "XGBoost": {
+                "samples": 22,
+                "averageBrier": 0.17306987
+              },
+              "LightGBM": {
+                "samples": 22,
+                "averageBrier": 0.19707114
+              },
+              "CatBoost": {
+                "samples": 22,
+                "averageBrier": 0.16358142
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "roman": {
+              "RandomForest": {
+                "samples": 28,
+                "averageBrier": 0.22775626
+              },
+              "XGBoost": {
+                "samples": 28,
+                "averageBrier": 0.19117187
+              },
+              "LightGBM": {
+                "samples": 28,
+                "averageBrier": 0.20938127
+              },
+              "CatBoost": {
+                "samples": 28,
+                "averageBrier": 0.18903499
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "norv3": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.28272196
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.22884628
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.24393251
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.22188781
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fi̇np": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.25554081
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.22025311
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.24537005
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.2193358
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çek2": {
+              "RandomForest": {
+                "samples": 39,
+                "averageBrier": 0.20901852
+              },
+              "XGBoost": {
+                "samples": 39,
+                "averageBrier": 0.22745369
+              },
+              "LightGBM": {
+                "samples": 39,
+                "averageBrier": 0.21537248
+              },
+              "CatBoost": {
+                "samples": 39,
+                "averageBrier": 0.23063874
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "irak": {
+              "RandomForest": {
+                "samples": 30,
+                "averageBrier": 0.23582274
+              },
+              "XGBoost": {
+                "samples": 30,
+                "averageBrier": 0.23535246
+              },
+              "LightGBM": {
+                "samples": 30,
+                "averageBrier": 0.23268063
+              },
+              "CatBoost": {
+                "samples": 30,
+                "averageBrier": 0.22986584
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kdkav": {
+              "RandomForest": {
+                "samples": 24,
+                "averageBrier": 0.0764955
+              },
+              "XGBoost": {
+                "samples": 24,
+                "averageBrier": 0.07107279
+              },
+              "LightGBM": {
+                "samples": 24,
+                "averageBrier": 0.08210635
+              },
+              "CatBoost": {
+                "samples": 24,
+                "averageBrier": 0.07788699
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "slove2": {
+              "RandomForest": {
+                "samples": 18,
+                "averageBrier": 0.18316707
+              },
+              "XGBoost": {
+                "samples": 18,
+                "averageBrier": 0.16288708
+              },
+              "LightGBM": {
+                "samples": 18,
+                "averageBrier": 0.17149147
+              },
+              "CatBoost": {
+                "samples": 18,
+                "averageBrier": 0.16989715
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çek": {
+              "RandomForest": {
+                "samples": 39,
+                "averageBrier": 0.21999933
+              },
+              "XGBoost": {
+                "samples": 39,
+                "averageBrier": 0.21354649
+              },
+              "LightGBM": {
+                "samples": 39,
+                "averageBrier": 0.20730284
+              },
+              "CatBoost": {
+                "samples": 39,
+                "averageBrier": 0.2130919
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bela": {
+              "RandomForest": {
+                "samples": 34,
+                "averageBrier": 0.1864545
+              },
+              "XGBoost": {
+                "samples": 34,
+                "averageBrier": 0.15413994
+              },
+              "LightGBM": {
+                "samples": 34,
+                "averageBrier": 0.1773005
+              },
+              "CatBoost": {
+                "samples": 34,
+                "averageBrier": 0.15518935
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hirv": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.24883504
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.24007163
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.24359684
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.23618873
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "dan1": {
+              "RandomForest": {
+                "samples": 28,
+                "averageBrier": 0.2459452
+              },
+              "XGBoost": {
+                "samples": 28,
+                "averageBrier": 0.22282057
+              },
+              "LightGBM": {
+                "samples": 28,
+                "averageBrier": 0.22816908
+              },
+              "CatBoost": {
+                "samples": 28,
+                "averageBrier": 0.21893632
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bhpl": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.18631447
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.18552744
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.17636095
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.19035837
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "polek": {
+              "RandomForest": {
+                "samples": 46,
+                "averageBrier": 0.20773223
+              },
+              "XGBoost": {
+                "samples": 46,
+                "averageBrier": 0.19104613
+              },
+              "LightGBM": {
+                "samples": 46,
+                "averageBrier": 0.20925567
+              },
+              "CatBoost": {
+                "samples": 46,
+                "averageBrier": 0.20068335
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "al2b": {
+              "RandomForest": {
+                "samples": 45,
+                "averageBrier": 0.21207036
+              },
+              "XGBoost": {
+                "samples": 45,
+                "averageBrier": 0.19743126
+              },
+              "LightGBM": {
+                "samples": 45,
+                "averageBrier": 0.21536609
+              },
+              "CatBoost": {
+                "samples": 45,
+                "averageBrier": 0.19933681
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "rusya": {
+              "RandomForest": {
+                "samples": 40,
+                "averageBrier": 0.20883654
+              },
+              "XGBoost": {
+                "samples": 40,
+                "averageBrier": 0.19584568
+              },
+              "LightGBM": {
+                "samples": 40,
+                "averageBrier": 0.21038012
+              },
+              "CatBoost": {
+                "samples": 40,
+                "averageBrier": 0.19463639
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avu2": {
+              "RandomForest": {
+                "samples": 35,
+                "averageBrier": 0.20880698
+              },
+              "XGBoost": {
+                "samples": 35,
+                "averageBrier": 0.20647027
+              },
+              "LightGBM": {
+                "samples": 35,
+                "averageBrier": 0.2075882
+              },
+              "CatBoost": {
+                "samples": 35,
+                "averageBrier": 0.20539137
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ni̇jer": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.1865405
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.15791983
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.17248152
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.15442939
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "estes": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.1763338
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.16478071
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.1692998
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.16582328
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ceza": {
+              "RandomForest": {
+                "samples": 14,
+                "averageBrier": 0.17125385
+              },
+              "XGBoost": {
+                "samples": 14,
+                "averageBrier": 0.17107555
+              },
+              "LightGBM": {
+                "samples": 14,
+                "averageBrier": 0.16344685
+              },
+              "CatBoost": {
+                "samples": 14,
+                "averageBrier": 0.18020767
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "norv": {
+              "RandomForest": {
+                "samples": 39,
+                "averageBrier": 0.1973747
+              },
+              "XGBoost": {
+                "samples": 39,
+                "averageBrier": 0.19004295
+              },
+              "LightGBM": {
+                "samples": 39,
+                "averageBrier": 0.20736822
+              },
+              "CatBoost": {
+                "samples": 39,
+                "averageBrier": 0.18651139
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "botpl": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.1432235
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.14939894
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.15781207
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.15627255
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "süpl": {
+              "RandomForest": {
+                "samples": 45,
+                "averageBrier": 0.1792639
+              },
+              "XGBoost": {
+                "samples": 45,
+                "averageBrier": 0.15596004
+              },
+              "LightGBM": {
+                "samples": 45,
+                "averageBrier": 0.18398863
+              },
+              "CatBoost": {
+                "samples": 45,
+                "averageBrier": 0.1522178
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sveç": {
+              "RandomForest": {
+                "samples": 42,
+                "averageBrier": 0.1916947
+              },
+              "XGBoost": {
+                "samples": 42,
+                "averageBrier": 0.18889913
+              },
+              "LightGBM": {
+                "samples": 42,
+                "averageBrier": 0.18896194
+              },
+              "CatBoost": {
+                "samples": 42,
+                "averageBrier": 0.18783584
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "dani̇": {
+              "RandomForest": {
+                "samples": 29,
+                "averageBrier": 0.21681708
+              },
+              "XGBoost": {
+                "samples": 29,
+                "averageBrier": 0.20642975
+              },
+              "LightGBM": {
+                "samples": 29,
+                "averageBrier": 0.22939257
+              },
+              "CatBoost": {
+                "samples": 29,
+                "averageBrier": 0.20063014
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "por2": {
+              "RandomForest": {
+                "samples": 35,
+                "averageBrier": 0.23199958
+              },
+              "XGBoost": {
+                "samples": 35,
+                "averageBrier": 0.21801874
+              },
+              "LightGBM": {
+                "samples": 35,
+                "averageBrier": 0.23072138
+              },
+              "CatBoost": {
+                "samples": 35,
+                "averageBrier": 0.22114563
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "al3": {
+              "RandomForest": {
+                "samples": 60,
+                "averageBrier": 0.24152693
+              },
+              "XGBoost": {
+                "samples": 60,
+                "averageBrier": 0.20884486
+              },
+              "LightGBM": {
+                "samples": 60,
+                "averageBrier": 0.22665058
+              },
+              "CatBoost": {
+                "samples": 60,
+                "averageBrier": 0.20752131
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "dani̇3": {
+              "RandomForest": {
+                "samples": 13,
+                "averageBrier": 0.19432297
+              },
+              "XGBoost": {
+                "samples": 13,
+                "averageBrier": 0.1845309
+              },
+              "LightGBM": {
+                "samples": 13,
+                "averageBrier": 0.19595077
+              },
+              "CatBoost": {
+                "samples": 13,
+                "averageBrier": 0.18397199
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ugan": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.2192545
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.19829745
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.2130738
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.17246008
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kuvpl": {
+              "RandomForest": {
+                "samples": 12,
+                "averageBrier": 0.16537963
+              },
+              "XGBoost": {
+                "samples": 12,
+                "averageBrier": 0.16654711
+              },
+              "LightGBM": {
+                "samples": 12,
+                "averageBrier": 0.16040177
+              },
+              "CatBoost": {
+                "samples": 12,
+                "averageBrier": 0.17240327
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arjsl": {
+              "RandomForest": {
+                "samples": 69,
+                "averageBrier": 0.21086319
+              },
+              "XGBoost": {
+                "samples": 69,
+                "averageBrier": 0.20831045
+              },
+              "LightGBM": {
+                "samples": 69,
+                "averageBrier": 0.22653523
+              },
+              "CatBoost": {
+                "samples": 69,
+                "averageBrier": 0.2075549
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇svch": {
+              "RandomForest": {
+                "samples": 20,
+                "averageBrier": 0.22161106
+              },
+              "XGBoost": {
+                "samples": 20,
+                "averageBrier": 0.22251147
+              },
+              "LightGBM": {
+                "samples": 20,
+                "averageBrier": 0.2157087
+              },
+              "CatBoost": {
+                "samples": 20,
+                "averageBrier": 0.22994669
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "porp": {
+              "RandomForest": {
+                "samples": 36,
+                "averageBrier": 0.19966707
+              },
+              "XGBoost": {
+                "samples": 36,
+                "averageBrier": 0.17137789
+              },
+              "LightGBM": {
+                "samples": 36,
+                "averageBrier": 0.19951325
+              },
+              "CatBoost": {
+                "samples": 36,
+                "averageBrier": 0.16748356
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "holl1": {
+              "RandomForest": {
+                "samples": 43,
+                "averageBrier": 0.21036523
+              },
+              "XGBoost": {
+                "samples": 43,
+                "averageBrier": 0.19804031
+              },
+              "LightGBM": {
+                "samples": 43,
+                "averageBrier": 0.20392262
+              },
+              "CatBoost": {
+                "samples": 43,
+                "averageBrier": 0.19224918
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fr2": {
+              "RandomForest": {
+                "samples": 45,
+                "averageBrier": 0.22979386
+              },
+              "XGBoost": {
+                "samples": 45,
+                "averageBrier": 0.20965573
+              },
+              "LightGBM": {
+                "samples": 45,
+                "averageBrier": 0.2334307
+              },
+              "CatBoost": {
+                "samples": 45,
+                "averageBrier": 0.20055134
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇n21lk": {
+              "RandomForest": {
+                "samples": 14,
+                "averageBrier": 0.16569476
+              },
+              "XGBoost": {
+                "samples": 14,
+                "averageBrier": 0.18244842
+              },
+              "LightGBM": {
+                "samples": 14,
+                "averageBrier": 0.17060158
+              },
+              "CatBoost": {
+                "samples": 14,
+                "averageBrier": 0.19040967
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "belç2": {
+              "RandomForest": {
+                "samples": 24,
+                "averageBrier": 0.18356632
+              },
+              "XGBoost": {
+                "samples": 24,
+                "averageBrier": 0.1841843
+              },
+              "LightGBM": {
+                "samples": 24,
+                "averageBrier": 0.20045765
+              },
+              "CatBoost": {
+                "samples": 24,
+                "averageBrier": 0.18429366
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ekpro": {
+              "RandomForest": {
+                "samples": 39,
+                "averageBrier": 0.2420631
+              },
+              "XGBoost": {
+                "samples": 39,
+                "averageBrier": 0.22958524
+              },
+              "LightGBM": {
+                "samples": 39,
+                "averageBrier": 0.23898145
+              },
+              "CatBoost": {
+                "samples": 39,
+                "averageBrier": 0.22980557
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "malta": {
+              "RandomForest": {
+                "samples": 19,
+                "averageBrier": 0.24087235
+              },
+              "XGBoost": {
+                "samples": 19,
+                "averageBrier": 0.25379499
+              },
+              "LightGBM": {
+                "samples": 19,
+                "averageBrier": 0.23754605
+              },
+              "CatBoost": {
+                "samples": 19,
+                "averageBrier": 0.25212239
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "holl": {
+              "RandomForest": {
+                "samples": 44,
+                "averageBrier": 0.24150819
+              },
+              "XGBoost": {
+                "samples": 44,
+                "averageBrier": 0.2321991
+              },
+              "LightGBM": {
+                "samples": 44,
+                "averageBrier": 0.23830928
+              },
+              "CatBoost": {
+                "samples": 44,
+                "averageBrier": 0.22153805
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gallch": {
+              "RandomForest": {
+                "samples": 58,
+                "averageBrier": 0.23268305
+              },
+              "XGBoost": {
+                "samples": 58,
+                "averageBrier": 0.22123182
+              },
+              "LightGBM": {
+                "samples": 58,
+                "averageBrier": 0.21316304
+              },
+              "CatBoost": {
+                "samples": 58,
+                "averageBrier": 0.21772846
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇tsb": {
+              "RandomForest": {
+                "samples": 60,
+                "averageBrier": 0.22894736
+              },
+              "XGBoost": {
+                "samples": 60,
+                "averageBrier": 0.22034517
+              },
+              "LightGBM": {
+                "samples": 60,
+                "averageBrier": 0.22097794
+              },
+              "CatBoost": {
+                "samples": 60,
+                "averageBrier": 0.21567661
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "albu": {
+              "RandomForest": {
+                "samples": 45,
+                "averageBrier": 0.19724878
+              },
+              "XGBoost": {
+                "samples": 45,
+                "averageBrier": 0.19550048
+              },
+              "LightGBM": {
+                "samples": 45,
+                "averageBrier": 0.20354813
+              },
+              "CatBoost": {
+                "samples": 45,
+                "averageBrier": 0.19214722
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "pol1": {
+              "RandomForest": {
+                "samples": 46,
+                "averageBrier": 0.22513295
+              },
+              "XGBoost": {
+                "samples": 46,
+                "averageBrier": 0.20237412
+              },
+              "LightGBM": {
+                "samples": 46,
+                "averageBrier": 0.21515653
+              },
+              "CatBoost": {
+                "samples": 46,
+                "averageBrier": 0.20096664
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇tsc": {
+              "RandomForest": {
+                "samples": 151,
+                "averageBrier": 0.21657912
+              },
+              "XGBoost": {
+                "samples": 151,
+                "averageBrier": 0.20529493
+              },
+              "LightGBM": {
+                "samples": 151,
+                "averageBrier": 0.21365823
+              },
+              "CatBoost": {
+                "samples": 151,
+                "averageBrier": 0.20282988
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇rl1": {
+              "RandomForest": {
+                "samples": 10,
+                "averageBrier": 0.2563723
+              },
+              "XGBoost": {
+                "samples": 10,
+                "averageBrier": 0.26573264
+              },
+              "LightGBM": {
+                "samples": 10,
+                "averageBrier": 0.25556518
+              },
+              "CatBoost": {
+                "samples": 10,
+                "averageBrier": 0.27578843
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇rlk": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.20053837
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.23501151
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.2305009
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.22576852
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gall": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.19717933
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.17908392
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.1954301
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.17052843
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ki̇rlc": {
+              "RandomForest": {
+                "samples": 13,
+                "averageBrier": 0.20291336
+              },
+              "XGBoost": {
+                "samples": 13,
+                "averageBrier": 0.20317996
+              },
+              "LightGBM": {
+                "samples": 13,
+                "averageBrier": 0.21116864
+              },
+              "CatBoost": {
+                "samples": 13,
+                "averageBrier": 0.20120154
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ki̇rlp": {
+              "RandomForest": {
+                "samples": 31,
+                "averageBrier": 0.23190409
+              },
+              "XGBoost": {
+                "samples": 31,
+                "averageBrier": 0.21916497
+              },
+              "LightGBM": {
+                "samples": 31,
+                "averageBrier": 0.2263126
+              },
+              "CatBoost": {
+                "samples": 31,
+                "averageBrier": 0.21346943
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fr1": {
+              "RandomForest": {
+                "samples": 44,
+                "averageBrier": 0.19954176
+              },
+              "XGBoost": {
+                "samples": 44,
+                "averageBrier": 0.17675543
+              },
+              "LightGBM": {
+                "samples": 44,
+                "averageBrier": 0.19036703
+              },
+              "CatBoost": {
+                "samples": 44,
+                "averageBrier": 0.17230119
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "belç": {
+              "RandomForest": {
+                "samples": 36,
+                "averageBrier": 0.19048624
+              },
+              "XGBoost": {
+                "samples": 36,
+                "averageBrier": 0.18233291
+              },
+              "LightGBM": {
+                "samples": 36,
+                "averageBrier": 0.20079598
+              },
+              "CatBoost": {
+                "samples": 36,
+                "averageBrier": 0.18520595
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇nul": {
+              "RandomForest": {
+                "samples": 46,
+                "averageBrier": 0.18558856
+              },
+              "XGBoost": {
+                "samples": 46,
+                "averageBrier": 0.18115982
+              },
+              "LightGBM": {
+                "samples": 46,
+                "averageBrier": 0.19667891
+              },
+              "CatBoost": {
+                "samples": 46,
+                "averageBrier": 0.17953257
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇spl1": {
+              "RandomForest": {
+                "samples": 50,
+                "averageBrier": 0.18835544
+              },
+              "XGBoost": {
+                "samples": 50,
+                "averageBrier": 0.16726544
+              },
+              "LightGBM": {
+                "samples": 50,
+                "averageBrier": 0.18045262
+              },
+              "CatBoost": {
+                "samples": 50,
+                "averageBrier": 0.16563668
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "fas": {
+              "RandomForest": {
+                "samples": 13,
+                "averageBrier": 0.202811
+              },
+              "XGBoost": {
+                "samples": 13,
+                "averageBrier": 0.20489478
+              },
+              "LightGBM": {
+                "samples": 13,
+                "averageBrier": 0.21627483
+              },
+              "CatBoost": {
+                "samples": 13,
+                "averageBrier": 0.19934943
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kolb": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.26433249
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.24752308
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.24432029
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.24677657
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "uruka": {
+              "RandomForest": {
+                "samples": 31,
+                "averageBrier": 0.20823368
+              },
+              "XGBoost": {
+                "samples": 31,
+                "averageBrier": 0.20192024
+              },
+              "LightGBM": {
+                "samples": 31,
+                "averageBrier": 0.21727926
+              },
+              "CatBoost": {
+                "samples": 31,
+                "averageBrier": 0.20375398
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "por3": {
+              "RandomForest": {
+                "samples": 12,
+                "averageBrier": 0.22187517
+              },
+              "XGBoost": {
+                "samples": 12,
+                "averageBrier": 0.18911854
+              },
+              "LightGBM": {
+                "samples": 12,
+                "averageBrier": 0.22569853
+              },
+              "CatBoost": {
+                "samples": 12,
+                "averageBrier": 0.18396901
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hondu": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.17710027
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.17008598
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.16520392
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.17191348
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arjpb": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.16496248
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.18964243
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.16773339
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.18802357
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "abdch": {
+              "RandomForest": {
+                "samples": 51,
+                "averageBrier": 0.20503687
+              },
+              "XGBoost": {
+                "samples": 51,
+                "averageBrier": 0.19002855
+              },
+              "LightGBM": {
+                "samples": 51,
+                "averageBrier": 0.19808629
+              },
+              "CatBoost": {
+                "samples": 51,
+                "averageBrier": 0.18655545
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "mekpa": {
+              "RandomForest": {
+                "samples": 55,
+                "averageBrier": 0.21196155
+              },
+              "XGBoost": {
+                "samples": 55,
+                "averageBrier": 0.21829325
+              },
+              "LightGBM": {
+                "samples": 55,
+                "averageBrier": 0.2157961
+              },
+              "CatBoost": {
+                "samples": 55,
+                "averageBrier": 0.22008169
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kosta": {
+              "RandomForest": {
+                "samples": 30,
+                "averageBrier": 0.20943807
+              },
+              "XGBoost": {
+                "samples": 30,
+                "averageBrier": 0.20476353
+              },
+              "LightGBM": {
+                "samples": 30,
+                "averageBrier": 0.20537244
+              },
+              "CatBoost": {
+                "samples": 30,
+                "averageBrier": 0.20452589
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "japo2": {
+              "RandomForest": {
+                "samples": 62,
+                "averageBrier": 0.23762993
+              },
+              "XGBoost": {
+                "samples": 62,
+                "averageBrier": 0.20967151
+              },
+              "LightGBM": {
+                "samples": 62,
+                "averageBrier": 0.22276398
+              },
+              "CatBoost": {
+                "samples": 62,
+                "averageBrier": 0.20645379
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avkup": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.33719048
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.34368151
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.38473395
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.30700178
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "leton1": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.06999253
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.05007402
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.09200472
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.05523359
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sps": {
+              "RandomForest": {
+                "samples": 206,
+                "averageBrier": 0.22473139
+              },
+              "XGBoost": {
+                "samples": 206,
+                "averageBrier": 0.21247892
+              },
+              "LightGBM": {
+                "samples": 206,
+                "averageBrier": 0.21239002
+              },
+              "CatBoost": {
+                "samples": 206,
+                "averageBrier": 0.21165635
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "leton": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.14245614
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.13648476
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.14731592
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.1369483
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "maca2": {
+              "RandomForest": {
+                "samples": 37,
+                "averageBrier": 0.20254593
+              },
+              "XGBoost": {
+                "samples": 37,
+                "averageBrier": 0.1927036
+              },
+              "LightGBM": {
+                "samples": 37,
+                "averageBrier": 0.19922168
+              },
+              "CatBoost": {
+                "samples": 37,
+                "averageBrier": 0.19086495
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sves": {
+              "RandomForest": {
+                "samples": 40,
+                "averageBrier": 0.20616384
+              },
+              "XGBoost": {
+                "samples": 40,
+                "averageBrier": 0.18986072
+              },
+              "LightGBM": {
+                "samples": 40,
+                "averageBrier": 0.19538433
+              },
+              "CatBoost": {
+                "samples": 40,
+                "averageBrier": 0.18444584
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kazak": {
+              "RandomForest": {
+                "samples": 17,
+                "averageBrier": 0.25212168
+              },
+              "XGBoost": {
+                "samples": 17,
+                "averageBrier": 0.23016421
+              },
+              "LightGBM": {
+                "samples": 17,
+                "averageBrier": 0.23380422
+              },
+              "CatBoost": {
+                "samples": 17,
+                "averageBrier": 0.22616518
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "li̇tva": {
+              "RandomForest": {
+                "samples": 17,
+                "averageBrier": 0.20193183
+              },
+              "XGBoost": {
+                "samples": 17,
+                "averageBrier": 0.18968592
+              },
+              "LightGBM": {
+                "samples": 17,
+                "averageBrier": 0.20680558
+              },
+              "CatBoost": {
+                "samples": 17,
+                "averageBrier": 0.18989373
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇np": {
+              "RandomForest": {
+                "samples": 50,
+                "averageBrier": 0.20507717
+              },
+              "XGBoost": {
+                "samples": 50,
+                "averageBrier": 0.19038312
+              },
+              "LightGBM": {
+                "samples": 50,
+                "averageBrier": 0.19815644
+              },
+              "CatBoost": {
+                "samples": 50,
+                "averageBrier": 0.18909053
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇nch": {
+              "RandomForest": {
+                "samples": 78,
+                "averageBrier": 0.23133294
+              },
+              "XGBoost": {
+                "samples": 78,
+                "averageBrier": 0.21454623
+              },
+              "LightGBM": {
+                "samples": 78,
+                "averageBrier": 0.22962138
+              },
+              "CatBoost": {
+                "samples": 78,
+                "averageBrier": 0.21146579
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "estp": {
+              "RandomForest": {
+                "samples": 28,
+                "averageBrier": 0.19152901
+              },
+              "XGBoost": {
+                "samples": 28,
+                "averageBrier": 0.16672078
+              },
+              "LightGBM": {
+                "samples": 28,
+                "averageBrier": 0.18937225
+              },
+              "CatBoost": {
+                "samples": 28,
+                "averageBrier": 0.16303208
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇n1": {
+              "RandomForest": {
+                "samples": 68,
+                "averageBrier": 0.20183711
+              },
+              "XGBoost": {
+                "samples": 68,
+                "averageBrier": 0.18804942
+              },
+              "LightGBM": {
+                "samples": 68,
+                "averageBrier": 0.20804819
+              },
+              "CatBoost": {
+                "samples": 68,
+                "averageBrier": 0.18738269
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇n2": {
+              "RandomForest": {
+                "samples": 62,
+                "averageBrier": 0.22872872
+              },
+              "XGBoost": {
+                "samples": 62,
+                "averageBrier": 0.22517113
+              },
+              "LightGBM": {
+                "samples": 62,
+                "averageBrier": 0.22305417
+              },
+              "CatBoost": {
+                "samples": 62,
+                "averageBrier": 0.22325297
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bulga": {
+              "RandomForest": {
+                "samples": 26,
+                "averageBrier": 0.20162609
+              },
+              "XGBoost": {
+                "samples": 26,
+                "averageBrier": 0.20718533
+              },
+              "LightGBM": {
+                "samples": 26,
+                "averageBrier": 0.2012316
+              },
+              "CatBoost": {
+                "samples": 26,
+                "averageBrier": 0.20945688
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "dan2": {
+              "RandomForest": {
+                "samples": 29,
+                "averageBrier": 0.22015689
+              },
+              "XGBoost": {
+                "samples": 29,
+                "averageBrier": 0.21401582
+              },
+              "LightGBM": {
+                "samples": 29,
+                "averageBrier": 0.22204868
+              },
+              "CatBoost": {
+                "samples": 29,
+                "averageBrier": 0.21055989
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "macar": {
+              "RandomForest": {
+                "samples": 30,
+                "averageBrier": 0.2203214
+              },
+              "XGBoost": {
+                "samples": 30,
+                "averageBrier": 0.21155605
+              },
+              "LightGBM": {
+                "samples": 30,
+                "averageBrier": 0.21457018
+              },
+              "CatBoost": {
+                "samples": 30,
+                "averageBrier": 0.21305156
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "sirbi̇": {
+              "RandomForest": {
+                "samples": 31,
+                "averageBrier": 0.18994715
+              },
+              "XGBoost": {
+                "samples": 31,
+                "averageBrier": 0.18113872
+              },
+              "LightGBM": {
+                "samples": 31,
+                "averageBrier": 0.19119534
+              },
+              "CatBoost": {
+                "samples": 31,
+                "averageBrier": 0.18077698
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "slov2": {
+              "RandomForest": {
+                "samples": 36,
+                "averageBrier": 0.20868611
+              },
+              "XGBoost": {
+                "samples": 36,
+                "averageBrier": 0.21727417
+              },
+              "LightGBM": {
+                "samples": 36,
+                "averageBrier": 0.21772513
+              },
+              "CatBoost": {
+                "samples": 36,
+                "averageBrier": 0.21680928
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇tsa": {
+              "RandomForest": {
+                "samples": 59,
+                "averageBrier": 0.18800203
+              },
+              "XGBoost": {
+                "samples": 59,
+                "averageBrier": 0.17619299
+              },
+              "LightGBM": {
+                "samples": 59,
+                "averageBrier": 0.19180398
+              },
+              "CatBoost": {
+                "samples": 59,
+                "averageBrier": 0.17364979
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bulg2": {
+              "RandomForest": {
+                "samples": 21,
+                "averageBrier": 0.20855108
+              },
+              "XGBoost": {
+                "samples": 21,
+                "averageBrier": 0.21458477
+              },
+              "LightGBM": {
+                "samples": 21,
+                "averageBrier": 0.20160167
+              },
+              "CatBoost": {
+                "samples": 21,
+                "averageBrier": 0.21143518
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "slove": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.21380008
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.21582689
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.20923784
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.21643323
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "slova": {
+              "RandomForest": {
+                "samples": 31,
+                "averageBrier": 0.1883709
+              },
+              "XGBoost": {
+                "samples": 31,
+                "averageBrier": 0.20902306
+              },
+              "LightGBM": {
+                "samples": 31,
+                "averageBrier": 0.19790456
+              },
+              "CatBoost": {
+                "samples": 31,
+                "averageBrier": 0.20915747
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇kon": {
+              "RandomForest": {
+                "samples": 131,
+                "averageBrier": 0.21096815
+              },
+              "XGBoost": {
+                "samples": 131,
+                "averageBrier": 0.19381753
+              },
+              "LightGBM": {
+                "samples": 131,
+                "averageBrier": 0.2016549
+              },
+              "CatBoost": {
+                "samples": 131,
+                "averageBrier": 0.19225925
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sko1": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.18664747
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.18608088
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.17795985
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.19100759
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sko2": {
+              "RandomForest": {
+                "samples": 20,
+                "averageBrier": 0.20518265
+              },
+              "XGBoost": {
+                "samples": 20,
+                "averageBrier": 0.18414114
+              },
+              "LightGBM": {
+                "samples": 20,
+                "averageBrier": 0.20404144
+              },
+              "CatBoost": {
+                "samples": 20,
+                "averageBrier": 0.18412887
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇skch": {
+              "RandomForest": {
+                "samples": 26,
+                "averageBrier": 0.20938998
+              },
+              "XGBoost": {
+                "samples": 26,
+                "averageBrier": 0.19858253
+              },
+              "LightGBM": {
+                "samples": 26,
+                "averageBrier": 0.2113481
+              },
+              "CatBoost": {
+                "samples": 26,
+                "averageBrier": 0.19378872
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇ni̇st": {
+              "RandomForest": {
+                "samples": 66,
+                "averageBrier": 0.21586183
+              },
+              "XGBoost": {
+                "samples": 66,
+                "averageBrier": 0.19950691
+              },
+              "LightGBM": {
+                "samples": 66,
+                "averageBrier": 0.20904857
+              },
+              "CatBoost": {
+                "samples": 66,
+                "averageBrier": 0.19724244
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇skop": {
+              "RandomForest": {
+                "samples": 33,
+                "averageBrier": 0.21240793
+              },
+              "XGBoost": {
+                "samples": 33,
+                "averageBrier": 0.20944774
+              },
+              "LightGBM": {
+                "samples": 33,
+                "averageBrier": 0.21307695
+              },
+              "CatBoost": {
+                "samples": 33,
+                "averageBrier": 0.20438415
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hi̇ntsl": {
+              "RandomForest": {
+                "samples": 18,
+                "averageBrier": 0.20259219
+              },
+              "XGBoost": {
+                "samples": 18,
+                "averageBrier": 0.19408571
+              },
+              "LightGBM": {
+                "samples": 18,
+                "averageBrier": 0.19788146
+              },
+              "CatBoost": {
+                "samples": 18,
+                "averageBrier": 0.18735322
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "izla": {
+              "RandomForest": {
+                "samples": 17,
+                "averageBrier": 0.22541348
+              },
+              "XGBoost": {
+                "samples": 17,
+                "averageBrier": 0.21768445
+              },
+              "LightGBM": {
+                "samples": 17,
+                "averageBrier": 0.22489285
+              },
+              "CatBoost": {
+                "samples": 17,
+                "averageBrier": 0.21443456
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇spl2": {
+              "RandomForest": {
+                "samples": 50,
+                "averageBrier": 0.19601448
+              },
+              "XGBoost": {
+                "samples": 50,
+                "averageBrier": 0.19345789
+              },
+              "LightGBM": {
+                "samples": 50,
+                "averageBrier": 0.20442788
+              },
+              "CatBoost": {
+                "samples": 50,
+                "averageBrier": 0.1899816
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇spp": {
+              "RandomForest": {
+                "samples": 94,
+                "averageBrier": 0.22815732
+              },
+              "XGBoost": {
+                "samples": 94,
+                "averageBrier": 0.21391921
+              },
+              "LightGBM": {
+                "samples": 94,
+                "averageBrier": 0.22155487
+              },
+              "CatBoost": {
+                "samples": 94,
+                "averageBrier": 0.21374097
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇svi̇ç1": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.21149545
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.23222447
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.18323756
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.24421888
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avu": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.18266426
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.15896463
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.17995627
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.157616
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gürel": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.1745748
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.16195107
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.19040563
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.1724819
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇svi̇ç": {
+              "RandomForest": {
+                "samples": 24,
+                "averageBrier": 0.20481878
+              },
+              "XGBoost": {
+                "samples": 24,
+                "averageBrier": 0.20570215
+              },
+              "LightGBM": {
+                "samples": 24,
+                "averageBrier": 0.21287217
+              },
+              "CatBoost": {
+                "samples": 24,
+                "averageBrier": 0.19818089
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gafmt": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.13469901
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.19071575
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.17312833
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.18354523
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "yun": {
+              "RandomForest": {
+                "samples": 32,
+                "averageBrier": 0.18032599
+              },
+              "XGBoost": {
+                "samples": 32,
+                "averageBrier": 0.15941446
+              },
+              "LightGBM": {
+                "samples": 32,
+                "averageBrier": 0.16649253
+              },
+              "CatBoost": {
+                "samples": 32,
+                "averageBrier": 0.15741791
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "faroe": {
+              "RandomForest": {
+                "samples": 10,
+                "averageBrier": 0.17306499
+              },
+              "XGBoost": {
+                "samples": 10,
+                "averageBrier": 0.18451775
+              },
+              "LightGBM": {
+                "samples": 10,
+                "averageBrier": 0.17490577
+              },
+              "CatBoost": {
+                "samples": 10,
+                "averageBrier": 0.1827042
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "şi̇li̇": {
+              "RandomForest": {
+                "samples": 31,
+                "averageBrier": 0.19342801
+              },
+              "XGBoost": {
+                "samples": 31,
+                "averageBrier": 0.19367985
+              },
+              "LightGBM": {
+                "samples": 31,
+                "averageBrier": 0.2058827
+              },
+              "CatBoost": {
+                "samples": 31,
+                "averageBrier": 0.1950013
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arjpn": {
+              "RandomForest": {
+                "samples": 70,
+                "averageBrier": 0.21495354
+              },
+              "XGBoost": {
+                "samples": 70,
+                "averageBrier": 0.22041009
+              },
+              "LightGBM": {
+                "samples": 70,
+                "averageBrier": 0.21399488
+              },
+              "CatBoost": {
+                "samples": 70,
+                "averageBrier": 0.21823665
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bolp": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.18171537
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.19214064
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.1811773
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.19923311
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "guate": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.20945969
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.17732309
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.19973588
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.16974008
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "venka": {
+              "RandomForest": {
+                "samples": 12,
+                "averageBrier": 0.17121228
+              },
+              "XGBoost": {
+                "samples": 12,
+                "averageBrier": 0.16959729
+              },
+              "LightGBM": {
+                "samples": 12,
+                "averageBrier": 0.16460594
+              },
+              "CatBoost": {
+                "samples": 12,
+                "averageBrier": 0.16934018
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "elspa": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.26814045
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.16558289
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.18356393
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.15222731
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "misir": {
+              "RandomForest": {
+                "samples": 26,
+                "averageBrier": 0.19823175
+              },
+              "XGBoost": {
+                "samples": 26,
+                "averageBrier": 0.20395209
+              },
+              "LightGBM": {
+                "samples": 26,
+                "averageBrier": 0.2194036
+              },
+              "CatBoost": {
+                "samples": 26,
+                "averageBrier": 0.18309296
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "norv1": {
+              "RandomForest": {
+                "samples": 48,
+                "averageBrier": 0.19293513
+              },
+              "XGBoost": {
+                "samples": 48,
+                "averageBrier": 0.18217789
+              },
+              "LightGBM": {
+                "samples": 48,
+                "averageBrier": 0.19177053
+              },
+              "CatBoost": {
+                "samples": 48,
+                "averageBrier": 0.18546808
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "asşmp": {
+              "RandomForest": {
+                "samples": 29,
+                "averageBrier": 0.18652267
+              },
+              "XGBoost": {
+                "samples": 29,
+                "averageBrier": 0.17447237
+              },
+              "LightGBM": {
+                "samples": 29,
+                "averageBrier": 0.17855314
+              },
+              "CatBoost": {
+                "samples": 29,
+                "averageBrier": 0.17372903
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arjpc": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.11484769
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.14114167
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.14917966
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.14950244
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "lübna": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.25352442
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.24821642
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.2565365
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.25744277
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "suud1": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.19706176
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.18085003
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.23609005
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.17233829
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "rusku": {
+              "RandomForest": {
+                "samples": 16,
+                "averageBrier": 0.1898355
+              },
+              "XGBoost": {
+                "samples": 16,
+                "averageBrier": 0.17239178
+              },
+              "LightGBM": {
+                "samples": 16,
+                "averageBrier": 0.18894316
+              },
+              "CatBoost": {
+                "samples": 16,
+                "averageBrier": 0.1772182
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kenya": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.23304237
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.18988894
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.16076537
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.17237113
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "şmpl": {
+              "RandomForest": {
+                "samples": 53,
+                "averageBrier": 0.17432976
+              },
+              "XGBoost": {
+                "samples": 53,
+                "averageBrier": 0.15961159
+              },
+              "LightGBM": {
+                "samples": 53,
+                "averageBrier": 0.17828796
+              },
+              "CatBoost": {
+                "samples": 53,
+                "averageBrier": 0.16005909
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gafri̇": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.17691831
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.16717952
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.18543927
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.15308281
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "inulk": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.14546314
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.1607561
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.17073125
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.16336357
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇efk": {
+              "RandomForest": {
+                "samples": 33,
+                "averageBrier": 0.19770604
+              },
+              "XGBoost": {
+                "samples": 33,
+                "averageBrier": 0.20771034
+              },
+              "LightGBM": {
+                "samples": 33,
+                "averageBrier": 0.20690831
+              },
+              "CatBoost": {
+                "samples": 33,
+                "averageBrier": 0.21129717
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇skck": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.17359963
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.1667556
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.17723437
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.16069582
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "khaz": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.21024069
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.2990852
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.23794589
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.29941159
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "suda": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.20792694
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.20884633
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.24447539
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.21212739
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "li̇bk": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.25208531
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.27864312
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.26162721
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.27699837
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "favşm": {
+              "RandomForest": {
+                "samples": 27,
+                "averageBrier": 0.23516906
+              },
+              "XGBoost": {
+                "samples": 27,
+                "averageBrier": 0.24318079
+              },
+              "LightGBM": {
+                "samples": 27,
+                "averageBrier": 0.23193658
+              },
+              "CatBoost": {
+                "samples": 27,
+                "averageBrier": 0.24234781
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avrl": {
+              "RandomForest": {
+                "samples": 54,
+                "averageBrier": 0.19091656
+              },
+              "XGBoost": {
+                "samples": 54,
+                "averageBrier": 0.18908483
+              },
+              "LightGBM": {
+                "samples": 54,
+                "averageBrier": 0.18971559
+              },
+              "CatBoost": {
+                "samples": 54,
+                "averageBrier": 0.18796761
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avkl": {
+              "RandomForest": {
+                "samples": 51,
+                "averageBrier": 0.18700365
+              },
+              "XGBoost": {
+                "samples": 51,
+                "averageBrier": 0.17994115
+              },
+              "LightGBM": {
+                "samples": 51,
+                "averageBrier": 0.18393003
+              },
+              "CatBoost": {
+                "samples": 51,
+                "averageBrier": 0.17578671
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "frul": {
+              "RandomForest": {
+                "samples": 26,
+                "averageBrier": 0.20406479
+              },
+              "XGBoost": {
+                "samples": 26,
+                "averageBrier": 0.21053712
+              },
+              "LightGBM": {
+                "samples": 26,
+                "averageBrier": 0.21287862
+              },
+              "CatBoost": {
+                "samples": 26,
+                "averageBrier": 0.20437228
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avusa": {
+              "RandomForest": {
+                "samples": 23,
+                "averageBrier": 0.23079298
+              },
+              "XGBoost": {
+                "samples": 23,
+                "averageBrier": 0.2183345
+              },
+              "LightGBM": {
+                "samples": 23,
+                "averageBrier": 0.22888454
+              },
+              "CatBoost": {
+                "samples": 23,
+                "averageBrier": 0.21879121
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "si̇ng": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.33327019
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.3633488
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.31216844
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.3914183
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bae": {
+              "RandomForest": {
+                "samples": 14,
+                "averageBrier": 0.19267686
+              },
+              "XGBoost": {
+                "samples": 14,
+                "averageBrier": 0.17883825
+              },
+              "LightGBM": {
+                "samples": 14,
+                "averageBrier": 0.18481424
+              },
+              "CatBoost": {
+                "samples": 14,
+                "averageBrier": 0.17356369
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gach": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.2945604
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.24964295
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.23224254
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.24296367
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ruand": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.2264444
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.20548848
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.20148492
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.20678303
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ürdli̇": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.20471488
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.17511803
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.18098515
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.17433534
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bahre": {
+              "RandomForest": {
+                "samples": 16,
+                "averageBrier": 0.22479234
+              },
+              "XGBoost": {
+                "samples": 16,
+                "averageBrier": 0.19988576
+              },
+              "LightGBM": {
+                "samples": 16,
+                "averageBrier": 0.19740989
+              },
+              "CatBoost": {
+                "samples": 16,
+                "averageBrier": 0.19360833
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "afşmp": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.11710431
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.12727128
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.10316827
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.12262388
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "norka": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.0394793
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.02223343
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.04007303
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.02434391
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arna": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.14939761
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.15368542
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.20786811
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.15964368
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bunka": {
+              "RandomForest": {
+                "samples": 19,
+                "averageBrier": 0.14828769
+              },
+              "XGBoost": {
+                "samples": 19,
+                "averageBrier": 0.14058107
+              },
+              "LightGBM": {
+                "samples": 19,
+                "averageBrier": 0.14608098
+              },
+              "CatBoost": {
+                "samples": 19,
+                "averageBrier": 0.13675999
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "afkon": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.16243713
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.14828652
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.12206466
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.149934
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "u21bep": {
+              "RandomForest": {
+                "samples": 12,
+                "averageBrier": 0.2219739
+              },
+              "XGBoost": {
+                "samples": 12,
+                "averageBrier": 0.22931107
+              },
+              "LightGBM": {
+                "samples": 12,
+                "averageBrier": 0.22705281
+              },
+              "CatBoost": {
+                "samples": 12,
+                "averageBrier": 0.22316246
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ekvsb": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.32551697
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.2667361
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.3453779
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.21707522
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "belk": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.0989322
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.0819542
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.11382072
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.0785349
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "pork": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.05170059
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.04692958
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.08416239
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.05351758
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "mslnpp": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.27046012
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.25664574
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.27358881
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.23860714
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "yzela": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.07580659
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.097688
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.12146598
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.1087221
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avuska": {
+              "RandomForest": {
+                "samples": 19,
+                "averageBrier": 0.24973494
+              },
+              "XGBoost": {
+                "samples": 19,
+                "averageBrier": 0.23123479
+              },
+              "LightGBM": {
+                "samples": 19,
+                "averageBrier": 0.2246018
+              },
+              "CatBoost": {
+                "samples": 19,
+                "averageBrier": 0.2275761
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇fak": {
+              "RandomForest": {
+                "samples": 75,
+                "averageBrier": 0.22164475
+              },
+              "XGBoost": {
+                "samples": 75,
+                "averageBrier": 0.20764057
+              },
+              "LightGBM": {
+                "samples": 75,
+                "averageBrier": 0.21127886
+              },
+              "CatBoost": {
+                "samples": 75,
+                "averageBrier": 0.20596034
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇nkdn": {
+              "RandomForest": {
+                "samples": 28,
+                "averageBrier": 0.18834992
+              },
+              "XGBoost": {
+                "samples": 28,
+                "averageBrier": 0.17274855
+              },
+              "LightGBM": {
+                "samples": 28,
+                "averageBrier": 0.17793526
+              },
+              "CatBoost": {
+                "samples": 28,
+                "averageBrier": 0.16560461
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇svdak": {
+              "RandomForest": {
+                "samples": 21,
+                "averageBrier": 0.18390671
+              },
+              "XGBoost": {
+                "samples": 21,
+                "averageBrier": 0.16453153
+              },
+              "LightGBM": {
+                "samples": 21,
+                "averageBrier": 0.19132355
+              },
+              "CatBoost": {
+                "samples": 21,
+                "averageBrier": 0.16143676
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "mekka": {
+              "RandomForest": {
+                "samples": 17,
+                "averageBrier": 0.11023155
+              },
+              "XGBoost": {
+                "samples": 17,
+                "averageBrier": 0.07716521
+              },
+              "LightGBM": {
+                "samples": 17,
+                "averageBrier": 0.09334804
+              },
+              "CatBoost": {
+                "samples": 17,
+                "averageBrier": 0.0779095
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇ranaz": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.2108517
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.20025106
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.26352103
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.19952171
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "abdk": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.27240848
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.32403547
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.23456665
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.30966012
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "vi̇et": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.28004592
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.25475533
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.25578265
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.22657411
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇ngp2": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.18540474
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.21863833
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.19238717
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.21656573
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kmakd": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.03239254
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.02597586
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.04704833
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.02830895
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "umman": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.20292622
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.11246012
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.15739659
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.11397904
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "karad": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.20494791
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.23640048
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.25405336
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.22327542
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "tunus": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.22587081
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.20502079
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.2388629
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.18946081
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇spkdn": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.26684782
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.22941737
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.20786044
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.23137919
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇zlka": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.18289002
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.16282432
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.24271978
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.13905373
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "frkdn": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.11570561
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.11982378
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.12185749
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.1246919
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "japkdn": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.14183119
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.13183757
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.15691696
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.13263786
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "japfl": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.22444715
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.18908322
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.20797543
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.19936074
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇fat": {
+              "RandomForest": {
+                "samples": 25,
+                "averageBrier": 0.20686453
+              },
+              "XGBoost": {
+                "samples": 25,
+                "averageBrier": 0.20350733
+              },
+              "LightGBM": {
+                "samples": 25,
+                "averageBrier": 0.20024301
+              },
+              "CatBoost": {
+                "samples": 25,
+                "averageBrier": 0.20116006
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇rlpp": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.23212617
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.14473451
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.19760371
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.17268322
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bresc": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.34941168
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.33372505
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.29138974
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.32560657
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "venez": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.19960462
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.20461695
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.21603881
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.1911374
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "romk": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.23813958
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.25500243
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.22584167
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.2495097
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "yunk": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.19712762
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.18121686
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.19752454
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.18466683
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "çekku": {
+              "RandomForest": {
+                "samples": 7,
+                "averageBrier": 0.1730619
+              },
+              "XGBoost": {
+                "samples": 7,
+                "averageBrier": 0.18597064
+              },
+              "LightGBM": {
+                "samples": 7,
+                "averageBrier": 0.18653999
+              },
+              "CatBoost": {
+                "samples": 7,
+                "averageBrier": 0.18485384
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "avuk": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.24918749
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.22311715
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.19583364
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.21677938
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "alkup": {
+              "RandomForest": {
+                "samples": 16,
+                "averageBrier": 0.15119821
+              },
+              "XGBoost": {
+                "samples": 16,
+                "averageBrier": 0.13684901
+              },
+              "LightGBM": {
+                "samples": 16,
+                "averageBrier": 0.14498433
+              },
+              "CatBoost": {
+                "samples": 16,
+                "averageBrier": 0.14099743
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "gafl": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.10397855
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.08606565
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.11292181
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.09579418
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "dank": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.13343593
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.11318571
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.13531912
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.11428311
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇eflk": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.28007292
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.27695239
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.28921787
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.26087661
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "porlk": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.06358862
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.03394513
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.07078202
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.04997065
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "urukup": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.17595444
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.18213729
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.17936826
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.18193356
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "hirvk": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.26095979
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.29979908
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.21409813
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.28316458
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "norvk": {
+              "RandomForest": {
+                "samples": 5,
+                "averageBrier": 0.19096657
+              },
+              "XGBoost": {
+                "samples": 5,
+                "averageBrier": 0.19732008
+              },
+              "LightGBM": {
+                "samples": 5,
+                "averageBrier": 0.20631976
+              },
+              "CatBoost": {
+                "samples": 5,
+                "averageBrier": 0.19437797
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kşmpl": {
+              "RandomForest": {
+                "samples": 17,
+                "averageBrier": 0.16642252
+              },
+              "XGBoost": {
+                "samples": 17,
+                "averageBrier": 0.1700778
+              },
+              "LightGBM": {
+                "samples": 17,
+                "averageBrier": 0.15865105
+              },
+              "CatBoost": {
+                "samples": 17,
+                "averageBrier": 0.17281099
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ekvak": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.06469206
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.09224149
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.07443677
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.08743959
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "arjk": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.06817786
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.11652072
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.05760593
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.17828235
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "polka": {
+              "RandomForest": {
+                "samples": 3,
+                "averageBrier": 0.13437999
+              },
+              "XGBoost": {
+                "samples": 3,
+                "averageBrier": 0.11280655
+              },
+              "LightGBM": {
+                "samples": 3,
+                "averageBrier": 0.12281786
+              },
+              "CatBoost": {
+                "samples": 3,
+                "averageBrier": 0.11288665
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ummak": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.05296372
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.05149521
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.06295565
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.06437314
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "malez": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.13958926
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.09549975
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.12916518
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.09868695
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇sklk": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.19025039
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.18783331
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.21676137
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.17942952
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "brek": {
+              "RandomForest": {
+                "samples": 4,
+                "averageBrier": 0.25813968
+              },
+              "XGBoost": {
+                "samples": 4,
+                "averageBrier": 0.21600689
+              },
+              "LightGBM": {
+                "samples": 4,
+                "averageBrier": 0.28052605
+              },
+              "CatBoost": {
+                "samples": 4,
+                "averageBrier": 0.22292841
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "bolk": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.15600997
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.11055864
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.1446586
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.0891067
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "suud2": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.08774885
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.12843341
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.20987794
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.13543486
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "misik": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.00990057
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.02009952
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.02991309
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.02821185
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "maca3": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.237715
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.29320622
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.26601307
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.27882178
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "belka": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.00546622
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.01768652
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.02141304
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.02738459
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "u23h": {
+              "RandomForest": {
+                "samples": 2,
+                "averageBrier": 0.18880239
+              },
+              "XGBoost": {
+                "samples": 2,
+                "averageBrier": 0.24043411
+              },
+              "LightGBM": {
+                "samples": 2,
+                "averageBrier": 0.20371383
+              },
+              "CatBoost": {
+                "samples": 2,
+                "averageBrier": 0.25933386
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "i̇spk": {
+              "RandomForest": {
+                "samples": 6,
+                "averageBrier": 0.22736776
+              },
+              "XGBoost": {
+                "samples": 6,
+                "averageBrier": 0.21149592
+              },
+              "LightGBM": {
+                "samples": 6,
+                "averageBrier": 0.21189296
+              },
+              "CatBoost": {
+                "samples": 6,
+                "averageBrier": 0.19477157
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "kolk": {
+              "RandomForest": {
+                "samples": 1,
+                "averageBrier": 0.10154164
+              },
+              "XGBoost": {
+                "samples": 1,
+                "averageBrier": 0.20712261
+              },
+              "LightGBM": {
+                "samples": 1,
+                "averageBrier": 0.20207722
+              },
+              "CatBoost": {
+                "samples": 1,
+                "averageBrier": 0.1790219
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "afre": {
+              "RandomForest": {
+                "samples": 9,
+                "averageBrier": 0.062963
+              },
+              "XGBoost": {
+                "samples": 9,
+                "averageBrier": 0.05303353
+              },
+              "LightGBM": {
+                "samples": 9,
+                "averageBrier": 0.04357566
+              },
+              "CatBoost": {
+                "samples": 9,
+                "averageBrier": 0.06502184
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            },
+            "ulus": {
+              "RandomForest": {
+                "samples": 8,
+                "averageBrier": 0.14321496
+              },
+              "XGBoost": {
+                "samples": 8,
+                "averageBrier": 0.12519215
+              },
+              "LightGBM": {
+                "samples": 8,
+                "averageBrier": 0.14499075
+              },
+              "CatBoost": {
+                "samples": 8,
+                "averageBrier": 0.12424613
+              },
+              "Odds": {
+                "samples": 0,
+                "averageBrier": null
+              }
+            }
           }
         }
       },
@@ -297,23 +6004,46 @@
       }
     }
   },
-  "runtimeSeconds": 190.97,
-  "runtimeMinutes": 3.18,
+  "ensembleSettings": {
+    "sources": [
+      "RandomForest",
+      "XGBoost",
+      "LightGBM",
+      "CatBoost",
+      "Odds"
+    ],
+    "method": "Dynamic Brier Score weighted probability averaging",
+    "minimumWeightSamples": 30,
+    "brierTemperature": 0.12,
+    "oddsMatching": {
+      "markets": [
+        "ms1",
+        "msX",
+        "ms2"
+      ],
+      "rounding": 2,
+      "minimumHistoricalMatches": 5,
+      "sameDayMatchesExcluded": true
+    },
+    "chronologicalUpdates": true,
+    "leagueSpecificWeights": true
+  },
+  "runtimeSeconds": 70.12,
+  "runtimeMinutes": 1.17,
   "dataset": {
     "totalRows": 17682,
+    "labeledMatches": 16424,
     "firstDate": "2026-07-13",
     "lastDate": "2026-11-17",
-    "markets": [
-      "MS",
-      "OVER_25",
-      "HT_OVER_15",
-      "BTTS"
-    ],
+    "target": "MS",
     "algorithms": [
       "RandomForest",
       "XGBoost",
       "LightGBM",
-      "CatBoost"
-    ]
+      "CatBoost",
+      "Odds",
+      "Ensemble"
+    ],
+    "oddsSourceAvailableMatches": 0
   }
 }
