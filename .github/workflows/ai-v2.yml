@@ -72,6 +72,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+          # Geçici veri değişikliğini geri al.
+          git restore --worktree -- data/v2-data.json
+
+          # Yalnızca V2 çıktılarını ekle.
           git add data/ai-v2-report.json
           git add data/ai-v2-predictions.json
 
@@ -82,5 +86,8 @@ jobs:
 
           git commit -m "AI V2 tahminleri ve eğitim raporu güncellendi"
 
+          # Uzak depodaki son commitleri al.
           git pull --rebase origin main
+
+          # V2 sonuçlarını gönder.
           git push
