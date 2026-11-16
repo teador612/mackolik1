@@ -253,10 +253,10 @@ window.SPORT_TOTO_DATA = {
       {"number":9,"home":"Belçika","away":"İtalya","result":"1"},
       {"number":10,"home":"Hırvatistan","away":"Çekya","result":"1"},
       {"number":11,"home":"İspanya","away":"İngiltere","result":"2"},
-      {"number":12,"home":"Almanya","away":"Hollanda","result":null},
-      {"number":13,"home":"Kuzey Makedonya Cumhuriyeti","away":"Slovenya","result":null},
-      {"number":14,"home":"Yunanistan","away":"Sırbistan","result":null},
-      {"number":15,"home":"İsviçre","away":"İskoçya","result":null},
+      {"number":12,"home":"Almanya","away":"Hollanda","result":"1"},
+      {"number":13,"home":"Kuzey Makedonya Cumhuriyeti","away":"Slovenya","result":"2"},
+      {"number":14,"home":"Yunanistan","away":"Sırbistan","result":"1"},
+      {"number":15,"home":"İsviçre","away":"İskoçya","result":"1"},
     ],
   }
 };
