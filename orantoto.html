@@ -1,0 +1,1292 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1220">
+<title>NEXUS | Spor Toto Tahmin Merkezi</title>
+
+<style>
+:root {
+  color-scheme: light;
+  --canvas:#f3f6f3;
+  --surface:#fff;
+  --surface-soft:#f7faf8;
+  --ink:#172a22;
+  --muted:#718078;
+  --line:#e1e9e3;
+  --green:#137653;
+  --green-deep:#0c382b;
+  --green-soft:#e9f5ee;
+  --amber:#d59633;
+  --amber-soft:#fff5e4;
+  --red:#c84b4b;
+  --red-soft:#fff0ef;
+  --blue:#456c91;
+  --shadow:0 10px 30px rgba(19,49,35,.055);
+}
+*{box-sizing:border-box}
+html{background:var(--canvas);scroll-behavior:smooth}
+body{
+  margin:0;background:var(--canvas);color:var(--ink);
+  font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased
+}
+button,select{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:wait;opacity:.65}
+header{
+  position:relative;overflow:hidden;padding:34px 20px 38px;color:#f2f8f3;
+  background:radial-gradient(ellipse at 84% 0%,rgba(66,143,104,.26),transparent 36%),
+  linear-gradient(116deg,#0d3026 0%,#123e30 55%,#194d39 100%)
+}
+header::before,header::after{
+  position:absolute;pointer-events:none;content:"";
+  border:1px solid rgba(230,248,235,.09);border-radius:50%
+}
+header::before{width:360px;height:360px;right:-100px;top:-220px}
+header::after{width:240px;height:240px;right:12%;top:-180px}
+.container{position:relative;width:min(1160px,100%);margin:0 auto;padding:22px}
+header .container{z-index:1;padding:0 22px!important}
+header .container::before{
+  display:block;margin-bottom:10px;color:#a9c8b6;content:"NEXUS / MAÇ MERKEZİ";
+  font-size:10px;font-weight:750;letter-spacing:.18em
+}
+h1{margin:0 0 7px;font-size:clamp(25px,3.8vw,34px);font-weight:720;letter-spacing:-.035em;line-height:1.12}
+h2{margin:0;color:var(--ink);font-size:17px;font-weight:700;letter-spacing:-.015em}
+.subtitle,.small{color:var(--muted);font-size:12px;line-height:1.7}
+header .subtitle{color:#bed3c6;font-size:13px}
+main.container{padding-top:24px}
+.toolbar{
+  display:flex;align-items:end;gap:10px;margin-bottom:13px;padding:13px;
+  border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)
+}
+select,.primary{min-height:43px;padding:10px 14px;border:1px solid #dbe5dd;border-radius:10px;color:var(--ink);background:var(--surface-soft)}
+select{min-width:190px;font-weight:650}
+select:focus,button:focus-visible,summary:focus-visible{outline:3px solid rgba(19,118,83,.22);outline-offset:2px}
+.primary{border-color:var(--green);color:#fff;background:var(--green);font-weight:650;transition:background .18s,transform .18s}
+.primary:hover:not(:disabled){background:#0e6244;transform:translateY(-1px)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 15px}
+.stat,.panel,.match{border:1px solid var(--line);border-radius:16px;background:var(--surface);box-shadow:var(--shadow)}
+.stat{position:relative;min-height:102px;padding:17px 18px;overflow:hidden}
+.stat::before{position:absolute;inset:0 auto 0 0;width:3px;background:#94b9a3;content:""}
+.stat-label{margin-bottom:8px;color:var(--muted);font-size:11px;font-weight:620;letter-spacing:.025em}
+.stat-value{color:var(--ink);font-size:25px;font-weight:730;letter-spacing:-.04em;line-height:1.1;font-variant-numeric:tabular-nums}
+.panel{margin-bottom:15px;padding:18px 20px}
+.panel .small{max-width:900px}
+.notice{margin:0 0 13px;padding:12px 15px;border:1px solid #dce8df;border-radius:12px;color:#40554a;background:#eef5f0;font-size:12px;line-height:1.6}
+.notice.good{border-color:#d3e9da;color:#245d3e;background:#eaf5ed}
+.notice.error{border-color:#f0d1ce;color:#873a35;background:#fff1ef}
+.section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:9px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 9px;border-radius:999px;color:#52655a;background:#edf2ee;font-size:10px;font-weight:720;letter-spacing:.025em}
+.badge.green{color:#176641;background:var(--green-soft)}
+.badge.red{color:#a43f3b;background:var(--red-soft)}
+.badge.yellow{color:#8c631e;background:var(--amber-soft)}
+.badge.blue{color:#3f668a;background:#edf4fa}
+.match-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-bottom:16px}
+.match{min-width:0;overflow:hidden;transition:border-color .18s,box-shadow .18s,transform .18s}
+.match:hover{transform:translateY(-2px);border-color:#cbdccf;box-shadow:0 14px 34px rgba(19,49,35,.09)}
+.match-top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:17px 18px 13px}
+.match-no{margin-bottom:4px;color:#819087;font-size:10px;font-weight:720;letter-spacing:.09em;text-transform:uppercase}
+.teams{color:var(--ink);font-size:15px;font-weight:710;letter-spacing:-.02em;line-height:1.4;overflow-wrap:anywhere}
+.prediction{flex:0 0 auto;min-width:72px;padding:9px 11px;border:1px solid #cfe6d5;border-radius:12px;color:#145c3b;background:var(--green-soft);text-align:center;font-size:22px;font-weight:780;line-height:1.05}
+.prediction small{display:block;margin-top:5px;color:#5e7968;font-size:9px;font-weight:650;letter-spacing:0;white-space:nowrap}
+.prediction.medium{border-color:#f1dfba;color:#805719;background:var(--amber-soft)}
+.prediction.medium small{color:#8f7549}
+.probability-block{padding:0 18px 14px}
+.probability-track{display:flex;width:100%;height:6px;gap:2px;overflow:hidden;border-radius:20px;background:#e8ede9}
+.probability-track span{min-width:2px;height:100%;transition:width .2s}
+.probability-track .p-home{background:var(--green)}
+.probability-track .p-draw{background:var(--amber)}
+.probability-track .p-away{background:#6685a2}
+.probability-values{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:9px}
+.probability-value{display:flex;align-items:baseline;justify-content:space-between;gap:5px;color:#67766e;font-size:10px}
+.probability-value strong{color:var(--ink);font-size:11px;font-weight:720;font-variant-numeric:tabular-nums}
+.match-info{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 18px 14px}
+.tag{padding:5px 8px;border:1px solid #e8eee9;border-radius:8px;color:#68776f;background:#f8faf8;font-size:10px}
+.tag strong{color:#344b3d;font-weight:700}
+.details{border-top:1px solid #edf1ee;padding:0 18px;background:#fcfdfc}
+.details summary{padding:12px 0;color:#456251;cursor:pointer;font-size:11px;font-weight:700;list-style:none}
+.details summary::-webkit-details-marker{display:none}
+.details summary::after{float:right;color:#7e9686;content:"+";font-size:15px;line-height:1}
+.details[open] summary::after{content:"−"}
+.details-content{padding:0 0 14px;color:#5f7066;font-size:11px}
+.details-content .notice{margin-top:0!important;margin-bottom:0!important;border-radius:10px}
+.coupon-builder{margin-bottom:14px}
+.coupon-assist{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:5px 0 13px;padding:10px 12px;border:1px solid #e5ede7;border-radius:11px;color:#52685a;background:#f8faf8;font-size:11px}
+.coupon-heading{align-items:flex-start}
+.coupon-heading .small{margin-top:4px}
+.coupon-modes{display:inline-flex;gap:4px;margin:5px 0 13px;padding:4px;border:1px solid #e4ebe5;border-radius:11px;background:#f5f8f5}
+.mode-button,.guarantee-option,.copy-button{min-height:36px;padding:8px 12px;border:1px solid transparent;border-radius:8px;color:#5c6c62;background:transparent;font-size:11px;font-weight:680;transition:background .15s,color .15s,border-color .15s}
+.mode-button:hover,.guarantee-option:hover{color:var(--green-deep);background:#eaf2ec}
+.mode-button.active,.guarantee-option.active{border-color:#d6e6d9;color:#145d3d;background:#fff;box-shadow:0 2px 5px rgba(21,61,39,.06)}
+.guarantee-picker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 13px;padding:11px 12px;border:1px solid #e5ede7;border-radius:11px;background:#f8faf8}
+.guarantee-picker[hidden]{display:none!important}
+.picker-label{color:#4d6255;font-size:11px;font-weight:720}
+.guarantee-options{display:flex;gap:4px;padding:3px;border:1px solid #e3ebe4;border-radius:10px;background:#f1f5f1}
+.coupon-totals{display:grid;grid-template-columns:1fr 1fr 1.25fr auto;align-items:center;gap:13px;padding:13px 14px;border:1px solid #dce9df;border-radius:12px;background:linear-gradient(105deg,#f5faf6,#edf6ef)}
+.coupon-totals>div{display:flex;flex-direction:column;gap:3px}
+.total-label{color:#748278;font-size:10px;font-weight:650}
+.coupon-totals strong{color:#244637;font-size:17px;font-weight:760;font-variant-numeric:tabular-nums}
+.coupon-totals .total-cost strong{color:#0e6545;font-size:21px}
+.copy-button{border-color:var(--green);color:#fff;background:var(--green)}
+.copy-button:hover:not(:disabled){background:#0e6244}
+.copy-button:disabled{cursor:not-allowed;opacity:.45}
+.coupon-preview{margin-top:11px}
+.ticket-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-height:720px;margin-top:9px;padding:2px;overflow:auto}
+.ticket-card{overflow:hidden;border:1px solid #d8e2da;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(20,50,32,.045)}
+.ticket-head{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;color:#fff;background:#174b37;font-size:10px;font-weight:750;letter-spacing:.04em}
+.ticket-head small{color:#c6ded0;font-size:9px;font-weight:600}
+.ticket-row{display:grid;grid-template-columns:22px minmax(0,1fr) 72px;align-items:center;gap:6px;min-height:31px;padding:4px 8px;border-bottom:1px solid #edf1ed}
+.ticket-row.hit{background:#edf7ef}
+.ticket-row.miss{background:#fff0ee}
+.ticket-row:last-child{border-bottom:0}
+.ticket-no{color:#7c8a80;font-size:9px;font-weight:750;font-variant-numeric:tabular-nums}
+.ticket-teams{overflow:hidden;color:#36483c;font-size:9px;font-weight:620;text-overflow:ellipsis;white-space:nowrap}
+.ticket-marks{display:flex;justify-content:flex-end;gap:3px}
+.ticket-mark{display:grid;width:19px;height:19px;place-items:center;border:1px solid #dfe7e1;border-radius:5px;color:#9aa49c;background:#fafcfa;font-size:8px;font-weight:700}
+.ticket-mark.active{border-color:#14734e;color:#fff;background:#14734e}
+.ticket-row.miss .ticket-mark.active{border-color:#bd4842;color:#fff;background:#bd4842}
+.ticket-mark.actual{outline:2px solid #426b9a;outline-offset:1px}
+.ticket-more{grid-column:1/-1;padding:8px;border:1px dashed #dce5de;border-radius:9px;color:#627166;background:#f8faf8;font-size:10px;text-align:center}
+.copy-source{position:absolute;left:-10000px;width:1px;height:1px;opacity:0}
+.guarantee-progress{display:block;width:100%;height:7px;margin-top:11px;accent-color:var(--green)}
+.guarantee-picks{padding:0 18px 14px;border-top:1px dashed #e6ece7;background:#fbfdfb}
+.guarantee-picks .pick-head{padding-top:11px}
+.guarantee-picks .outcome-select.selected{border-color:#5d76a2;color:#354f78;background:#edf2fa}
+.guarantee-picks .pick-head span{color:#51698e}
+.coupon-preview summary{padding:7px 0;color:#506d5b;cursor:pointer;font-size:11px;font-weight:680}
+.coupon-preview textarea{display:block;width:100%;min-height:120px;margin-top:7px;padding:10px;resize:vertical;border:1px solid #e1e9e3;border-radius:9px;color:#344b3e;background:#fbfdfb;font:11px/1.7 ui-monospace,SFMono-Regular,Consolas,monospace}
+.coupon-message{margin-top:10px;color:#52705c;font-size:11px;line-height:1.6}
+.coupon-disclaimer{margin-top:5px;color:#8b968e;font-size:10px;line-height:1.55}
+.pick-control{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 18px 13px}
+.pick-head{display:flex;flex-direction:column;gap:2px;color:#5f7066;font-size:10px;font-weight:700}
+.pick-head small{color:#87948b;font-size:9px;font-weight:500}
+.pick-head small strong{color:#26704b}
+.outcome-buttons{display:flex;gap:5px}
+.outcome-select{min-width:34px;height:31px;border:1px solid #e1e9e3;border-radius:8px;color:#63736a;background:#fff;font-size:11px;font-weight:730;transition:all .15s}
+.outcome-select:hover{border-color:#8cb49a;color:#165d3d}
+.outcome-select.selected{border-color:#26764f;color:#fff;background:#26764f;box-shadow:0 2px 5px rgba(23,94,59,.18)}
+.outcome-select:focus-visible{outline:3px solid rgba(19,118,83,.2);outline-offset:2px}
+.empty{padding:25px;color:var(--muted);text-align:center;line-height:1.7}
+footer{padding:10px 20px 26px;color:#839188;text-align:center;font-size:10px}
+@media(max-width:760px){
+  header{padding:27px 15px 30px}
+  .container{padding:17px}
+  main.container{padding-top:17px}
+  .match-list{grid-template-columns:1fr}
+}
+@media(max-width:540px){
+  .container{padding:13px}
+  header .container{padding:0 2px!important}
+  .toolbar{align-items:stretch;padding:10px}
+  select{flex:1;min-width:0}
+  .primary{padding-inline:12px}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+  .stat{min-height:88px;padding:13px 14px}
+  .stat-value{font-size:22px}
+  .panel{padding:15px}
+  .match-top{padding:15px 15px 12px}
+  .teams{max-width:250px;font-size:14px}
+  .probability-block{padding:0 15px 13px}
+  .match-info{padding:0 15px 13px}
+  .details{padding:0 15px}
+  .coupon-totals{grid-template-columns:1fr 1fr;gap:12px 8px}
+  .coupon-totals .copy-button{grid-column:1/-1}
+  .ticket-grid{grid-template-columns:1fr;max-height:620px}
+  .pick-control{align-items:flex-start;padding-inline:15px}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="container" style="padding:0 4px">
+    <h1>⚽ Spor Toto Tahmin Merkezi</h1>
+    <div class="subtitle">AI tahminleri · Takım adına göre fikstür eşleştirme · Spor Toto 1 / X / 2</div>
+  </div>
+</header>
+
+<main class="container">
+  <div class="toolbar">
+    <select id="weekSelect" aria-label="Hafta seç"></select>
+    <button id="refreshBtn" class="primary">Verileri yenile</button>
+  </div>
+
+  <div id="message" class="notice">Veriler yükleniyor...</div>
+
+  <section class="stats">
+    <div class="stat"><div class="stat-label">Haftadaki maç</div><div id="statMatches" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Tahmin üretilen</div><div id="statAnalyzed" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Sonucu belli tahmin</div><div id="statSettled" class="stat-value">—</div></div>
+    <div class="stat"><div class="stat-label">Tahmin başarı oranı</div><div id="statAccuracy" class="stat-value">—</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <h2>AI tahmin analizi</h2>
+      <span id="weekBadge" class="badge">Hafta —</span>
+    </div>
+    <div class="small">
+      Her Spor Toto maçı AI sistemindeki fikstürle ev sahibi ve deplasman adları üzerinden eşleştirilir.
+      1 / X / 2 tahmini, yeni AI motorundaki MS 1, MS X ve MS 2 olasılıklarından alınır.
+      <span id="benchmark">AI tahmin kaynağı yükleniyor...</span>
+      <br>AI sisteminde eşleşen tahmin yoksa maç açıkça işaretlenir.
+    </div>
+  </section>
+
+  <section id="couponBuilder" class="panel coupon-builder">
+    <div class="section-head coupon-heading">
+      <div>
+        <h2>Kupon oluşturucu</h2>
+        <div class="small">AI, ilk iki olasılık arasındaki fark 8 puan veya daha azsa çift işaret önerir.</div>
+      </div>
+      <span id="couponStatus" class="badge blue">Tahminler yükleniyor</span>
+    </div>
+    <div class="coupon-assist">
+      <span id="doubleCount">AI önerisi hazırlanıyor...</span>
+      <button type="button" id="autoOptionsBtn" class="copy-button">AI önerisini uygula</button>
+    </div>
+    <div class="coupon-totals">
+      <div><span class="total-label">Oluşan kolon</span><strong id="couponColumns">—</strong></div>
+      <div><span class="total-label">Kolon bedeli</span><strong id="columnPrice">10 TL</strong></div>
+      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="couponCost">—</strong></div>
+      <button type="button" id="copyColumnsBtn" class="copy-button" disabled>Nesine’ye aktar</button>
+    </div>
+    <div class="coupon-message">Düğme kolonları kopyalar ve Nesine Spor Toto’yu açar. Nesine’de kupon işaretlerini kontrol edip onaylaman gerekir.</div>
+    <details class="coupon-preview">
+      <summary>Oluşan kolonları incele · yeşil doğru, kırmızı yanlış</summary>
+      <div id="columnTickets" class="ticket-grid" aria-label="Spor Toto kupon kolonları"></div>
+      <textarea id="columnOutput" class="copy-source" readonly aria-label="Kolonları kopyalama metni"></textarea>
+    </details>
+    <div id="couponMessage" class="coupon-message">AI tahminleri yüklendiğinde kupon hazırlanır.</div>
+    <div class="coupon-disclaimer">Çift işaret, o maç için iki kolon seçeneği oluşturur; ikramiye veya kazanç garantisi vermez.</div>
+  </section>
+
+  <section id="guaranteeBuilder" class="panel coupon-builder">
+    <div class="section-head coupon-heading">
+      <div>
+        <h2>AI destekli garanti sistemi</h2>
+        <div class="small">Maç seçimleri AI olasılıklarından önerilir. Optimizasyon seçtiğin sonuç havuzunu kapsayan kolonları arar.</div>
+      </div>
+      <span id="guaranteeStatus" class="badge blue">AI tahminleri bekleniyor</span>
+    </div>
+    <div class="coupon-assist">
+      <span>AI olasılığına göre banko/çifte/kapalı başlangıç seçimi önerir.</span>
+      <button type="button" id="applyGuaranteeAI" class="copy-button">AI seçimlerini uygula</button>
+    </div>
+    <div class="guarantee-picker">
+      <span class="picker-label">Garanti seviyesi</span>
+      <div class="guarantee-options" role="group" aria-label="Garanti seviyesi">
+        <button type="button" class="guarantee-option" data-level="12">12</button>
+        <button type="button" class="guarantee-option" data-level="13">13</button>
+        <button type="button" class="guarantee-option active" data-level="14">14</button>
+        <button type="button" class="guarantee-option" data-level="15">15</button>
+      </div>
+      <button type="button" id="analyzeGuarantee" class="primary">Sistemi analiz et</button>
+    </div>
+    <div class="coupon-totals">
+      <div><span class="total-label">Havuz kolonu</span><strong id="guaranteePoolCount">—</strong></div>
+      <div><span class="total-label">Seçilen kolon</span><strong id="guaranteeColumnCount">—</strong></div>
+      <div class="total-cost"><span class="total-label">Tahmini tutar</span><strong id="guaranteeCost">—</strong></div>
+      <button type="button" id="copyGuaranteeBtn" class="copy-button" disabled>Nesine’ye aktar</button>
+    </div>
+    <div class="coupon-message">Optimize kolonlar panoya kopyalanır ve Nesine Spor Toto açılır.</div>
+    <progress id="guaranteeProgress" class="guarantee-progress" max="100" value="0" hidden></progress>
+    <div id="guaranteeMessage" class="coupon-message">Her maçta AI tahmini eşleştiğinde seçimleri düzenleyip analiz başlat.</div>
+    <details class="coupon-preview">
+      <summary>Optimize edilmiş kolonları incele · yeşil doğru, kırmızı yanlış</summary>
+      <div id="guaranteeTickets" class="ticket-grid" aria-label="Garantili Spor Toto kupon kolonları"></div>
+      <textarea id="guaranteeOutput" class="copy-source" readonly aria-label="Garantili kolonları kopyalama metni"></textarea>
+    </details>
+    <div class="coupon-disclaimer">Garanti, gerçek sonuç her maçta seçtiğin 1/X/2 havuzunun içindeyse geçerlidir. Bu bir kazanç veya ikramiye garantisi değildir.</div>
+  </section>
+
+  <section id="matchList" class="match-list">
+    <div class="panel empty">Veriler bekleniyor...</div>
+  </section>
+
+  <section class="panel">
+    <h2>Veri kaynağı ve eşleştirme</h2>
+    <div class="small">
+      Tahmin kaynağı:
+      <strong>https://teador612.github.io/mackolik1/data/spor-toto-predictions.json</strong>.
+      Ana Spor Toto seçimi AI dosyasındaki MS 1, MS X ve MS 2 olasılıklarından alınır.
+      <br><br>
+      Türkçe karakterler, noktalama, kısaltmalar ve sponsor adları normalize edilir.
+      Tarih bilgisi bulunan fikstürlerde tarih de kontrol edilir.
+    </div>
+  </section>
+</main>
+
+<footer>
+  NEXUS Spor Toto · Tahmin kaynağı: mackolik1/data/spor-toto-predictions.json
+</footer>
+
+<script src="./data/spor-toto-data.js"></script>
+
+<script>
+"use strict";
+
+const AI_URL = "https://teador612.github.io/mackolik1/data/spor-toto-predictions.json";
+const NESINE_URL = "https://www.nesine.com/sportoto";
+const OUTCOMES = ["1", "X", "2"];
+
+const TEAM_ALIASES = {
+  "man utd":"manchester united",
+  "manchester utd":"manchester united",
+  "man united":"manchester united",
+  "a villa":"aston villa",
+  "atl madrid":"atletico madrid",
+  "ath madrid":"atletico madrid",
+  "atletico de madrid":"atletico madrid",
+  "paris st germain":"paris saint germain",
+  "paris sg":"paris saint germain",
+  "p s germain":"paris saint germain",
+  "psg":"paris saint germain",
+  "rams basaksehir":"istanbul basaksehir",
+  "basaksehir":"istanbul basaksehir",
+  "inter milan":"inter",
+  "internazionale":"inter",
+  "atletico mg":"atletico mineiro",
+  "rize spor":"caykur rizespor",
+  "como 1907":"como",
+  "tumosan konyaspor":"konyaspor",
+  "t konyaspor":"konyaspor",
+  "arca corum fk":"corum",
+  "corum fk":"corum",
+  "a corum fk":"corum",
+  "m city":"manchester city",
+  "man city":"manchester city",
+  "b munih":"bayern munich",
+  "bayern munchen":"bayern munich",
+  "b dortmund":"borussia dortmund",
+  "r madrid":"real madrid",
+  "r betis":"real betis",
+  "r leipzig":"rb leipzig",
+  "a madrid":"atletico madrid",
+  "a bilbao":"athletic bilbao",
+  "v stuttgart":"vfb stuttgart",
+  "s prag":"sparta prague",
+  "shakhtar d":"shakhtar donetsk",
+  "c alanyaspor":"alanyaspor",
+  "i basaksehir":"istanbul basaksehir",
+  "c rizespor":"caykur rizespor",
+  "a s faaliyetler":"amed sportiv faaliyetler"
+};
+
+const IGNORE = new Set(["fc","cf","sc","afc","club","football","futbol","the"]);
+const $ = id => document.getElementById(id);
+
+let totoData = null;
+let aiData = null;
+let activeWeek = null;
+let autoSelections = true;
+let selectedOutcomes = new Map();
+let predictionCache = new Map();
+let generatedColumns = [];
+let guaranteedColumns = [];
+let guaranteeLevel = 14;
+let guaranteeSelections = new Map();
+
+const COLUMN_PRICE = 10;
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  })[char]);
+}
+
+function normalizeTeam(value) {
+  let name = String(value ?? "")
+    .toLocaleLowerCase("tr-TR")
+    .replace(/ı/g,"i")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/&/g," and ")
+    .replace(/[^a-z0-9]+/g," ")
+    .trim()
+    .replace(/\s+/g," ");
+
+  name = TEAM_ALIASES[name] || name;
+  name = name.split(" ").filter(token => !IGNORE.has(token)).join(" ");
+
+  return name.replace(/\butd\b/g,"united").replace(/\s+/g," ").trim();
+}
+
+function levenshtein(a,b) {
+  if(a===b)return 0;
+  if(!a.length)return b.length;
+  if(!b.length)return a.length;
+
+  let previous=Array.from({length:b.length+1},(_,i)=>i);
+
+  for(let i=1;i<=a.length;i++){
+    const current=[i];
+    for(let j=1;j<=b.length;j++){
+      current[j]=Math.min(
+        current[j-1]+1,
+        previous[j]+1,
+        previous[j-1]+(a[i-1]===b[j-1]?0:1)
+      );
+    }
+    previous=current;
+  }
+  return previous[b.length];
+}
+
+function teamSimilarity(left,right) {
+  const a=normalizeTeam(left);
+  const b=normalizeTeam(right);
+  if(!a||!b)return 0;
+  if(a===b)return 1;
+
+  const compactA=a.replace(/ /g,"");
+  const compactB=b.replace(/ /g,"");
+
+  if(Math.min(compactA.length,compactB.length)>=6 &&
+    (compactA.includes(compactB)||compactB.includes(compactA))) return .94;
+
+  const tokenA=new Set(a.split(" "));
+  const tokenB=new Set(b.split(" "));
+  const intersection=[...tokenA].filter(token=>tokenB.has(token)).length;
+  const tokenScore=intersection/Math.max(tokenA.size,tokenB.size);
+  const editScore=1-levenshtein(compactA,compactB)/Math.max(compactA.length,compactB.length);
+
+  return Math.max(tokenScore*.9,editScore);
+}
+
+function pairSimilarity(home,away,prediction) {
+  const homeScore=teamSimilarity(home,prediction.home);
+  const awayScore=teamSimilarity(away,prediction.away);
+  return {
+    homeScore,
+    awayScore,
+    score:(homeScore+awayScore)/2,
+    minimum:Math.min(homeScore,awayScore)
+  };
+}
+
+function parseMatchDate(value) {
+  if(!value)return null;
+  const text=String(value).trim();
+  let match=text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  if(match){
+    const date=new Date(Number(match[1]),Number(match[2])-1,Number(match[3]));
+    return Number.isNaN(date.getTime())?null:date;
+  }
+
+  match=text.match(/^(\d{2})[./-](\d{2})[./-](\d{4})/);
+  if(match){
+    const date=new Date(Number(match[3]),Number(match[2])-1,Number(match[1]));
+    return Number.isNaN(date.getTime())?null:date;
+  }
+
+  return null;
+}
+
+function getFixtureDate(game) {
+  return parseMatchDate(game.date??game.matchDate??game.kickoff??game.datetime??"");
+}
+
+function dateDistance(firstValue,secondValue) {
+  const first=parseMatchDate(firstValue);
+  const second=parseMatchDate(secondValue);
+  if(!first||!second)return null;
+  return Math.abs(first.getTime()-second.getTime())/86400000;
+}
+
+function findAIMatch(game) {
+  const home=game.home??game.evSahibi??"";
+  const away=game.away??game.deplasman??"";
+  const fixtureDate=getFixtureDate(game);
+
+  const candidates=(aiData?.predictions||[])
+    .map(match=>{
+      const similarity=pairSimilarity(home,away,match);
+      const distance=fixtureDate?dateDistance(fixtureDate,match.date):null;
+      return {...similarity,match,dateDistance:distance};
+    })
+    .filter(item=>{
+      if(item.minimum<.76||item.score<.84)return false;
+      if(item.dateDistance!==null&&item.dateDistance>1)return false;
+      return true;
+    })
+    .sort((a,b)=>{
+      if(a.dateDistance!==null&&b.dateDistance!==null&&a.dateDistance!==b.dateDistance){
+        return a.dateDistance-b.dateDistance;
+      }
+      return b.score-a.score;
+    });
+
+  if(!candidates.length){
+    return {match:null,confidence:0,ambiguous:false};
+  }
+
+  if(candidates[1] &&
+    candidates[0].score-candidates[1].score<.025 &&
+    (candidates[0].dateDistance===null ||
+     candidates[1].dateDistance===null ||
+     candidates[0].dateDistance===candidates[1].dateDistance)){
+    return {match:null,confidence:candidates[0].score,ambiguous:true};
+  }
+
+  return {match:candidates[0].match,confidence:candidates[0].score,ambiguous:false};
+}
+
+function getPrediction(game) {
+  const cacheKey=[
+    activeWeek,
+    game.date??game.matchDate??"",
+    normalizeTeam(game.home??game.evSahibi??""),
+    normalizeTeam(game.away??game.deplasman??"")
+  ].join("|");
+
+  if(predictionCache.has(cacheKey))return predictionCache.get(cacheKey);
+
+  const found=findAIMatch(game);
+  const match=found.match;
+
+  if(!match){
+    const result={...found,probabilities:null,selection:""};
+    predictionCache.set(cacheKey,result);
+    return result;
+  }
+
+  const probabilities={};
+  const aiKeys={"1":"MS 1",X:"MS X","2":"MS 2"};
+
+  for(const key of OUTCOMES){
+    const value=Number(match.joint_markets?.[aiKeys[key]]?.probability);
+
+    if(!Number.isFinite(value)||value<0||value>1){
+      const result={...found,match:null,probabilities:null,selection:""};
+      predictionCache.set(cacheKey,result);
+      return result;
+    }
+
+    probabilities[key]=value*100;
+  }
+
+  const total=OUTCOMES.reduce((sum,key)=>sum+probabilities[key],0);
+  if(total<=0){
+    const result={...found,match:null,probabilities:null,selection:""};
+    predictionCache.set(cacheKey,result);
+    return result;
+  }
+
+  // Yuvarlama veya veri farklılıklarına karşı olasılıkları normalize et.
+  for(const key of OUTCOMES)probabilities[key]=probabilities[key]/total*100;
+
+  const selection=OUTCOMES.reduce(
+    (best,key)=>probabilities[key]>probabilities[best]?key:best,"1"
+  );
+
+  const result={...found,probabilities,selection,primary:match.primary||null};
+  predictionCache.set(cacheKey,result);
+  return result;
+}
+
+function probabilityLabel(value) {
+  return Number.isFinite(value)?"%"+value.toFixed(1):"—";
+}
+
+function probabilityMarkup(probabilities) {
+  const one=Math.max(0,Math.min(100,probabilities["1"]));
+  const draw=Math.max(0,Math.min(100,probabilities.X));
+  const two=Math.max(0,Math.min(100,probabilities["2"]));
+
+  return `
+    <div class="probability-block" aria-label="1 X 2 olasılıkları">
+      <div class="probability-track" aria-hidden="true">
+        <span class="p-home" style="width:${one}%"></span>
+        <span class="p-draw" style="width:${draw}%"></span>
+        <span class="p-away" style="width:${two}%"></span>
+      </div>
+      <div class="probability-values">
+        <div class="probability-value"><span>1 · Ev</span><strong>${probabilityLabel(one)}</strong></div>
+        <div class="probability-value"><span>X · Beraberlik</span><strong>${probabilityLabel(draw)}</strong></div>
+        <div class="probability-value"><span>2 · Dep.</span><strong>${probabilityLabel(two)}</strong></div>
+      </div>
+    </div>`;
+}
+
+function selectionKey(game,index) {
+  return [
+    activeWeek,
+    game.number??index+1,
+    normalizeTeam(game.home??game.evSahibi??""),
+    normalizeTeam(game.away??game.deplasman??"")
+  ].join("|");
+}
+
+function ensureSelections(game,index,analysis) {
+  const key=selectionKey(game,index);
+  if(!selectedOutcomes.has(key)){
+    selectedOutcomes.set(key,analysis.probabilities?[analysis.selection]:[]);
+  }
+  return {key,values:selectedOutcomes.get(key)};
+}
+
+function applyAISuggestions() {
+  const games=getWeekGames(activeWeek);
+
+  games.forEach((game,index)=>{
+    const analysis=getPrediction(game);
+    const key=selectionKey(game,index);
+
+    if(!analysis.probabilities){
+      selectedOutcomes.set(key,[]);
+      return;
+    }
+
+    const ranked=OUTCOMES.slice().sort((a,b)=>analysis.probabilities[b]-analysis.probabilities[a]);
+    const gap=analysis.probabilities[ranked[0]]-analysis.probabilities[ranked[1]];
+    selectedOutcomes.set(key,gap<=8?ranked.slice(0,2):[ranked[0]]);
+  });
+
+  autoSelections=true;
+}
+
+function applyGuaranteeSuggestions() {
+  const games=getWeekGames(activeWeek);
+
+  games.forEach((game,index)=>{
+    const analysis=getPrediction(game);
+    const key=selectionKey(game,index);
+
+    if(!analysis.probabilities){
+      guaranteeSelections.set(key,[]);
+      return;
+    }
+
+    const ranked=OUTCOMES.slice().sort((a,b)=>analysis.probabilities[b]-analysis.probabilities[a]);
+    const gap=analysis.probabilities[ranked[0]]-analysis.probabilities[ranked[1]];
+    const top=analysis.probabilities[ranked[0]];
+    const proposal=top<=35?ranked:gap<=8?ranked.slice(0,2):[ranked[0]];
+
+    guaranteeSelections.set(key,proposal);
+  });
+
+  guaranteedColumns=[];
+  updateGuaranteeSummary(games);
+  renderWeek();
+}
+
+function guaranteeChoices(games) {
+  return games.map((game,index)=>{
+    const analysis=getPrediction(game);
+    const key=selectionKey(game,index);
+
+    if(!guaranteeSelections.has(key)){
+      const standard=ensureSelections(game,index,analysis).values;
+      guaranteeSelections.set(key,standard.slice());
+    }
+
+    return guaranteeSelections.get(key);
+  });
+}
+
+function updateGuaranteeSummary(games=getWeekGames(activeWeek)) {
+  const choices=guaranteeChoices(games);
+  const poolSize=choices.reduce((total,options)=>total*options.length,1);
+  const incomplete=!games.length||choices.some(options=>!options.length);
+
+  $("guaranteePoolCount").textContent=incomplete?"—":poolSize.toLocaleString("tr-TR");
+  $("guaranteeColumnCount").textContent=guaranteedColumns.length?guaranteedColumns.length.toLocaleString("tr-TR"):"—";
+  $("guaranteeCost").textContent=guaranteedColumns.length?(guaranteedColumns.length*COLUMN_PRICE).toLocaleString("tr-TR")+" TL":"—";
+  $("guaranteeOutput").value=guaranteedColumns.map((row,index)=>String(index+1).padStart(2,"0")+"  "+row.join(" · ")).join("\n");
+
+  renderTicketCards("guaranteeTickets",guaranteedColumns,games);
+  $("copyGuaranteeBtn").disabled=!guaranteedColumns.length;
+
+  if(incomplete){
+    $("guaranteeStatus").textContent="AI tahmini olmayan seçim var";
+    $("guaranteeMessage").textContent="Garanti analizi için her maçta en az bir sonuç seç. AI tahmini olmayan maçlarda seçimlerini elle yap.";
+  }else if(guaranteeLevel>games.length){
+    $("guaranteeStatus").textContent="Maç sayısı yetersiz";
+    $("guaranteeMessage").textContent=guaranteeLevel+" garanti için en az "+guaranteeLevel+" maç gerekir; bu haftada "+games.length+" maç var.";
+  }else{
+    $("guaranteeStatus").textContent=guaranteedColumns.length?"Garanti kapsamı doğrulandı":"Analiz bekliyor";
+    $("guaranteeMessage").textContent=guaranteedColumns.length
+      ?guaranteeLevel+" garanti seviyesi, seçili havuzdaki tüm senaryolarda doğrulandı. Greedy kapsama yöntemi "+guaranteedColumns.length.toLocaleString("tr-TR")+" kolon seçti; bu sayı matematiksel minimum değildir."
+      :"Havuz hazır: "+poolSize.toLocaleString("tr-TR")+" olası kolon. "+guaranteeLevel+" garanti için Sistemi analiz et düğmesine bas.";
+  }
+}
+
+function expandOutcomePool(choices) {
+  return choices.reduce((rows,options)=>rows.flatMap(row=>options.map(option=>[...row,option])),[[]]);
+}
+
+function renderTicketCards(containerId,columns,games) {
+  const container=$(containerId);
+
+  if(!columns.length){
+    container.innerHTML='<div class="ticket-more">Kolonlar oluşturulduğunda kupon görünümü burada yer alacak.</div>';
+    return;
+  }
+
+  const visible=columns.slice(0,80);
+
+  container.innerHTML=visible.map((column,columnIndex)=>{
+    const settled=games.reduce((count,game)=>count+Boolean(normalizeResult(game.result??game.outcome??game.sonuc)),0);
+    const hits=games.reduce((count,game,matchIndex)=>{
+      const result=normalizeResult(game.result??game.outcome??game.sonuc);
+      return count+Boolean(result&&column[matchIndex]===result);
+    },0);
+
+    const score=!settled?"Sonuç bekleniyor":
+      settled===games.length?`${hits}/${games.length} doğru`:
+      `${hits} doğru · ${settled}/${games.length} sonuç`;
+
+    return `
+      <article class="ticket-card">
+        <div class="ticket-head">
+          <span>SPOR TOTO KUPONU<br><small>Kolon ${String(columnIndex+1).padStart(2,"0")}</small></span>
+          <small class="ticket-score">${score}</small>
+        </div>
+        ${games.map((game,matchIndex)=>{
+          const home=game.home??game.evSahibi??"Ev sahibi";
+          const away=game.away??game.deplasman??"Deplasman";
+          const marked=column[matchIndex];
+          const result=normalizeResult(game.result??game.outcome??game.sonuc);
+          const rowState=result?(marked===result?" hit":" miss"):"";
+
+          return `<div class="ticket-row${rowState}">
+            <span class="ticket-no">${String(game.number??matchIndex+1).padStart(2,"0")}</span>
+            <span class="ticket-teams" title="${escapeHTML(home)} – ${escapeHTML(away)}">${escapeHTML(home)} – ${escapeHTML(away)}</span>
+            <span class="ticket-marks">${OUTCOMES.map(outcome=>`<span class="ticket-mark${marked===outcome?" active":""}${result===outcome?" actual":""}" title="${result===outcome?"Gerçek sonuç":outcome}">${outcome}</span>`).join("")}</span>
+          </div>`;
+        }).join("")}
+      </article>`;
+  }).join("")+(columns.length>visible.length
+    ?`<div class="ticket-more">İlk ${visible.length} kolon gösteriliyor. Tam kolon listesi kopyalama alanından alınabilir.</div>`
+    :"");
+}
+
+async function optimizeGuarantee() {
+  const games=getWeekGames(activeWeek);
+  const choices=guaranteeChoices(games);
+
+  if(!games.length||choices.some(options=>!options.length)){
+    updateGuaranteeSummary(games);
+    return;
+  }
+
+  if(guaranteeLevel>games.length){
+    guaranteedColumns=[];
+    updateGuaranteeSummary(games);
+    return;
+  }
+
+  const poolSize=choices.reduce((total,options)=>total*options.length,1);
+  const MAX_POOL=1000;
+
+  if(poolSize>MAX_POOL){
+    guaranteedColumns=[];
+    $("guaranteeColumnCount").textContent="—";
+    $("guaranteeCost").textContent="—";
+    $("guaranteeOutput").value="";
+    $("copyGuaranteeBtn").disabled=true;
+    $("guaranteeStatus").textContent="Havuz çok büyük";
+    $("guaranteeMessage").textContent="Bu havuz "+poolSize.toLocaleString("tr-TR")+" kolon. Tarayıcının yavaşlamaması için analiz 1.000 havuz kolonu ile sınırlandırıldı. Banko/çifte/kapalı seçimlerini azaltıp yeniden dene.";
+    return;
+  }
+
+  const pool=expandOutcomePool(choices);
+  const radius=games.length-guaranteeLevel;
+
+  if(radius<=0){
+    guaranteedColumns=pool;
+  }else{
+    const cover=pool.map(()=>[]);
+
+    for(let i=0;i<pool.length;i++){
+      for(let j=0;j<pool.length;j++){
+        let distance=0;
+        for(let k=0;k<games.length&&distance<=radius;k++){
+          if(pool[i][k]!==pool[j][k])distance++;
+        }
+        if(distance<=radius)cover[i].push(j);
+      }
+
+      if(i%20===19||i===pool.length-1){
+        $("guaranteeProgress").hidden=false;
+        $("guaranteeProgress").value=Math.round((i+1)/pool.length*65);
+        $("guaranteeStatus").textContent="Olasılıklar taranıyor";
+        await new Promise(resolve=>setTimeout(resolve,0));
+      }
+    }
+
+    const uncovered=new Uint8Array(pool.length).fill(1);
+    let remaining=pool.length;
+    guaranteedColumns=[];
+
+    while(remaining){
+      let best=-1;
+      let bestGain=-1;
+
+      for(let i=0;i<cover.length;i++){
+        let gain=0;
+        for(const j of cover[i])gain+=uncovered[j];
+        if(gain>bestGain){best=i;bestGain=gain;}
+      }
+
+      if(best<0||bestGain<=0)break;
+
+      guaranteedColumns.push(pool[best]);
+
+      for(const j of cover[best]){
+        if(uncovered[j]){uncovered[j]=0;remaining--;}
+      }
+
+      $("guaranteeProgress").value=65+Math.round((pool.length-remaining)/pool.length*35);
+      await new Promise(resolve=>setTimeout(resolve,0));
+    }
+
+    if(remaining)guaranteedColumns=[];
+  }
+
+  $("guaranteeProgress").hidden=true;
+  $("guaranteeProgress").value=0;
+  updateGuaranteeSummary(games);
+}
+
+function selectionMarkup(key,values,analysis) {
+  const buttons=OUTCOMES.map(outcome=>{
+    const active=values.includes(outcome);
+    const odds=analysis.probabilities?.[outcome];
+
+    return `<button type="button" class="outcome-select${active?" selected":""}"
+      data-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
+      aria-pressed="${active}" title="${outcome} olasılığı ${probabilityLabel(odds)}">${outcome}</button>`;
+  }).join("");
+
+  const hint=analysis.probabilities
+    ?`Kupon işareti: <strong>${escapeHTML(values.join(" "))}</strong>`
+    :"Tahmin yok · seçimini kendin belirle";
+
+  return `<div class="pick-control">
+    <div class="pick-head"><span>Kupon seçimi · en fazla 2 işaret</span><small>${hint}</small></div>
+    <div class="outcome-buttons" role="group" aria-label="Maç sonucu seçimi">${buttons}</div>
+  </div>`;
+}
+
+function guaranteeSelectionMarkup(key,values,analysis) {
+  const buttons=OUTCOMES.map(outcome=>`<button type="button" class="outcome-select${values.includes(outcome)?" selected":""}"
+    data-guarantee-match-key="${escapeHTML(key)}" data-outcome="${outcome}"
+    aria-pressed="${values.includes(outcome)}" title="Garanti havuzuna ${outcome} ekle/çıkar">${outcome}</button>`).join("");
+
+  const kind=values.length===1?"Banko":values.length===2?"Çifte":values.length===3?"Kapalı":"Seçim gerekli";
+
+  return `<div class="guarantee-picks">
+    <div class="pick-head"><span>Garanti havuzu · 1–3 sonuç</span><small>${analysis.probabilities?"AI önerisi":"Manuel seçim"} · ${kind}</small></div>
+    <div class="outcome-buttons" role="group" aria-label="Garanti sonucu seçimi">${buttons}</div>
+  </div>`;
+}
+
+function readCurrentChoices(games) {
+  return games.map((game,index)=>{
+    const analysis=getPrediction(game);
+    return ensureSelections(game,index,analysis).values;
+  });
+}
+
+function updateCouponPanel(games=getWeekGames(activeWeek)) {
+  const choices=readCurrentChoices(games);
+  const incomplete=choices.some(list=>!list.length);
+  const doubleCount=choices.filter(list=>list.length===2).length;
+
+  $("doubleCount").textContent=doubleCount+" maçta çift işaret";
+  generatedColumns=[];
+
+  const message=$("couponMessage");
+
+  if(!games.length||incomplete){
+    $("couponColumns").textContent="—";
+    $("couponCost").textContent="—";
+    $("columnOutput").value="";
+    renderTicketCards("columnTickets",[],games);
+    $("copyColumnsBtn").disabled=true;
+    $("couponStatus").textContent="Seçimleri tamamla";
+    message.textContent="Her maçta en az bir sonuç seç. Bir maçta en fazla iki sonuç işaretleyebilirsin.";
+    return;
+  }
+
+  generatedColumns=choices.reduce((rows,options)=>rows.flatMap(row=>options.map(option=>[...row,option])),[[]]);
+
+  const totalCost=generatedColumns.length*COLUMN_PRICE;
+  $("couponColumns").textContent=generatedColumns.length.toLocaleString("tr-TR");
+  $("couponCost").textContent=totalCost.toLocaleString("tr-TR")+" TL";
+  $("columnOutput").value=generatedColumns.map((row,index)=>String(index+1).padStart(2,"0")+"  "+row.join(" · ")).join("\n");
+
+  renderTicketCards("columnTickets",generatedColumns,games);
+  $("copyColumnsBtn").disabled=false;
+  $("couponStatus").textContent=doubleCount?doubleCount+" çift seçim · kupon hazır":"Tekli kupon hazır";
+
+  message.textContent=(autoSelections
+    ?"AI, en yüksek iki olasılık arasındaki fark 8 puan veya daha az olan maçlara çift işaret önerir."
+    :"Seçimlerini kendin düzenliyorsun.")+
+    " İşaretsiz sonucu tıklayarak çift ekle, seçili sonuçlardan birini tıklayarak kaldır.";
+}
+
+function handleOutcomeClick(button) {
+  const key=button.dataset.matchKey;
+  const outcome=button.dataset.outcome;
+  let values=selectedOutcomes.get(key)||[];
+
+  if(values.includes(outcome)){
+    if(values.length===1)return;
+    values=values.filter(value=>value!==outcome);
+  }else{
+    if(values.length>=2)return;
+    values=[...values,outcome];
+  }
+
+  selectedOutcomes.set(key,values);
+  autoSelections=false;
+  renderWeek();
+}
+
+function handleGuaranteeOutcomeClick(button) {
+  const key=button.dataset.guaranteeMatchKey;
+  const outcome=button.dataset.outcome;
+  const values=guaranteeSelections.get(key)||[];
+  const next=values.includes(outcome)?values.filter(value=>value!==outcome):[...values,outcome];
+
+  if(next.length>3)return;
+
+  guaranteeSelections.set(key,next);
+  guaranteedColumns=[];
+  renderWeek();
+}
+
+async function copyForNesine(columns,outputId,button,messageId) {
+  if(!columns.length)return;
+
+  const text=columns.map(column=>column.join("")).join("\n");
+  const source=$(outputId);
+  source.value=text;
+
+  window.open(NESINE_URL,"_blank","noopener,noreferrer");
+
+  let copied=false;
+
+  try{
+    await navigator.clipboard.writeText(text);
+    copied=true;
+  }catch{
+    source.focus();
+    source.select();
+    copied=document.execCommand("copy");
+  }
+
+  button.textContent=copied?"Kolonlar kopyalandı":"Kopyalama başarısız";
+  $(messageId).textContent=copied
+    ?columns.length.toLocaleString("tr-TR")+" kolon panoya kopyalandı. Nesine'de seçimleri kontrol edip kuponu kendin onayla."
+    :"Panoya kopyalanamadı. Tarayıcı izinlerini kontrol edip yeniden dene.";
+
+  setTimeout(()=>{button.textContent="Nesine’ye aktar";},1800);
+}
+
+function copyColumns() {
+  return copyForNesine(generatedColumns,"columnOutput",$("copyColumnsBtn"),"couponMessage");
+}
+
+function normalizeResult(value) {
+  const result=String(value??"").trim().toLocaleUpperCase("tr-TR");
+  if(["1","X","2"].includes(result))return result;
+  if(result==="0")return "X";
+  return "";
+}
+
+function setMessage(text,type="") {
+  const el=$("message");
+  el.textContent=text;
+  el.className="notice"+(type?" "+type:"");
+}
+
+function getWeeks() {
+  const weeks=totoData?.weeks;
+
+  return weeks&&typeof weeks==="object"
+    ?Object.keys(weeks).filter(key=>Array.isArray(weeks[key])).sort((a,b)=>Number(a)-Number(b))
+    :[];
+}
+
+function getWeekGames(week) {
+  const games=totoData?.weeks?.[week];
+  return Array.isArray(games)?games:[];
+}
+
+function renderWeekOptions() {
+  const weeks=getWeeks();
+  const select=$("weekSelect");
+  select.innerHTML="";
+
+  if(!weeks.length){
+    select.innerHTML='<option value="">Hafta bulunamadı</option>';
+    activeWeek=null;
+    return;
+  }
+
+  const populatedWeeks=weeks.filter(week=>getWeekGames(week).length>0);
+  activeWeek=populatedWeeks[populatedWeeks.length-1]||weeks[weeks.length-1];
+
+  for(const week of weeks){
+    const option=document.createElement("option");
+    option.value=week;
+    option.textContent=week+". Hafta";
+    option.selected=week===activeWeek;
+    select.appendChild(option);
+  }
+}
+
+function renderWeek() {
+  const games=getWeekGames(activeWeek);
+  let analyzed=0;
+  let settled=0;
+  let won=0;
+
+  $("statMatches").textContent=games.length;
+
+  const guaranteeOptions=guaranteeChoices(games);
+
+  const cards=games.map((game,index)=>{
+    const home=game.home??game.evSahibi??"Ev sahibi bilinmiyor";
+    const away=game.away??game.deplasman??"Deplasman bilinmiyor";
+    const analysis=getPrediction(game);
+    const pickState=ensureSelections(game,index,analysis);
+    const guaranteedPicks=guaranteeOptions[index]||[];
+
+    const result=normalizeResult(game.result??game.outcome??game.sonuc);
+    const available=Boolean(analysis.probabilities);
+    const systemHit=Boolean(result&&available&&pickState.values.includes(result));
+
+    const status=result
+      ?(available
+        ?(systemHit
+          ?{label:"Başarılı",className:"green",icon:"✓"}
+          :{label:"Başarısız",className:"red",icon:"✕"})
+        :{label:"Sonuç belli",className:"blue",icon:"●"})
+      :(available
+        ?{label:"Bekliyor",className:"yellow",icon:"●"}
+        :{label:analysis.ambiguous?"Eşleşme doğrulanamadı":"AI tahmini yok",className:"yellow",icon:"●"});
+
+    if(available)analyzed++;
+    if(available&&result){settled++;if(systemHit)won++;}
+
+    const bestProbability=available?analysis.probabilities[analysis.selection]:null;
+    const predictionClass=bestProbability>=60?"high":bestProbability>=45?"medium":"";
+
+    const primaryText=analysis.primary?.label
+      ?escapeHTML(analysis.primary.label)+" · "+probabilityLabel(Number(analysis.primary.probability)*100)
+      :"";
+
+    return `
+      <article class="match">
+        <div class="match-top">
+          <div>
+            <div class="match-no">Maç ${escapeHTML(game.number??index+1)}</div>
+            <div class="teams">${escapeHTML(home)} – ${escapeHTML(away)}</div>
+          </div>
+          <div class="prediction ${available?predictionClass:""}">
+            ${available?escapeHTML(analysis.selection):"—"}
+            <small>${available?probabilityLabel(bestProbability)+" AI olasılığı":"AI verisi bekleniyor"}</small>
+          </div>
+        </div>
+
+        ${available?probabilityMarkup(analysis.probabilities):""}
+
+        ${selectionMarkup(pickState.key,pickState.values,analysis)}
+        ${guaranteeSelectionMarkup(pickState.key,guaranteedPicks,analysis)}
+
+        <div class="match-info">
+          <span class="badge ${status.className}">${status.icon} ${status.label}</span>
+          ${available?`
+            <span class="tag">İsim eşleşmesi: <strong>%${(analysis.confidence*100).toFixed(0)}</strong></span>
+            <span class="tag">AI maçı: <strong>${escapeHTML(analysis.match.date)} ${escapeHTML(analysis.match.time||"")}</strong></span>
+          `:`
+            <span class="tag">${analysis.ambiguous?"Birden fazla olası maç bulundu; güvenli eşleşme yapılamadı.":"AI tahmin dosyasında uygun maç bulunamadı."}</span>
+          `}
+          ${result?`<span class="tag">Gerçek sonuç: <strong>${escapeHTML(result)}</strong></span>`:""}
+        </div>
+
+        <details class="details">
+          <summary>AI tahmin ayrıntıları</summary>
+          <div class="details-content">
+            ${available?`
+              <div class="notice" style="margin-top:12px;margin-bottom:0">
+                <strong>Spor Toto seçimi: ${escapeHTML(analysis.selection)}</strong><br>
+                1: ${probabilityLabel(analysis.probabilities["1"])}
+                · X: ${probabilityLabel(analysis.probabilities.X)}
+                · 2: ${probabilityLabel(analysis.probabilities["2"])}
+                ${primaryText?`<br>AI sisteminin ana tahmini: ${primaryText}`:""}
+                <br>AI fikstürü: ${escapeHTML(analysis.match.home)} – ${escapeHTML(analysis.match.away)}
+                · ${escapeHTML(analysis.match.league||"")}
+                <br>İsim eşleşme puanı: %${(analysis.confidence*100).toFixed(1)}
+              </div>
+            `:`
+              <div class="empty">${analysis.ambiguous
+                ?"Benzer isimli birden fazla AI fikstürü bulundu. Yanlış maça tahmin bağlamamak için seçim yapılmadı."
+                :"Bu fikstür için AI sisteminde tahmin bulunamadı."}</div>
+            `}
+          </div>
+        </details>
+      </article>`;
+  }).join("");
+
+  $("matchList").innerHTML=cards||'<div class="panel empty">Bu hafta için maç kaydı bulunamadı.</div>';
+  $("statAnalyzed").textContent=analyzed+"/"+games.length;
+  $("statSettled").textContent=settled;
+  $("statAccuracy").textContent=settled?"%"+(won/settled*100).toFixed(1):"—";
+  $("weekBadge").textContent=activeWeek?activeWeek+". Hafta · "+analyzed+"/"+games.length+" AI tahmini":"Hafta —";
+
+  updateCouponPanel(games);
+  updateGuaranteeSummary(games);
+
+  return {games,analyzed};
+}
+
+function updateMessage() {
+  const {games,analyzed}=renderWeek();
+
+  const generated=aiData.generatedAt
+    ?new Date(aiData.generatedAt).toLocaleString("tr-TR")
+    :"tarih bilgisi yok";
+
+  const predictionCount=Number(aiData.upcomingMatches??aiData.predictions.length);
+  const trainingCount=Number(aiData.trainingMatches||0);
+
+  $("benchmark").textContent=
+    "Motor güncelleme: "+generated+
+    " · Eğitim: "+trainingCount.toLocaleString("tr-TR")+" maç"+
+    " · "+predictionCount.toLocaleString("tr-TR")+" gelecek tahmini";
+
+  setMessage(
+    "Yeni Spor Toto AI motoru aktif: "+generated+
+    " · "+games.length+" Spor Toto maçı, "+analyzed+
+    " AI eşleşmesi. Tahminler altı pazar grubunun ağırlıklı MS 1-X-2 olasılıklarından üretilir.",
+    analyzed===games.length?"good":""
+  );
+}
+
+async function loadData() {
+  $("refreshBtn").disabled=true;
+  setMessage("Spor Toto fikstürleri ve yeni AI tahmin motoru yükleniyor...");
+
+  try{
+    if(!window.SPORT_TOTO_DATA?.weeks){
+      throw new Error("Spor Toto verisi yüklenemedi. data/spor-toto-data.js dosyasını kontrol et.");
+    }
+
+    totoData=window.SPORT_TOTO_DATA;
+
+    const response=await fetch(AI_URL+"?t="+Date.now(),{cache:"no-store"});
+
+    if(!response.ok){
+      throw new Error("AI tahmin dosyası alınamadı (HTTP "+response.status+").");
+    }
+
+    aiData=await response.json();
+
+    predictionCache.clear();
+
+    if(!Array.isArray(aiData.predictions)){
+      throw new Error("AI tahmin dosyasında predictions maç listesi bulunamadı.");
+    }
+
+    if(!aiData.predictions.length){
+      throw new Error("AI tahmin dosyasında gelecek maç tahmini bulunmuyor.");
+    }
+
+    renderWeekOptions();
+
+    if(!activeWeek){
+      throw new Error("Spor Toto haftaları bulunamadı.");
+    }
+
+    if(autoSelections)applyAISuggestions();
+    updateMessage();
+
+  }catch(error){
+    console.error(error);
+    setMessage("Veri yükleme hatası: "+error.message,"error");
+    $("matchList").innerHTML='<div class="panel empty">Veriler yüklenemedi. Hata mesajı yukarıda gösteriliyor.</div>';
+  }finally{
+    $("refreshBtn").disabled=false;
+  }
+}
+
+/* Hafta seçimi */
+$("weekSelect").addEventListener("change",event=>{
+  activeWeek=event.target.value;
+  guaranteedColumns=[];
+  if(autoSelections)applyAISuggestions();
+  updateMessage();
+});
+
+$("refreshBtn").addEventListener("click",loadData);
+
+$("autoOptionsBtn").addEventListener("click",()=>{
+  applyAISuggestions();
+  renderWeek();
+});
+
+$("matchList").addEventListener("click",event=>{
+  const guaranteeButton=event.target.closest("[data-guarantee-match-key]");
+
+  if(guaranteeButton){
+    handleGuaranteeOutcomeClick(guaranteeButton);
+    return;
+  }
+
+  const button=event.target.closest("[data-match-key]");
+  if(button)handleOutcomeClick(button);
+});
+
+/* Kupon işlemleri */
+$("copyColumnsBtn").addEventListener("click",copyColumns);
+
+$("copyGuaranteeBtn").addEventListener("click",()=>{
+  copyForNesine(guaranteedColumns,"guaranteeOutput",$("copyGuaranteeBtn"),"guaranteeMessage");
+});
+
+$("applyGuaranteeAI").addEventListener("click",applyGuaranteeSuggestions);
+
+$("analyzeGuarantee").addEventListener("click",()=>{
+  const button=$("analyzeGuarantee");
+  button.disabled=true;
+  button.textContent="Hesaplanıyor...";
+  $("guaranteeProgress").hidden=false;
+  $("guaranteeProgress").value=0;
+
+  setTimeout(async()=>{
+    try{
+      await optimizeGuarantee();
+    }finally{
+      $("guaranteeProgress").hidden=true;
+      button.disabled=false;
+      button.textContent="Sistemi analiz et";
+    }
+  },25);
+});
+
+document.querySelectorAll(".guarantee-option").forEach(button=>{
+  button.addEventListener("click",()=>{
+    guaranteeLevel=Number(button.dataset.level);
+    document.querySelectorAll(".guarantee-option").forEach(option=>{
+      option.classList.toggle("active",option===button);
+    });
+    guaranteedColumns=[];
+    updateGuaranteeSummary();
+  });
+});
+
+/* İlk yükleme */
+loadData();
+</script>
+</body>
+</html>
