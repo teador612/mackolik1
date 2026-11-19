@@ -2,7 +2,7 @@
 import json
 import math
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import numpy as np
@@ -36,6 +36,9 @@ BASE_WEIGHTS = {
     "KG Var": 1.00,
     "2,5 Üst": 1.00,
 }
+
+# Geçmiş tahminlerde modeller bu aralıklarla yeniden eğitilir.
+HISTORICAL_BATCH_DAYS = 7
 
 
 def parse_datetime(match):
@@ -132,6 +135,43 @@ def fit_market_model(matches, market_keys):
         "model": model,
         "samples": len(x_values)
     }
+
+
+def fit_all_markets(matches):
+    models = {}
+
+    for market_name, keys in MARKETS.items():
+        model_info = fit_market_model(
+            matches,
+            keys
+        )
+
+        if model_info is not None:
+            models[market_name] = model_info
+
+    return models
+
+
+def normalize_weights(raw_weights):
+    total = sum(raw_weights.values())
+
+    if total <= 0:
+        return {}
+
+    return {
+        name: value / total
+        for name, value in raw_weights.items()
+    }
+
+
+def get_base_weights(models):
+    raw_weights = {
+        name: BASE_WEIGHTS[name]
+        for name in models
+        if name in BASE_WEIGHTS
+    }
+
+    return normalize_weights(raw_weights)
 
 
 def predict_probabilities(model_info, feature):
@@ -241,15 +281,7 @@ def get_validation_weights(train_matches, validation_matches):
             "weight": 0
         }
 
-    total_weight = sum(raw_weights.values())
-
-    if total_weight > 0:
-        weights = {
-            name: value / total_weight
-            for name, value in raw_weights.items()
-        }
-    else:
-        weights = {}
+    weights = normalize_weights(raw_weights)
 
     for market_name, weight in weights.items():
         validation_report[market_name]["weight"] = round(
@@ -259,7 +291,13 @@ def get_validation_weights(train_matches, validation_matches):
     return weights, validation_report
 
 
-def build_prediction(match, models, weights):
+def build_prediction(
+    match,
+    models,
+    weights,
+    prediction_type="future",
+    as_of_date=None
+):
     market_predictions = {}
     combined = np.zeros(3, dtype=float)
     total_weight = 0.0
@@ -375,7 +413,13 @@ def build_prediction(match, models, weights):
         "joint_markets": joint_markets,
         "source_probabilities": source_probabilities,
         "source_weights": source_weights,
-        "weight_scopes": "historical_validation",
+        "weight_scopes": (
+            "historical_base_weights"
+            if prediction_type == "historical_walk_forward"
+            else "historical_validation"
+        ),
+        "prediction_type": prediction_type,
+        "as_of_date": as_of_date,
         "odds_samples": {
             name: model_info["samples"]
             for name, model_info in models.items()
@@ -384,12 +428,88 @@ def build_prediction(match, models, weights):
         "market_results": {},
         "score": match.get("score"),
         "ht_score": match.get("halfTimeScore"),
+        "result": match.get("result"),
         "fixture_id": (
             f"{match.get('date', '')}_"
             f"{match.get('home', '')}_"
             f"{match.get('away', '')}"
         )
     }
+
+
+def get_week_start(timestamp):
+    return (
+        timestamp.date()
+        - timedelta(days=timestamp.weekday())
+    )
+
+
+def build_historical_predictions(valid_matches, now):
+    historical_matches = [
+        match for match in valid_matches
+        if match["_timestamp"] <= now
+    ]
+
+    batches = {}
+
+    for match in historical_matches:
+        week_start = get_week_start(
+            match["_timestamp"]
+        )
+
+        batches.setdefault(
+            week_start,
+            []
+        ).append(match)
+
+    predictions = []
+
+    for week_start in sorted(batches):
+        batch_start = datetime.combine(
+            week_start,
+            datetime.min.time()
+        )
+
+        # Bu haftanın maçları eğitim verisine kesinlikle girmez.
+        previous_completed = [
+            match for match in valid_matches
+            if (
+                match["_timestamp"] < batch_start
+                and match["_timestamp"] <= now
+                and match.get("result") in CLASSES
+            )
+        ]
+
+        if len(previous_completed) < MIN_TRAIN_SAMPLES:
+            continue
+
+        models = fit_all_markets(
+            previous_completed
+        )
+
+        if "MS 1-X-2" not in models:
+            continue
+
+        # Geçmiş tahminlerde gelecek sonuçlardan öğrenilmiş
+        # doğrulama ağırlıkları kullanılmaz.
+        weights = get_base_weights(models)
+
+        if not weights:
+            continue
+
+        for match in batches[week_start]:
+            prediction = build_prediction(
+                match,
+                models,
+                weights,
+                prediction_type="historical_walk_forward",
+                as_of_date=batch_start.strftime("%Y-%m-%d")
+            )
+
+            if prediction is not None:
+                predictions.append(prediction)
+
+    return predictions
 
 
 def main():
@@ -428,7 +548,6 @@ def main():
         key=lambda item: item["_timestamp"]
     )
 
-    # Sadece zamanı geçmiş ve sonucu bulunan maçlar eğitimde.
     completed = [
         match for match in valid_matches
         if (
@@ -437,7 +556,6 @@ def main():
         )
     ]
 
-    # Sadece henüz başlamamış ve sonucu bulunmayan maçlar tahmin edilir.
     upcoming = [
         match for match in valid_matches
         if (
@@ -501,29 +619,46 @@ def main():
             "Oran ve sonuç verilerini kontrol edin."
         )
 
-    # Nihai modeller tüm tamamlanmış geçmiş maçlarla eğitilir.
-    models = {}
+    # Geçmiş haftalar için zaman sıralı tahminler.
+    historical_predictions = build_historical_predictions(
+        valid_matches,
+        now
+    )
 
-    for market_name, keys in MARKETS.items():
-        model_info = fit_market_model(
-            completed,
-            keys
+    # Gelecek maçlar için tüm tamamlanmış verilerle eğitim.
+    future_models = fit_all_markets(completed)
+
+    if "MS 1-X-2" not in future_models:
+        raise ValueError(
+            "Gelecek maçlar için ana MS modeli oluşturulamadı."
         )
 
-        if model_info is not None:
-            models[market_name] = model_info
-
-    predictions = []
+    future_predictions = []
 
     for match in upcoming:
         prediction = build_prediction(
             match,
-            models,
-            weights
+            future_models,
+            weights,
+            prediction_type="future",
+            as_of_date=now.strftime("%Y-%m-%d")
         )
 
         if prediction is not None:
-            predictions.append(prediction)
+            future_predictions.append(prediction)
+
+    # Geçmiş ve gelecek tahminleri aynı listede tutulur.
+    predictions = (
+        historical_predictions
+        + future_predictions
+    )
+
+    predictions.sort(
+        key=lambda item: (
+            item.get("date") or "",
+            item.get("time") or ""
+        )
+    )
 
     result = {
         "source": "spor-toto-analysis.json",
@@ -534,8 +669,10 @@ def main():
         "trainingMatches": len(completed),
         "validationMatches": len(validation_matches),
         "validationStart": cutoff.isoformat(),
-        "upcomingMatches": len(predictions),
+        "upcomingMatches": len(future_predictions),
+        "historicalPredictions": len(historical_predictions),
         "unresolvedPastMatches": len(unresolved_past),
+        "historicalBatchDays": HISTORICAL_BATCH_DAYS,
         "markets": list(MARKETS.keys()),
         "validation": validation_report,
         "marketWeights": {
@@ -565,8 +702,11 @@ def main():
     print("Spor Toto tahmin motoru tamamlandı.")
     print(f"Eğitim maçları: {len(completed)}")
     print(f"Doğrulama maçları: {len(validation_matches)}")
-    print(f"Gelecek maçlar: {len(predictions)}")
-    print(f"Geçmişte sonucu eksik maçlar: {len(unresolved_past)}")
+    print(f"Geçmiş tahminleri: {len(historical_predictions)}")
+    print(f"Gelecek tahminleri: {len(future_predictions)}")
+    print(f"Toplam tahmin: {len(predictions)}")
+    print(f"Sonucu eksik geçmiş maçlar: {len(unresolved_past)}")
+
     print("Pazar ağırlıkları:")
 
     for name, weight in weights.items():
