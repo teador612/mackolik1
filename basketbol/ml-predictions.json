@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-19T15:15:28.943562+00:00",
+  "updatedAt": "2026-11-20T00:18:29.535583+00:00",
   "source": "basketball.json",
   "league": "NBA",
   "predictionMethod": "walk_forward",
@@ -11,8 +11,8 @@
     "CatBoost"
   ],
   "deduplication": {
-    "originalRecords": 584,
-    "uniqueRecords": 584,
+    "originalRecords": 594,
+    "uniqueRecords": 594,
     "removedDuplicates": 0,
     "method": "normalized_match_id"
   },
@@ -58,20 +58,20 @@
     "status": "trained"
   },
   "diagnostics": {
-    "totalRecords": 584,
-    "uniqueRecords": 584,
+    "totalRecords": 594,
+    "uniqueRecords": 594,
     "removedDuplicates": 0,
-    "nbaMatches": 584,
+    "nbaMatches": 594,
     "finishedMatches": 416,
-    "upcomingMatches": 168,
+    "upcomingMatches": 178,
     "historicalCandidates": 416,
     "historicalPredicted": 323,
-    "upcomingPredicted": 162,
+    "upcomingPredicted": 172,
     "skippedInsufficientHistory": 59,
     "skippedInsufficientTraining": 40,
     "skippedInsufficientLineHistory": 0,
-    "todayUTC": "2026-11-19",
-    "upcomingCandidates": 168
+    "todayUTC": "2026-11-20",
+    "upcomingCandidates": 178
   },
   "predictions": [
     {
@@ -29234,6 +29234,73 @@
       }
     },
     {
+      "matchId": "401910054",
+      "sourceMatchId": "401910054",
+      "date": "2026-11-29",
+      "utcDate": "2026-11-29T20:30Z",
+      "league": "NBA",
+      "homeTeam": "Cleveland Cavaliers",
+      "awayTeam": "Miami Heat",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-11-29T20:30:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.5,
+            "awayScore": 113.3,
+            "totalScore": 229.8,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 118.2,
+            "awayScore": 113.0,
+            "totalScore": 231.2,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 116.8,
+            "awayScore": 118.2,
+            "totalScore": 235.0,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 117.5,
+            "awayScore": 110.6,
+            "totalScore": 228.1,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 117.2,
+          "awayScore": 113.8,
+          "totalScore": 231.0,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "HOME"
+        }
+      }
+    },
+    {
       "matchId": "401910051",
       "sourceMatchId": "401910051",
       "date": "2026-11-29",
@@ -29428,73 +29495,6 @@
           "homeScore": 118.6,
           "awayScore": 116.5,
           "totalScore": 235.1,
-          "totalLine": 229.0,
-          "totalDirection": "OVER",
-          "winner": "HOME"
-        }
-      }
-    },
-    {
-      "matchId": "401910054",
-      "sourceMatchId": "401910054",
-      "date": "2026-11-29",
-      "utcDate": "2026-11-29T23:00Z",
-      "league": "NBA",
-      "homeTeam": "Cleveland Cavaliers",
-      "awayTeam": "Miami Heat",
-      "predictionType": "upcoming",
-      "trainingSamplesBeforeMatch": 363,
-      "trainingCutoff": "2026-11-29T23:00:00+00:00",
-      "modelCount": 4,
-      "totalLine": 229.0,
-      "totalLineInfo": {
-        "method": "previous_nba_matches_average",
-        "historyCount": 50,
-        "historyAverage": 228.98
-      },
-      "actualHomeScore": null,
-      "actualAwayScore": null,
-      "actualTotal": null,
-      "actualWinner": null,
-      "prediction": {
-        "models": {
-          "RandomForest": {
-            "homeScore": 116.5,
-            "awayScore": 113.3,
-            "totalScore": 229.8,
-            "totalLine": 229.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          },
-          "XGBoost": {
-            "homeScore": 118.2,
-            "awayScore": 113.0,
-            "totalScore": 231.2,
-            "totalLine": 229.0,
-            "totalDirection": "OVER",
-            "winner": "HOME"
-          },
-          "LightGBM": {
-            "homeScore": 116.8,
-            "awayScore": 118.2,
-            "totalScore": 235.0,
-            "totalLine": 229.0,
-            "totalDirection": "OVER",
-            "winner": "AWAY"
-          },
-          "CatBoost": {
-            "homeScore": 117.5,
-            "awayScore": 110.6,
-            "totalScore": 228.1,
-            "totalLine": 229.0,
-            "totalDirection": "UNDER",
-            "winner": "HOME"
-          }
-        },
-        "ensemble": {
-          "homeScore": 117.2,
-          "awayScore": 113.8,
-          "totalScore": 231.0,
           "totalLine": 229.0,
           "totalDirection": "OVER",
           "winner": "HOME"
@@ -35798,14 +35798,684 @@
           "winner": "AWAY"
         }
       }
+    },
+    {
+      "matchId": "401910149",
+      "sourceMatchId": "401910149",
+      "date": "2026-12-20",
+      "utcDate": "2026-12-20T20:00Z",
+      "league": "NBA",
+      "homeTeam": "Brooklyn Nets",
+      "awayTeam": "Washington Wizards",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-20T20:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.7,
+            "awayScore": 129.8,
+            "totalScore": 241.5,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 110.5,
+            "awayScore": 131.5,
+            "totalScore": 242.0,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 107.8,
+            "awayScore": 138.2,
+            "totalScore": 246.0,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 109.7,
+            "awayScore": 123.9,
+            "totalScore": 233.6,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 109.9,
+          "awayScore": 130.8,
+          "totalScore": 240.7,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910150",
+      "sourceMatchId": "401910150",
+      "date": "2026-12-20",
+      "utcDate": "2026-12-20T20:30Z",
+      "league": "NBA",
+      "homeTeam": "Toronto Raptors",
+      "awayTeam": "Houston Rockets",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-20T20:30:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 109.8,
+            "awayScore": 112.6,
+            "totalScore": 222.4,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 105.9,
+            "awayScore": 117.3,
+            "totalScore": 223.2,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 106.9,
+            "awayScore": 109.0,
+            "totalScore": 215.9,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 110.6,
+            "awayScore": 113.5,
+            "totalScore": 224.1,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 108.3,
+          "awayScore": 113.1,
+          "totalScore": 221.4,
+          "totalLine": 229.0,
+          "totalDirection": "UNDER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910151",
+      "sourceMatchId": "401910151",
+      "date": "2026-12-20",
+      "utcDate": "2026-12-20T21:00Z",
+      "league": "NBA",
+      "homeTeam": "Memphis Grizzlies",
+      "awayTeam": "Phoenix Suns",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-20T21:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 115.9,
+            "awayScore": 114.7,
+            "totalScore": 230.6,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 112.8,
+            "awayScore": 122.0,
+            "totalScore": 234.8,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 110.5,
+            "awayScore": 117.1,
+            "totalScore": 227.6,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.6,
+            "awayScore": 113.0,
+            "totalScore": 227.6,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.5,
+          "awayScore": 116.7,
+          "totalScore": 230.2,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910152",
+      "sourceMatchId": "401910152",
+      "date": "2026-12-20",
+      "utcDate": "2026-12-20T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Cleveland Cavaliers",
+      "awayTeam": "Utah Jazz",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-20T23:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.0,
+            "awayScore": 114.8,
+            "totalScore": 230.8,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 117.3,
+            "awayScore": 118.3,
+            "totalScore": 235.6,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 113.5,
+            "awayScore": 119.3,
+            "totalScore": 232.8,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.7,
+            "awayScore": 110.6,
+            "totalScore": 225.3,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.4,
+          "awayScore": 115.8,
+          "totalScore": 231.2,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910153",
+      "sourceMatchId": "401910153",
+      "date": "2026-12-20",
+      "utcDate": "2026-12-20T23:00Z",
+      "league": "NBA",
+      "homeTeam": "Miami Heat",
+      "awayTeam": "Sacramento Kings",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-20T23:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 121.0,
+            "awayScore": 119.4,
+            "totalScore": 240.4,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 125.2,
+            "awayScore": 125.8,
+            "totalScore": 251.0,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 122.1,
+            "awayScore": 121.8,
+            "totalScore": 243.9,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 118.0,
+            "awayScore": 118.3,
+            "totalScore": 236.3,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 121.6,
+          "awayScore": 121.3,
+          "totalScore": 242.9,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401910154",
+      "sourceMatchId": "401910154",
+      "date": "2026-12-21",
+      "utcDate": "2026-12-21T00:00Z",
+      "league": "NBA",
+      "homeTeam": "Atlanta Hawks",
+      "awayTeam": "Oklahoma City Thunder",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-21T00:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.8,
+            "awayScore": 115.4,
+            "totalScore": 228.2,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 111.1,
+            "awayScore": 115.5,
+            "totalScore": 226.6,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 111.7,
+            "awayScore": 120.5,
+            "totalScore": 232.2,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 113.1,
+            "awayScore": 114.2,
+            "totalScore": 227.3,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 112.2,
+          "awayScore": 116.4,
+          "totalScore": 228.6,
+          "totalLine": 229.0,
+          "totalDirection": "UNDER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910155",
+      "sourceMatchId": "401910155",
+      "date": "2026-12-21",
+      "utcDate": "2026-12-21T00:00Z",
+      "league": "NBA",
+      "homeTeam": "New Orleans Pelicans",
+      "awayTeam": "San Antonio Spurs",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-21T00:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 112.5,
+            "awayScore": 115.6,
+            "totalScore": 228.1,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 112.8,
+            "awayScore": 117.7,
+            "totalScore": 230.5,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 114.6,
+            "awayScore": 116.7,
+            "totalScore": 231.3,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 114.0,
+            "awayScore": 116.9,
+            "totalScore": 230.9,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.5,
+          "awayScore": 116.7,
+          "totalScore": 230.2,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "AWAY"
+        }
+      }
+    },
+    {
+      "matchId": "401910156",
+      "sourceMatchId": "401910156",
+      "date": "2026-12-21",
+      "utcDate": "2026-12-21T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Boston Celtics",
+      "awayTeam": "Detroit Pistons",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-21T01:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 111.8,
+            "awayScore": 109.7,
+            "totalScore": 221.5,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 107.0,
+            "awayScore": 110.1,
+            "totalScore": 217.1,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 114.5,
+            "awayScore": 108.5,
+            "totalScore": 223.0,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.1,
+            "awayScore": 109.2,
+            "totalScore": 222.3,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          }
+        },
+        "ensemble": {
+          "homeScore": 111.6,
+          "awayScore": 109.4,
+          "totalScore": 221.0,
+          "totalLine": 229.0,
+          "totalDirection": "UNDER",
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401910157",
+      "sourceMatchId": "401910157",
+      "date": "2026-12-21",
+      "utcDate": "2026-12-21T01:00Z",
+      "league": "NBA",
+      "homeTeam": "Milwaukee Bucks",
+      "awayTeam": "Golden State Warriors",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-21T01:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 114.0,
+            "awayScore": 113.0,
+            "totalScore": 227.0,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          },
+          "XGBoost": {
+            "homeScore": 114.6,
+            "awayScore": 111.2,
+            "totalScore": 225.8,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          },
+          "LightGBM": {
+            "homeScore": 113.0,
+            "awayScore": 111.1,
+            "totalScore": 224.1,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "HOME"
+          },
+          "CatBoost": {
+            "homeScore": 113.5,
+            "awayScore": 113.8,
+            "totalScore": 227.3,
+            "totalLine": 229.0,
+            "totalDirection": "UNDER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 113.8,
+          "awayScore": 112.3,
+          "totalScore": 226.1,
+          "totalLine": 229.0,
+          "totalDirection": "UNDER",
+          "winner": "HOME"
+        }
+      }
+    },
+    {
+      "matchId": "401910158",
+      "sourceMatchId": "401910158",
+      "date": "2026-12-21",
+      "utcDate": "2026-12-21T03:00Z",
+      "league": "NBA",
+      "homeTeam": "LA Clippers",
+      "awayTeam": "Indiana Pacers",
+      "predictionType": "upcoming",
+      "trainingSamplesBeforeMatch": 363,
+      "trainingCutoff": "2026-12-21T03:00:00+00:00",
+      "modelCount": 4,
+      "totalLine": 229.0,
+      "totalLineInfo": {
+        "method": "previous_nba_matches_average",
+        "historyCount": 50,
+        "historyAverage": 228.98
+      },
+      "actualHomeScore": null,
+      "actualAwayScore": null,
+      "actualTotal": null,
+      "actualWinner": null,
+      "prediction": {
+        "models": {
+          "RandomForest": {
+            "homeScore": 116.6,
+            "awayScore": 117.9,
+            "totalScore": 234.5,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "XGBoost": {
+            "homeScore": 116.2,
+            "awayScore": 122.4,
+            "totalScore": 238.6,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "LightGBM": {
+            "homeScore": 113.8,
+            "awayScore": 119.3,
+            "totalScore": 233.1,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          },
+          "CatBoost": {
+            "homeScore": 116.2,
+            "awayScore": 116.4,
+            "totalScore": 232.6,
+            "totalLine": 229.0,
+            "totalDirection": "OVER",
+            "winner": "AWAY"
+          }
+        },
+        "ensemble": {
+          "homeScore": 115.7,
+          "awayScore": 119.0,
+          "totalScore": 234.7,
+          "totalLine": 229.0,
+          "totalDirection": "OVER",
+          "winner": "AWAY"
+        }
+      }
     }
   ],
   "summary": {
     "historicalMatches": 416,
     "historicalPredictedMatches": 323,
-    "upcomingMatches": 168,
-    "predictedUpcomingMatches": 162,
-    "predictedMatches": 485,
+    "upcomingMatches": 178,
+    "predictedUpcomingMatches": 172,
+    "predictedMatches": 495,
     "modelCount": 4
   }
 }
