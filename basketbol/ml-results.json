@@ -2,47 +2,6 @@
   "createdAt": "2026-11-02T09:12:14.150569+00:00",
   "pending": [
     {
-      "matchId": "401910028",
-      "date": "2026-11-22",
-      "utcDate": "2026-11-22T03:00Z",
-      "league": "NBA",
-      "homeTeam": "Sacramento Kings",
-      "awayTeam": "Boston Celtics",
-      "models": {
-        "RandomForest": {
-          "homeScore": 111.4,
-          "awayScore": 122.7,
-          "totalScore": 234.1,
-          "winner": "AWAY"
-        },
-        "XGBoost": {
-          "homeScore": 116.5,
-          "awayScore": 116.1,
-          "totalScore": 232.6,
-          "winner": "HOME"
-        },
-        "LightGBM": {
-          "homeScore": 106.3,
-          "awayScore": 129.5,
-          "totalScore": 235.8,
-          "winner": "AWAY"
-        },
-        "CatBoost": {
-          "homeScore": 110.2,
-          "awayScore": 119.5,
-          "totalScore": 229.7,
-          "winner": "AWAY"
-        }
-      },
-      "ensemble": {
-        "homeScore": 111.1,
-        "awayScore": 122.0,
-        "totalScore": 233.1,
-        "winner": "AWAY"
-      },
-      "predictionCreatedAt": "2026-11-02T09:12:14.151642+00:00"
-    },
-    {
       "matchId": "401910029",
       "date": "2026-11-22",
       "utcDate": "2026-11-22T20:30Z",
@@ -7111,14 +7070,14 @@
     }
   ],
   "history": [],
-  "updatedAt": "2026-11-22T05:17:30.264869+00:00",
+  "updatedAt": "2026-11-22T14:13:34.540049+00:00",
   "source": "basketball.json + ml-predictions.json",
   "league": "NBA",
   "summary": {
     "totalEvaluatedMatches": 0,
-    "pendingMatches": 167,
+    "pendingMatches": 166,
     "newlyEvaluatedMatches": 0,
-    "newPredictionsAdded": 3,
+    "newPredictionsAdded": 0,
     "missingSourceMatches": 0,
     "invalidPredictions": 0,
     "predictionsWithoutMatchId": 0,
@@ -37630,106 +37589,196 @@
           "winnerCorrect": true
         }
       }
+    },
+    {
+      "matchId": "401910028",
+      "date": "2026-11-22",
+      "utcDate": "2026-11-22T03:00Z",
+      "homeTeam": "Sacramento Kings",
+      "awayTeam": "Boston Celtics",
+      "predictionType": "historical_backtest",
+      "trainingSamplesBeforeMatch": 381,
+      "trainingCutoff": "2026-11-22T03:00:00+00:00",
+      "status": "evaluated",
+      "evaluatedAt": "2026-11-22T14:13:34.538988+00:00",
+      "actual": {
+        "homeScore": 97.0,
+        "awayScore": 96.0,
+        "totalScore": 193.0,
+        "winner": "HOME"
+      },
+      "models": {
+        "RandomForest": {
+          "predictedHome": 104.8,
+          "predictedAway": 116.4,
+          "predictedTotal": 221.2,
+          "actualHome": 97.0,
+          "actualAway": 96.0,
+          "actualTotal": 193.0,
+          "homeError": 7.8,
+          "awayError": 20.4,
+          "totalError": 28.2,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        },
+        "XGBoost": {
+          "predictedHome": 104.6,
+          "predictedAway": 114.6,
+          "predictedTotal": 219.2,
+          "actualHome": 97.0,
+          "actualAway": 96.0,
+          "actualTotal": 193.0,
+          "homeError": 7.6,
+          "awayError": 18.6,
+          "totalError": 26.2,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        },
+        "LightGBM": {
+          "predictedHome": 104.6,
+          "predictedAway": 118.0,
+          "predictedTotal": 222.6,
+          "actualHome": 97.0,
+          "actualAway": 96.0,
+          "actualTotal": 193.0,
+          "homeError": 7.6,
+          "awayError": 22.0,
+          "totalError": 29.6,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        },
+        "CatBoost": {
+          "predictedHome": 105.4,
+          "predictedAway": 115.3,
+          "predictedTotal": 220.7,
+          "actualHome": 97.0,
+          "actualAway": 96.0,
+          "actualTotal": 193.0,
+          "homeError": 8.4,
+          "awayError": 19.3,
+          "totalError": 27.7,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        },
+        "Ensemble": {
+          "predictedHome": 104.8,
+          "predictedAway": 116.1,
+          "predictedTotal": 220.9,
+          "actualHome": 97.0,
+          "actualAway": 96.0,
+          "actualTotal": 193.0,
+          "homeError": 7.8,
+          "awayError": 20.1,
+          "totalError": 27.9,
+          "predictedWinner": "AWAY",
+          "actualWinner": "HOME",
+          "winnerCorrect": false
+        }
+      }
     }
   ],
   "backtestSummary": {
-    "totalHistoricalCandidates": 341,
-    "totalEvaluatedMatches": 341,
-    "newlyEvaluatedMatches": 6,
-    "alreadyEvaluatedMatches": 335,
+    "totalHistoricalCandidates": 342,
+    "totalEvaluatedMatches": 342,
+    "newlyEvaluatedMatches": 1,
+    "alreadyEvaluatedMatches": 341,
     "missingSourceMatches": 0,
     "unfinishedMatches": 0,
     "invalidPredictions": 0,
     "migratedLegacyRecords": 0,
-    "removedHistoricalPending": 6,
+    "removedHistoricalPending": 1,
     "modelCount": 5
   },
   "backtestMetrics": {
     "RandomForest": {
-      "matches": 341,
-      "homeMAE": 10.241,
-      "awayMAE": 10.092,
-      "totalMAE": 15.539,
+      "matches": 342,
+      "homeMAE": 10.234,
+      "awayMAE": 10.123,
+      "totalMAE": 15.576,
       "winnerCorrect": 206,
-      "winnerAccuracy": 60.41,
-      "totalWithin5": 20.23,
-      "totalWithin10": 38.71
+      "winnerAccuracy": 60.23,
+      "totalWithin5": 20.18,
+      "totalWithin10": 38.6
     },
     "XGBoost": {
-      "matches": 341,
-      "homeMAE": 10.514,
-      "awayMAE": 10.315,
-      "totalMAE": 16.067,
+      "matches": 342,
+      "homeMAE": 10.506,
+      "awayMAE": 10.339,
+      "totalMAE": 16.096,
       "winnerCorrect": 208,
-      "winnerAccuracy": 61.0,
-      "totalWithin5": 19.94,
-      "totalWithin10": 38.12
+      "winnerAccuracy": 60.82,
+      "totalWithin5": 19.88,
+      "totalWithin10": 38.01
     },
     "LightGBM": {
-      "matches": 341,
-      "homeMAE": 10.571,
-      "awayMAE": 10.56,
-      "totalMAE": 16.377,
+      "matches": 342,
+      "homeMAE": 10.563,
+      "awayMAE": 10.593,
+      "totalMAE": 16.415,
       "winnerCorrect": 199,
-      "winnerAccuracy": 58.36,
-      "totalWithin5": 17.01,
-      "totalWithin10": 36.36
+      "winnerAccuracy": 58.19,
+      "totalWithin5": 16.96,
+      "totalWithin10": 36.26
     },
     "CatBoost": {
-      "matches": 341,
-      "homeMAE": 10.267,
-      "awayMAE": 10.107,
-      "totalMAE": 15.427,
+      "matches": 342,
+      "homeMAE": 10.261,
+      "awayMAE": 10.134,
+      "totalMAE": 15.463,
       "winnerCorrect": 203,
-      "winnerAccuracy": 59.53,
-      "totalWithin5": 21.11,
-      "totalWithin10": 40.18
+      "winnerAccuracy": 59.36,
+      "totalWithin5": 21.05,
+      "totalWithin10": 40.06
     },
     "Ensemble": {
-      "matches": 341,
-      "homeMAE": 10.321,
-      "awayMAE": 10.14,
-      "totalMAE": 15.714,
+      "matches": 342,
+      "homeMAE": 10.313,
+      "awayMAE": 10.17,
+      "totalMAE": 15.75,
       "winnerCorrect": 205,
-      "winnerAccuracy": 60.12,
-      "totalWithin5": 19.06,
-      "totalWithin10": 38.71
+      "winnerAccuracy": 59.94,
+      "totalWithin5": 19.01,
+      "totalWithin10": 38.6
     }
   },
   "backtestRankings": [
     {
       "model": "CatBoost",
-      "matches": 341,
-      "totalMAE": 15.427,
-      "winnerAccuracy": 59.53,
+      "matches": 342,
+      "totalMAE": 15.463,
+      "winnerAccuracy": 59.36,
       "rank": 1
     },
     {
       "model": "RandomForest",
-      "matches": 341,
-      "totalMAE": 15.539,
-      "winnerAccuracy": 60.41,
+      "matches": 342,
+      "totalMAE": 15.576,
+      "winnerAccuracy": 60.23,
       "rank": 2
     },
     {
       "model": "Ensemble",
-      "matches": 341,
-      "totalMAE": 15.714,
-      "winnerAccuracy": 60.12,
+      "matches": 342,
+      "totalMAE": 15.75,
+      "winnerAccuracy": 59.94,
       "rank": 3
     },
     {
       "model": "XGBoost",
-      "matches": 341,
-      "totalMAE": 16.067,
-      "winnerAccuracy": 61.0,
+      "matches": 342,
+      "totalMAE": 16.096,
+      "winnerAccuracy": 60.82,
       "rank": 4
     },
     {
       "model": "LightGBM",
-      "matches": 341,
-      "totalMAE": 16.377,
-      "winnerAccuracy": 58.36,
+      "matches": 342,
+      "totalMAE": 16.415,
+      "winnerAccuracy": 58.19,
       "rank": 5
     }
   ]
