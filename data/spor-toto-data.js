@@ -269,10 +269,10 @@ window.SPORT_TOTO_DATA = {
       {"number":8,"home":"Trabzonspor","away":"Eyüpspor","result":null},
       {"number":9,"home":"İstanbul Başakşehir","away":"Arca Çorum FK","result":null},
       {"number":10,"home":"Schalke 04","away":"Vfb Stuttgart","result":"X"},
-      {"number":11,"home":"Lille","away":"Olympique Lyon","result":null},
+      {"number":11,"home":"Lille","away":"Olympique Lyon","result":"2"},
       {"number":12,"home":"Newcastle Utd.","away":"Arsenal","result":"X"},
       {"number":13,"home":"Liverpool","away":"Manchester Utd.","result":null},
-      {"number":14,"home":"Sevilla","away":"Real Betis","result":"2"},
+      {"number":14,"home":"Sevilla","away":"Real Betis","result":"X"},
       {"number":15,"home":"Atalanta","away":"Inter","result":null},
     ],
   }
