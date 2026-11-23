@@ -267,7 +267,7 @@ window.SPORT_TOTO_DATA = {
       {"number":6,"home":"Kasımpaşa","away":"C. Alanyaspor","result":"1"},
       {"number":7,"home":"T. Konyaspor","away":"Beşiktaş","result":"2"},
       {"number":8,"home":"Trabzonspor","away":"Eyüpspor","result":"1"},
-      {"number":9,"home":"İ. Başakşehir","away":"A. Çorum FK","result":null},
+      {"number":9,"home":"İ. Başakşehir","away":"A. Çorum FK","result":"1"},
       {"number":10,"home":"S. 04","away":"V. Stuttgart","result":"X"},
       {"number":11,"home":"Lille","away":"O. Lyon","result":"2"},
       {"number":12,"home":"Newcastle Utd.","away":"Arsenal","result":"X"},
