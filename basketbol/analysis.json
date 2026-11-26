@@ -1,37 +1,37 @@
 {
-  "updatedAt": "2026-11-25T17:00:08.046091+00:00",
-  "totalMatches": 625,
-  "playedMatches": 455,
-  "upcomingMatches": 170,
+  "updatedAt": "2026-11-26T01:43:28.466530+00:00",
+  "totalMatches": 633,
+  "playedMatches": 457,
+  "upcomingMatches": 176,
   "invalidMatches": 30,
-  "completedMatches": 425,
+  "completedMatches": 427,
   "overall": {
-    "total": 425,
-    "successful": 221,
-    "failed": 204,
+    "total": 427,
+    "successful": 222,
+    "failed": 205,
     "push": 0,
-    "successRate": 52.0,
-    "averageError": 15.76,
-    "totalError": 6698.61
+    "successRate": 51.99,
+    "averageError": 16.19,
+    "totalError": 6913.23
   },
   "predictionTypes": {
     "ALT": {
-      "total": 108,
-      "successful": 58,
+      "total": 109,
+      "successful": 59,
       "failed": 50,
       "push": 0,
-      "successRate": 53.7,
-      "averageError": 16.65,
-      "totalError": 1798.29
+      "successRate": 54.13,
+      "averageError": 16.81,
+      "totalError": 1832.46
     },
     "ÜST": {
-      "total": 317,
+      "total": 318,
       "successful": 163,
-      "failed": 154,
+      "failed": 155,
       "push": 0,
-      "successRate": 51.42,
-      "averageError": 15.46,
-      "totalError": 4900.32
+      "successRate": 51.26,
+      "averageError": 15.98,
+      "totalError": 5080.77
     }
   },
   "lineRanges": {
@@ -54,13 +54,13 @@
       "totalError": 1722.92
     },
     "220-229": {
-      "total": 173,
+      "total": 174,
       "successful": 80,
-      "failed": 93,
+      "failed": 94,
       "push": 0,
-      "successRate": 46.24,
-      "averageError": 15.73,
-      "totalError": 2721.0
+      "successRate": 45.98,
+      "averageError": 16.67,
+      "totalError": 2901.45
     },
     "200-209": {
       "total": 13,
@@ -72,13 +72,13 @@
       "totalError": 243.13
     },
     "240+": {
-      "total": 21,
-      "successful": 10,
+      "total": 22,
+      "successful": 11,
       "failed": 11,
       "push": 0,
-      "successRate": 47.62,
-      "averageError": 19.14,
-      "totalError": 401.98
+      "successRate": 50.0,
+      "averageError": 19.82,
+      "totalError": 436.15
     },
     "<200": {
       "total": 3,
@@ -92,13 +92,13 @@
   },
   "confidenceRanges": {
     "60-69": {
-      "total": 46,
-      "successful": 25,
+      "total": 47,
+      "successful": 26,
       "failed": 21,
       "push": 0,
-      "successRate": 54.35,
-      "averageError": 15.79,
-      "totalError": 726.55
+      "successRate": 55.32,
+      "averageError": 16.19,
+      "totalError": 760.72
     },
     "90+": {
       "total": 8,
@@ -110,13 +110,13 @@
       "totalError": 235.05
     },
     "50-59": {
-      "total": 368,
+      "total": 369,
       "successful": 191,
-      "failed": 177,
+      "failed": 178,
       "push": 0,
-      "successRate": 51.9,
-      "averageError": 15.54,
-      "totalError": 5720.41
+      "successRate": 51.76,
+      "averageError": 15.99,
+      "totalError": 5900.86
     },
     "70-79": {
       "total": 3,
@@ -148,27 +148,39 @@
       "totalError": 782.95
     },
     "8-10": {
-      "total": 294,
-      "successful": 159,
-      "failed": 135,
+      "total": 296,
+      "successful": 160,
+      "failed": 136,
       "push": 0,
-      "successRate": 54.08,
-      "averageError": 15.36,
-      "totalError": 4516.05
+      "successRate": 54.05,
+      "averageError": 15.98,
+      "totalError": 4730.67
     }
   },
   "leagues": {
     "NBA": {
-      "total": 425,
-      "successful": 221,
-      "failed": 204,
+      "total": 427,
+      "successful": 222,
+      "failed": 205,
       "push": 0,
-      "successRate": 52.0,
-      "averageError": 15.76,
-      "totalError": 6698.61
+      "successRate": 51.99,
+      "averageError": 16.19,
+      "totalError": 6913.23
     }
   },
   "biggestErrors": [
+    {
+      "homeTeam": "Memphis Grizzlies",
+      "awayTeam": "LA Clippers",
+      "league": "NBA",
+      "line": 227.45,
+      "prediction": "ÜST",
+      "actualTotal": 47.0,
+      "homeScore": 32.0,
+      "awayScore": 15.0,
+      "error": 180.45,
+      "difference": -180.45
+    },
     {
       "homeTeam": "Chicago Bulls",
       "awayTeam": "Denver Nuggets",
@@ -276,18 +288,6 @@
       "awayScore": 73.0,
       "error": 48.0,
       "difference": -48.0
-    },
-    {
-      "homeTeam": "San Antonio Spurs",
-      "awayTeam": "Oklahoma City Thunder",
-      "league": "NBA",
-      "line": 232.94,
-      "prediction": "ALT",
-      "actualTotal": 185.0,
-      "homeScore": 103.0,
-      "awayScore": 82.0,
-      "error": 47.94,
-      "difference": -47.94
     }
   ],
   "closestPredictions": [
