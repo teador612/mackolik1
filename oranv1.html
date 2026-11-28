@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -35,433 +34,193 @@ body{
 }
 
 button,input{font:inherit}
+button{cursor:pointer;color:var(--text)}
 
-button{
-    cursor:pointer;
-    color:var(--text);
-}
-
-.app{
-    max-width:1120px;
-    margin:auto;
-    padding:22px 16px 50px;
-}
+.app{max-width:1120px;margin:auto;padding:22px 16px 50px}
 
 .header{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:15px;
-    margin-bottom:22px;
+    display:flex;justify-content:space-between;align-items:center;
+    gap:15px;margin-bottom:22px;
 }
-
-.brand{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
+.brand{display:flex;align-items:center;gap:12px}
 .logo{
-    width:43px;
-    height:43px;
-    display:grid;
-    place-items:center;
-    border-radius:13px;
-    background:linear-gradient(145deg,#2464a7,#18365d);
-    font-size:22px;
-    box-shadow:0 5px 20px #0005;
+    width:43px;height:43px;display:grid;place-items:center;
+    border-radius:13px;background:linear-gradient(145deg,#2464a7,#18365d);
+    font-size:22px;box-shadow:0 5px 20px #0005;
 }
-
-.brand-title{
-    font-size:21px;
-    font-weight:850;
-    letter-spacing:1px;
-}
-
-.brand-sub{
-    color:var(--muted);
-    font-size:11px;
-    letter-spacing:1.5px;
-}
+.brand-title{font-size:21px;font-weight:850;letter-spacing:1px}
+.brand-sub{color:var(--muted);font-size:11px;letter-spacing:1.5px}
 
 .refresh{
-    border:1px solid var(--line);
-    background:var(--panel);
-    padding:10px 14px;
-    border-radius:10px;
+    border:1px solid var(--line);background:var(--panel);
+    padding:10px 14px;border-radius:10px;
 }
-
 .refresh:hover{border-color:var(--blue)}
 
 .hero{
     background:linear-gradient(120deg,#172d49,#111d30);
-    border:1px solid #2b4565;
-    border-radius:18px;
-    padding:20px;
-    margin-bottom:17px;
-    position:relative;
-    overflow:hidden;
+    border:1px solid #2b4565;border-radius:18px;
+    padding:20px;margin-bottom:17px;position:relative;overflow:hidden;
 }
-
 .hero:after{
-    content:"";
-    position:absolute;
-    width:180px;
-    height:180px;
-    border:1px solid #ffffff0b;
-    border-radius:50%;
-    right:-50px;
-    top:-80px;
+    content:"";position:absolute;width:180px;height:180px;
+    border:1px solid #ffffff0b;border-radius:50%;right:-50px;top:-80px;
     box-shadow:0 0 0 25px #ffffff05,0 0 0 50px #ffffff03;
 }
-
 .hero-label{
-    color:#9eb9dc;
-    font-size:11px;
-    font-weight:800;
-    letter-spacing:2px;
-    text-transform:uppercase;
+    color:#9eb9dc;font-size:11px;font-weight:800;
+    letter-spacing:2px;text-transform:uppercase;
 }
-
-.hero h1{
-    font-size:25px;
-    margin:8px 0 5px;
-    letter-spacing:-.5px;
-}
-
-.hero p{
-    margin:0;
-    color:#aebed2;
-    font-size:13px;
-}
+.hero h1{font-size:25px;margin:8px 0 5px;letter-spacing:-.5px}
+.hero p{margin:0;color:#aebed2;font-size:13px}
 
 .stats{
-    display:grid;
-    grid-template-columns:repeat(4,1fr);
-    gap:10px;
-    margin-bottom:20px;
+    display:grid;grid-template-columns:repeat(4,1fr);
+    gap:10px;margin-bottom:20px;
 }
-
 .stat{
     background:linear-gradient(145deg,#152238,#101a2a);
-    border:1px solid var(--line);
-    border-radius:13px;
-    padding:14px;
+    border:1px solid var(--line);border-radius:13px;padding:14px;
 }
-
-.stat-value{
-    font-size:23px;
-    font-weight:850;
-    letter-spacing:-.5px;
-}
-
-.stat-label{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:3px;
-}
+.stat-value{font-size:23px;font-weight:850;letter-spacing:-.5px}
+.stat-label{color:var(--muted);font-size:11px;margin-top:3px}
 
 .nav{
-    display:flex;
-    gap:8px;
-    border-bottom:1px solid var(--line);
-    margin-bottom:17px;
+    display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:17px;
 }
-
 .nav button{
-    background:transparent;
-    border:0;
-    padding:13px 17px;
-    color:var(--muted);
-    border-bottom:2px solid transparent;
-    font-weight:750;
+    background:transparent;border:0;padding:13px 17px;color:var(--muted);
+    border-bottom:2px solid transparent;font-weight:750;
 }
+.nav button.active{color:var(--green);border-bottom-color:var(--green)}
 
-.nav button.active{
-    color:var(--green);
-    border-bottom-color:var(--green);
-}
-
-.toolbar{
-    display:flex;
-    gap:9px;
-    margin-bottom:15px;
-}
-
+.toolbar{display:flex;gap:9px;margin-bottom:15px}
 .search{
-    flex:1;
-    min-width:0;
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:12px 14px;
-    color:var(--text);
-    outline:none;
+    flex:1;min-width:0;background:var(--panel);
+    border:1px solid var(--line);border-radius:10px;
+    padding:12px 14px;color:var(--text);outline:none;
 }
-
 .search:focus{border-color:var(--blue)}
-
 .filter{
-    background:var(--panel);
-    border:1px solid var(--line);
-    border-radius:10px;
-    padding:10px 12px;
-    color:var(--text);
+    background:var(--panel);border:1px solid var(--line);
+    border-radius:10px;padding:10px 12px;color:var(--text);
 }
 
-.status{
-    color:var(--muted);
-    font-size:12px;
-    margin:12px 0;
-}
-
+.status{color:var(--muted);font-size:12px;margin:12px 0}
 .error{color:var(--red)}
 
 .day-heading{
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin:24px 0 11px;
-    color:#c8d8ed;
-    font-weight:800;
-    font-size:13px;
+    display:flex;align-items:center;gap:10px;margin:24px 0 11px;
+    color:#c8d8ed;font-weight:800;font-size:13px;
 }
+.day-heading:after{content:"";height:1px;flex:1;background:var(--line)}
+.day-count{color:var(--muted);font-weight:500;font-size:11px}
 
-.day-heading:after{
-    content:"";
-    height:1px;
-    flex:1;
-    background:var(--line);
-}
+/* ===== Açılır kartlar ===== */
 
-.day-count{
-    color:var(--muted);
-    font-weight:500;
-    font-size:11px;
+summary{list-style:none;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary::marker{content:""}
+
+.chevron{
+    display:inline-block;
+    margin-left:5px;
+    transition:transform .2s;
 }
+details[open] > summary .chevron{transform:rotate(180deg)}
 
 .match-card{
     background:linear-gradient(145deg,#142136,#101a29);
-    border:1px solid var(--line);
-    border-radius:15px;
-    margin-bottom:11px;
-    overflow:hidden;
-    transition:.2s;
+    border:1px solid var(--line);border-radius:15px;
+    margin-bottom:11px;overflow:hidden;transition:border-color .2s;
 }
-
-.match-card:hover{border-color:#3b587c}
+.match-card:hover,.match-card[open]{border-color:#3b587c}
 
 .match-top{
-    display:grid;
-    grid-template-columns:80px 1fr auto;
-    align-items:center;
-    gap:13px;
-    padding:15px;
+    display:grid;grid-template-columns:80px 1fr auto;
+    align-items:center;gap:13px;padding:15px;
 }
-
 .match-time{
-    text-align:center;
-    border-right:1px solid var(--line);
-    padding-right:10px;
+    text-align:center;border-right:1px solid var(--line);padding-right:10px;
 }
-
-.match-time strong{
-    display:block;
-    font-size:17px;
-    color:var(--blue);
-}
-
-.match-time span{
-    font-size:10px;
-    color:var(--muted);
-}
-
-.match-teams{
-    font-size:14px;
-    font-weight:800;
-}
-
-.match-league{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:4px;
-}
+.match-time strong{display:block;font-size:17px;color:var(--blue)}
+.match-time span{font-size:10px;color:var(--muted)}
+.match-teams{font-size:14px;font-weight:800}
+.match-league{color:var(--muted);font-size:11px;margin-top:4px}
 
 .pred-count{
-    background:#1b3856;
-    color:#a9cbf5;
-    padding:6px 9px;
-    border-radius:8px;
-    font-size:11px;
-    font-weight:800;
-    white-space:nowrap;
+    background:#1b3856;color:#a9cbf5;padding:6px 9px;
+    border-radius:8px;font-size:11px;font-weight:800;white-space:nowrap;
 }
 
-.predictions{
-    border-top:1px solid var(--line);
-    padding:12px 15px 14px;
-}
-
+.predictions{border-top:1px solid var(--line);padding:12px 15px 14px}
 .pred-title{
-    color:var(--muted);
-    font-size:10px;
-    font-weight:800;
-    letter-spacing:1.2px;
-    margin-bottom:9px;
+    color:var(--muted);font-size:10px;font-weight:800;
+    letter-spacing:1.2px;margin-bottom:9px;
 }
-
 .pred-list{
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:8px;
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;
 }
-
 .prediction{
-    background:#0c1727;
-    border:1px solid #263a55;
-    border-radius:10px;
-    padding:10px;
-    min-width:0;
+    background:#0c1727;border:1px solid #263a55;
+    border-radius:10px;padding:10px;min-width:0;
 }
-
 .pred-main{
-    display:flex;
-    justify-content:space-between;
-    gap:8px;
-    align-items:center;
-    margin-bottom:7px;
+    display:flex;justify-content:space-between;gap:8px;
+    align-items:center;margin-bottom:7px;
 }
-
-.pred-name{
-    font-weight:850;
-    font-size:13px;
-}
-
-.pred-percent{
-    color:var(--green);
-    font-weight:850;
-    font-size:14px;
-}
-
-.pred-details{
-    display:flex;
-    flex-wrap:wrap;
-    gap:5px;
-}
+.pred-name{font-weight:850;font-size:13px}
+.pred-percent{color:var(--green);font-weight:850;font-size:14px}
+.pred-details{display:flex;flex-wrap:wrap;gap:5px}
 
 .tag{
-    background:#1a293d;
-    border:1px solid #2a3b52;
-    color:#aebed2;
-    border-radius:6px;
-    padding:4px 6px;
-    font-size:10px;
+    background:#1a293d;border:1px solid #2a3b52;color:#aebed2;
+    border-radius:6px;padding:4px 6px;font-size:10px;
 }
-
 .tag.price{
-    color:var(--yellow);
-    border-color:#5e502d;
-    background:#292315;
-    font-weight:800;
+    color:var(--yellow);border-color:#5e502d;
+    background:#292315;font-weight:800;
 }
+.tag.success{color:var(--green);border-color:#245a49}
 
-.tag.success{
-    color:var(--green);
-    border-color:#245a49;
-}
-
-.source-info{
-    margin-top:7px;
-    color:#8395ad;
-    font-size:10px;
-    line-height:1.5;
-}
+.source-info{margin-top:7px;color:#8395ad;font-size:10px;line-height:1.5}
 
 .prediction-view{
     background:linear-gradient(145deg,#142136,#101a29);
-    border:1px solid var(--line);
-    border-radius:14px;
-    margin-bottom:11px;
-    overflow:hidden;
+    border:1px solid var(--line);border-radius:14px;
+    margin-bottom:11px;overflow:hidden;
 }
+.prediction-view[open]{border-color:#3b587c}
 
 .prediction-head{
-    padding:14px 15px;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:10px;
+    padding:14px 15px;display:flex;
+    justify-content:space-between;align-items:center;gap:10px;
 }
-
 .prediction-head strong{font-size:15px}
-
 .prediction-head .percent{
-    color:var(--green);
-    font-weight:850;
-    font-size:19px;
+    color:var(--green);font-weight:850;font-size:19px;white-space:nowrap;
 }
+.prediction-sub{color:var(--muted);font-size:11px;margin-top:4px}
 
-.prediction-sub{
-    color:var(--muted);
-    font-size:11px;
-    margin-top:4px;
-}
-
-.prediction-fixtures{
-    border-top:1px solid var(--line);
-    padding:0 14px 10px;
-}
+.prediction-fixtures{border-top:1px solid var(--line);padding:0 14px 10px}
 
 .fixture{
-    display:grid;
-    grid-template-columns:72px 1fr auto;
-    gap:9px;
-    align-items:center;
-    padding:10px 0;
-    border-bottom:1px solid #263750;
+    display:grid;grid-template-columns:72px 1fr auto;gap:9px;
+    align-items:center;padding:10px 0;border-bottom:1px solid #263750;
 }
-
 .fixture:last-child{border-bottom:0}
-
-.fixture-date{
-    font-size:10px;
-    color:var(--muted);
-}
-
-.fixture-teams{
-    font-weight:750;
-    font-size:12px;
-}
-
-.fixture-league{
-    font-size:10px;
-    color:var(--muted);
-    margin-top:2px;
-}
-
-.fixture-price{
-    color:var(--yellow);
-    font-size:12px;
-    font-weight:850;
-    white-space:nowrap;
-}
+.fixture-date{font-size:10px;color:var(--muted)}
+.fixture-date b{display:block;font-size:13px;color:var(--blue)}
+.fixture-teams{font-weight:750;font-size:12px}
+.fixture-league{font-size:10px;color:var(--muted);margin-top:2px}
+.fixture-price{color:var(--yellow);font-size:12px;font-weight:850;white-space:nowrap}
 
 .empty{
-    padding:35px 18px;
-    text-align:center;
-    color:var(--muted);
-    border:1px dashed var(--line);
-    background:var(--panel);
-    border-radius:14px;
+    padding:35px 18px;text-align:center;color:var(--muted);
+    border:1px dashed var(--line);background:var(--panel);border-radius:14px;
 }
 
-.footer{
-    text-align:center;
-    color:#667991;
-    font-size:10px;
-    margin-top:28px;
-}
-
+.footer{text-align:center;color:#667991;font-size:10px;margin-top:28px}
 .hidden{display:none!important}
 
 @media(max-width:650px){
@@ -473,11 +232,7 @@ button{
     .stat{padding:11px}
     .stat-value{font-size:20px}
     .nav button{padding:12px 10px;font-size:12px}
-    .match-top{
-        grid-template-columns:60px 1fr auto;
-        gap:9px;
-        padding:12px;
-    }
+    .match-top{grid-template-columns:60px 1fr auto;gap:9px;padding:12px}
     .match-time strong{font-size:15px}
     .match-teams{font-size:12px}
     .predictions{padding:11px}
@@ -501,7 +256,6 @@ button{
             <div class="brand-sub">FOOTBALL INTELLIGENCE</div>
         </div>
     </div>
-
     <button class="refresh" id="refresh">↻ Yenile</button>
 </header>
 
@@ -516,17 +270,14 @@ button{
         <div class="stat-value" id="historyCount">—</div>
         <div class="stat-label">Analiz edilen maç</div>
     </div>
-
     <div class="stat">
         <div class="stat-value" id="matchCount">—</div>
-        <div class="stat-label">Eşleşen gelecek maç</div>
+        <div class="stat-label">Bugünün eşleşen maçı</div>
     </div>
-
     <div class="stat">
         <div class="stat-value" id="signalCount">—</div>
         <div class="stat-label">Başarılı tahmin</div>
     </div>
-
     <div class="stat">
         <div class="stat-value">80%</div>
         <div class="stat-label">Minimum başarı</div>
@@ -539,12 +290,8 @@ button{
 </nav>
 
 <div class="toolbar">
-    <input
-        type="search"
-        class="search"
-        id="search"
-        placeholder="Takım, lig veya tahmin ara..."
-    >
+    <input type="search" class="search" id="search"
+           placeholder="Takım, lig veya tahmin ara...">
 
     <select class="filter" id="category">
         <option value="all">Tüm marketler</option>
@@ -585,45 +332,20 @@ const MIN_SUCCESS = 80;
 ========================= */
 
 const marketNames = {
-    ms1:"MS1",
-    msX:"MSX",
-    ms2:"MS2",
-    h12:"1-2",
-    h0:"Beraberlik",
-    h23:"2-3",
-    i14:"İlk yarı 1-4",
-    olmaz:"Olmaz",
-    i25:"İY 2.5",
-    ms1Alt:"MS1 Alt",
-    msXAlt:"MSX Alt",
-    ms2Alt:"MS2 Alt",
-    ms1Ust:"MS1 Üst",
-    msXUst:"MSX Üst",
-    ms2Ust:"MS2 Üst",
-    au25Alt:"2.5 Alt",
-    au25Ust:"2.5 Üst",
-    au35Alt:"3.5 Alt",
-    au35Ust:"3.5 Üst",
-    kgVar:"KG Var",
-    kgYok:"KG Yok",
-    gol01:"Gol 0-1",
-    gol23:"Gol 2-3",
-    gol45:"Gol 4-5",
-    gol6plus:"Gol 6+",
-    iy1:"İY 1",
-    iyX:"İY X",
-    iy2:"İY 2",
-    iy15Alt:"İY 1.5 Alt",
-    iy15Ust:"İY 1.5 Üst",
-    iyms11:"İY/MS 1/1",
-    iyms10:"İY/MS 1/X",
-    iyms12:"İY/MS 1/2",
-    iyms01:"İY/MS X/1",
-    iyms00:"İY/MS X/X",
-    iyms02:"İY/MS X/2",
-    iyms21:"İY/MS 2/1",
-    iyms20:"İY/MS 2/X",
-    iyms22:"İY/MS 2/2"
+    ms1:"MS1", msX:"MSX", ms2:"MS2",
+    h12:"1-2", h0:"Beraberlik", h23:"2-3",
+    i14:"İlk yarı 1-4", olmaz:"Olmaz", i25:"İY 2.5",
+    ms1Alt:"MS1 Alt", msXAlt:"MSX Alt", ms2Alt:"MS2 Alt",
+    ms1Ust:"MS1 Üst", msXUst:"MSX Üst", ms2Ust:"MS2 Üst",
+    au25Alt:"2.5 Alt", au25Ust:"2.5 Üst",
+    au35Alt:"3.5 Alt", au35Ust:"3.5 Üst",
+    kgVar:"KG Var", kgYok:"KG Yok",
+    gol01:"Gol 0-1", gol23:"Gol 2-3", gol45:"Gol 4-5", gol6plus:"Gol 6+",
+    iy1:"İY 1", iyX:"İY X", iy2:"İY 2",
+    iy15Alt:"İY 1.5 Alt", iy15Ust:"İY 1.5 Üst",
+    iyms11:"İY/MS 1/1", iyms10:"İY/MS 1/X", iyms12:"İY/MS 1/2",
+    iyms01:"İY/MS X/1", iyms00:"İY/MS X/X", iyms02:"İY/MS X/2",
+    iyms21:"İY/MS 2/1", iyms20:"İY/MS 2/X", iyms22:"İY/MS 2/2"
 };
 
 /* =========================
@@ -632,8 +354,7 @@ const marketNames = {
 
 const groups = [
     {
-        id:"result",
-        title:"Maç Sonucu",
+        id:"result", title:"Maç Sonucu",
         outcomes:[
             {key:"MS1",label:"MS1",odds:"ms1"},
             {key:"MSX",label:"MSX",odds:"msX"},
@@ -641,16 +362,14 @@ const groups = [
         ]
     },
     {
-        id:"total",
-        title:"2.5 Alt / Üst",
+        id:"total", title:"2.5 Alt / Üst",
         outcomes:[
             {key:"2.5 Alt",label:"2.5 Alt",odds:"au25Alt"},
             {key:"2.5 Üst",label:"2.5 Üst",odds:"au25Ust"}
         ]
     },
     {
-        id:"bands",
-        title:"Gol Aralıkları",
+        id:"bands", title:"Gol Aralıkları",
         outcomes:[
             {key:"Gol 0-1",label:"Gol 0-1",odds:"gol01"},
             {key:"Gol 2-3",label:"Gol 2-3",odds:"gol23"},
@@ -659,8 +378,7 @@ const groups = [
         ]
     },
     {
-        id:"btts",
-        title:"Karşılıklı Gol",
+        id:"btts", title:"Karşılıklı Gol",
         outcomes:[
             {key:"KG Var",label:"KG Var",odds:"kgVar"},
             {key:"KG Yok",label:"KG Yok",odds:"kgYok"}
@@ -677,6 +395,9 @@ let allPredictions = [];
 let matchResults = [];
 let activeView = "matches";
 
+// Açık kalan kartları arama/filtre sonrası da hatırlamak için
+const openCards = new Set();
+
 /* =========================
    YARDIMCI FONKSİYONLAR
 ========================= */
@@ -685,9 +406,7 @@ const $ = id => document.getElementById(id);
 
 function parseDate(value) {
     if (!value) return null;
-
     const parts = String(value).split(".");
-
     if (parts.length !== 3) return null;
 
     const date = new Date(
@@ -701,29 +420,22 @@ function parseDate(value) {
 
 function getDateTime(match) {
     const date = parseDate(match.date);
-
     if (!date) return null;
 
     const time = String(match.time || "00:00").split(":");
-
-    date.setHours(
-        Number(time[0] || 0),
-        Number(time[1] || 0),
-        0,
-        0
-    );
+    date.setHours(Number(time[0] || 0), Number(time[1] || 0), 0, 0);
 
     return date;
 }
 
+function isToday(date) {
+    return date.toDateString() === new Date().toDateString();
+}
+
 function getScore(score) {
     if (typeof score !== "string") return null;
-
     const result = score.trim().match(/^(\d+)\s*[-:]\s*(\d+)$/);
-
-    return result
-        ? [Number(result[1]), Number(result[2])]
-        : null;
+    return result ? [Number(result[1]), Number(result[2])] : null;
 }
 
 function getOdds(match, key) {
@@ -732,15 +444,10 @@ function getOdds(match, key) {
         match?.marketOdds?.[key] ??
         match?.[key];
 
-    if (value === null || value === undefined || value === "") {
-        return null;
-    }
+    if (value === null || value === undefined || value === "") return null;
 
     const number = Number(value);
-
-    return Number.isFinite(number) && number > 0
-        ? number
-        : null;
+    return Number.isFinite(number) && number > 0 ? number : null;
 }
 
 function oddsKey(value) {
@@ -749,19 +456,13 @@ function oddsKey(value) {
 
 function escapeHTML(value) {
     return String(value ?? "").replace(/[&<>"']/g, char => ({
-        "&":"&amp;",
-        "<":"&lt;",
-        ">":"&gt;",
-        '"':"&quot;",
-        "'":"&#39;"
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
     }[char]));
 }
 
 function formatDate(date) {
     return date.toLocaleDateString("tr-TR", {
-        day:"2-digit",
-        month:"2-digit",
-        year:"numeric"
+        day:"2-digit", month:"2-digit", year:"numeric"
     });
 }
 
@@ -778,31 +479,22 @@ function getDayLabel(date) {
     if (diff === 1) return "YARIN";
 
     return date.toLocaleDateString("tr-TR", {
-        weekday:"long",
-        day:"numeric",
-        month:"long"
+        weekday:"long", day:"numeric", month:"long"
     }).toLocaleUpperCase("tr-TR");
 }
 
 function formatPrice(value) {
-    return value === null
-        ? "Oran yok"
-        : Number(value).toFixed(2);
+    return value === null ? "Oran yok" : Number(value).toFixed(2);
 }
 
 function getMatchId(match) {
     return [
-        match.date,
-        match.time,
-        match.league,
-        match.home,
-        match.away
+        match.date, match.time, match.league, match.home, match.away
     ].map(value => String(value || "").trim().toLowerCase()).join("|");
 }
 
 function getActualOutcomes(match) {
     const score = getScore(match.score);
-
     if (!score) return [];
 
     const [home, away] = score;
@@ -813,18 +505,14 @@ function getActualOutcomes(match) {
     else if (home === away) outcomes.push("MSX");
     else outcomes.push("MS2");
 
-    outcomes.push(
-        total <= 2 ? "2.5 Alt" : "2.5 Üst"
-    );
+    outcomes.push(total <= 2 ? "2.5 Alt" : "2.5 Üst");
 
     if (total <= 1) outcomes.push("Gol 0-1");
     else if (total <= 3) outcomes.push("Gol 2-3");
     else if (total <= 5) outcomes.push("Gol 4-5");
     else outcomes.push("Gol 6+");
 
-    outcomes.push(
-        home > 0 && away > 0 ? "KG Var" : "KG Yok"
-    );
+    outcomes.push(home > 0 && away > 0 ? "KG Var" : "KG Yok");
 
     return outcomes;
 }
@@ -844,54 +532,32 @@ function analyze() {
     // Son 14 gündeki tamamlanmış maçlar
     const historical = matches.filter(match => {
         const date = getDateTime(match);
-
-        return (
-            date &&
-            date >= cutoff &&
-            date <= now &&
-            getScore(match.score)
-        );
+        return date && date >= cutoff && date <= now && getScore(match.score);
     });
 
-    // Yalnızca bugünün henüz başlamamış maçları (yerel saat)
-    const todayStart = new Date(now);
-    todayStart.setHours(0, 0, 0, 0);
-    const tomorrowStart = new Date(todayStart);
-    tomorrowStart.setDate(tomorrowStart.getDate() + 1);
-
+    // SADECE BUGÜNÜN henüz başlamamış maçları
     const future = matches.filter(match => {
         const date = getDateTime(match);
-        return date && date >= now && date < tomorrowStart && !getScore(match.score);
+        return date && isToday(date) && date >= now && !getScore(match.score);
     });
 
-    $("historyCount").textContent =
-        historical.length.toLocaleString("tr-TR");
+    $("historyCount").textContent = historical.length.toLocaleString("tr-TR");
 
     const buckets = new Map();
 
-    // Her market ve birebir açılış oranı için geçmiş örneklem
     for (const match of historical) {
-
         for (const [market, label] of Object.entries(marketNames)) {
 
             const price = getOdds(match, market);
-
             if (price === null) continue;
 
             const id = market + "|" + oddsKey(price);
 
             if (!buckets.has(id)) {
-                buckets.set(id, {
-                    market,
-                    label,
-                    price,
-                    items:[]
-                });
+                buckets.set(id, { market, label, price, items:[] });
             }
 
-            buckets.get(id).items.push({
-                outcomes:getActualOutcomes(match)
-            });
+            buckets.get(id).items.push({ outcomes:getActualOutcomes(match) });
         }
     }
 
@@ -905,67 +571,56 @@ function analyze() {
         const successfulOutcomes = groups
             .flatMap(group => group.outcomes)
             .map(outcome => {
-
                 const wins = bucket.items.filter(item =>
                     item.outcomes.includes(outcome.key)
                 ).length;
-
-                const percent =
-                    wins / bucket.items.length * 100;
 
                 return {
                     ...outcome,
                     wins,
                     total:bucket.items.length,
-                    percent
+                    percent:wins / bucket.items.length * 100
                 };
             })
-            .filter(outcome =>
-                outcome.percent >= MIN_SUCCESS
-            );
+            .filter(outcome => outcome.percent >= MIN_SUCCESS);
 
         if (!successfulOutcomes.length) continue;
 
-        // Kaynak market ve oranı aynı olan gelecek maçlar
+        // Kaynak market ve oranı aynı olan bugünkü maçlar
         const matchedFuture = future.filter(match => {
             const price = getOdds(match, bucket.market);
-
-            return (
-                price !== null &&
-                oddsKey(price) === oddsKey(bucket.price)
-            );
+            return price !== null && oddsKey(price) === oddsKey(bucket.price);
         });
 
-        // Gelecek eşleşmesi yoksa tahmin oluşturma
         if (!matchedFuture.length) continue;
 
         for (const outcome of successfulOutcomes) {
+
+            // Tahmin marketinin oranı olmayan maçları ele
+            const withOdds = matchedFuture.filter(match =>
+                getOdds(match, outcome.odds) !== null
+            );
+
+            if (!withOdds.length) continue;
 
             const group = groups.find(g =>
                 g.outcomes.some(o => o.key === outcome.key)
             );
 
             const prediction = {
-                id:
-                    bucket.market + "|" +
-                    oddsKey(bucket.price) + "|" +
-                    outcome.key,
-
+                id: bucket.market + "|" + oddsKey(bucket.price) + "|" + outcome.key,
                 sourceMarket:bucket.market,
                 sourceLabel:bucket.label,
                 sourcePrice:bucket.price,
-
                 outcome,
                 group:group.id,
                 groupTitle:group.title,
-
-                upcoming:matchedFuture
+                upcoming:withOdds
             };
 
             predictions.push(prediction);
 
-            // Maç odaklı görünüm için eşleşmeleri bir araya getir
-            for (const match of matchedFuture) {
+            for (const match of withOdds) {
 
                 const matchId = getMatchId(match);
 
@@ -979,43 +634,28 @@ function analyze() {
 
                 const entry = matchMap.get(matchId);
 
-                const alreadyAdded = entry.predictions.some(p =>
-                    p.id === prediction.id
-                );
-
-                if (!alreadyAdded) {
+                if (!entry.predictions.some(p => p.id === prediction.id)) {
                     entry.predictions.push(prediction);
                 }
             }
         }
     }
 
-    // Tahminleri başarı oranına göre sırala
-    predictions.sort((a,b) =>
-        b.outcome.percent - a.outcome.percent
-    );
+    predictions.sort((a,b) => b.outcome.percent - a.outcome.percent);
 
-    // Maçları tarih ve saate göre sırala
     const matchList = [...matchMap.values()]
         .filter(item => item.predictions.length > 0)
-        .sort((a,b) =>
-            a.dateTime - b.dateTime
-        );
+        .sort((a,b) => a.dateTime - b.dateTime);
 
     matchList.forEach(item => {
-        item.predictions.sort((a,b) =>
-            b.outcome.percent - a.outcome.percent
-        );
+        item.predictions.sort((a,b) => b.outcome.percent - a.outcome.percent);
     });
 
     allPredictions = predictions;
     matchResults = matchList;
 
-    $("matchCount").textContent =
-        matchList.length.toLocaleString("tr-TR");
-
-    $("signalCount").textContent =
-        predictions.length.toLocaleString("tr-TR");
+    $("matchCount").textContent = matchList.length.toLocaleString("tr-TR");
+    $("signalCount").textContent = predictions.length.toLocaleString("tr-TR");
 
     render();
 }
@@ -1026,10 +666,7 @@ function analyze() {
 
 function renderMatches() {
 
-    const query = $("search").value
-        .trim()
-        .toLocaleLowerCase("tr-TR");
-
+    const query = $("search").value.trim().toLocaleLowerCase("tr-TR");
     const category = $("category").value;
 
     const filtered = matchResults.filter(item => {
@@ -1044,13 +681,10 @@ function renderMatches() {
             match.home,
             match.away,
             match.league,
-            ...item.predictions.map(p =>
-                p.outcome.label + " " + p.sourceLabel
-            )
+            ...item.predictions.map(p => p.outcome.label + " " + p.sourceLabel)
         ].join(" ").toLocaleLowerCase("tr-TR");
 
-        return categoryMatch &&
-            (!query || searchText.includes(query));
+        return categoryMatch && (!query || searchText.includes(query));
     });
 
     const container = $("matchView");
@@ -1059,7 +693,7 @@ function renderMatches() {
     if (!filtered.length) {
         container.innerHTML = `
             <div class="empty">
-                Bu kriterlere uygun gelecek maç bulunamadı.
+                Bugün için bu kriterlere uygun maç bulunamadı.
             </div>
         `;
         return;
@@ -1074,61 +708,47 @@ function renderMatches() {
         const dayKey = formatDate(dateTime);
 
         if (dayKey !== currentDay) {
-
             currentDay = dayKey;
 
             const heading = document.createElement("div");
             heading.className = "day-heading";
-
             heading.innerHTML = `
                 ${escapeHTML(getDayLabel(dateTime))}
                 <span class="day-count">${dayKey}</span>
             `;
-
             container.appendChild(heading);
         }
 
         const visiblePredictions = item.predictions.filter(p =>
-            (category === "all" || p.group === category) &&
-            getOdds(match, p.outcome.odds) !== null
+            category === "all" || p.group === category
         );
-        if (!visiblePredictions.length) continue;
 
-        const card = document.createElement("article");
+        const cardId = getMatchId(match);
+
+        const card = document.createElement("details");
         card.className = "match-card";
+        card.dataset.id = cardId;
+        if (openCards.has(cardId)) card.open = true;
 
         const predictionHTML = visiblePredictions.map(p => {
 
-            // Gelecek maçın tahmin marketine ait oranı
-            const predictionPrice = getOdds(
-                match,
-                p.outcome.odds
-            );
+            const predictionPrice = getOdds(match, p.outcome.odds);
 
             return `
                 <div class="prediction">
 
                     <div class="pred-main">
-                        <span class="pred-name">
-                            ${escapeHTML(p.outcome.label)}
-                        </span>
-
-                        <span class="pred-percent">
-                            %${p.outcome.percent.toFixed(0)}
-                        </span>
+                        <span class="pred-name">${escapeHTML(p.outcome.label)}</span>
+                        <span class="pred-percent">%${p.outcome.percent.toFixed(0)}</span>
                     </div>
 
                     <div class="pred-details">
-
                         <span class="tag success">
-                            ${p.outcome.wins}/${p.outcome.total}
-                            başarılı
+                            ${p.outcome.wins}/${p.outcome.total} başarılı
                         </span>
-
                         <span class="tag price">
                             Oran ${formatPrice(predictionPrice)}
                         </span>
-
                     </div>
 
                     <div class="source-info">
@@ -1141,7 +761,7 @@ function renderMatches() {
         }).join("");
 
         card.innerHTML = `
-            <div class="match-top">
+            <summary class="match-top">
 
                 <div class="match-time">
                     <strong>${escapeHTML(match.time || "—")}</strong>
@@ -1154,24 +774,21 @@ function renderMatches() {
                         <span style="color:var(--muted)">vs</span>
                         ${escapeHTML(match.away)}
                     </div>
-
                     <div class="match-league">
                         ${escapeHTML(match.league || "Lig bilgisi yok")}
                     </div>
                 </div>
 
                 <div class="pred-count">
-                    ${visiblePredictions.length} TAHMİN
+                    ${visiblePredictions.length} TAHMİN<span class="chevron">▾</span>
                 </div>
 
+            </summary>
+
+            <div class="predictions">
+                <div class="pred-title">MAÇIN BAŞARILI TAHMİNLERİ</div>
+                <div class="pred-list">${predictionHTML}</div>
             </div>
-
-            <details class="predictions">
-                <summary class="pred-title">TAHMİNLERİ GÖSTER (${visiblePredictions.length})</summary>
-                <div class="pred-list">
-                    ${predictionHTML}
-                </div>
-            </details>
         `;
 
         container.appendChild(card);
@@ -1184,29 +801,20 @@ function renderMatches() {
 
 function renderPredictions() {
 
-    const query = $("search").value
-        .trim()
-        .toLocaleLowerCase("tr-TR");
-
+    const query = $("search").value.trim().toLocaleLowerCase("tr-TR");
     const category = $("category").value;
 
     const filtered = allPredictions.filter(p => {
 
-        const categoryMatch =
-            category === "all" || p.group === category;
+        const categoryMatch = category === "all" || p.group === category;
 
         const searchText = [
             p.outcome.label,
             p.sourceLabel,
-            ...p.upcoming.flatMap(match => [
-                match.home,
-                match.away,
-                match.league
-            ])
+            ...p.upcoming.flatMap(match => [match.home, match.away, match.league])
         ].join(" ").toLocaleLowerCase("tr-TR");
 
-        return categoryMatch &&
-            (!query || searchText.includes(query));
+        return categoryMatch && (!query || searchText.includes(query));
     });
 
     const container = $("predictionView");
@@ -1215,7 +823,7 @@ function renderPredictions() {
     if (!filtered.length) {
         container.innerHTML = `
             <div class="empty">
-                Bu kriterlere uygun tahmin bulunamadı.
+                Bugün için bu kriterlere uygun tahmin bulunamadı.
             </div>
         `;
         return;
@@ -1223,72 +831,61 @@ function renderPredictions() {
 
     for (const group of groups) {
 
-        const list = filtered.filter(p =>
-            p.group === group.id
-        );
-
+        const list = filtered.filter(p => p.group === group.id);
         if (!list.length) continue;
 
         const heading = document.createElement("div");
         heading.className = "day-heading";
         heading.textContent = group.title;
-
         container.appendChild(heading);
 
         for (const p of list) {
 
-            const card = document.createElement("article");
+            const cardId = "p|" + p.id;
+
+            const card = document.createElement("details");
             card.className = "prediction-view";
+            card.dataset.id = cardId;
+            if (openCards.has(cardId)) card.open = true;
 
-            const pricedFixtures = p.upcoming.filter(match =>
-                getOdds(match, p.outcome.odds) !== null
-            );
-            if (!pricedFixtures.length) continue;
+            const fixtures = p.upcoming
+                .slice()
+                .sort((a,b) => getDateTime(a) - getDateTime(b))
+                .map(match => {
 
-            const fixtures = pricedFixtures.map(match => {
+                    const dateTime = getDateTime(match);
+                    const price = getOdds(match, p.outcome.odds);
 
-                const dateTime = getDateTime(match);
+                    return `
+                        <div class="fixture">
 
-                // Her tahminin kendi market oranı
-                const price = getOdds(
-                    match,
-                    p.outcome.odds
-                );
-
-                return `
-                    <div class="fixture">
-
-                        <div class="fixture-date">
-                            ${dateTime ? escapeHTML(formatDate(dateTime)) : "—"}
-                            <br>
-                            ${escapeHTML(match.time || "—")}
-                        </div>
-
-                        <div>
-                            <div class="fixture-teams">
-                                ${escapeHTML(match.home)}
-                                – ${escapeHTML(match.away)}
+                            <div class="fixture-date">
+                                <b>${escapeHTML(match.time || "—")}</b>
+                                ${dateTime ? escapeHTML(formatDate(dateTime)) : "—"}
                             </div>
 
-                            <div class="fixture-league">
-                                ${escapeHTML(match.league || "Lig bilgisi yok")}
+                            <div>
+                                <div class="fixture-teams">
+                                    ${escapeHTML(match.home)} – ${escapeHTML(match.away)}
+                                </div>
+                                <div class="fixture-league">
+                                    ${escapeHTML(match.league || "Lig bilgisi yok")}
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="fixture-price">
-                            ${price === null ? "Oran yok" : price.toFixed(2)}
-                        </div>
+                            <div class="fixture-price">
+                                ${price === null ? "Oran yok" : price.toFixed(2)}
+                            </div>
 
-                    </div>
-                `;
-            }).join("");
+                        </div>
+                    `;
+                }).join("");
 
             card.innerHTML = `
-                <div class="prediction-head">
+                <summary class="prediction-head">
 
                     <div>
                         <strong>${escapeHTML(p.outcome.label)} tahmini</strong>
-
                         <div class="prediction-sub">
                             Kaynak: ${escapeHTML(p.sourceLabel)}
                             · Kaynak oranı ${p.sourcePrice.toFixed(2)}
@@ -1296,30 +893,20 @@ function renderPredictions() {
                     </div>
 
                     <div class="percent">
-                        %${p.outcome.percent.toFixed(0)}
+                        %${p.outcome.percent.toFixed(0)}<span class="chevron">▾</span>
                     </div>
 
-                </div>
+                </summary>
 
                 <div class="meta" style="padding:0 15px 12px;display:flex;gap:6px;flex-wrap:wrap">
-
                     <span class="tag success">
                         ${p.outcome.wins}/${p.outcome.total} başarılı
                     </span>
-
-                    <span class="tag">
-                        ${p.outcome.total} maçlık örneklem
-                    </span>
-
-                    <span class="tag">
-                        ${pricedFixtures.length} bugünkü maç
-                    </span>
-
+                    <span class="tag">${p.outcome.total} maçlık örneklem</span>
+                    <span class="tag">${p.upcoming.length} bugünkü maç</span>
                 </div>
 
-                <div class="prediction-fixtures">
-                    ${fixtures}
-                </div>
+                <div class="prediction-fixtures">${fixtures}</div>
             `;
 
             container.appendChild(card);
@@ -1332,17 +919,13 @@ function renderPredictions() {
 ========================= */
 
 function render() {
-
     if (activeView === "matches") {
         $("matchView").classList.remove("hidden");
         $("predictionView").classList.add("hidden");
-
         renderMatches();
-
     } else {
         $("matchView").classList.add("hidden");
         $("predictionView").classList.remove("hidden");
-
         renderPredictions();
     }
 }
@@ -1364,21 +947,15 @@ async function loadData() {
         );
 
         if (!response.ok) {
-            throw new Error(
-                "Veri dosyası yüklenemedi. HTTP " + response.status
-            );
+            throw new Error("Veri dosyası yüklenemedi. HTTP " + response.status);
         }
 
         const data = await response.json();
 
-        matches = Array.isArray(data.matches)
-            ? data.matches
-            : [];
+        matches = Array.isArray(data.matches) ? data.matches : [];
 
         if (!matches.length) {
-            throw new Error(
-                "JSON içinde matches listesi bulunamadı."
-            );
+            throw new Error("JSON içinde matches listesi bulunamadı.");
         }
 
         analyze();
@@ -1389,18 +966,14 @@ async function loadData() {
 
         $("status").textContent =
             matches.length.toLocaleString("tr-TR") +
-            " maç yüklendi · Son veri güncellemesi: " +
-            updated;
+            " maç yüklendi · Son veri güncellemesi: " + updated;
 
     } catch (error) {
 
         $("status").textContent = error.message;
         $("status").classList.add("error");
 
-        $("matchView").innerHTML = `
-            <div class="empty">Veriler yüklenemedi.</div>
-        `;
-
+        $("matchView").innerHTML = `<div class="empty">Veriler yüklenemedi.</div>`;
         $("predictionView").innerHTML = "";
     }
 }
@@ -1410,9 +983,7 @@ async function loadData() {
 ========================= */
 
 document.querySelectorAll("[data-view]").forEach(button => {
-
     button.addEventListener("click", () => {
-
         activeView = button.dataset.view;
 
         document.querySelectorAll("[data-view]").forEach(item => {
@@ -1423,19 +994,24 @@ document.querySelectorAll("[data-view]").forEach(button => {
     });
 });
 
+// Açılıp kapanan kartları hatırla
+["matchView","predictionView"].forEach(id => {
+    $(id).addEventListener("toggle", e => {
+        const el = e.target;
+        if (!el.dataset || !el.dataset.id) return;
+
+        if (el.open) openCards.add(el.dataset.id);
+        else openCards.delete(el.dataset.id);
+    }, true);
+});
+
 $("search").addEventListener("input", render);
-
 $("category").addEventListener("change", render);
-
 $("refresh").addEventListener("click", loadData);
 
-// Başlat
 loadData();
 
 </script>
 
 </body>
 </html>
-
-
-
