@@ -130,6 +130,8 @@ details{border-top:1px solid var(--line);margin-top:11px;padding-top:10px}summar
     const wins=g.counts[outcome]||0,rate=100*wins/g.sample;
     if(rate<MIN_RATE)continue;
     const upcoming=futureGroups.get(id)||[];
+    // Gelecek maçı olmayan başarılı eşleşmeleri hiç listeleme.
+    if(!upcoming.length)continue;
     signals.push({...g,id,target:target.key,category:target.title,outcome,description,wins,rate,upcoming});
    }
   }
